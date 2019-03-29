@@ -474,6 +474,13 @@ public:
              .blockhash =
                  BlockHash{uint256S("0xd5a3182b833dca6d0c9bad770890080c2639f077"
                                     "e0e880c5ab16f1ba3a27b740")}},
+            {// For use by test/functional/feature_assumeutxo.py
+             .height = 299,
+             .hash_serialized =
+                 AssumeutxoHash{uint256S("0xf4217e2debd5677de2a12a7db17e5f1bbc2663bea3a28a639300601e135b3cc9")},
+             .nChainTx = 334,
+             .blockhash =
+                 BlockHash{uint256S("0x147029b0cd6d9b3847db3660938c8220b24d7db3069a039f12a07f4322c8d888")}},
         };
 
         chainTxData = ChainTxData{0, 0, 0};
