@@ -565,8 +565,7 @@ public:
             wallet->SetLastBlockProcessed(chainman.ActiveHeight(),
                                           chainman.ActiveTip()->GetBlockHash());
         }
-        bool firstRun;
-        wallet->LoadWallet(firstRun);
+        wallet->LoadWallet();
         AddKey(*wallet, coinbaseKey);
         WalletRescanReserver reserver(*wallet);
         reserver.reserve();
