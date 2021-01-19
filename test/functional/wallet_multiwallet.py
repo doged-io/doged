@@ -450,7 +450,7 @@ class MultiWalletTest(BitcoinTestFramework):
             "wallet.dat",
         )
         assert_raises_rpc_error(
-            -4,
+            -35,
             "Wallet file verification failed. Refusing to load database. "
             f"Data file '{path}' is already loaded.",
             self.nodes[0].loadwallet,
@@ -468,7 +468,7 @@ class MultiWalletTest(BitcoinTestFramework):
                 "wallet.dat",
             )
             assert_raises_rpc_error(
-                -4,
+                -35,
                 "Wallet file verification failed. Refusing to load database. "
                 f"Data file '{path}' is already loaded.",
                 self.nodes[0].loadwallet,
