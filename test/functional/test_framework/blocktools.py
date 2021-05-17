@@ -46,6 +46,10 @@ GENESIS_CB_SCRIPT_SIG = CScript(b"\x04\xff\xff\x00\x1d\x01\x04\x08Nintondo")
 
 MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60
 
+# Coinbase transaction outputs can only be spent after this number of new blocks
+# (network rule)
+COINBASE_MATURITY = 100
+
 
 def create_block(
     hashprev: Optional[int] = None,
