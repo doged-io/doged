@@ -308,14 +308,15 @@ class PortName(enum.Enum):
     RPC = 1
     CHRONIK = 2
     CHRONIKELECTRUM = 3
+    TOR = 4
 
 
 # The maximum number of nodes a single test can spawn
 MAX_NODES = 64
-# Don't assign rpc or p2p ports lower than this (for example: 44556 is the
-# default testnet port)
-PORT_MIN = int(os.getenv("TEST_RUNNER_PORT_MIN", default=20000))
-# The number of ports to "reserve" for p2p and rpc, each
+# Don't assign p2p, rpc, tor or chronik ports lower than this (for example:
+# 44556 is the default testnet port and 22556 is the default mainnet port)
+PORT_MIN = int(os.getenv("TEST_RUNNER_PORT_MIN", default=22600))
+# The number of ports to "reserve" for p2p, rpc, tor and chronik each
 PORT_RANGE = 3000
 # The number of times we skip ports and test it again before giving up.
 MAX_PORT_RETRY = 5
@@ -324,7 +325,9 @@ PORT_START_MAP: Dict[PortName, int] = {
     PortName.RPC: PORT_RANGE,
     PortName.CHRONIK: PORT_RANGE * 2,
     PortName.CHRONIKELECTRUM: PORT_RANGE * 3,
+    PortName.TOR: PORT_RANGE * 4,
 }
+assert PORT_MIN + PORT_RANGE * 5 < 44556
 
 # Globals used for incrementing ports. Initially uninitialized because they
 # depend on PortSeed.n.
@@ -427,6 +430,10 @@ def chronik_port(n: int) -> int:
 
 def chronikelectrum_port(n: int) -> int:
     return UniquePort.get(PortName.CHRONIKELECTRUM, n)
+
+
+def tor_port(n: int) -> int:
+    return UniquePort.get(PortName.TOR, n)
 
 
 def rpc_url(datadir, chain, host, port):
