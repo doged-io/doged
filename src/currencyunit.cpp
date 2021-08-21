@@ -12,9 +12,9 @@ void SetupCurrencyUnitOptions(ArgsManager &argsman) {
     argsman.AddArg("-ecash",
                    strprintf("Use the eCash address prefix (default: %s)",
                              cashaddr::DEFAULT_ECASH ? "true" : "false"),
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::OPTIONS);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-usedogeunit",
                    strprintf("Use the DOGE unit (default: %s)",
                              DEFAULT_USE_DOGE_UNIT ? "true" : "false"),
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::OPTIONS);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }

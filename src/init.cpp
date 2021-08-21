@@ -604,7 +604,7 @@ void SetupServerArgs(NodeContext &node) {
             "file and load it upon startup. This is intended for mining nodes "
             "to overestimate the real time target upon restart (default: %u)",
             DEFAULT_STORE_RECENT_HEADERS_TIME),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg(
         "-pid=<file>",
         strprintf("Specify pid file. Relative paths will be prefixed "
@@ -669,7 +669,7 @@ void SetupServerArgs(NodeContext &node) {
         strprintf("Enable the Chronik indexer, which can be read via a "
                   "dedicated HTTP/Protobuf interface (default: %d)",
                   DEFAULT_CHRONIK),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikbind=<addr>[:port]",
         strprintf(
@@ -681,18 +681,19 @@ void SetupServerArgs(NodeContext &node) {
             Join(chronik::DEFAULT_BINDS, ", "),
             defaultBaseParams->ChronikPort(), testnetBaseParams->ChronikPort(),
             regtestBaseParams->ChronikPort()),
-        ArgsManager::ALLOW_STRING | ArgsManager::NETWORK_ONLY,
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
+            ArgsManager::NETWORK_ONLY,
         OptionsCategory::CHRONIK);
     argsman.AddArg("-chroniktokenindex",
                    "Enable token indexing in Chronik (default: 1)",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg("-chroniklokadidindex",
                    "Enable LOKAD ID indexing in Chronik (default: 1)",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg("-chronikreindex",
                    "Reindex the Chronik indexer from genesis, but leave the "
                    "other indexes untouched",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chroniktxnumcachebuckets",
         strprintf(
@@ -700,7 +701,8 @@ void SetupServerArgs(NodeContext &node) {
             "to use on the belt. Caution against setting this too high, "
             "it may slow down indexing. Set to 0 to disable. (default: %d)",
             chronik::DEFAULT_TX_NUM_CACHE_BUCKETS),
-        ArgsManager::ALLOW_INT, OptionsCategory::CHRONIK);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chroniktxnumcachebucketsize",
         strprintf(
@@ -712,15 +714,16 @@ void SetupServerArgs(NodeContext &node) {
             chronik::DEFAULT_TX_NUM_CACHE_BUCKETS *
                 chronik::DEFAULT_TX_NUM_CACHE_BUCKET_SIZE * 40 / 1000,
             chronik::DEFAULT_TX_NUM_CACHE_BUCKET_SIZE),
-        ArgsManager::ALLOW_INT, OptionsCategory::CHRONIK);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::CHRONIK);
     argsman.AddArg("-chronikperfstats",
                    "Output some performance statistics (e.g. num cache hits, "
                    "seconds spent) into a <datadir>/perf folder. (default: 0)",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg("-chronikscripthashindex",
                    "Enable the scripthash index for the Chronik indexer "
                    "(default: 1 if chronikelectrumbind is set, 0 otherwise) ",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::CHRONIK);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumbind=<addr>[:port][:t|s]",
         strprintf(
@@ -735,7 +738,8 @@ void SetupServerArgs(NodeContext &node) {
             defaultBaseParams->ChronikElectrumPort(),
             testnetBaseParams->ChronikElectrumPort(),
             regtestBaseParams->ChronikElectrumPort()),
-        ArgsManager::ALLOW_STRING | ArgsManager::NETWORK_ONLY,
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
+            ArgsManager::NETWORK_ONLY,
         OptionsCategory::HIDDEN);
     argsman.AddArg(
         "-chronikelectrumcert",
@@ -743,14 +747,16 @@ void SetupServerArgs(NodeContext &node) {
         "server when the TLS protocol is selected. The file should contain "
         "the whole certificate chain (typically a .pem file). If used the "
         "-chronikelectrumprivkey must be set as well.",
-        ArgsManager::ALLOW_STRING | ArgsManager::NETWORK_ONLY,
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
+            ArgsManager::NETWORK_ONLY,
         OptionsCategory::HIDDEN);
     argsman.AddArg(
         "-chronikelectrumprivkey",
         "Path to the private key file to be used by the Chronik Electrum "
         "server when the TLS protocol is selected. If used the "
         "-chronikelectrumcert must be set as well.",
-        ArgsManager::ALLOW_STRING | ArgsManager::NETWORK_ONLY,
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
+            ArgsManager::NETWORK_ONLY,
         OptionsCategory::HIDDEN);
     argsman.AddArg(
         "-chronikelectrumurl",
@@ -759,13 +765,15 @@ void SetupServerArgs(NodeContext &node) {
         "don't have to drop the connection. See the 'hosts' key in "
         "https://electrum-cash-protocol.readthedocs.io/en/latest/"
         "protocol-methods.html#server.features (default: 127.0.0.1).",
-        ArgsManager::ALLOW_STRING | ArgsManager::NETWORK_ONLY,
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
+            ArgsManager::NETWORK_ONLY,
         OptionsCategory::HIDDEN);
     argsman.AddArg(
         "-chronikelectrummaxhistory",
         strprintf("Largest tx history we are willing to serve. (default: %u)",
                   chronik::DEFAULT_ELECTRUM_MAX_HISTORY),
-        ArgsManager::ALLOW_INT, OptionsCategory::HIDDEN);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::HIDDEN);
     argsman.AddArg(
         "-chronikelectrumdonationaddress",
         strprintf(
@@ -773,7 +781,8 @@ void SetupServerArgs(NodeContext &node) {
             "side to ensure this is a valid eCash address, it is just relayed "
             "to clients verbatim as a text string (%u characters maximum).",
             chronik::MAX_LENGTH_DONATION_ADDRESS),
-        ArgsManager::ALLOW_STRING, OptionsCategory::HIDDEN);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::HIDDEN);
 #endif
     argsman.AddArg(
         "-blockfilterindex=<type>",
@@ -840,7 +849,7 @@ void SetupServerArgs(NodeContext &node) {
             "Query for peer addresses via DNS lookup, if low on addresses "
             "(default: %u unless -connect used)",
             DEFAULT_DNSSEED),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CONNECTION);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-externalip=<ip>", "Specify your own public address",
                    ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg(
@@ -848,7 +857,7 @@ void SetupServerArgs(NodeContext &node) {
         strprintf(
             "Allow fixed seeds if DNS seeds don't provide peers (default: %u)",
             DEFAULT_FIXEDSEEDS),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CONNECTION);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg(
         "-forcednsseed",
         strprintf(
@@ -910,7 +919,7 @@ void SetupServerArgs(NodeContext &node) {
         "Ignored if -i2psam is not set. Listening for incoming I2P connections "
         "is done through the SAM proxy, not by binding to a local address and "
         "port (default: 1)",
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CONNECTION);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
 
     argsman.AddArg(
         "-onlynet=<net>",
@@ -968,7 +977,7 @@ void SetupServerArgs(NodeContext &node) {
         "-networkactive",
         "Enable all P2P network activity (default: 1). Can be changed "
         "by the setnetworkactive RPC command",
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CONNECTION);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-timeout=<n>",
                    strprintf("Specify connection timeout in milliseconds "
                              "(minimum: 1, default: %d)",
@@ -1011,7 +1020,7 @@ void SetupServerArgs(NodeContext &node) {
         "-natpmp",
         strprintf("Use NAT-PMP to map the listening port (default: %s)",
                   DEFAULT_NATPMP ? "1 when listening and no -proxy" : "0"),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::CONNECTION);
+        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
 #else
     hidden_args.emplace_back("-natpmp");
 #endif // USE_NATPMP
@@ -1164,7 +1173,7 @@ void SetupServerArgs(NodeContext &node) {
                    ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
                    OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-capturemessages", "Capture all P2P messages to disk",
-                   ArgsManager::ALLOW_BOOL | ArgsManager::DEBUG_ONLY,
+                   ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
                    OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-mocktime=<n>",
                    "Replace actual time with " + UNIX_EPOCH_TIME +
@@ -1284,7 +1293,7 @@ void SetupServerArgs(NodeContext &node) {
         ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
     argsman.AddArg("-simplegbt",
                    "Use a simplified getblocktemplate output (default: 0)",
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::BLOCK_CREATION);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
 
     argsman.AddArg("-blockversion=<n>",
                    "Override block version to test forking scenarios",
@@ -1341,7 +1350,7 @@ void SetupServerArgs(NodeContext &node) {
         "empty-unless-otherwise-specified whitelists. If rpcwhitelistdefault "
         "is set to 1 and no -rpcwhitelist is set, rpc server acts as if all "
         "rpc users are subject to empty whitelists.",
-        ArgsManager::ALLOW_BOOL, OptionsCategory::RPC);
+        ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg(
         "-rpcauth=<userpw>",
         "Username and HMAC-SHA-256 hashed password for JSON-RPC connections. "
@@ -1393,12 +1402,12 @@ void SetupServerArgs(NodeContext &node) {
                    strprintf("Run in the background as a daemon and accept "
                              "commands (default: %d)",
                              DEFAULT_DAEMON),
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::OPTIONS);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-daemonwait",
                    strprintf("Wait for initialization to be finished before "
                              "exiting. This implies -daemon (default: %d)",
                              DEFAULT_DAEMONWAIT),
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::OPTIONS);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 #else
     hidden_args.emplace_back("-daemon");
     hidden_args.emplace_back("-daemonwait");
@@ -1416,18 +1425,20 @@ void SetupServerArgs(NodeContext &node) {
                   defaultChainParams->GetConsensus().enableStakingRewards,
                   testnetChainParams->GetConsensus().enableStakingRewards,
                   regtestChainParams->GetConsensus().enableStakingRewards),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY, OptionsCategory::AVALANCHE);
     argsman.AddArg("-avalancheconflictingproofcooldown",
                    strprintf("Mandatory cooldown before a proof conflicting "
                              "with an already registered one can be considered "
                              "in seconds (default: %u)",
                              AVALANCHE_DEFAULT_CONFLICTING_PROOF_COOLDOWN),
-                   ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+                   ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+                   OptionsCategory::AVALANCHE);
     argsman.AddArg("-avalanchepeerreplacementcooldown",
                    strprintf("Mandatory cooldown before a peer can be replaced "
                              "in seconds (default: %u)",
                              AVALANCHE_DEFAULT_PEER_REPLACEMENT_COOLDOWN),
-                   ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+                   ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+                   OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-avaminquorumstake",
         strprintf(
@@ -1441,27 +1452,31 @@ void SetupServerArgs(NodeContext &node) {
                   "This parameter is parsed with a maximum precision of "
                   "0.000001.",
                   AVALANCHE_DEFAULT_MIN_QUORUM_CONNECTED_STAKE_RATIO),
-        ArgsManager::ALLOW_STRING, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-avaminavaproofsnodecount",
         strprintf("Minimum number of node that needs to send us an avaproofs"
                   " message before we consider we have a usable quorum"
                   " (default: %s)",
                   AVALANCHE_DEFAULT_MIN_AVAPROOFS_NODE_COUNT),
-        ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-avastalevotethreshold",
         strprintf("Number of avalanche votes before a voted item goes stale "
                   "when voting confidence is low (default: %u)",
                   AVALANCHE_VOTE_STALE_THRESHOLD),
-        ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-avastalevotefactor",
         strprintf(
             "Factor affecting the number of avalanche votes before a voted "
             "item goes stale when voting confidence is high (default: %u)",
             AVALANCHE_VOTE_STALE_FACTOR),
-        ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::AVALANCHE);
     argsman.AddArg("-avacooldown",
                    strprintf("Mandatory cooldown between two avapoll in "
                              "milliseconds (default: %u)",
@@ -1488,7 +1503,8 @@ void SetupServerArgs(NodeContext &node) {
             " enough to be included into a proof. Utxos in the mempool are not "
             "accepted (i.e this value must be greater than 0) (default: %s)",
             AVALANCHE_DEFAULT_STAKE_UTXO_CONFIRMATIONS),
-        ArgsManager::ALLOW_INT, OptionsCategory::HIDDEN);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::HIDDEN);
     argsman.AddArg("-avaproofstakeutxodustthreshold",
                    strprintf("Minimum value each stake utxo must have to be "
                              "considered valid (default: %s)",
@@ -1506,7 +1522,7 @@ void SetupServerArgs(NodeContext &node) {
                    strprintf("Whether to enforce Real Time Targeting via "
                              "Avalanche, default (%u)",
                              DEFAULT_ENABLE_RTT),
-                   ArgsManager::ALLOW_BOOL, OptionsCategory::AVALANCHE);
+                   ArgsManager::ALLOW_ANY, OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-maxavalancheoutbound",
         strprintf(
@@ -1514,13 +1530,14 @@ void SetupServerArgs(NodeContext &node) {
             "Note that this option takes precedence over the -maxconnections "
             "option (default: %u).",
             DEFAULT_MAX_AVALANCHE_OUTBOUND_CONNECTIONS),
-        ArgsManager::ALLOW_INT, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
+        OptionsCategory::AVALANCHE);
     argsman.AddArg(
         "-persistavapeers",
         strprintf("Whether to save the avalanche peers upon shutdown and load "
                   "them upon startup (default: %u).",
                   DEFAULT_PERSIST_AVAPEERS),
-        ArgsManager::ALLOW_BOOL, OptionsCategory::AVALANCHE);
+        ArgsManager::ALLOW_ANY, OptionsCategory::AVALANCHE);
 
     hidden_args.emplace_back("-avalanchepreconsensus");
     hidden_args.emplace_back("-avalanchestakingpreconsensus");
