@@ -15,7 +15,6 @@ from test_framework.blocktools import (
     VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
-    make_conform_to_ctor,
 )
 from test_framework.messages import COutPoint, CTransaction, CTxIn, CTxOut
 from test_framework.p2p import P2PDataStore
@@ -264,11 +263,13 @@ class ChronikScriptHistoryTest(BitcoinTestFramework):
         coinbase_tx = create_coinbase(height)
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
         coinbase_tx.rehash()
-        block = create_block(int(blockhashes[-1], 16), coinbase_tx, mocktime + 1100)
-        block.nVersion = VERSION_CHAIN_ID_BITS | 5
-        block.vtx += mine_txs
-        make_conform_to_ctor(block)
-        block.hashMerkleRoot = block.calc_merkle_root()
+        block = create_block(
+            int(blockhashes[-1], 16),
+            coinbase_tx,
+            mocktime + 1100,
+            version=VERSION_CHAIN_ID_BITS | 5,
+            txlist=mine_txs,
+        )
         block.solve()
         peer.send_blocks_and_test([block], node)
 
