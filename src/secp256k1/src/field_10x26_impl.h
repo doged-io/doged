@@ -264,40 +264,22 @@ static int secp256k1_fe_impl_normalizes_to_zero_var(const secp256k1_fe *r) {
     return (z0 == 0) | (z1 == 0x3FFFFFFUL);
 }
 
-SECP256K1_INLINE static void secp256k1_fe_set_int(secp256k1_fe *r, int a) {
-    VERIFY_CHECK(0 <= a && a <= 0x7FFF);
+SECP256K1_INLINE static void secp256k1_fe_impl_set_int(secp256k1_fe *r, int a) {
     r->n[0] = a;
     r->n[1] = r->n[2] = r->n[3] = r->n[4] = r->n[5] = r->n[6] = r->n[7] = r->n[8] = r->n[9] = 0;
-#ifdef VERIFY
-    r->magnitude = (a != 0);
-    r->normalized = 1;
-    secp256k1_fe_verify(r);
-#endif
 }
 
-SECP256K1_INLINE static int secp256k1_fe_is_zero(const secp256k1_fe *a) {
+SECP256K1_INLINE static int secp256k1_fe_impl_is_zero(const secp256k1_fe *a) {
     const uint32_t *t = a->n;
-#ifdef VERIFY
-    VERIFY_CHECK(a->normalized);
-    secp256k1_fe_verify(a);
-#endif
     return (t[0] | t[1] | t[2] | t[3] | t[4] | t[5] | t[6] | t[7] | t[8] | t[9]) == 0;
 }
 
-SECP256K1_INLINE static int secp256k1_fe_is_odd(const secp256k1_fe *a) {
-#ifdef VERIFY
-    VERIFY_CHECK(a->normalized);
-    secp256k1_fe_verify(a);
-#endif
+SECP256K1_INLINE static int secp256k1_fe_impl_is_odd(const secp256k1_fe *a) {
     return a->n[0] & 1;
 }
 
-SECP256K1_INLINE static void secp256k1_fe_clear(secp256k1_fe *a) {
+SECP256K1_INLINE static void secp256k1_fe_impl_clear(secp256k1_fe *a) {
     int i;
-#ifdef VERIFY
-    a->magnitude = 0;
-    a->normalized = 1;
-#endif
     for (i=0; i<10; i++) {
         a->n[i] = 0;
     }
