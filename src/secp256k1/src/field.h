@@ -92,6 +92,11 @@ static const secp256k1_fe secp256k1_const_beta = SECP256K1_FE_CONST(
 #  define secp256k1_fe_add secp256k1_fe_impl_add
 #  define secp256k1_fe_mul secp256k1_fe_impl_mul
 #  define secp256k1_fe_sqr secp256k1_fe_impl_sqr
+#  define secp256k1_fe_cmov secp256k1_fe_impl_cmov
+#  define secp256k1_fe_to_storage secp256k1_fe_impl_to_storage
+#  define secp256k1_fe_from_storage secp256k1_fe_impl_from_storage
+#  define secp256k1_fe_inv secp256k1_fe_impl_inv
+#  define secp256k1_fe_inv_var secp256k1_fe_impl_inv_var
 #endif /* !defined(VERIFY) */
 
 /** Normalize a field element.
@@ -258,23 +263,45 @@ static int secp256k1_fe_sqrt(secp256k1_fe * SECP256K1_RESTRICT r, const secp256k
 /** Checks whether a field element is a quadratic residue. */
 static int secp256k1_fe_is_quad_var(const secp256k1_fe *a);
 
-/** Sets a field element to be the (modular) inverse of another. Requires the input's magnitude to be
- *  at most 8. The output magnitude is 1 (but not guaranteed to be normalized). */
+/** Compute the modular inverse of a field element.
+ *
+ * On input, a must be a valid field element; r need not be initialized.
+ * Performs {r = a**(p-2)} (which maps 0 to 0, and every other element to its
+ * inverse).
+ * On output, r will have magnitude (a.magnitude != 0) and be normalized.
+ */
 static void secp256k1_fe_inv(secp256k1_fe *r, const secp256k1_fe *a);
 
-/** Potentially faster version of secp256k1_fe_inv, without constant-time guarantee. */
+/** Compute the modular inverse of a field element, without constant-time guarantee.
+ *
+ * Behaves identically to secp256k1_fe_inv, but is not constant-time in a.
+ */
 static void secp256k1_fe_inv_var(secp256k1_fe *r, const secp256k1_fe *a);
 
-/** Convert a field element to the storage type. */
+/** Convert a field element to secp256k1_fe_storage.
+ *
+ * On input, a must be a valid normalized field element.
+ * Performs {r = a}.
+ */
 static void secp256k1_fe_to_storage(secp256k1_fe_storage *r, const secp256k1_fe *a);
 
-/** Convert a field element back from the storage type. */
+/** Convert a field element back from secp256k1_fe_storage.
+ *
+ * On input, r need not be initialized.
+ * Performs {r = a}.
+ * On output, r will be normalized and will have magnitude 1.
+ */
 static void secp256k1_fe_from_storage(secp256k1_fe *r, const secp256k1_fe_storage *a);
 
 /** If flag is true, set *r equal to *a; otherwise leave it. Constant-time.  Both *r and *a must be initialized.*/
 static void secp256k1_fe_storage_cmov(secp256k1_fe_storage *r, const secp256k1_fe_storage *a, int flag);
 
-/** If flag is true, set *r equal to *a; otherwise leave it. Constant-time.  Both *r and *a must be initialized.*/
+/** Conditionally move a field element in constant time.
+ *
+ * On input, both r and a must be valid field elements. Flag must be 0 or 1.
+ * Performs {r = flag ? a : r}.
+ * On output, r's magnitude and normalized will equal a's in case of flag=1, unchanged otherwise.
+ */
 static void secp256k1_fe_cmov(secp256k1_fe *r, const secp256k1_fe *a, int flag);
 
 /** Halves the value of a field element modulo the field prime. Constant-time.
