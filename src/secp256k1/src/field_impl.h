@@ -7,6 +7,7 @@
 #ifndef SECP256K1_FIELD_IMPL_H
 #define SECP256K1_FIELD_IMPL_H
 
+#include "field.h"
 #include "util.h"
 
 #if defined(SECP256K1_WIDEMUL_INT128)
@@ -135,5 +136,21 @@ static int secp256k1_fe_is_quad_var(const secp256k1_fe *a) {
     secp256k1_fe r;
     return secp256k1_fe_sqrt(&r, a);
 }
+
+#ifndef VERIFY
+static void secp256k1_fe_verify(const secp256k1_fe *a) { (void)a; }
+#else
+static void secp256k1_fe_verify(const secp256k1_fe *a) {
+    /* Magnitude between 0 and 32. */
+    int r = (a->magnitude >= 0) & (a->magnitude <= 32);
+    /* Normalized is 0 or 1. */
+    r &= (a->normalized == 0) | (a->normalized == 1);
+    /* If normalized, magnitude must be 0 or 1. */
+    if (a->normalized) r &= (a->magnitude <= 1);
+    VERIFY_CHECK(r == 1);
+    /* Invoke implementation-specific checks. */
+    secp256k1_fe_impl_verify(a);
+}
+#endif /* defined(VERIFY) */
 
 #endif /* SECP256K1_FIELD_IMPL_H */
