@@ -84,6 +84,10 @@ static const secp256k1_fe secp256k1_const_beta = SECP256K1_FE_CONST(
 #  define secp256k1_fe_clear secp256k1_fe_impl_clear
 #  define secp256k1_fe_is_zero secp256k1_fe_impl_is_zero
 #  define secp256k1_fe_is_odd secp256k1_fe_impl_is_odd
+#  define secp256k1_fe_cmp_var secp256k1_fe_impl_cmp_var
+#  define secp256k1_fe_set_b32 secp256k1_fe_impl_set_b32
+#  define secp256k1_fe_get_b32 secp256k1_fe_impl_get_b32
+#  define secp256k1_fe_negate secp256k1_fe_impl_negate
 #endif /* !defined(VERIFY) */
 
 /** Normalize a field element.
@@ -164,19 +168,38 @@ static int secp256k1_fe_equal(const secp256k1_fe *a, const secp256k1_fe *b);
  */
 static int secp256k1_fe_equal_var(const secp256k1_fe *a, const secp256k1_fe *b);
 
-/** Compare two field elements. Requires both inputs to be normalized */
+/** Compare the values represented by 2 field elements, without constant-time guarantee.
+ *
+ * On input, a and b must be valid normalized field elements.
+ * Returns 1 if a > b, -1 if a < b, and 0 if a = b (comparisons are done as integers
+ * in range 0..p-1).
+ */
 static int secp256k1_fe_cmp_var(const secp256k1_fe *a, const secp256k1_fe *b);
 
-/** Set a field element equal to 32-byte big endian value.
- *  Returns 1 if no overflow occurred, and then the output is normalized.
- *  Returns 0 if overflow occurred, and then the output is only weakly normalized. */
+/** Set a field element equal to a provided 32-byte big endian value.
+ *
+ * On input, r does not need to be initalized. a must be a pointer to an initialized 32-byte array.
+ * On output, r = a (mod p). It will have magnitude 1, and if (a < p), it will be normalized.
+ * If not, it will only be weakly normalized. Returns whether (a < p).
+ *
+ * Note that this function is unusual in that the normalization of the output depends on the
+ * run-time value of a.
+ */
 static int secp256k1_fe_set_b32(secp256k1_fe *r, const unsigned char *a);
 
-/** Convert a field element to a 32-byte big endian value. Requires the input to be normalized */
+/** Convert a field element to 32-byte big endian byte array.
+ * On input, a must be a valid normalized field element, and r a pointer to a 32-byte array.
+ * On output, r = a (mod p).
+ */
 static void secp256k1_fe_get_b32(unsigned char *r, const secp256k1_fe *a);
 
-/** Set a field element equal to the additive inverse of another. Takes a maximum magnitude of the input
- *  as an argument. The magnitude of the output is one higher. */
+/** Negate a field element.
+ *
+ * On input, r does not need to be initialized. a must be a valid field element with
+ * magnitude not exceeding m. m must be an integer in [0,31].
+ * Performs {r = -a}.
+ * On output, r will not be normalized, and will have magnitude m+1.
+ */
 static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k1_fe *a, int m);
 
 /** Adds a small integer (up to 0x7FFF) to r. The resulting magnitude increases by one. */

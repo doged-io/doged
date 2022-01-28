@@ -231,14 +231,8 @@ SECP256K1_INLINE static void secp256k1_fe_impl_clear(secp256k1_fe *a) {
     }
 }
 
-static int secp256k1_fe_cmp_var(const secp256k1_fe *a, const secp256k1_fe *b) {
+static int secp256k1_fe_impl_cmp_var(const secp256k1_fe *a, const secp256k1_fe *b) {
     int i;
-#ifdef VERIFY
-    VERIFY_CHECK(a->normalized);
-    VERIFY_CHECK(b->normalized);
-    secp256k1_fe_verify(a);
-    secp256k1_fe_verify(b);
-#endif
     for (i = 4; i >= 0; i--) {
         if (a->n[i] > b->n[i]) {
             return 1;
@@ -250,8 +244,7 @@ static int secp256k1_fe_cmp_var(const secp256k1_fe *a, const secp256k1_fe *b) {
     return 0;
 }
 
-static int secp256k1_fe_set_b32(secp256k1_fe *r, const unsigned char *a) {
-    int ret;
+static int secp256k1_fe_impl_set_b32(secp256k1_fe *r, const unsigned char *a) {
     r->n[0] = (uint64_t)a[31]
             | ((uint64_t)a[30] << 8)
             | ((uint64_t)a[29] << 16)
@@ -286,21 +279,11 @@ static int secp256k1_fe_set_b32(secp256k1_fe *r, const unsigned char *a) {
             | ((uint64_t)a[2] << 24)
             | ((uint64_t)a[1] << 32)
             | ((uint64_t)a[0] << 40);
-    ret = !((r->n[4] == 0x0FFFFFFFFFFFFULL) & ((r->n[3] & r->n[2] & r->n[1]) == 0xFFFFFFFFFFFFFULL) & (r->n[0] >= 0xFFFFEFFFFFC2FULL));
-#ifdef VERIFY
-    r->magnitude = 1;
-    r->normalized = ret;
-    secp256k1_fe_verify(r);
-#endif
-    return ret;
+    return !((r->n[4] == 0x0FFFFFFFFFFFFULL) & ((r->n[3] & r->n[2] & r->n[1]) == 0xFFFFFFFFFFFFFULL) & (r->n[0] >= 0xFFFFEFFFFFC2FULL));
 }
 
 /** Convert a field element to a 32-byte big endian value. Requires the input to be normalized */
-static void secp256k1_fe_get_b32(unsigned char *r, const secp256k1_fe *a) {
-#ifdef VERIFY
-    VERIFY_CHECK(a->normalized);
-    secp256k1_fe_verify(a);
-#endif
+static void secp256k1_fe_impl_get_b32(unsigned char *r, const secp256k1_fe *a) {
     r[0] = (a->n[4] >> 40) & 0xFF;
     r[1] = (a->n[4] >> 32) & 0xFF;
     r[2] = (a->n[4] >> 24) & 0xFF;
@@ -335,24 +318,19 @@ static void secp256k1_fe_get_b32(unsigned char *r, const secp256k1_fe *a) {
     r[31] = a->n[0] & 0xFF;
 }
 
-SECP256K1_INLINE static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k1_fe *a, int m) {
-#ifdef VERIFY
-    VERIFY_CHECK(a->magnitude <= m);
-    secp256k1_fe_verify(a);
+SECP256K1_INLINE static void secp256k1_fe_impl_negate(secp256k1_fe *r, const secp256k1_fe *a, int m) {
+    /* For all legal values of m (0..31), the following properties hold: */
     VERIFY_CHECK(0xFFFFEFFFFFC2FULL * 2 * (m + 1) >= 0xFFFFFFFFFFFFFULL * 2 * m);
     VERIFY_CHECK(0xFFFFFFFFFFFFFULL * 2 * (m + 1) >= 0xFFFFFFFFFFFFFULL * 2 * m);
     VERIFY_CHECK(0x0FFFFFFFFFFFFULL * 2 * (m + 1) >= 0x0FFFFFFFFFFFFULL * 2 * m);
-#endif
+
+    /* Due to the properties above, the left hand in the subtractions below is never less than
+     * the right hand. */
     r->n[0] = 0xFFFFEFFFFFC2FULL * 2 * (m + 1) - a->n[0];
     r->n[1] = 0xFFFFFFFFFFFFFULL * 2 * (m + 1) - a->n[1];
     r->n[2] = 0xFFFFFFFFFFFFFULL * 2 * (m + 1) - a->n[2];
     r->n[3] = 0xFFFFFFFFFFFFFULL * 2 * (m + 1) - a->n[3];
     r->n[4] = 0x0FFFFFFFFFFFFULL * 2 * (m + 1) - a->n[4];
-#ifdef VERIFY
-    r->magnitude = m + 1;
-    r->normalized = 0;
-    secp256k1_fe_verify(r);
-#endif
 }
 
 SECP256K1_INLINE static void secp256k1_fe_mul_int(secp256k1_fe *r, int a) {

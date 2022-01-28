@@ -223,6 +223,38 @@ SECP256K1_INLINE static int secp256k1_fe_is_odd(const secp256k1_fe *a) {
     VERIFY_CHECK(a->normalized);
     return secp256k1_fe_impl_is_odd(a);
 }
+
+SECP256K1_INLINE static int secp256k1_fe_cmp_var(const secp256k1_fe *a, const secp256k1_fe *b) {
+    secp256k1_fe_verify(a);
+    secp256k1_fe_verify(b);
+    VERIFY_CHECK(a->normalized);
+    VERIFY_CHECK(b->normalized);
+    return secp256k1_fe_impl_cmp_var(a, b);
+}
+
+SECP256K1_INLINE static int secp256k1_fe_set_b32(secp256k1_fe *r, const unsigned char *a) {
+    int ret = secp256k1_fe_impl_set_b32(r, a);
+    r->magnitude = 1;
+    r->normalized = ret;
+    secp256k1_fe_verify(r);
+    return ret;
+}
+
+SECP256K1_INLINE static void secp256k1_fe_get_b32(unsigned char *r, const secp256k1_fe *a) {
+    secp256k1_fe_verify(a);
+    VERIFY_CHECK(a->normalized);
+    secp256k1_fe_impl_get_b32(r, a);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k1_fe *a, int m) {
+    secp256k1_fe_verify(a);
+    VERIFY_CHECK(m >= 0 && m <= 31);
+    VERIFY_CHECK(a->magnitude <= m);
+    secp256k1_fe_impl_negate(r, a, m);
+    r->magnitude = m + 1;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
 #endif /* defined(VERIFY) */
 
 #endif /* SECP256K1_FIELD_IMPL_H */
