@@ -88,6 +88,10 @@ static const secp256k1_fe secp256k1_const_beta = SECP256K1_FE_CONST(
 #  define secp256k1_fe_set_b32 secp256k1_fe_impl_set_b32
 #  define secp256k1_fe_get_b32 secp256k1_fe_impl_get_b32
 #  define secp256k1_fe_negate secp256k1_fe_impl_negate
+#  define secp256k1_fe_mul_int secp256k1_fe_impl_mul_int
+#  define secp256k1_fe_add secp256k1_fe_impl_add
+#  define secp256k1_fe_mul secp256k1_fe_impl_mul
+#  define secp256k1_fe_sqr secp256k1_fe_impl_sqr
 #endif /* !defined(VERIFY) */
 
 /** Normalize a field element.
@@ -205,19 +209,41 @@ static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k1_fe *a, int m);
 /** Adds a small integer (up to 0x7FFF) to r. The resulting magnitude increases by one. */
 static void secp256k1_fe_add_int(secp256k1_fe *r, int a);
 
-/** Multiplies the passed field element with a small integer constant. Multiplies the magnitude by that
- *  small integer. */
+/** Multiply a field element with a small integer.
+ *
+ * On input, r must be a valid field element. a must be an integer in [0,32].
+ * The magnitude of r times a must not exceed 32.
+ * Performs {r *= a}.
+ * On output, r's magnitude is multiplied by a, and r will not be normalized.
+ */
 static void secp256k1_fe_mul_int(secp256k1_fe *r, int a);
 
-/** Adds a field element to another. The result has the sum of the inputs' magnitudes as magnitude. */
+/** Increment a field element by another.
+ *
+ * On input, r and a must be valid field elements, not necessarily normalized.
+ * The sum of their magnitudes must not exceed 32.
+ * Performs {r += a}.
+ * On output, r will not be normalized, and will have magnitude incremented by a's.
+ */
 static void secp256k1_fe_add(secp256k1_fe *r, const secp256k1_fe *a);
 
-/** Sets a field element to be the product of two others. Requires the inputs' magnitudes to be at most 8.
- *  The output magnitude is 1 (but not guaranteed to be normalized). */
+/** Multiply two field elements.
+ *
+ * On input, a and b must be valid field elements; r does not need to be initialized.
+ * r and a may point to the same object, but neither can be equal to b. The magnitudes
+ * of a and b must not exceed 8.
+ * Performs {r = a * b}
+ * On output, r will have magnitude 1, but won't be normalized.
+ */
 static void secp256k1_fe_mul(secp256k1_fe *r, const secp256k1_fe *a, const secp256k1_fe * SECP256K1_RESTRICT b);
 
-/** Sets a field element to be the square of another. Requires the input's magnitude to be at most 8.
- *  The output magnitude is 1 (but not guaranteed to be normalized). */
+/** Square a field element.
+ *
+ * On input, a must be a valid field element; r does not need to be initialized. The magnitude
+ * of a must not exceed 8.
+ * Performs {r = a**2}
+ * On output, r will have magnitude 1, but won't be normalized.
+ */
 static void secp256k1_fe_sqr(secp256k1_fe *r, const secp256k1_fe *a);
 
 /** If a has a square root, it is computed in r and 1 is returned. If a does not

@@ -255,6 +255,48 @@ SECP256K1_INLINE static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k
     r->normalized = 0;
     secp256k1_fe_verify(r);
 }
+
+SECP256K1_INLINE static void secp256k1_fe_mul_int(secp256k1_fe *r, int a) {
+    secp256k1_fe_verify(r);
+    VERIFY_CHECK(a >= 0 && a <= 32);
+    VERIFY_CHECK(a*r->magnitude <= 32);
+    secp256k1_fe_impl_mul_int(r, a);
+    r->magnitude *= a;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_add(secp256k1_fe *r, const secp256k1_fe *a) {
+    secp256k1_fe_verify(r);
+    secp256k1_fe_verify(a);
+    VERIFY_CHECK(r->magnitude + a->magnitude <= 32);
+    secp256k1_fe_impl_add(r, a);
+    r->magnitude += a->magnitude;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_mul(secp256k1_fe *r, const secp256k1_fe *a, const secp256k1_fe * SECP256K1_RESTRICT b) {
+    secp256k1_fe_verify(a);
+    secp256k1_fe_verify(b);
+    VERIFY_CHECK(a->magnitude <= 8);
+    VERIFY_CHECK(b->magnitude <= 8);
+    VERIFY_CHECK(r != b);
+    VERIFY_CHECK(a != b);
+    secp256k1_fe_impl_mul(r, a, b);
+    r->magnitude = 1;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_sqr(secp256k1_fe *r, const secp256k1_fe *a) {
+    secp256k1_fe_verify(a);
+    VERIFY_CHECK(a->magnitude <= 8);
+    secp256k1_fe_impl_sqr(r, a);
+    r->magnitude = 1;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
 #endif /* defined(VERIFY) */
 
 #endif /* SECP256K1_FIELD_IMPL_H */
