@@ -151,6 +151,39 @@ static void secp256k1_fe_verify(const secp256k1_fe *a) {
     /* Invoke implementation-specific checks. */
     secp256k1_fe_impl_verify(a);
 }
+
+SECP256K1_INLINE static void secp256k1_fe_normalize(secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    secp256k1_fe_impl_normalize(r);
+    r->magnitude = 1;
+    r->normalized = 1;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_normalize_weak(secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    secp256k1_fe_impl_normalize_weak(r);
+    r->magnitude = 1;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_normalize_var(secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    secp256k1_fe_impl_normalize_var(r);
+    r->magnitude = 1;
+    r->normalized = 1;
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static int secp256k1_fe_normalizes_to_zero(const secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    return secp256k1_fe_impl_normalizes_to_zero(r);
+}
+
+SECP256K1_INLINE static int secp256k1_fe_normalizes_to_zero_var(const secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    return secp256k1_fe_impl_normalizes_to_zero_var(r);
+}
 #endif /* defined(VERIFY) */
 
 #endif /* SECP256K1_FIELD_IMPL_H */
