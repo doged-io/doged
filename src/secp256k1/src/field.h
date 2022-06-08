@@ -97,6 +97,10 @@ static const secp256k1_fe secp256k1_const_beta = SECP256K1_FE_CONST(
 #  define secp256k1_fe_from_storage secp256k1_fe_impl_from_storage
 #  define secp256k1_fe_inv secp256k1_fe_impl_inv
 #  define secp256k1_fe_inv_var secp256k1_fe_impl_inv_var
+#  define secp256k1_fe_get_bounds secp256k1_fe_impl_get_bounds
+#  define secp256k1_fe_half secp256k1_fe_impl_half
+#  define secp256k1_fe_add_int secp256k1_fe_impl_add_int
+#  define secp256k1_fe_is_square_var secp256k1_fe_impl_is_square_var
 #endif /* !defined(VERIFY) */
 
 /** Normalize a field element.
@@ -211,7 +215,11 @@ static void secp256k1_fe_get_b32(unsigned char *r, const secp256k1_fe *a);
  */
 static void secp256k1_fe_negate(secp256k1_fe *r, const secp256k1_fe *a, int m);
 
-/** Adds a small integer (up to 0x7FFF) to r. The resulting magnitude increases by one. */
+/** Add a small integer to a field element.
+ *
+ * Performs {r += a}. The magnitude of r increases by 1, and normalized is cleared.
+ * a must be in range [0,0x7FFF].
+ */
 static void secp256k1_fe_add_int(secp256k1_fe *r, int a);
 
 /** Multiply a field element with a small integer.
@@ -304,16 +312,23 @@ static void secp256k1_fe_storage_cmov(secp256k1_fe_storage *r, const secp256k1_f
  */
 static void secp256k1_fe_cmov(secp256k1_fe *r, const secp256k1_fe *a, int flag);
 
-/** Halves the value of a field element modulo the field prime. Constant-time.
- *  For an input magnitude 'm', the output magnitude is set to 'floor(m/2) + 1'.
- *  The output is not guaranteed to be normalized, regardless of the input. */
+/** Halve the value of a field element modulo the field prime in constant-time.
+ *
+ * On input, r must be a valid field element.
+ * On output, r will be normalized and have magnitude floor(m/2) + 1 where m is
+ * the magnitude of r on input.
+ */
 static void secp256k1_fe_half(secp256k1_fe *r);
 
-/** Sets each limb of 'r' to its upper bound at magnitude 'm'. The output will also have its
- *  magnitude set to 'm' and is normalized if (and only if) 'm' is zero. */
+/** Sets r to a field element with magnitude m, normalized if (and only if) m==0.
+ *  The value is chosen so that it is likely to trigger edge cases related to
+ *  internal overflows. */
 static void secp256k1_fe_get_bounds(secp256k1_fe *r, int m);
 
-/** Determine whether a is a square (modulo p). */
+/** Determine whether a is a square (modulo p).
+ *
+ * On input, a must be a valid field element.
+ */
 static int secp256k1_fe_is_square_var(const secp256k1_fe *a);
 
 /** Check invariants on a field element (no-op unless VERIFY is enabled). */

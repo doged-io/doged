@@ -218,6 +218,15 @@ SECP256K1_INLINE static void secp256k1_fe_set_int(secp256k1_fe *r, int a) {
     secp256k1_fe_verify(r);
 }
 
+SECP256K1_INLINE static void secp256k1_fe_add_int(secp256k1_fe *r, int a) {
+    VERIFY_CHECK(0 <= a && a <= 0x7FFF);
+    secp256k1_fe_verify(r);
+    secp256k1_fe_impl_add_int(r, a);
+    r->magnitude += 1;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
+
 SECP256K1_INLINE static void secp256k1_fe_clear(secp256k1_fe *a) {
     a->magnitude = 0;
     a->normalized = 1;
@@ -355,6 +364,35 @@ SECP256K1_INLINE static void secp256k1_fe_inv_var(secp256k1_fe *r, const secp256
     VERIFY_CHECK(secp256k1_fe_normalizes_to_zero(r) == input_is_zero);
     secp256k1_fe_verify(r);
 }
+
+SECP256K1_INLINE static int secp256k1_fe_is_square_var(const secp256k1_fe *x) {
+    int ret;
+    secp256k1_fe tmp = *x, sqrt;
+    secp256k1_fe_verify(x);
+    ret = secp256k1_fe_impl_is_square_var(x);
+    secp256k1_fe_normalize_weak(&tmp);
+    VERIFY_CHECK(ret == secp256k1_fe_sqrt(&sqrt, &tmp));
+    return ret;
+}
+
+SECP256K1_INLINE static void secp256k1_fe_get_bounds(secp256k1_fe* r, int m) {
+    VERIFY_CHECK(m >= 0);
+    VERIFY_CHECK(m <= 32);
+    secp256k1_fe_impl_get_bounds(r, m);
+    r->magnitude = m;
+    r->normalized = (m == 0);
+    secp256k1_fe_verify(r);
+}
+
+SECP256K1_INLINE static void secp256k1_fe_half(secp256k1_fe *r) {
+    secp256k1_fe_verify(r);
+    VERIFY_CHECK(r->magnitude < 32);
+    secp256k1_fe_impl_half(r);
+    r->magnitude = (r->magnitude >> 1) + 1;
+    r->normalized = 0;
+    secp256k1_fe_verify(r);
+}
+
 #endif /* defined(VERIFY) */
 
 #endif /* SECP256K1_FIELD_IMPL_H */

@@ -37,19 +37,12 @@ static void secp256k1_fe_impl_verify(const secp256k1_fe *a) {
 }
 #endif
 
-static void secp256k1_fe_get_bounds(secp256k1_fe *r, int m) {
-    VERIFY_CHECK(m >= 0);
-    VERIFY_CHECK(m <= 2048);
+static void secp256k1_fe_impl_get_bounds(secp256k1_fe *r, int m) {
     r->n[0] = 0xFFFFFFFFFFFFFULL * 2 * m;
     r->n[1] = 0xFFFFFFFFFFFFFULL * 2 * m;
     r->n[2] = 0xFFFFFFFFFFFFFULL * 2 * m;
     r->n[3] = 0xFFFFFFFFFFFFFULL * 2 * m;
     r->n[4] = 0x0FFFFFFFFFFFFULL * 2 * m;
-#ifdef VERIFY
-    r->magnitude = m;
-    r->normalized = (m == 0);
-    secp256k1_fe_verify(r);
-#endif
 }
 
 static void secp256k1_fe_impl_normalize(secp256k1_fe *r) {
@@ -341,16 +334,8 @@ SECP256K1_INLINE static void secp256k1_fe_impl_mul_int(secp256k1_fe *r, int a) {
     r->n[4] *= a;
 }
 
-SECP256K1_INLINE static void secp256k1_fe_add_int(secp256k1_fe *r, int a) {
-    secp256k1_fe_verify(r);
-    VERIFY_CHECK(a >= 0);
-    VERIFY_CHECK(a <= 0x7FFF);
+SECP256K1_INLINE static void secp256k1_fe_impl_add_int(secp256k1_fe *r, int a) {
     r->n[0] += a;
-#ifdef VERIFY
-    r->magnitude += 1;
-    r->normalized = 0;
-    secp256k1_fe_verify(r);
-#endif
 }
 
 SECP256K1_INLINE static void secp256k1_fe_impl_add(secp256k1_fe *r, const secp256k1_fe *a) {
@@ -382,15 +367,10 @@ SECP256K1_INLINE static void secp256k1_fe_impl_cmov(secp256k1_fe *r, const secp2
     r->n[4] = (r->n[4] & mask0) | (a->n[4] & mask1);
 }
 
-static SECP256K1_INLINE void secp256k1_fe_half(secp256k1_fe *r) {
+static SECP256K1_INLINE void secp256k1_fe_impl_half(secp256k1_fe *r) {
     uint64_t t0 = r->n[0], t1 = r->n[1], t2 = r->n[2], t3 = r->n[3], t4 = r->n[4];
     uint64_t one = (uint64_t)1;
     uint64_t mask = -(t0 & one) >> 12;
-
-#ifdef VERIFY
-    secp256k1_fe_verify(r);
-    VERIFY_CHECK(r->magnitude < 32);
-#endif
 
     /* Bounds analysis (over the rationals).
      *
@@ -428,10 +408,8 @@ static SECP256K1_INLINE void secp256k1_fe_half(secp256k1_fe *r) {
      *
      * Current bounds: t0..t3 <= C * (m/2 + 1/2)
      *                     t4 <= D * (m/2 + 1/4)
-     */
-
-#ifdef VERIFY
-    /* Therefore the output magnitude (M) has to be set such that:
+     *
+     * Therefore the output magnitude (M) has to be set such that:
      *     t0..t3: C * M >= C * (m/2 + 1/2)
      *         t4: D * M >= D * (m/2 + 1/4)
      *
@@ -441,10 +419,6 @@ static SECP256K1_INLINE void secp256k1_fe_half(secp256k1_fe *r) {
      * and since we want the smallest such integer value for M:
      *     M == floor(m/2) + 1
      */
-    r->magnitude = (r->magnitude >> 1) + 1;
-    r->normalized = 0;
-    secp256k1_fe_verify(r);
-#endif
 }
 
 static SECP256K1_INLINE void secp256k1_fe_storage_cmov(secp256k1_fe_storage *r, const secp256k1_fe_storage *a, int flag) {
@@ -530,7 +504,7 @@ static void secp256k1_fe_impl_inv_var(secp256k1_fe *r, const secp256k1_fe *x) {
     secp256k1_fe_from_signed62(r, &s);
 }
 
-static int secp256k1_fe_is_square_var(const secp256k1_fe *x) {
+static int secp256k1_fe_impl_is_square_var(const secp256k1_fe *x) {
     secp256k1_fe tmp;
     secp256k1_modinv64_signed62 s;
     int jac, ret;
@@ -548,10 +522,6 @@ static int secp256k1_fe_is_square_var(const secp256k1_fe *x) {
         secp256k1_fe dummy;
         ret = secp256k1_fe_sqrt(&dummy, &tmp);
     } else {
-#ifdef VERIFY
-        secp256k1_fe dummy;
-        VERIFY_CHECK(jac == 2*secp256k1_fe_sqrt(&dummy, &tmp) - 1);
-#endif
         ret = jac >= 0;
     }
     return ret;
