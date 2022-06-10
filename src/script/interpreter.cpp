@@ -1559,7 +1559,7 @@ public:
 };
 
 template <class T> uint256 GetPrevoutHash(const T &txTo) {
-    CHashWriter ss(SER_GETHASH, 0);
+    HashWriter ss{};
     for (const auto &txin : txTo.vin) {
         ss << txin.prevout;
     }
@@ -1567,7 +1567,7 @@ template <class T> uint256 GetPrevoutHash(const T &txTo) {
 }
 
 template <class T> uint256 GetSequenceHash(const T &txTo) {
-    CHashWriter ss(SER_GETHASH, 0);
+    HashWriter ss{};
     for (const auto &txin : txTo.vin) {
         ss << txin.nSequence;
     }
@@ -1575,7 +1575,7 @@ template <class T> uint256 GetSequenceHash(const T &txTo) {
 }
 
 template <class T> uint256 GetOutputsHash(const T &txTo) {
-    CHashWriter ss(SER_GETHASH, 0);
+    HashWriter ss{};
     for (const auto &txout : txTo.vout) {
         ss << txout;
     }
@@ -1632,12 +1632,12 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
             hashOutputs = cache ? cache->hashOutputs : GetOutputsHash(txTo);
         } else if ((sigHashType.getBaseType() == BaseSigHashType::SINGLE) &&
                    (nIn < txTo.vout.size())) {
-            CHashWriter ss(SER_GETHASH, 0);
+            HashWriter ss{};
             ss << txTo.vout[nIn];
             hashOutputs = ss.GetHash();
         }
 
-        CHashWriter ss(SER_GETHASH, 0);
+        HashWriter ss{};
         // Version
         ss << txTo.nVersion;
         // Input prevouts/nSequence (none/all, depending on flags)
@@ -1673,7 +1673,7 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
                                              sigHashType);
 
     // Serialize and hash
-    CHashWriter ss(SER_GETHASH, 0);
+    HashWriter ss{};
     ss << txTmp << sigHashType;
     return ss.GetHash();
 }
