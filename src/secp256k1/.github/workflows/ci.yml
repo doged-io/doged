@@ -72,6 +72,7 @@ jobs:
           - env_vars: {WIDEMUL:  'int64',  RECOVERY: 'yes'}
           - env_vars: {WIDEMUL:  'int64',                 ECDH: 'yes', SCHNORRSIG: 'yes', EXPERIMENTAL: 'yes', MULTISET: 'yes'}
           - env_vars: {WIDEMUL: 'int128'}
+          - env_vars: {WIDEMUL: 'int128_struct'}
           - env_vars: {WIDEMUL: 'int128',  RECOVERY: 'yes',            SCHNORRSIG: 'yes', EXPERIMENTAL: 'yes', MULTISET: 'yes'}
           - env_vars: {WIDEMUL: 'int128',                 ECDH: 'yes', SCHNORRSIG: 'yes', EXPERIMENTAL: 'yes', MULTISET: 'yes'}
           - env_vars: {WIDEMUL: 'int128',  ASM: 'x86_64'}
@@ -382,7 +383,7 @@ jobs:
         env_vars:
           - { WIDEMUL: 'int64',  RECOVERY: 'yes', ECDH: 'yes', SCHNORRSIG: 'yes', EXPERIMENTAL: 'yes', MULTISET: 'yes' }
           - { WIDEMUL: 'int64',  RECOVERY: 'yes', ECDH: 'yes', SCHNORRSIG: 'yes', CC: 'gcc' }
-          - { ECMULTGENPRECISION: 2, ECMULTWINDOW: 4 }
+          - { WIDEMUL: 'int128_struct', ECMULTGENPRECISION: 2, ECMULTWINDOW: 4 }
           - { WIDEMUL: 'int128',                  ECDH: 'yes', SCHNORRSIG: 'yes', EXPERIMENTAL: 'yes', MULTISET: 'yes' }
           - { WIDEMUL: 'int128', RECOVERY: 'yes',              SCHNORRSIG: 'yes' }
           - { WIDEMUL: 'int128', RECOVERY: 'yes', ECDH: 'yes', SCHNORRSIG: 'yes', CC: 'gcc' }
