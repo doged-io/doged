@@ -50,9 +50,10 @@ MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60
 # (network rule)
 COINBASE_MATURITY = 100
 
+MIN_BLOCKS_TO_KEEP = 288
+
 # Bits for the nVersion chain ID for Dogecoin
 VERSION_CHAIN_ID_BITS = 0x620000
-
 
 def create_block(
     hashprev: Optional[int] = None,
@@ -100,7 +101,11 @@ def script_BIP34_coinbase_height(height: int) -> CScript:
 
 
 def create_coinbase(
-    height: int, pubkey: Optional[bytes] = None, nValue: int = 50_000_000
+    height: int,
+    pubkey: Optional[bytes] = None,
+    *,
+    script_pubkey: Optional[bytes] = None,
+    nValue: int = 50_000_000,
 ) -> CTransaction:
     """Create a coinbase transaction, assuming no miner fees.
 
@@ -119,6 +124,8 @@ def create_coinbase(
         coinbaseoutput.nValue >>= halvings
     if pubkey is not None:
         coinbaseoutput.scriptPubKey = CScript([pubkey, OP_CHECKSIG])
+    elif script_pubkey is not None:
+        coinbaseoutput.scriptPubKey = script_pubkey
     else:
         coinbaseoutput.scriptPubKey = CScript([OP_TRUE])
     coinbase.vout = [coinbaseoutput]
