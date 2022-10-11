@@ -418,7 +418,6 @@ add_library(util
 	support/cleanse.cpp
 	support/lockedpool.cpp
 	sync.cpp
-	threadinterrupt.cpp
 	uint256.cpp
 	util/asmap.cpp
 	util/batchpriority.cpp
@@ -443,6 +442,7 @@ add_library(util
 	util/string.cpp
 	util/syserror.cpp
 	util/thread.cpp
+	util/threadinterrupt.cpp
 	util/threadnames.cpp
 	util/time.cpp
 	util/tokenpipe.cpp
@@ -933,7 +933,6 @@ if(BUILD_CHAINSTATE)
 		support/cleanse.cpp
 		support/lockedpool.cpp
 		sync.cpp
-		threadinterrupt.cpp
 		txdb.cpp
 		txmempool.cpp
 		txpool.cpp
@@ -953,6 +952,7 @@ if(BUILD_CHAINSTATE)
 		util/string.cpp
 		util/syserror.cpp
 		util/thread.cpp
+		util/threadinterrupt.cpp
 		util/threadnames.cpp
 		util/time.cpp
 		util/tokenpipe.cpp
