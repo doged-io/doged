@@ -2964,7 +2964,8 @@ bool Chainstate::ConnectTip(BlockValidationState &state,
                             CBlockIndex *pindexNew,
                             const std::shared_ptr<const CBlock> &pblock,
                             DisconnectedBlockTransactions &disconnectpool,
-                            const avalanche::Processor *const avalanche) {
+                            const avalanche::Processor *const avalanche,
+                            const ChainstateRole chainstate_role) {
     AssertLockHeld(cs_main);
     if (m_mempool) {
         AssertLockHeld(m_mempool->cs);
@@ -3157,7 +3158,7 @@ bool Chainstate::ConnectTip(BlockValidationState &state,
         m_chainman.MaybeCompleteSnapshotValidation();
     }
 
-    GetMainSignals().BlockConnected(this->GetRole(), pthisBlock, pindexNew);
+    GetMainSignals().BlockConnected(chainstate_role, pthisBlock, pindexNew);
     return true;
 }
 
@@ -3352,7 +3353,8 @@ void Chainstate::PruneBlockIndexCandidates() {
 bool Chainstate::ActivateBestChainStep(
     BlockValidationState &state, CBlockIndex *pindexMostWork,
     const std::shared_ptr<const CBlock> &pblock, bool &fInvalidFound,
-    const avalanche::Processor *const avalanche) {
+    const avalanche::Processor *const avalanche,
+    const ChainstateRole chainstate_role) {
     AssertLockHeld(cs_main);
     if (m_mempool) {
         AssertLockHeld(m_mempool->cs);
@@ -3416,7 +3418,7 @@ bool Chainstate::ActivateBestChainStep(
                             pindexConnect == pindexMostWork
                                 ? pblock
                                 : std::shared_ptr<const CBlock>(),
-                            disconnectpool, avalanche)) {
+                            disconnectpool, avalanche, chainstate_role)) {
                 if (state.IsInvalid()) {
                     // The block violates a consensus rule.
                     if (state.GetResult() !=
@@ -3597,13 +3599,18 @@ bool Chainstate::ActivateBestChain(BlockValidationState &state,
 
                 bool fInvalidFound = false;
                 std::shared_ptr<const CBlock> nullBlockPtr;
+                // BlockConnected signals must be sent for the original role;
+                // in case snapshot validation is completed during
+                // ActivateBestChainStep, the result of GetRole() changes from
+                // BACKGROUND to NORMAL.
+                const ChainstateRole chainstate_role{this->GetRole()};
                 if (!ActivateBestChainStep(
                         state, pindexMostWork,
                         pblock && pblock->GetHash() ==
                                       pindexMostWork->GetBlockHash()
                             ? pblock
                             : nullBlockPtr,
-                        fInvalidFound, avalanche)) {
+                        fInvalidFound, avalanche, chainstate_role)) {
                     // A system error occurred
                     return false;
                 }

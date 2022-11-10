@@ -1041,7 +1041,8 @@ private:
     bool ActivateBestChainStep(
         BlockValidationState &state, CBlockIndex *pindexMostWork,
         const std::shared_ptr<const CBlock> &pblock, bool &fInvalidFound,
-        const avalanche::Processor *const avalanche = nullptr)
+        const avalanche::Processor *const avalanche = nullptr,
+        ChainstateRole = ChainstateRole::NORMAL)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_mempool->cs,
                                  !cs_avalancheFinalizedBlockIndex);
     bool ConnectTip(BlockValidationState &state,
@@ -1049,7 +1050,8 @@ private:
                     CBlockIndex *pindexNew,
                     const std::shared_ptr<const CBlock> &pblock,
                     DisconnectedBlockTransactions &disconnectpool,
-                    const avalanche::Processor *const avalanche = nullptr)
+                    const avalanche::Processor *const avalanche = nullptr,
+                    ChainstateRole chainstate_role = ChainstateRole::NORMAL)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_mempool->cs,
                                  !cs_avalancheFinalizedBlockIndex);
     void InvalidBlockFound(CBlockIndex *pindex,
