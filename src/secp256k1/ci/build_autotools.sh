@@ -91,6 +91,7 @@ pushd buildautotools
   --enable-module-schnorr=$SCHNORR \
   --enable-module-schnorrsig=$SCHNORRSIG \
   --enable-examples="$EXAMPLES" \
+  --enable-ctime-tests="$CTIMETESTS" \
   --with-valgrind=$WITH_VALGRIND \
   --host="$HOST" $AUTOTOOLS_EXTRA_FLAGS
 
@@ -98,7 +99,7 @@ print_logs() {
   cat tests.log || :
   cat noverify_tests.log || :
   cat exhaustive_tests.log || :
-  cat valgrind_ctime_test.log || :
+  cat ctime_test.log || :
   cat bench.log || :
 }
 trap 'print_logs' ERR
@@ -114,14 +115,14 @@ file *tests* || true
 file bench* || true
 file .libs/* || true
 
-if [ "$BENCH" = "yes" ]; then
-  # Using the local `libtool` because on macOS the system's libtool has
-  # nothing to do with GNU libtool
-  EXEC='./libtool --mode=execute'
-  if [ -n "$WRAPPER_CMD" ]; then
-    EXEC="$EXEC $WRAPPER_CMD"
-  fi
+# Using the local `libtool` because on macOS the system's libtool has
+# nothing to do with GNU libtool
+EXEC='./libtool --mode=execute'
+if [ -n "$WRAPPER_CMD" ]; then
+  EXEC="$EXEC $WRAPPER_CMD"
+fi
 
+if [ "$BENCH" = "yes" ]; then
   {
     $EXEC ./bench_ecmult
     $EXEC ./bench_internal
@@ -129,7 +130,11 @@ if [ "$BENCH" = "yes" ]; then
   } >> bench.log 2>&1
 fi
 if [ "$CTIMETESTS" = "yes" ]; then
-  ./libtool --mode=execute valgrind --error-exitcode=42 ./valgrind_ctime_test > valgrind_ctime_test.log 2>&1
+  if [ "$WITH_VALGRIND" = "yes" ]; then
+    ./libtool --mode=execute valgrind --error-exitcode=42 ./ctime_tests > ctime_tests.log 2>&1
+  else
+    $EXEC ./ctime_tests > ctime_tests.log 2>&1
+  fi
 fi
 
 # Rebuild precomputed files (if not cross-compiling).

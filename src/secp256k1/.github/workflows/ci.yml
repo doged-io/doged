@@ -324,7 +324,7 @@ jobs:
       EXPERIMENTAL: 'yes'
       MULTISET: 'yes'
       SCHNORRSIG: 'yes'
-      CTIMETESTS: 'no'
+      CTIMETESTS: 'yes'
       CC: 'clang'
       SECP256K1_TEST_ITERS: 32
       ASM: 'no'

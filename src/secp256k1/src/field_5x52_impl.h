@@ -7,6 +7,7 @@
 #ifndef SECP256K1_FIELD_REPR_IMPL_H
 #define SECP256K1_FIELD_REPR_IMPL_H
 
+#include "checkmem.h"
 #include "util.h"
 #include "field.h"
 #include "modinv64_impl.h"
@@ -473,7 +474,7 @@ static void secp256k1_fe_sqr(secp256k1_fe *r, const secp256k1_fe *a) {
 static SECP256K1_INLINE void secp256k1_fe_cmov(secp256k1_fe *r, const secp256k1_fe *a, int flag) {
     uint64_t mask0, mask1;
     volatile int vflag = flag;
-    VG_CHECK_VERIFY(r->n, sizeof(r->n));
+    SECP256K1_CHECKMEM_CHECK_VERIFY(r->n, sizeof(r->n));
     mask0 = vflag + ~((uint64_t)0);
     mask1 = ~mask0;
     r->n[0] = (r->n[0] & mask0) | (a->n[0] & mask1);
@@ -557,7 +558,7 @@ static SECP256K1_INLINE void secp256k1_fe_half(secp256k1_fe *r) {
 static SECP256K1_INLINE void secp256k1_fe_storage_cmov(secp256k1_fe_storage *r, const secp256k1_fe_storage *a, int flag) {
     uint64_t mask0, mask1;
     volatile int vflag = flag;
-    VG_CHECK_VERIFY(r->n, sizeof(r->n));
+    SECP256K1_CHECKMEM_CHECK_VERIFY(r->n, sizeof(r->n));
     mask0 = vflag + ~((uint64_t)0);
     mask1 = ~mask0;
     r->n[0] = (r->n[0] & mask0) | (a->n[0] & mask1);
