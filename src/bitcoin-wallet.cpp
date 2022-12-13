@@ -148,7 +148,6 @@ int main(int argc, char *argv[]) {
 
     std::string name = gArgs.GetArg("-wallet", "");
 
-    ECCVerifyHandle globalVerifyHandle;
     ECC_Start();
     if (!WalletTool::ExecuteWalletToolFunc(method, name)) {
         return EXIT_FAILURE;
