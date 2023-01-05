@@ -96,6 +96,7 @@ pushd buildautotools
 
 print_logs() {
   cat tests.log || :
+  cat noverify_tests.log || :
   cat exhaustive_tests.log || :
   cat valgrind_ctime_test.log || :
   cat bench.log || :

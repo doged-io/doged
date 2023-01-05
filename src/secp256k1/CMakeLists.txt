@@ -339,13 +339,14 @@ if(SECP256K1_BUILD_TEST)
 		target_link_libraries(${NAME} secp256k1)
 	endfunction()
 
-	create_secp256k1_test(secp256k1-tests src/tests.c)
+	create_secp256k1_test(secp256k1-noverify-tests src/tests.c)
 	create_secp256k1_test(secp256k1-exhaustive_tests src/tests_exhaustive.c)
 
 	# This should not be enabled at the same time as coverage is.
 	# The VERIFY failure branch is not expected to be reached, so it would make
 	# coverage appear lower if set.
 	if(NOT SECP256K1_ENABLE_COVERAGE)
+		create_secp256k1_test(secp256k1-tests src/tests.c)
 		target_compile_definitions(secp256k1-tests PRIVATE VERIFY)
 		target_compile_definitions(secp256k1-exhaustive_tests PRIVATE VERIFY)
 	endif()
