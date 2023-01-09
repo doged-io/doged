@@ -16,7 +16,7 @@ secp256k1_context *ctx;
 
 #define BUFSIZE (3 * 32)
 
-void bench_multiset(void* arg, int iters) {
+static void bench_multiset(void* arg, int iters) {
     int it = 0;
     int n, m;
     unsigned char result[32];
@@ -37,11 +37,11 @@ void bench_multiset(void* arg, int iters) {
     secp256k1_multiset_finalize(ctx, result, &multiset);
 }
 
-void bench_multiset_setup(void* arg) {
+static void bench_multiset_setup(void* arg) {
     UNUSED(arg);
 }
 
-void run_multiset_bench(int iters, int argc, char** argv) {
+static void run_multiset_bench(int iters, int argc, char** argv) {
     int d = argc ==1;
     ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY);
     if (d || have_flag(argc, argv, "multiset")) run_benchmark("multiset", bench_multiset, bench_multiset_setup, NULL, NULL, 5, iters);

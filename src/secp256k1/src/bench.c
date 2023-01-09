@@ -15,7 +15,7 @@
 #include "include/secp256k1_schnorr.h"
 #endif
 
-void help(int default_iters) {
+static void help(int default_iters) {
     printf("Benchmarks the following algorithms:\n");
     printf("    - ECDSA signing/verification\n");
 

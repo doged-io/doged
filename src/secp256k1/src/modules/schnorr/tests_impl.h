@@ -9,7 +9,7 @@
 
 #include "../../../include/secp256k1_schnorr.h"
 
-void test_schnorr_end_to_end(void) {
+static void test_schnorr_end_to_end(void) {
     unsigned char privkey[32];
     unsigned char message[32];
     unsigned char schnorr_signature[64];
@@ -37,7 +37,7 @@ void test_schnorr_end_to_end(void) {
 
 #define SIG_COUNT 32
 
-void test_schnorr_sign_verify(void) {
+static void test_schnorr_sign_verify(void) {
     unsigned char msg32[32];
     unsigned char sig64[SIG_COUNT][64];
     unsigned char ndata[SIG_COUNT][32];
@@ -78,7 +78,7 @@ void test_schnorr_sign_verify(void) {
 
 #undef SIG_COUNT
 
-void run_schnorr_compact_test(void) {
+static void run_schnorr_compact_test(void) {
     {
         /* Test vector 1 */
         static const unsigned char pkbuf[33] = {
@@ -509,7 +509,7 @@ void run_schnorr_compact_test(void) {
     }
 }
 
-void run_schnorr_tests(void) {
+static void run_schnorr_tests(void) {
     int i;
     for (i = 0; i < 32 * COUNT; i++) {
         test_schnorr_end_to_end();

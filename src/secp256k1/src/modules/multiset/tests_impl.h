@@ -47,7 +47,7 @@ static void initdata(void) {
     }
 }
 
-void test_unordered(void) {
+static void test_unordered(void) {
 
     /* Check if multisets are uneffected by order */
 
@@ -97,7 +97,7 @@ void test_unordered(void) {
 
 }
 
-void test_combine(void) {
+static void test_combine(void) {
 
     /* Testing if combining is effectively the same as adding the elements */
 
@@ -167,7 +167,7 @@ void test_combine(void) {
 }
 
 
-void test_remove(void) {
+static void test_remove(void) {
 
     /* Testing removal of elements */
     secp256k1_multiset empty, r1,r2,r3;
@@ -223,7 +223,7 @@ void test_remove(void) {
     CHECK_EQUAL(&r2,&empty); /* M(0,1,3,9,8)-M(0,1,3,9,8)==M() */
 }
 
-void test_duplicate(void) {
+static void test_duplicate(void) {
 
     /* Test if the multiset properly handles duplicates */
     secp256k1_multiset empty, r1,r2,r3;
@@ -256,7 +256,7 @@ void test_duplicate(void) {
     CHECK_EQUAL(&r1, &r2); /* M(0,0,0,1,1,1)!=M(0,0,1,1)+M(0,1) */
 }
 
-void test_empty(void) {
+static void test_empty(void) {
 
     /* Test if empty set properties hold */
 
@@ -273,7 +273,7 @@ void test_empty(void) {
     CHECK_EQUAL(&empty, &r1); /* M()+M()==M() */
 }
 
-void test_testvector(void) {
+static void test_testvector(void) {
     /* Tests known values from the specification */
 
     const unsigned char d1[113] = {
@@ -333,8 +333,7 @@ void test_testvector(void) {
     CHECK(memcmp(m1m2m3,exp_m1m2m3,32)==0);
 }
 
-void run_multiset_tests(void) {
-
+static void run_multiset_tests(void) {
     initdata();
     test_unordered();
     test_combine();
