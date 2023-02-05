@@ -32,9 +32,9 @@ static void multiset_from_gej_var(secp256k1_multiset *target, const secp256k1_ge
  *  Infinite uses special value, z = 0
  */
 static void gej_from_multiset_var(secp256k1_gej *target,  const secp256k1_multiset *input) {
-    secp256k1_fe_set_b32(&target->x, input->d);
-    secp256k1_fe_set_b32(&target->y, input->d+32);
-    secp256k1_fe_set_b32(&target->z, input->d+64);
+    secp256k1_fe_set_b32_limit(&target->x, input->d);
+    secp256k1_fe_set_b32_limit(&target->y, input->d+32);
+    secp256k1_fe_set_b32_limit(&target->z, input->d+64);
 
     target->infinity = secp256k1_fe_is_zero(&target->z) ? 1 : 0;
 }
@@ -79,7 +79,7 @@ static void ge_from_data_var(secp256k1_ge *target, const unsigned char *input, s
         secp256k1_sha256_write(&hasher, buffer, sizeof(buffer));
         secp256k1_sha256_finalize(&hasher, trial);
 
-        if (!secp256k1_fe_set_b32(&x, trial)) {
+        if (!secp256k1_fe_set_b32_limit(&x, trial)) {
             continue;
         }
 

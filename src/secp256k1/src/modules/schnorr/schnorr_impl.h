@@ -68,7 +68,7 @@ static int secp256k1_schnorr_sig_verify(
     }
 
     /* Extract R.x */
-    if (!secp256k1_fe_set_b32(&Rx, sig64)) {
+    if (!secp256k1_fe_set_b32_limit(&Rx, sig64)) {
         return 0;
     }
 
