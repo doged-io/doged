@@ -33,6 +33,8 @@ gen_json_header(JSON_HEADERS
 	data/blockfilters.json
 	data/key_io_valid.json
 	data/key_io_invalid.json
+	data/intcode_valid.json
+	data/intcode_invalid.json
 	data/script_tests.json
 	data/sighash.json
 	data/tx_invalid.json
@@ -221,6 +223,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		scriptnum_tests.cpp
 		scrypt_tests.cpp
 		serialize_tests.cpp
+		serialize_intcode_tests.cpp
 		settings_tests.cpp
 		shortidprocessor_tests.cpp
 		sigcache_tests.cpp
