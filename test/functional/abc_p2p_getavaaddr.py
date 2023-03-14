@@ -103,6 +103,7 @@ class AvaAddrTest(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = False
         self.num_nodes = 1
+        self.noban_tx_relay = True
         self.extra_args = [
             [
                 "-avalanche=1",
@@ -111,7 +112,6 @@ class AvaAddrTest(BitcoinTestFramework):
                 "-avacooldown=0",
                 "-avaminquorumstake=0",
                 "-avaminavaproofsnodecount=0",
-                "-whitelist=noban@127.0.0.1",
                 "-persistavapeers=0",
             ]
         ]

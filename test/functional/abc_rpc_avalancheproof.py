@@ -57,6 +57,7 @@ class AvalancheProofTest(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
+        self.noban_tx_relay = True
         self.extra_args = [
             [
                 "-avalanche=1",
@@ -64,7 +65,6 @@ class AvalancheProofTest(BitcoinTestFramework):
                 "-avaproofstakeutxoconfirmations=1",
                 "-avalancheconflictingproofcooldown=0",
                 "-avacooldown=0",
-                "-whitelist=noban@127.0.0.1",
             ]
         ] * self.num_nodes
         self.supports_cli = False

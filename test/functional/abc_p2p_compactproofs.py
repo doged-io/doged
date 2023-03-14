@@ -51,13 +51,13 @@ class ProofStoreP2PInterface(AvaP2PInterface):
 class CompactProofsTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
+        self.noban_tx_relay = True
         self.extra_args = [
             [
                 "-avalanche=1",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
-                "-whitelist=noban@127.0.0.1",
                 "-persistavapeers=0",
             ]
         ] * self.num_nodes

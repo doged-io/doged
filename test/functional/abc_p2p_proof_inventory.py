@@ -55,13 +55,13 @@ class ProofInvStoreP2PInterface(P2PInterface):
 class ProofInventoryTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 5
+        self.noban_tx_relay = True
         self.extra_args = [
             [
                 "-avalanche=1",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=2",
                 "-avacooldown=0",
-                "-whitelist=noban@127.0.0.1",
                 "-persistavapeers=0",
             ]
         ] * self.num_nodes
