@@ -5917,6 +5917,7 @@ void PeerManagerImpl::ProcessMessage(
         }
 
         bool received_new_header = false;
+        const auto blockhash = cmpctblock.header.GetHash();
 
         {
             LOCK(cs_main);
@@ -5944,8 +5945,7 @@ void PeerManagerImpl::ProcessMessage(
                 return;
             }
 
-            if (!m_chainman.m_blockman.LookupBlockIndex(
-                    cmpctblock.header.GetHash())) {
+            if (!m_chainman.m_blockman.LookupBlockIndex(blockhash)) {
                 received_new_header = true;
             }
         }
@@ -5961,6 +5961,12 @@ void PeerManagerImpl::ProcessMessage(
                                         "invalid header via cmpctblock");
                 return;
             }
+        }
+
+        if (received_new_header) {
+            LogPrintfCategory(BCLog::NET,
+                              "Saw new cmpctblock header hash=%s peer=%d\n",
+                              blockhash.ToString(), pfrom.GetId());
         }
 
         // When we succeed in decoding a block's txids from a cmpctblock
@@ -6032,7 +6038,7 @@ void PeerManagerImpl::ProcessMessage(
                     // will probably be useless so we just grab the block via
                     // normal getdata.
                     std::vector<CInv> vInv(1);
-                    vInv[0] = CInv(MSG_BLOCK, cmpctblock.header.GetHash());
+                    vInv[0] = CInv(MSG_BLOCK, blockhash);
                     m_connman.PushMessage(
                         &pfrom, msgMaker.Make(NetMsgType::GETDATA, vInv));
                 }
@@ -6085,8 +6091,7 @@ void PeerManagerImpl::ProcessMessage(
                             // Duplicate txindices, the block is now in-flight,
                             // so just request it.
                             std::vector<CInv> vInv(1);
-                            vInv[0] =
-                                CInv(MSG_BLOCK, cmpctblock.header.GetHash());
+                            vInv[0] = CInv(MSG_BLOCK, blockhash);
                             m_connman.PushMessage(
                                 &pfrom,
                                 msgMaker.Make(NetMsgType::GETDATA, vInv));
@@ -6108,7 +6113,7 @@ void PeerManagerImpl::ProcessMessage(
                         // Dirty hack to jump to BLOCKTXN code (TODO: move
                         // message handling into their own functions)
                         BlockTransactions txn;
-                        txn.blockhash = cmpctblock.header.GetHash();
+                        txn.blockhash = blockhash;
                         blockTxnMsg << txn;
                         fProcessBLOCKTXN = true;
                     } else if (first_in_flight) {
@@ -6120,8 +6125,7 @@ void PeerManagerImpl::ProcessMessage(
                             msgMaker.Make(NetMsgType::GETBLOCKTXN, req));
                     } else if (pfrom.m_bip152_highbandwidth_to &&
                                (!pfrom.IsInboundConn() ||
-                                IsBlockRequestedFromOutbound(
-                                    cmpctblock.header.GetHash()) ||
+                                IsBlockRequestedFromOutbound(blockhash) ||
                                 already_in_flight <
                                     MAX_CMPCTBLOCKS_INFLIGHT_PER_BLOCK - 1)) {
                         // ... or it's a hb relay peer and:
@@ -6163,7 +6167,7 @@ void PeerManagerImpl::ProcessMessage(
                     // our mempool will probably be useless - request the block
                     // normally.
                     std::vector<CInv> vInv(1);
-                    vInv[0] = CInv(MSG_BLOCK, cmpctblock.header.GetHash());
+                    vInv[0] = CInv(MSG_BLOCK, blockhash);
                     m_connman.PushMessage(
                         &pfrom, msgMaker.Make(NetMsgType::GETDATA, vInv));
                     return;
