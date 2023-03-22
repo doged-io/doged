@@ -76,8 +76,8 @@ file libsecp256k1.* || true
 # Rebuild precomputed files (if not cross-compiling).
 if [ -z "$HOST" ]
 then
-    ninja clean-precomp
-    ninja gen-precomp
+    ninja clean-precomp clean-secp256k1-testvectors
+    ninja gen-precomp gen-secp256k1-testvectors
 fi
 
 # Check that no repo files have been modified by the build.

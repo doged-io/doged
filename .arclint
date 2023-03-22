@@ -27,7 +27,8 @@
                 "(^contrib/apple-sdk-tools/)",
                 "(^electrum/electrumabc_gui/qt/icons.py)",
                 "(\\_pb2.py$)",
-                "(^src/crc32c/)"
+                "(^src/crc32c/)",
+                "(^src/secp256k1/)"
             ]
         },
         "ruff-check": {
@@ -40,7 +41,8 @@
             "exclude": [
                 "(^contrib/apple-sdk-tools/)",
                 "(^electrum/electrumabc_gui/qt/icons.py)",
-                "(\\_pb2.py$)"
+                "(\\_pb2.py$)",
+                "(^src/secp256k1/)"
             ]
         },
         "lint-format-strings": {
@@ -161,7 +163,8 @@
             "include": "(\\.py$)",
             "exclude": [
                 "(^contrib/apple-sdk-tools/)",
-                "(^src/crc32c/)"
+                "(^src/crc32c/)",
+                "(^src/secp256k1/)"
             ]
         },
         "shellcheck": {

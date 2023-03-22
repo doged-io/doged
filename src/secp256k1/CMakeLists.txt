@@ -311,6 +311,28 @@ native_add_cmake_flags(
 )
 gen_precomputed_tables(precompute_ecmult_gen precomputed_ecmult_gen)
 
+# Add a target for maintainers to regenerate the wycheproof test vectors
+find_package(Python 3.9 COMPONENTS Interpreter)
+if(Python_FOUND)
+	set(PRECOMPUTED_WYCHEPROOF_TESTVECTORS "src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.h")
+	add_custom_target(clean-secp256k1-testvectors
+		COMMAND "${CMAKE_COMMAND}" -E rm -f "${CMAKE_CURRENT_SOURCE_DIR}/${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}"
+	)
+	add_custom_command(
+		OUTPUT ${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}
+		COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/src/wycheproof"
+		COMMAND
+		"${Python_EXECUTABLE}"
+		"${CMAKE_CURRENT_SOURCE_DIR}/tools/tests_wycheproof_generate.py"
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.json" >  ${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}
+	)
+	add_custom_target(
+		gen-secp256k1-testvectors DEPENDS "${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}"
+		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}" "${CMAKE_CURRENT_SOURCE_DIR}/${PRECOMPUTED_WYCHEPROOF_TESTVECTORS}"
+	)
+endif()
+
+
 # If this project is not the top level project, then don't install by default
 get_directory_property(SECP256K1_PARENT_DIRECTORY PARENT_DIRECTORY)
 if(SECP256K1_PARENT_DIRECTORY)
