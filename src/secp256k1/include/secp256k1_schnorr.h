@@ -22,7 +22,7 @@ extern "C" {
  *          pubkey:    the public key to verify with (cannot be NULL)
  */
 SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_verify(
-  const secp256k1_context* ctx,
+  const secp256k1_context *ctx,
   const unsigned char *sig64,
   const unsigned char *msghash32,
   const secp256k1_pubkey *pubkey
