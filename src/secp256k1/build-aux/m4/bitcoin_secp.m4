@@ -20,6 +20,7 @@ if test x"$has_valgrind" != x"yes"; then
     #  error "Valgrind does not support this platform."
     #endif
   ]])], [has_valgrind=yes])
+  CPPFLAGS="$CPPFLAGS_TEMP"
 fi
 ])
 
