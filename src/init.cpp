@@ -2978,7 +2978,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
                 LoadMempool(*pool,
                             ShouldPersistMempool(args) ? MempoolPath(args)
                                                        : fs::path{},
-                            chainman.ActiveChainstate());
+                            chainman.ActiveChainstate(), {});
                 pool->SetLoadTried(!chainman.m_interrupt);
             }
         });
