@@ -123,7 +123,7 @@ static int AppInitRawTx(int argc, char *argv[]) {
     // Check for -chain, -testnet or -regtest parameter (Params() calls are only
     // valid after this clause)
     try {
-        SelectParams(gArgs.GetChainName());
+        SelectParams(gArgs.GetChainType());
     } catch (const std::exception &e) {
         tfm::format(std::cerr, "Error: %s\n", e.what());
         return EXIT_FAILURE;
@@ -139,13 +139,12 @@ static int AppInitRawTx(int argc, char *argv[]) {
         if (gArgs.IsArgSet("-version")) {
             strUsage += FormatParagraph(LicenseInfo());
         } else {
-            strUsage +=
-                "\n"
-                "Usage:  doge-tx [options] <hex-tx> [commands]  Update "
-                "hex-encoded bitcoin transaction\n"
-                "or:     doge-tx [options] -create [commands]   Create "
-                "hex-encoded bitcoin transaction\n"
-                "\n";
+            strUsage += "\n"
+                        "Usage:  doge-tx [options] <hex-tx> [commands]  Update "
+                        "hex-encoded bitcoin transaction\n"
+                        "or:     doge-tx [options] -create [commands]   Create "
+                        "hex-encoded bitcoin transaction\n"
+                        "\n";
             strUsage += gArgs.GetHelpMessage();
         }
 

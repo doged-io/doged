@@ -15,6 +15,7 @@
 #include <consensus/validation.h>
 #include <streams.h>
 #include <uint256.h>
+#include <util/chaintype.h>
 #include <util/strencodings.h>
 #include <validation.h>
 
@@ -27,7 +28,7 @@
 BOOST_FIXTURE_TEST_SUITE(checkpoints_tests, TestingSetup)
 
 BOOST_AUTO_TEST_CASE(sanity) {
-    const auto params = CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto params = CreateChainParams(*m_node.args, ChainType::MAIN);
     const CCheckpointData &checkpoints = params->Checkpoints();
     BlockHash p104679 = BlockHash::fromHex(
         "0x35eb87ae90d44b98898fec8c39577b76cb1eb08e1261cfc10706c8ce9a1d01cf");

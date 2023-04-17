@@ -25,7 +25,7 @@ std::vector<CBlockIndex> MakeMockBlocks(size_t length, int32_t startHeight) {
 BOOST_FIXTURE_TEST_SUITE(dogecoin_daa_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(test_first_daa) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(240, 0);
 
     CBlockHeader header;
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(test_first_daa) {
 }
 
 BOOST_AUTO_TEST_CASE(get_next_work_pre_digishield) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(241, 9359);
 
     CBlockHeader header;
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(get_next_work_pre_digishield) {
 }
 
 BOOST_AUTO_TEST_CASE(get_next_work_digishield) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(2, 144999);
 
     CBlockHeader header;
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(get_next_work_digishield) {
 }
 
 BOOST_AUTO_TEST_CASE(get_next_work_digishield_modulated_upper) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(2, 145106);
 
     CBlockHeader header;
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(get_next_work_digishield_modulated_upper) {
 }
 
 BOOST_AUTO_TEST_CASE(get_next_work_digishield_modulated_lower) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(2, 149422);
 
     CBlockHeader header;
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(get_next_work_digishield_modulated_lower) {
 }
 
 BOOST_AUTO_TEST_CASE(get_next_work_digishield_rounding) {
-    DummyConfig config(CBaseChainParams::MAIN);
+    DummyConfig config(ChainTypeToString(ChainType::MAIN));
     std::vector<CBlockIndex> blocks = MakeMockBlocks(2, 145000);
 
     CBlockHeader header;

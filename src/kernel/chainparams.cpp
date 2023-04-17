@@ -15,6 +15,7 @@
 #include <primitives/transaction.h>
 #include <script/script.h>
 #include <uint256.h>
+#include <util/chaintype.h>
 #include <util/strencodings.h>
 
 #include <algorithm>
@@ -73,7 +74,7 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce,
 class CMainParams : public CChainParams {
 public:
     explicit CMainParams(const ChainOptions &opts) {
-        strNetworkID = CBaseChainParams::MAIN;
+        m_chain_type = ChainType::MAIN;
         consensus.nSubsidyHalvingInterval = 100000;
         // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 -
         // April 1, 2012
@@ -195,7 +196,7 @@ public:
         m_is_test_chain = false;
         m_is_mockable_chain = false;
 
-        checkpointData = CheckpointData(CBaseChainParams::MAIN);
+        checkpointData = CheckpointData(ChainType::MAIN);
 
         m_assumeutxo_data = {
             // TODO to be specified in a future patch.
@@ -222,7 +223,7 @@ public:
 class CTestNetParams : public CChainParams {
 public:
     explicit CTestNetParams(const ChainOptions &opts) {
-        strNetworkID = CBaseChainParams::TESTNET;
+        m_chain_type = ChainType::TESTNET;
         consensus.nSubsidyHalvingInterval = 100000;
         // 00000000040b4e986385315e14bee30ad876d8b47f748025b26683116d21aa65
         consensus.BIP16Height = 0;
@@ -330,7 +331,7 @@ public:
         m_is_test_chain = true;
         m_is_mockable_chain = false;
 
-        checkpointData = CheckpointData(CBaseChainParams::TESTNET);
+        checkpointData = CheckpointData(ChainType::TESTNET);
 
         m_assumeutxo_data = {
             // TODO to be specified in a future patch.
@@ -349,7 +350,7 @@ public:
 class CRegTestParams : public CChainParams {
 public:
     explicit CRegTestParams(const ChainOptions &opts) {
-        strNetworkID = CBaseChainParams::REGTEST;
+        m_chain_type = ChainType::REGTEST;
         consensus.nSubsidyHalvingInterval = 150;
         // always enforce P2SH BIP16 on regtest
         consensus.BIP16Height = 0;
@@ -463,7 +464,7 @@ public:
         m_is_test_chain = true;
         m_is_mockable_chain = true;
 
-        checkpointData = CheckpointData(CBaseChainParams::REGTEST);
+        checkpointData = CheckpointData(ChainType::REGTEST);
 
         m_assumeutxo_data = {
             {.height = 110,
@@ -477,10 +478,12 @@ public:
             {// For use by test/functional/feature_assumeutxo.py
              .height = 299,
              .hash_serialized =
-                 AssumeutxoHash{uint256S("0xf4217e2debd5677de2a12a7db17e5f1bbc2663bea3a28a639300601e135b3cc9")},
+                 AssumeutxoHash{uint256S("0xf4217e2debd5677de2a12a7db17e5f1bbc2"
+                                         "663bea3a28a639300601e135b3cc9")},
              .nChainTx = 334,
              .blockhash =
-                 BlockHash{uint256S("0x147029b0cd6d9b3847db3660938c8220b24d7db3069a039f12a07f4322c8d888")}},
+                 BlockHash{uint256S("0x147029b0cd6d9b3847db3660938c8220b24d7db3"
+                                    "069a039f12a07f4322c8d888")}},
         };
 
         chainTxData = ChainTxData{0, 0, 0};

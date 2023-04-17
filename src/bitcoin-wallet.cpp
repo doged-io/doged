@@ -59,9 +59,8 @@ static bool WalletAppInit(int argc, char *argv[]) {
         return false;
     }
     if (argc < 2 || HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
-        std::string usage =
-            strprintf("%s doge-wallet version", PACKAGE_NAME) + " " +
-            FormatFullVersion() + "\n";
+        std::string usage = strprintf("%s doge-wallet version", PACKAGE_NAME) +
+                            " " + FormatFullVersion() + "\n";
 
         if (gArgs.IsArgSet("-version")) {
             usage += FormatParagraph(LicenseInfo());
@@ -94,7 +93,7 @@ static bool WalletAppInit(int argc, char *argv[]) {
     }
     // Check for -testnet or -regtest parameter (Params() calls are only valid
     // after this clause)
-    SelectParams(gArgs.GetChainName());
+    SelectParams(gArgs.GetChainType());
 
     return true;
 }

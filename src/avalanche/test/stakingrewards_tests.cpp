@@ -9,6 +9,7 @@
 #include <consensus/activation.h>
 #include <net_processing.h>
 #include <policy/block/stakingrewards.h>
+#include <util/chaintype.h>
 #include <validation.h>
 
 #include <test/util/blockindex.h>
@@ -19,9 +20,9 @@
 using namespace avalanche;
 
 struct StakingRewardsActivationTestingSetup : public TestingSetup {
-    void checkStakingRewardsActivation(const std::string &net,
+    void checkStakingRewardsActivation(const ChainType chain_type,
                                        const bool expectActivation) {
-        SelectParams(net);
+        SelectParams(chain_type);
         const Consensus::Params &params = Params().GetConsensus();
 
         // Before Cowperthwaite activation
@@ -45,11 +46,11 @@ BOOST_AUTO_TEST_SUITE(stakingrewards_tests)
 
 BOOST_FIXTURE_TEST_CASE(isstakingrewardsactivated,
                         StakingRewardsActivationTestingSetup) {
-    checkStakingRewardsActivation("regtest", false);
-    checkStakingRewardsActivation("test", false);
+    checkStakingRewardsActivation(ChainType::REGTEST, false);
+    checkStakingRewardsActivation(ChainType::TESTNET, false);
 
     Assert(m_node.args)->ForceSetArg("-avalanchestakingrewards", "1");
-    checkStakingRewardsActivation("main", true);
+    checkStakingRewardsActivation(ChainType::MAIN, true);
     Assert(m_node.args)->ClearForcedArg("-avalanchestakingrewards");
 }
 

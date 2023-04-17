@@ -15,6 +15,7 @@
 #include <primitives/transaction.h>
 #include <streams.h>
 #include <uint256.h>
+#include <util/chaintype.h>
 #include <validation.h>
 
 #include <test/util/setup_common.h>
@@ -72,8 +73,7 @@ const std::vector<std::tuple<std::string, int64_t>> DOGECOIN_BLOCKS = {
 };
 
 BOOST_AUTO_TEST_CASE(subsidy_mainnet_first_20_blocks) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     for (int32_t height = 1; height < (int32_t)DOGECOIN_BLOCKS.size();
          ++height) {
@@ -84,8 +84,7 @@ BOOST_AUTO_TEST_CASE(subsidy_mainnet_first_20_blocks) {
 }
 
 BOOST_AUTO_TEST_CASE(subsidy_first_100k_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     Amount nSum;
     arith_uint256 prevHash;
@@ -107,8 +106,7 @@ BOOST_AUTO_TEST_CASE(subsidy_first_100k_test) {
 }
 
 BOOST_AUTO_TEST_CASE(subsidy_100k_145k_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     Amount nSum;
     arith_uint256 prevHash;
@@ -131,8 +129,7 @@ BOOST_AUTO_TEST_CASE(subsidy_100k_145k_test) {
 
 // Check the simplified rewards after block 145,000
 BOOST_AUTO_TEST_CASE(subsidy_post_145k_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     const uint256 prevHash;
 
@@ -156,8 +153,7 @@ BOOST_AUTO_TEST_CASE(subsidy_post_145k_test) {
 // seed are untouched, such that the seed is always 0, resulting in no test
 // coverage for the seed extraction code.
 BOOST_AUTO_TEST_CASE(broken_dogecoin_subsidy_first_100k_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     Amount nSum;
     arith_uint256 prevHash;
@@ -177,8 +173,7 @@ BOOST_AUTO_TEST_CASE(broken_dogecoin_subsidy_first_100k_test) {
 
 // This test is broken, see broken_dogecoin_subsidy_first_100k_test
 BOOST_AUTO_TEST_CASE(broken_dogecoin_subsidy_100k_145k_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     const Consensus::Params &params = chainParams->GetConsensus();
     Amount nSum;
     arith_uint256 prevHash;
@@ -303,8 +298,7 @@ BOOST_AUTO_TEST_CASE(validation_load_external_block_file) {
 
 //! Test retrieval of valid assumeutxo values.
 BOOST_AUTO_TEST_CASE(test_assumeutxo) {
-    const auto params =
-        CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
+    const auto params = CreateChainParams(*m_node.args, ChainType::REGTEST);
 
     // These heights don't have assumeutxo configurations associated, per the
     // contents of chainparams.cpp.

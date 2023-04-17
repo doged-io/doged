@@ -114,7 +114,7 @@ void SolveBlock(CBlockHeader &block, const Consensus::Params &params) {
 
 BOOST_AUTO_TEST_CASE(CheckAuxProofOfWork_nVersion_test) {
     const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
+        CreateChainParams(*m_node.args, ChainType::REGTEST);
     const Consensus::Params &params = chainParams->GetConsensus();
 
     CBlockHeader header;

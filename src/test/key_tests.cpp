@@ -9,6 +9,7 @@
 #include <key_io.h>
 #include <streams.h>
 #include <uint256.h>
+#include <util/chaintype.h>
 #include <util/strencodings.h>
 #include <util/string.h>
 
@@ -27,6 +28,8 @@ static const std::string strSecret1C =
     "QPExFrhiQmPA5mqQA1JAnzrzzZQcYwhhuqML561jJSwJgQae13KH";
 static const std::string strTestSecret1C =
     "cfNHiFcNwXRZxiwA4J4HsSiRed5kqgD3RW49Wnmb4AVP3tASBfvX";
+static const std::string strRegSecret1C =
+    "cND2ZvtabDbJ1gucx9GWH6XT9kgTAqfb6cotPt5Q5CyxVDhid2EN";
 static const std::string strSecret2C =
     "QUgkGQwEV2RRz2QPcYD76irjY684rduXYCJ7n5EJwWMYcTuqT3DW";
 static const std::string addr1 = "DUPwNcQrNVTmaPUq39t8ry31es4kPtV24v";
@@ -86,12 +89,9 @@ BOOST_AUTO_TEST_CASE(internal_test) {
 }
 
 BOOST_AUTO_TEST_CASE(encode_decode_secret_test) {
-    const auto mainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
-    const auto testParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::TESTNET);
-    const auto regParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::TESTNET);
+    const auto mainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const auto testParams = CreateChainParams(*m_node.args, ChainType::TESTNET);
+    const auto regParams = CreateChainParams(*m_node.args, ChainType::REGTEST);
 
     {
         // Check the mainnet base58 key
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(encode_decode_secret_test) {
     }
 
     {
-        // Check the testnet and regnet base58 key
+        // Check the testnet base58 key
         CKey mainKey = DecodeSecret(strTestSecret1C, *mainParams);
         BOOST_CHECK(!mainKey.IsValid());
 
@@ -114,19 +114,35 @@ BOOST_AUTO_TEST_CASE(encode_decode_secret_test) {
         BOOST_CHECK(testKey.IsValid() && testKey.IsCompressed());
 
         CKey regKey = DecodeSecret(strTestSecret1C, *regParams);
+        BOOST_CHECK(!regKey.IsValid());
+    }
+
+    {
+        // Check the regtest base58 key
+        CKey mainKey = DecodeSecret(strRegSecret1C, *mainParams);
+        BOOST_CHECK(!mainKey.IsValid());
+
+        CKey testKey = DecodeSecret(strRegSecret1C, *testParams);
+        BOOST_CHECK(!testKey.IsValid());
+
+        CKey regKey = DecodeSecret(strRegSecret1C, *regParams);
         BOOST_CHECK(regKey.IsValid() && regKey.IsCompressed());
     }
 
     CKey mainKey = DecodeSecret(strSecret1C, *mainParams);
     CKey testKey = DecodeSecret(strTestSecret1C, *testParams);
+    CKey regKey = DecodeSecret(strRegSecret1C, *regParams);
 
     // Check key conversion.
     BOOST_CHECK_EQUAL(EncodeSecret(mainKey, *mainParams), strSecret1C);
     BOOST_CHECK_EQUAL(EncodeSecret(mainKey, *testParams), strTestSecret1C);
-    BOOST_CHECK_EQUAL(EncodeSecret(mainKey, *regParams), strTestSecret1C);
+    BOOST_CHECK_EQUAL(EncodeSecret(mainKey, *regParams), strRegSecret1C);
     BOOST_CHECK_EQUAL(EncodeSecret(testKey, *mainParams), strSecret1C);
     BOOST_CHECK_EQUAL(EncodeSecret(testKey, *testParams), strTestSecret1C);
-    BOOST_CHECK_EQUAL(EncodeSecret(testKey, *regParams), strTestSecret1C);
+    BOOST_CHECK_EQUAL(EncodeSecret(testKey, *regParams), strRegSecret1C);
+    BOOST_CHECK_EQUAL(EncodeSecret(regKey, *mainParams), strSecret1C);
+    BOOST_CHECK_EQUAL(EncodeSecret(regKey, *testParams), strTestSecret1C);
+    BOOST_CHECK_EQUAL(EncodeSecret(regKey, *regParams), strRegSecret1C);
 }
 
 BOOST_AUTO_TEST_CASE(key_test1) {
