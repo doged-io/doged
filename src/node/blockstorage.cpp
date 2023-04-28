@@ -618,8 +618,8 @@ fs::path BlockManager::GetBlockPosFilename(const FlatFilePos &pos) const {
 }
 
 bool BlockManager::FindBlockPos(FlatFilePos &pos, unsigned int nAddSize,
-                                unsigned int nHeight, CChain &active_chain,
-                                uint64_t nTime, bool fKnown) {
+                                unsigned int nHeight, uint64_t nTime,
+                                bool fKnown) {
     LOCK(cs_LastBlockFile);
 
     unsigned int nFile = fKnown ? pos.nFile : m_last_blockfile;
@@ -650,7 +650,7 @@ bool BlockManager::FindBlockPos(FlatFilePos &pos, unsigned int nAddSize,
             // than are being connected), we let the undo block write case
             // handle it
             finalize_undo = (m_blockfile_info[nFile].nHeightLast ==
-                             (unsigned int)active_chain.Tip()->nHeight);
+                             m_undo_height_in_last_blockfile);
             nFile++;
             if (m_blockfile_info.size() <= nFile) {
                 m_blockfile_info.resize(nFile + 1);
@@ -668,6 +668,8 @@ bool BlockManager::FindBlockPos(FlatFilePos &pos, unsigned int nAddSize,
         }
         FlushBlockFile(!fKnown, finalize_undo);
         m_last_blockfile = nFile;
+        // No undo data yet in the new file, so reset our undo-height tracking.
+        m_undo_height_in_last_blockfile = 0;
     }
 
     m_blockfile_info[nFile].AddBlock(nHeight, nTime);
@@ -770,8 +772,11 @@ bool BlockManager::WriteUndoDataForBlock(const CBlockUndo &blockundo,
             static_cast<uint32_t>(block.nHeight) ==
                 m_blockfile_info[_pos.nFile].nHeightLast) {
             FlushUndoFile(_pos.nFile, true);
+        } else if (_pos.nFile == m_last_blockfile &&
+                   static_cast<uint32_t>(block.nHeight) >
+                       m_undo_height_in_last_blockfile) {
+            m_undo_height_in_last_blockfile = block.nHeight;
         }
-
         // update nUndoPos in block index
         block.nUndoPos = _pos.nPos;
         block.nStatus = block.nStatus.withUndo();
@@ -912,7 +917,6 @@ bool BlockManager::ReadTxUndoFromDisk(CTxUndo &tx_undo,
 }
 
 FlatFilePos BlockManager::SaveBlockToDisk(const CBlock &block, int nHeight,
-                                          CChain &active_chain,
                                           const FlatFilePos *dbp) {
     unsigned int nBlockSize = ::GetSerializeSize(block, CLIENT_VERSION);
     FlatFilePos blockPos;
@@ -929,8 +933,8 @@ FlatFilePos BlockManager::SaveBlockToDisk(const CBlock &block, int nHeight,
         nBlockSize +=
             static_cast<unsigned int>(BLOCK_SERIALIZATION_HEADER_SIZE);
     }
-    if (!FindBlockPos(blockPos, nBlockSize, nHeight, active_chain,
-                      block.GetBlockTime(), position_known)) {
+    if (!FindBlockPos(blockPos, nBlockSize, nHeight, block.GetBlockTime(),
+                      position_known)) {
         error("%s: FindBlockPos failed", __func__);
         return FlatFilePos();
     }
