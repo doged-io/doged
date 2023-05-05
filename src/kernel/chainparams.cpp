@@ -470,7 +470,7 @@ public:
              .hash_serialized =
                  AssumeutxoHash{uint256S("0xfcfa07adecbe5f753b9f062b5e5621dcdd9"
                                          "f998a45968876cb98d350667d745e")},
-             .nChainTx = 110,
+             .nChainTx = 111,
              .blockhash =
                  BlockHash{uint256S("0xd5a3182b833dca6d0c9bad770890080c2639f077"
                                     "e0e880c5ab16f1ba3a27b740")}},
