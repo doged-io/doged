@@ -1791,8 +1791,6 @@ bool AppInitBasicSetup(const ArgsManager &args, std::atomic<int> &exit_status) {
     // Enable Data Execution Prevention (DEP)
     SetProcessDEPPolicy(PROCESS_DEP_ENABLE);
 #endif
-    InitShutdownState(exit_status);
-
     if (!SetupNetworking()) {
         return InitError(Untranslated("Initializing networking failed"));
     }
@@ -2086,7 +2084,7 @@ bool AppInitParameterInteraction(Config &config, const ArgsManager &args) {
 
     // Also report errors from parsing before daemonization
     {
-        KernelNotifications notifications{};
+        kernel::Notifications notifications{};
         ChainstateManager::Options chainman_opts_dummy{
             .config = config,
             .datadir = args.GetDataDirNet(),
@@ -2468,7 +2466,8 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Step 7: load block chain
 
-    node.notifications = std::make_unique<KernelNotifications>();
+    node.notifications =
+        std::make_unique<KernelNotifications>(node.exit_status);
     fReindex = args.GetBoolArg("-reindex", false);
     bool fReindexChainState = args.GetBoolArg("-reindex-chainstate", false);
 
@@ -2846,11 +2845,8 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             if (!StartIndexBackgroundSync(node)) {
                 bilingual_str err_str =
                     _("Failed to start indexes, shutting down..");
-                AbortNode(err_str.original, err_str);
-                // TODO: replace AbortNode call with following line after
-                //   backporting core#27861
-                // chainman.GetNotifications().fatalError(err_str.original,
-                //                                        err_str);
+                chainman.GetNotifications().fatalError(err_str.original,
+                                                       err_str);
                 return;
             }
             // Load mempool from disk

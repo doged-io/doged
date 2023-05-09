@@ -666,6 +666,7 @@ add_library(server
 	minerfund.cpp
 	net.cpp
 	net_processing.cpp
+	node/abort.cpp
 	node/blockfitter.cpp
 	node/blockmanager_args.cpp
 	node/blockstorage.cpp
@@ -906,7 +907,6 @@ if(BUILD_CHAINSTATE)
 		node/blockfitter.cpp
 		node/blockstorage.cpp
 		node/chainstate.cpp
-		node/ui_interface.cpp
 		node/utxo_snapshot.cpp
 		policy/fees.cpp
 		policy/packages.cpp
@@ -989,6 +989,7 @@ if(BUILD_CHAINSTATE)
 		net_permissions.cpp  # via net.cpp
 		node/eviction.cpp    # via net.cpp
 		node/connection_types.cpp  # via net.cpp
+		node/ui_interface.cpp  # via net.cpp and banman.cpp
 		policy/block/minerfund.cpp
 		policy/block/preconsensus.cpp
 		policy/block/rtt.cpp

@@ -845,8 +845,9 @@ bool BlockManager::FindBlockPos(FlatFilePos &pos, unsigned int nAddSize,
         size_t bytes_allocated =
             BlockFileSeq().Allocate(pos, nAddSize, out_of_space);
         if (out_of_space) {
-            return AbortNode("Disk space is too low!",
-                             _("Disk space is too low!"));
+            m_opts.notifications.fatalError("Disk space is too low!",
+                                            _("Disk space is too low!"));
+            return false;
         }
         if (bytes_allocated != 0 && IsPruneMode()) {
             m_check_for_pruning = true;
@@ -871,8 +872,8 @@ bool BlockManager::FindUndoPos(BlockValidationState &state, int nFile,
     size_t bytes_allocated =
         UndoFileSeq().Allocate(pos, nAddSize, out_of_space);
     if (out_of_space) {
-        return AbortNode(state, "Disk space is too low!",
-                         _("Disk space is too low!"));
+        return FatalError(m_opts.notifications, state, "Disk space is too low!",
+                          _("Disk space is too low!"));
     }
     if (bytes_allocated != 0 && IsPruneMode()) {
         m_check_for_pruning = true;
@@ -923,7 +924,8 @@ bool BlockManager::WriteUndoDataForBlock(const CBlockUndo &blockundo,
         }
         if (!UndoWriteToDisk(blockundo, _pos, block.pprev->GetBlockHash(),
                              GetParams().DiskMagic())) {
-            return AbortNode(state, "Failed to write undo data");
+            return FatalError(m_opts.notifications, state,
+                              "Failed to write undo data");
         }
         // rev files are written in block height order, whereas blk files are
         // written as blocks come in (often out of order) we want to flush the
@@ -1159,7 +1161,7 @@ FlatFilePos BlockManager::SaveBlockToDisk(const CBlock &block, int nHeight,
     }
     if (!position_known) {
         if (!WriteBlockToDisk(block, blockPos, GetParams().DiskMagic())) {
-            AbortNode("Failed to write block");
+            m_opts.notifications.fatalError("Failed to write block");
             return FlatFilePos();
         }
     }
@@ -1280,8 +1282,8 @@ void ImportBlocks(ChainstateManager &chainman,
              WITH_LOCK(::cs_main, return chainman.GetAll())) {
             BlockValidationState state;
             if (!chainstate->ActivateBestChain(state, nullptr, avalanche)) {
-                AbortNode(strprintf("Failed to connect best block (%s)",
-                                    state.ToString()));
+                chainman.GetNotifications().fatalError(strprintf(
+                    "Failed to connect best block (%s)", state.ToString()));
                 return;
             }
         }
