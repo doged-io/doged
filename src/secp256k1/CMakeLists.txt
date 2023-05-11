@@ -151,7 +151,22 @@ if(SECP256K1_ENABLE_ASM)
 		endif()
 		add_compile_definitions(USE_ASM_X86_64=1)
 	elseif(SECP256K1_ASM_BUILD_TARGET MATCHES "arm-linux-gnueabihf")
-		enable_language(ASM)
+		check_c_source_compiles("
+			__asm__ (
+				\".syntax unified;\"\n
+				\".eabi_attribute 24, 1;\"\n
+				\".eabi_attribute 25, 1;\"\n
+				\".text;\"\n
+				\".global main;\"\n
+				\"main:\"\n
+				\"  ldr  r0, =0x002A;\"\n
+				\"  mov  r7, #1;\"\n
+				\"  swi  0;\"\n
+			);
+		" HAVE_ARM32_ASM)
+		if(NOT HAVE_ARM32_ASM)
+			unsupported_asm_error()
+		endif()
 		add_compile_definitions(USE_EXTERNAL_ASM=1)
 		add_library(secp256k1_common src/asm/field_10x26_arm.s)
 		target_link_libraries(secp256k1 secp256k1_common)
