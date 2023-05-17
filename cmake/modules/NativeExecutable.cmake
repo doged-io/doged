@@ -64,8 +64,12 @@ set(NATIVE_BUILD_DIR "${CMAKE_BINARY_DIR}/native" CACHE PATH "The path of the na
 include(CustomCommandWithDepFile)
 
 function(add_native_executable NAME)
+	cmake_parse_arguments(PARSE_ARGV 1 ARG "" "COMPILE_DEFINITIONS" "")
 	if(__IS_NATIVE_BUILD)
-		add_executable(${NAME} EXCLUDE_FROM_ALL ${ARGN})
+		add_executable(${NAME} EXCLUDE_FROM_ALL ${ARG_UNPARSED_ARGUMENTS})
+		if(ARG_COMPILE_DEFINITIONS)
+			target_compile_definitions(${NAME} PRIVATE ${ARG_COMPILE_DEFINITIONS})
+		endif()
 		# Multi-configuration generators (VS, Xcode) append a per-configuration
 		# subdirectory to the specified directory unless the
 		# `RUNTIME_OUTPUT_DIRECTORY` property is defined using a generator
@@ -106,7 +110,7 @@ function(add_native_executable NAME)
 			DEPENDS
 				native-cmake-build
 				"${CMAKE_CURRENT_BINARY_DIR}/build_native_${NAME}.sh"
-				${ARGN}
+				${ARG_UNPARSED_ARGUMENTS}
 			DEPFILE "${NATIVE_LINK}.d"
 			VERBATIM USES_TERMINAL
 		)

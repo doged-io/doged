@@ -273,7 +273,7 @@ add_custom_target(clean-precomp)
 add_custom_target(gen-precomp)
 
 function(gen_precomputed_tables EXECUTABLE_NAME TABLE_NAME)
-	add_native_executable("${EXECUTABLE_NAME}" "src/${EXECUTABLE_NAME}.c")
+	add_native_executable("${EXECUTABLE_NAME}" COMPILE_DEFINITIONS VERIFY "src/${EXECUTABLE_NAME}.c" )
 	add_custom_command(
 		OUTPUT "src/${TABLE_NAME}.c"
 		COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/src"
@@ -282,13 +282,13 @@ function(gen_precomputed_tables EXECUTABLE_NAME TABLE_NAME)
 	)
 
 	add_custom_target("clean-precomp-${TABLE_NAME}"
-			COMMAND "${CMAKE_COMMAND}" -E rm -f "${CMAKE_CURRENT_SOURCE_DIR}/src/${TABLE_NAME}.c"
+		COMMAND "${CMAKE_COMMAND}" -E rm -f "${CMAKE_CURRENT_SOURCE_DIR}/src/${TABLE_NAME}.c"
 	)
 	add_dependencies(clean-precomp "clean-precomp-${TABLE_NAME}")
 
 	add_custom_target("gen-precomp-${TABLE_NAME}"
-			DEPENDS "src/${TABLE_NAME}.c"
-			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "src/${TABLE_NAME}.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/${TABLE_NAME}.c"
+		DEPENDS "src/${TABLE_NAME}.c"
+		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "src/${TABLE_NAME}.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/${TABLE_NAME}.c"
 	)
 	add_dependencies(gen-precomp "gen-precomp-${TABLE_NAME}")
 endfunction(gen_precomputed_tables)
