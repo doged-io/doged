@@ -19,11 +19,11 @@
 #include <pow/auxpow.h>
 #include <pow/pow.h>
 #include <reverse_iterator.h>
-#include <shutdown.h>
 #include <streams.h>
 #include <undo.h>
 #include <util/batchpriority.h>
 #include <util/fs.h>
+#include <util/signalinterrupt.h>
 #include <validation.h>
 
 #include <map>
@@ -263,7 +263,8 @@ bool BlockManager::LoadBlockIndex(
             GetConsensus(),
             [this](const BlockHash &hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
                 return this->InsertBlockIndex(hash);
-            })) {
+            },
+            m_interrupt)) {
         return false;
     }
 
@@ -296,7 +297,7 @@ bool BlockManager::LoadBlockIndex(
 
     CBlockIndex *previous_index{nullptr};
     for (CBlockIndex *pindex : vSortedByHeight) {
-        if (ShutdownRequested()) {
+        if (m_interrupt) {
             return false;
         }
         if (previous_index && pindex->nHeight > previous_index->nHeight + 1) {
@@ -1207,8 +1208,8 @@ void ImportBlocks(ChainstateManager &chainman,
                           (unsigned int)nFile);
                 chainman.LoadExternalBlockFile(
                     file, &pos, &blocks_with_unknown_parent, avalanche);
-                if (ShutdownRequested()) {
-                    LogPrintf("Shutdown requested. Exit %s\n", __func__);
+                if (chainman.m_interrupt) {
+                    LogPrintf("Interrupt requested. Exit %s\n", __func__);
                     return;
                 }
                 nFile++;
@@ -1232,8 +1233,8 @@ void ImportBlocks(ChainstateManager &chainman,
                 chainman.LoadExternalBlockFile(
                     file, /*dbp=*/nullptr,
                     /*blocks_with_unknown_parent=*/nullptr, avalanche);
-                if (ShutdownRequested()) {
-                    LogPrintf("Shutdown requested. Exit %s\n", __func__);
+                if (chainman.m_interrupt) {
+                    LogPrintf("Interrupt requested. Exit %s\n", __func__);
                     return;
                 }
             } else {
