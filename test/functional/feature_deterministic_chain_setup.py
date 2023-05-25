@@ -92,18 +92,15 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
 
         self.log.info("Check m_assumeutxo_data at height 110.")
         mine_blocks(10)
-        assert_equal(node.getblockchaininfo()["blocks"], 110)
+        info = node.getblockchaininfo()
+        assert_equal(info["blocks"], 110)
+        assert_equal(
+            info["bestblockhash"],
+            "d5a3182b833dca6d0c9bad770890080c2639f077e0e880c5ab16f1ba3a27b740",
+        )
         assert_equal(
             node.gettxoutsetinfo()["hash_serialized"],
             "fcfa07adecbe5f753b9f062b5e5621dcdd9f998a45968876cb98d350667d745e",
-        )
-
-        self.log.info("Check m_assumeutxo_data at height 210.")
-        mine_blocks(100)
-        assert_equal(node.getblockchaininfo()["blocks"], 210)
-        assert_equal(
-            node.gettxoutsetinfo()["hash_serialized"],
-            "6fa0d0be104a5990d6f743820b8a5e9eb7d525cc55e2bdb595d49e0cde33e0b5",
         )
 
 

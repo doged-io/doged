@@ -195,7 +195,7 @@ public:
 
         checkpointData = CheckpointData(CBaseChainParams::MAIN);
 
-        m_assumeutxo_data = MapAssumeutxo{
+        m_assumeutxo_data = {
             // TODO to be specified in a future patch.
         };
 
@@ -328,7 +328,7 @@ public:
 
         checkpointData = CheckpointData(CBaseChainParams::TESTNET);
 
-        m_assumeutxo_data = MapAssumeutxo{
+        m_assumeutxo_data = {
             // TODO to be specified in a future patch.
         };
 
@@ -457,19 +457,15 @@ public:
 
         checkpointData = CheckpointData(CBaseChainParams::REGTEST);
 
-        m_assumeutxo_data = MapAssumeutxo{
-            {
-                110,
-                {AssumeutxoHash{uint256S("0xfcfa07adecbe5f753b9f062b5e5621dcdd9"
+        m_assumeutxo_data = {
+            {.height = 110,
+             .hash_serialized =
+                 AssumeutxoHash{uint256S("0xfcfa07adecbe5f753b9f062b5e5621dcdd9"
                                          "f998a45968876cb98d350667d745e")},
-                 110},
-            },
-            {
-                210,
-                {AssumeutxoHash{uint256S("0x6fa0d0be104a5990d6f743820b8a5e9eb7d"
-                                         "525cc55e2bdb595d49e0cde33e0b5")},
-                 210},
-            },
+             .nChainTx = 110,
+             .blockhash =
+                 BlockHash{uint256S("0xd5a3182b833dca6d0c9bad770890080c2639f077"
+                                    "e0e880c5ab16f1ba3a27b740")}},
         };
 
         chainTxData = ChainTxData{0, 0, 0};
