@@ -1038,6 +1038,9 @@ public:
      */
     bool LoadGenesisBlock();
 
+    void TryAddBlockIndexCandidate(CBlockIndex *pindex)
+        EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
     void PruneBlockIndexCandidates();
 
     void ClearBlockIndexCandidates() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);

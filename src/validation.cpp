@@ -4060,6 +4060,16 @@ void Chainstate::ResetBlockFailureFlags(CBlockIndex *pindex) {
         });
 }
 
+void Chainstate::TryAddBlockIndexCandidate(CBlockIndex *pindex) {
+    AssertLockHeld(cs_main);
+    // If the block has more work than our tip, then it should be a candidate
+    // for most-work-chain.
+    if (m_chain.Tip() == nullptr ||
+        !setBlockIndexCandidates.value_comp()(pindex, m_chain.Tip())) {
+        setBlockIndexCandidates.insert(pindex);
+    }
+}
+
 void Chainstate::UnparkBlockImpl(CBlockIndex *pindex, bool fClearChildren) {
     AssertLockHeld(cs_main);
 
@@ -4164,10 +4174,7 @@ void Chainstate::ReceivedBlockTransactions(const CBlock &block,
                 pindex->nSequenceId = m_chainman.nBlockSequenceId++;
             }
 
-            if (m_chain.Tip() == nullptr ||
-                !setBlockIndexCandidates.value_comp()(pindex, m_chain.Tip())) {
-                setBlockIndexCandidates.insert(pindex);
-            }
+            TryAddBlockIndexCandidate(pindex);
 
             std::pair<std::multimap<CBlockIndex *, CBlockIndex *>::iterator,
                       std::multimap<CBlockIndex *, CBlockIndex *>::iterator>
