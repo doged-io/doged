@@ -10,7 +10,7 @@
 #include <serialize.h>
 
 BlockHash CBaseBlockHeader::GetHash() const {
-    return BlockHash{(CHashWriter{PROTOCOL_VERSION} << *this).GetHash()};
+    return BlockHash{(HashWriter{} << *this).GetHash()};
 }
 
 BlockHash CBaseBlockHeader::GetPowHash() const {
