@@ -7,6 +7,7 @@
 #include <primitives/block.h>
 
 #include <tinyformat.h>
+#include <version.h>
 
 std::string CBlock::ToString() const {
     std::stringstream s;
