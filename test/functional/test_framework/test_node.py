@@ -40,7 +40,7 @@ from .util import (
     p2p_port,
     rpc_url,
     tor_port,
-    wait_until_helper,
+    wait_until_helper_internal,
 )
 
 BITCOIND_PROC_WAIT_TIMEOUT = 60
@@ -441,7 +441,7 @@ class TestNode:
                 rpc.getblockcount()
                 # If the call to getblockcount() succeeds then the RPC
                 # connection is up
-                wait_until_helper(
+                wait_until_helper_internal(
                     lambda: rpc.getmempoolinfo()["loaded"],
                     timeout_factor=self.timeout_factor,
                 )
@@ -639,7 +639,7 @@ class TestNode:
         if "expected_ret_code" not in kwargs:
             # Whether node shutdown return EXIT_FAILURE or EXIT_SUCCESS
             kwargs["expected_ret_code"] = 1 if expect_error else 0
-        wait_until_helper(
+        wait_until_helper_internal(
             lambda: self.is_node_stopped(**kwargs),
             timeout=timeout,
             timeout_factor=self.timeout_factor,
@@ -1067,7 +1067,7 @@ class TestNode:
             p.peer_disconnect()
         del self.p2ps[:]
 
-        wait_until_helper(
+        wait_until_helper_internal(
             lambda: self.num_test_p2p_connections() == 0,
             timeout_factor=self.timeout_factor,
         )
