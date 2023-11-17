@@ -66,7 +66,7 @@ ParsedAuxPowCoinbase::Parse(const CScript &scriptCoinbase, uint256 hashRoot) {
 
     // Bytespan from the root hash to the end of the coinbase
     SpanReader mergeMineCbData(
-        PROTOCOL_VERSION, Span((uint8_t *)&*pRootHash,
+        Span((uint8_t *)&*pRootHash,
         (uint8_t *)&*scriptCoinbase.end()));
 
     // Find the merge-mined prefix in the coinbase script
