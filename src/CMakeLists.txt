@@ -428,7 +428,6 @@ add_library(util
 	util/signalinterrupt.cpp
 	util/string.cpp
 	util/sock.cpp
-	util/spanparsing.cpp
 	util/strencodings.cpp
 	util/string.cpp
 	util/syserror.cpp
@@ -565,6 +564,7 @@ add_library(script
 	script/descriptor.cpp
 	script/interpreter.cpp
 	script/intmath.cpp
+	script/parsing.cpp
 	script/script.cpp
 	script/script_error.cpp
 	script/sigencoding.cpp
