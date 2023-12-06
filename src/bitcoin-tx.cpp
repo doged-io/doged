@@ -34,6 +34,10 @@
 #include <functional>
 #include <memory>
 
+using util::SplitString;
+using util::ToString;
+using util::TrimString;
+
 static bool fCreateBlank;
 static std::map<std::string, UniValue> registers;
 static const int CONTINUE_EXECUTION = -1;

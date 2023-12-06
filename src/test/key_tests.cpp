@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+using util::ToString;
+
 static const std::string strSecret1 =
     "6JGrDt8sATpcbAFbFGvjYif4d9hhE8Qitr1ytDvBVRTMKTeM6gK";
 static const std::string strSecret2 =
