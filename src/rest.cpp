@@ -270,7 +270,7 @@ static bool rest_headers(Config &config, const std::any &context,
     {
         UniValue jsonHeaders(UniValue::VARR);
         for (const CBlockIndex *pindex : headers) {
-            jsonHeaders.push_back(blockheaderToJSON(tip, pindex));
+            jsonHeaders.push_back(blockheaderToJSON(*tip, *pindex));
         }
         std::string strJSON = jsonHeaders.write() + "\n";
         req->WriteHeader("Content-Type", "application/json");
@@ -342,8 +342,8 @@ static bool rest_block(const Config &config, const std::any &context,
         }
 
         case RetFormat::JSON: {
-            UniValue objBlock = blockToJSON(chainman.m_blockman, block, tip,
-                                            pblockindex, showTxDetails);
+            UniValue objBlock = blockToJSON(chainman.m_blockman, block, *tip,
+                                            *pblockindex, showTxDetails);
             std::string strJSON = objBlock.write() + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
