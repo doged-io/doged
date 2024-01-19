@@ -64,8 +64,11 @@ public:
     // network and disk
     std::vector<CTransactionRef> vtx;
 
-    // memory only
+    // Memory-only flags for caching expensive checks
+    // CheckBlock()
     mutable bool fChecked;
+    // CheckMerkleRoot()
+    mutable bool m_checked_merkle_root{false};
 
     CBlock() { SetNull(); }
 
@@ -83,6 +86,7 @@ public:
         CBlockHeader::SetNull();
         vtx.clear();
         fChecked = false;
+        m_checked_merkle_root = false;
     }
 
     CBlockHeader GetBlockHeader() const {
