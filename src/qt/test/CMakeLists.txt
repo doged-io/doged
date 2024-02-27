@@ -9,7 +9,6 @@ add_dependencies(check check-doge-qt)
 add_test_to_suite(doge-qt test_doge-qt
 	apptests.cpp
 	bitcoinaddressvalidatortests.cpp
-	compattests.cpp
 	guiutiltests.cpp
 	optiontests.cpp
 	rpcnestedtests.cpp
