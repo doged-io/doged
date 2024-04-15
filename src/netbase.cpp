@@ -758,7 +758,6 @@ std::unique_ptr<Sock> ConnectDirectly(const CService &dest,
 
 std::unique_ptr<Sock> Proxy::Connect() const {
     if (!IsValid()) {
-        LogPrintf("Cannot connect to invalid Proxy\n");
         return {};
     }
 
@@ -788,7 +787,6 @@ std::unique_ptr<Sock> Proxy::Connect() const {
 
     if (!ConnectToSocket(*sock, (struct sockaddr *)&addrun, len, path,
                          /*manual_connection=*/true)) {
-        LogPrintf("Cannot connect to socket for %s\n", path);
         return {};
     }
 
