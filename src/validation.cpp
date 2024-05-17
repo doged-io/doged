@@ -254,8 +254,9 @@ IsReplayProtectionEnabled(const Consensus::Params &params,
 static bool CheckInputsFromMempoolAndCache(
     const CTransaction &tx, TxValidationState &state,
     const CCoinsViewCache &view, const CTxMemPool &pool, const uint32_t flags,
-    PrecomputedTransactionData &txdata, int &nSigChecksOut,
-    CCoinsViewCache &coins_tip) EXCLUSIVE_LOCKS_REQUIRED(cs_main, pool.cs) {
+    PrecomputedTransactionData &txdata, ValidationCache &validation_cache,
+    int &nSigChecksOut, CCoinsViewCache &coins_tip)
+    EXCLUSIVE_LOCKS_REQUIRED(cs_main, pool.cs) {
     AssertLockHeld(cs_main);
     AssertLockHeld(pool.cs);
 
@@ -289,7 +290,8 @@ static bool CheckInputsFromMempoolAndCache(
     // Call CheckInputScripts() to cache signature and script validity against
     // current tip consensus rules.
     return CheckInputScripts(tx, state, view, flags, /*sigCacheStore=*/true,
-                             /*scriptCacheStore=*/true, txdata, nSigChecksOut);
+                             /*scriptCacheStore=*/true, txdata,
+                             validation_cache, nSigChecksOut);
 }
 
 namespace {
@@ -576,6 +578,10 @@ private:
         return true;
     }
 
+    ValidationCache &GetValidationCache() {
+        return m_active_chainstate.m_chainman.m_validation_cache;
+    }
+
 private:
     CTxMemPool &m_pool;
     CCoinsViewCache m_view;
@@ -745,7 +751,8 @@ bool MemPoolAccept::PreChecks(ATMPArgs &args, Workspace &ws) {
     }
     ws.m_precomputed_txdata = PrecomputedTransactionData{tx};
     if (!CheckInputScripts(tx, state, m_view, scriptVerifyFlags, true, false,
-                           ws.m_precomputed_txdata, ws.m_sig_checks_standard)) {
+                           ws.m_precomputed_txdata, GetValidationCache(),
+                           ws.m_sig_checks_standard)) {
         // State filled in by CheckInputScripts
         return false;
     }
@@ -806,7 +813,7 @@ bool MemPoolAccept::ConsensusScriptChecks(const ATMPArgs &args, Workspace &ws) {
     int nSigChecksConsensus;
     if (!CheckInputsFromMempoolAndCache(
             tx, state, m_view, m_pool, ws.m_next_block_script_verify_flags,
-            ws.m_precomputed_txdata, nSigChecksConsensus,
+            ws.m_precomputed_txdata, GetValidationCache(), nSigChecksConsensus,
             m_active_chainstate.CoinsTip())) {
         // This can occur under some circumstances, if the node receives an
         // unrequested tx which is invalid due to new consensus rules not
@@ -1798,7 +1805,8 @@ bool CheckInputScripts(const CTransaction &tx, TxValidationState &state,
                        const CCoinsViewCache &inputs, const uint32_t flags,
                        bool sigCacheStore, bool scriptCacheStore,
                        const PrecomputedTransactionData &txdata,
-                       int &nSigChecksOut, TxSigCheckLimiter &txLimitSigChecks,
+                       ValidationCache &validation_cache, int &nSigChecksOut,
+                       TxSigCheckLimiter &txLimitSigChecks,
                        CheckInputsLimiter *pBlockLimitSigChecks,
                        std::vector<CScriptCheck> *pvChecks) {
     AssertLockHeld(cs_main);
@@ -1813,7 +1821,11 @@ bool CheckInputScripts(const CTransaction &tx, TxValidationState &state,
     // transaction hash which is in tx's prevouts properly commits to the
     // scriptPubKey in the inputs view of that transaction).
     ScriptCacheKey hashCacheEntry(tx, flags);
-    if (IsKeyInScriptCache(hashCacheEntry, !scriptCacheStore, nSigChecksOut)) {
+    ScriptCacheElement elem(hashCacheEntry, 0);
+    bool found_in_cache = validation_cache.m_script_execution_cache.get(
+        elem, /*erase=*/!scriptCacheStore);
+    nSigChecksOut = elem.nSigChecks;
+    if (found_in_cache) {
         if (!txLimitSigChecks.consume_and_check(nSigChecksOut) ||
             (pBlockLimitSigChecks &&
              !pBlockLimitSigChecks->consume_and_check(nSigChecksOut))) {
@@ -1897,7 +1909,8 @@ bool CheckInputScripts(const CTransaction &tx, TxValidationState &state,
     if (scriptCacheStore && !pvChecks) {
         // We executed all of the provided scripts, and were told to cache the
         // result. Do so now.
-        AddKeyInScriptCache(hashCacheEntry, nSigChecksTotal);
+        validation_cache.m_script_execution_cache.insert(
+            ScriptCacheElement{hashCacheEntry, nSigChecksTotal});
     }
 
     return true;
@@ -2480,7 +2493,8 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
         if (fScriptChecks &&
             !CheckInputScripts(tx, tx_state, view, flags, fCacheResults,
                                fCacheResults, PrecomputedTransactionData(tx),
-                               nSigChecksRet, nSigChecksTxLimiters[txIndex],
+                               m_chainman.m_validation_cache, nSigChecksRet,
+                               nSigChecksTxLimiters[txIndex],
                                &nSigChecksBlockLimiter, &vChecks)) {
             // Any transaction validation failure in ConnectBlock is a block
             // consensus failure
@@ -7267,7 +7281,8 @@ static ChainstateManager::Options &&Flatten(ChainstateManager::Options &&opts) {
 ChainstateManager::ChainstateManager(
     Options options, node::BlockManager::Options blockman_options)
     : m_options{Flatten(std::move(options))},
-      m_blockman{std::move(blockman_options)} {}
+      m_blockman{std::move(blockman_options)},
+      m_validation_cache{m_options.script_execution_cache_bytes} {}
 
 bool ChainstateManager::DetectSnapshotChainstate(CTxMemPool *mempool) {
     assert(!m_snapshot_chainstate);
