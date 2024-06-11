@@ -965,7 +965,7 @@ BOOST_AUTO_TEST_CASE(get_local_addr_for_peer_port) {
     CNode peer_out{
         /*id=*/0,
         /*hSocketIn=*/INVALID_SOCKET,
-        /*addrIn=*/CAddress{CService{peer_out_in_addr, 8333}, NODE_NETWORK},
+        /*addrIn=*/CAddress{CService{peer_out_in_addr, 22556}, NODE_NETWORK},
         /*nKeyedNetGroupIn=*/0,
         /*nLocalHostNonceIn=*/0,
         /*nLocalExtraEntropyIn=*/0,
@@ -976,7 +976,7 @@ BOOST_AUTO_TEST_CASE(get_local_addr_for_peer_port) {
     peer_out.fSuccessfullyConnected = true;
     peer_out.SetAddrLocal(peer_us);
 
-    // Without the fix peer_us:8333 is chosen instead of the proper
+    // Without the fix peer_us:22556 is chosen instead of the proper
     // peer_us:bind_port.
     auto chosen_local_addr = GetLocalAddrForPeer(peer_out);
     BOOST_REQUIRE(chosen_local_addr);
@@ -989,7 +989,7 @@ BOOST_AUTO_TEST_CASE(get_local_addr_for_peer_port) {
     CNode peer_in{
         /*id=*/0,
         /*hSocketIn=*/INVALID_SOCKET,
-        /*addrIn=*/CAddress{CService{peer_in_in_addr, 8333}, NODE_NETWORK},
+        /*addrIn=*/CAddress{CService{peer_in_in_addr, 22556}, NODE_NETWORK},
         /*nKeyedNetGroupIn=*/0,
         /*nLocalHostNonceIn=*/0,
         /*nLocalExtraEntropyIn=*/0,
@@ -1000,7 +1000,7 @@ BOOST_AUTO_TEST_CASE(get_local_addr_for_peer_port) {
     peer_in.fSuccessfullyConnected = true;
     peer_in.SetAddrLocal(peer_us);
 
-    // Without the fix peer_us:8333 is chosen instead of the proper
+    // Without the fix peer_us:22556 is chosen instead of the proper
     // peer_us:peer_us.GetPort().
     chosen_local_addr = GetLocalAddrForPeer(peer_in);
     BOOST_REQUIRE(chosen_local_addr);
@@ -1281,7 +1281,7 @@ BOOST_AUTO_TEST_CASE(initial_advertise_from_version_message) {
     peer_in_addr.s_addr = htonl(0x01020304);
     CNode peer{/*id=*/0,
                /*hSocketIn=*/INVALID_SOCKET,
-               /*addrIn=*/CAddress{CService{peer_in_addr, 8333}, NODE_NETWORK},
+               /*addrIn=*/CAddress{CService{peer_in_addr, 22556}, NODE_NETWORK},
                /*nKeyedNetGroupIn=*/0,
                /*nLocalHostNonceIn=*/0,
                /*nLocalExtraEntropyIn=*/0,

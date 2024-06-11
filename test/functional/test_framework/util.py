@@ -312,7 +312,7 @@ class PortName(enum.Enum):
 
 # The maximum number of nodes a single test can spawn
 MAX_NODES = 64
-# Don't assign rpc or p2p ports lower than this (for example: 18333 is the
+# Don't assign rpc or p2p ports lower than this (for example: 44556 is the
 # default testnet port)
 PORT_MIN = int(os.getenv("TEST_RUNNER_PORT_MIN", default=20000))
 # The number of ports to "reserve" for p2p and rpc, each

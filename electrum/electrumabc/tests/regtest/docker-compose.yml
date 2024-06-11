@@ -8,7 +8,7 @@ services:
     networks:
       - bitcoin
     ports:
-      - 18333:18334
+      - 44556:44557
   fulcrum:
     image: cculianu/fulcrum:latest
     command: "Fulcrum /conf/fulcrum.conf"

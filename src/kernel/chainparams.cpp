@@ -162,7 +162,7 @@ public:
         netMagic[1] = 0xe1;
         netMagic[2] = 0xf3;
         netMagic[3] = 0xe8;
-        nDefaultPort = 8333;
+        nDefaultPort = 22556;
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size =
             ChainParamsConstants::MAINNET_ASSUMED_BLOCKCHAIN_SIZE;
@@ -304,7 +304,7 @@ public:
         netMagic[1] = 0xe5;
         netMagic[2] = 0xf3;
         netMagic[3] = 0xf4;
-        nDefaultPort = 18333;
+        nDefaultPort = 44556;
         nPruneAfterHeight = 1000;
         m_assumed_blockchain_size =
             ChainParamsConstants::TESTNET_ASSUMED_BLOCKCHAIN_SIZE;

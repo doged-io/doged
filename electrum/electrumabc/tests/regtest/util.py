@@ -23,7 +23,7 @@ SUPPORTED_PLATFORM = (
 
 EC_DAEMON_RPC_URL = "http://user:pass@localhost:12342"
 FULCRUM_STATS_URL = "http://localhost:8081/stats"
-BITCOIND_RPC_URL = "http://user:pass@0.0.0.0:18333"
+BITCOIND_RPC_URL = "http://user:pass@0.0.0.0:44556"
 
 ELECTRUM_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
 ELECTRUMABC_COMMAND = os.path.join(ELECTRUM_ROOT, "electrum-abc")
