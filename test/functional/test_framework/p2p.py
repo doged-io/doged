@@ -133,8 +133,8 @@ MESSAGEMAP = {
 }
 
 NET_MAGIC_BYTES = {
-    "mainnet": b"\xe3\xe1\xf3\xe8",
-    "testnet3": b"\xf4\xe5\xf3\xf4",
+    "mainnet": b"\xc0\xc0\xc0\xc0",
+    "testnet3": b"\xfc\xc1\xb7\xdc",
     "regtest": b"\xda\xb5\xbf\xfa",
 }
 
