@@ -185,12 +185,8 @@ public:
         // the service bits we want, but we should get them updated to support
         // all service bits wanted by any release ASAP to avoid it where
         // possible.
-        // Bitcoin ABC seeder
-        vSeeds.emplace_back("seed.bitcoinabc.org");
-        // Fabien
-        vSeeds.emplace_back("seeder.fabien.cash");
-        // status.cash
-        vSeeds.emplace_back("seeder.status.cash");
+        vSeeds.emplace_back("seed.multidoge.org");
+        vSeeds.emplace_back("seed2.multidoge.org");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
@@ -328,12 +324,7 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        // Bitcoin ABC seeder
-        vSeeds.emplace_back("testnet-seed.bitcoinabc.org");
-        // Fabien
-        vSeeds.emplace_back("testnet-seeder.fabien.cash");
-        // status.cash
-        vSeeds.emplace_back("testnet-seeder.status.cash");
+        vSeeds.emplace_back("testseed.jrn.me.uk");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
