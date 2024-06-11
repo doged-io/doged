@@ -7,131 +7,75 @@
 
 static CCheckpointData mainNetCheckpointData = {
     .mapCheckpoints = {
-        {11111, BlockHash::fromHex("0000000069e244f73d78e8fd29ba2fd2ed6"
-                                   "18bd6fa2ee92559f542fdb26e7c1d")},
-        {33333, BlockHash::fromHex("000000002dd5588a74784eaa7ab0507a18a"
-                                   "d16a236e7b1ce69f00d7ddfb5d0a6")},
-        {74000, BlockHash::fromHex("0000000000573993a3c9e41ce34471c079d"
-                                   "cf5f52a0e824a81e7f953b8661a20")},
-        {105000, BlockHash::fromHex("00000000000291ce28027faea320c8d2b0"
-                                    "54b2e0fe44a773f3eefb151d6bdc97")},
-        {134444, BlockHash::fromHex("00000000000005b12ffd4cd315cd34ffd4"
-                                    "a594f430ac814c91184a0d42d2b0fe")},
-        {168000, BlockHash::fromHex("000000000000099e61ea72015e79632f21"
-                                    "6fe6cb33d7899acb35b75c8303b763")},
-        {193000, BlockHash::fromHex("000000000000059f452a5f7340de6682a9"
-                                    "77387c17010ff6e6c3bd83ca8b1317")},
-        {210000, BlockHash::fromHex("000000000000048b95347e83192f69cf03"
-                                    "66076336c639f9b7228e9ba171342e")},
-        {216116, BlockHash::fromHex("00000000000001b4f4b433e81ee46494af"
-                                    "945cf96014816a4e2370f11b23df4e")},
-        {225430, BlockHash::fromHex("00000000000001c108384350f74090433e"
-                                    "7fcf79a606b8e797f065b130575932")},
-        {250000, BlockHash::fromHex("000000000000003887df1f29024b06fc22"
-                                    "00b55f8af8f35453d7be294df2d214")},
-        {279000, BlockHash::fromHex("0000000000000001ae8c72a0b0c301f67e"
-                                    "3afca10e819efa9041e458e9bd7e40")},
-        {295000, BlockHash::fromHex("00000000000000004d9b4ef50f0f9d686f"
-                                    "d69db2e03af35a100370c64632a983")},
-        // UAHF fork block.
-        {478558, BlockHash::fromHex("0000000000000000011865af4122fe3b14"
-                                    "4e2cbeea86142e8ff2fb4107352d43")},
-        // Nov, 13 DAA activation block.
-        {504031, BlockHash::fromHex("0000000000000000011ebf65b60d0a3de8"
-                                    "0b8175be709d653b4c1a1beeb6ab9c")},
-        // Monolith activation.
-        {530359, BlockHash::fromHex("0000000000000000011ada8bd08f46074f"
-                                    "44a8f155396f43e38acf9501c49103")},
-        // Magnetic anomaly activation.
-        {556767, BlockHash::fromHex("0000000000000000004626ff6e3b936941"
-                                    "d341c5932ece4357eeccac44e6d56c")},
-        // Great wall activation.
-        {582680, BlockHash::fromHex("000000000000000001b4b8e36aec7d4f96"
-                                    "71a47872cb9a74dc16ca398c7dcc18")},
-        // Graviton activation.
-        {609136, BlockHash::fromHex("000000000000000000b48bb207faac5ac6"
-                                    "55c313e41ac909322eaa694f5bc5b1")},
-        // Phonon activation.
-        {635259, BlockHash::fromHex("00000000000000000033dfef1fc2d6a5d5"
-                                    "520b078c55193a9bf498c5b27530f7")},
-        // Axion activation.
-        {661648, BlockHash::fromHex("000000000000000004284c9d8b2c8ff731efeaec6b"
-                                    "e50729bdc9bd07f910757d")},
-        {664198, BlockHash::fromHex("00000000000000000c2f90578cede892ff39592cce"
-                                    "34b2fb89b6d2a122468260")},
-        {680140, BlockHash::fromHex("0000000000000000232c48568b63451d4ac445210"
-                                    "9aa46f8b38c65c3f62f7c0b")},
-        // Tachyon activation
-        {686621, BlockHash::fromHex("00000000000000003c8fe6f7570a9f6d5480dcfc9"
-                                    "5f8228ae9d60b98bee5b745")},
-        // Selectron activation.
-        {713661, BlockHash::fromHex("00000000000000000676f84307c7ccb53a0f19083f"
-                                    "eace753cb73a38eaaaef8d")},
-        // Gluon activation.
-        {739536, BlockHash::fromHex("000000000000000006db04cd4609560905fe5a7be6"
-                                    "2f2429b159ce6b59fc7b61")},
-        // Jefferson activation.
-        {766195, BlockHash::fromHex("0000000000000000102bc94853715b9ade9610eb31"
-                                    "b4ed7d955529b76d24e094")},
-        // Wellington activation.
-        {792118, BlockHash::fromHex("00000000000000000b360176b8456de45b662fce6d"
-                                    "557c6238dec17362d197f3")},
-        // Cowperthwaite activation.
-        {818670, BlockHash::fromHex("000000000000000003e79cfe757a675909fd2bffde"
-                                    "52158ce4ec826e5ac6ae79")},
-        // Lee Kuan Yew activation.
-        {844743, BlockHash::fromHex("0000000000000000053b80210677e6821a2ac0ed73"
-                                    "b949a78667e1bfb3dfa6eb")},
+        {0, BlockHash::fromHex("0x1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c"
+                               "9902eb318182c355691")},
+        {104679, BlockHash::fromHex("0x35eb87ae90d44b98898fec8c39577b76cb1eb08e"
+                                    "1261cfc10706c8ce9a1d01cf")},
+        {145000, BlockHash::fromHex("0xcc47cae70d7c5c92828d3214a266331dde59087d"
+                                    "4a39071fa76ddfff9b7bde72")},
+        {371337, BlockHash::fromHex("0x60323982f9c5ff1b5a954eac9dc1269352835f47"
+                                    "c2c5222691d80f0d50dcf053")},
+        {450000, BlockHash::fromHex("0xd279277f8f846a224d776450aa04da3cf978991a"
+                                    "182c6f3075db4c48b173bbd7")},
+        {771275, BlockHash::fromHex("0x1b7d789ed82cbdc640952e7e7a54966c6488a32e"
+                                    "aad54fc39dff83f310dbaaed")},
+        {1000000, BlockHash::fromHex("0x6aae55bea74235f0c80bd066349d4440c31f2d0"
+                                     "f27d54265ecd484d8c1d11b47")},
+        {1250000, BlockHash::fromHex("0x00c7a442055c1a990e11eea5371ca5c1c02a067"
+                                     "7b33cc88ec728c45edc4ec060")},
+        {1500000, BlockHash::fromHex("0xf1d32d6920de7b617d51e74bdf4e58adccaa582"
+                                     "ffdc8657464454f16a952fca6")},
+        {1750000, BlockHash::fromHex("0x5c8e7327984f0d6f59447d89d143e5f6eafc524"
+                                     "c82ad95d176c5cec082ae2001")},
+        {2000000, BlockHash::fromHex("0x9914f0e82e39bbf21950792e8816620d71b9965"
+                                     "bdbbc14e72a95e3ab9618fea8")},
+        {2031142, BlockHash::fromHex("0x893297d89afb7599a3c571ca31a3b80e8353f4c"
+                                     "f39872400ad0f57d26c4c5d42")},
+        {2250000, BlockHash::fromHex("0x0a87a8d4e40dca52763f93812a288741806380c"
+                                     "d569537039ee927045c6bc338")},
+        {2510150, BlockHash::fromHex("0x77e3f4a4bcb4a2c15e8015525e3d15b466f6c02"
+                                     "2f6ca82698f329edef7d9777e")},
+        {2750000, BlockHash::fromHex("0xd4f8abb835930d3c4f92ca718aaa09bef545076"
+                                     "bd872354e0b2b85deefacf2e3")},
+        {3000000, BlockHash::fromHex("0x195a83b091fb3ee7ecb56f2e63d01709293f57f"
+                                     "971ccf373d93890c8dc1033db")},
+        {3250000, BlockHash::fromHex("0x7f3e28bf9e309c4b57a4b70aa64d3b2ea5250ae"
+                                     "797af84976ddc420d49684034")},
+        {3500000, BlockHash::fromHex("0xeaa303b93c1c64d2b3a2cdcf6ccf21b10cc3662"
+                                     "6965cc2619661e8e1879abdfb")},
+        {3606083, BlockHash::fromHex("0x954c7c66dee51f0a3fb1edb26200b735f5275fe"
+                                     "54d9505c76ebd2bcabac36f1e")},
+        {3854173, BlockHash::fromHex("0xe4b4ecda4c022406c502a247c0525480268ce7a"
+                                     "bbbef632796e8ca1646425e75")},
+        {3963597, BlockHash::fromHex("0x2b6927cfaa5e82353d45f02be8aadd3bfd165ec"
+                                     "e5ce24b9bfa4db20432befb5d")},
+        {4303965, BlockHash::fromHex("0xed7d266dcbd8bb8af80f9ccb8deb3e18f9cc3f6"
+                                     "972912680feeb37b090f8cee0")},
+        {5050000, BlockHash::fromHex("0xe7d4577405223918491477db725a393bcfc349d"
+                                     "8ee63b0a4fde23cbfbfd81dea")},
     }};
 
 static CCheckpointData testNetCheckpointData = {
     .mapCheckpoints = {
-        {546, BlockHash::fromHex("000000002a936ca763904c3c35fce2f3556c5"
-                                 "59c0214345d31b1bcebf76acb70")},
-        // UAHF fork block.
-        {1155875,
-         BlockHash::fromHex("00000000f17c850672894b9a75b63a1e72830bbd5f"
-                            "4c8889b5c1a80e7faef138")},
-        // Nov, 13. DAA activation block.
-        {1188697,
-         BlockHash::fromHex("0000000000170ed0918077bde7b4d36cc4c91be69f"
-                            "a09211f748240dabe047fb")},
-        // Great wall activation.
-        {1303885,
-         BlockHash::fromHex("00000000000000479138892ef0e4fa478ccc938fb9"
-                            "4df862ef5bde7e8dee23d3")},
-        // Graviton activation.
-        {1341712,
-         BlockHash::fromHex("00000000fffc44ea2e202bd905a9fbbb9491ef9e9d"
-                            "5a9eed4039079229afa35b")},
-        // Phonon activation.
-        {1378461,
-         BlockHash::fromHex("0000000099f5509b5f36b1926bcf82b21d936ebeade"
-                            "e811030dfbbb7fae915d7")},
-        // Axion activation.
-        {1421481, BlockHash::fromHex("00000000062c7f32591d883c99fc89ebe74a83287"
-                                     "c0f2b7ffeef72e62217d40b")},
-        // Tachyon activation.
-        {1450540, BlockHash::fromHex("00000000001085419e7328a2bacaf6216dd913c40"
-                                     "0f0b7da4bde43a8ebf6ed4e")},
-        // Selectron activation.
-        {1477500, BlockHash::fromHex("000000000004057554e6f83253e3080774c37ae8a"
-                                     "940ffbc38d77525274709ae")},
-        // Gluon activation.
-        {1503557, BlockHash::fromHex("00000000000dbd764814fb67b5ff5aab606faa1f5"
-                                     "881dc86f57639a1396e11ba")},
-        // Jefferson activation.
-        {1530063, BlockHash::fromHex("00000000013102d35674688b5fd478c3a048660d6"
-                                     "fea862401734a4b914132bf")},
-        // Wellington activation.
-        {1556121, BlockHash::fromHex("000000000eb806d6dbc9a200a9d533c7a11fc7d45"
-                                     "ab67a3c8440cc1b5c4e741f")},
-        // Cowperthwaite activation.
-        {1584486, BlockHash::fromHex("000000000bdc9ee694295e611be29fcad7189f116"
-                                     "04edeb8f6c0ab65b40c3370")},
-        // Lee Kuan Yew activation.
-        {1608805, BlockHash::fromHex("00000000000ad004602681a2458bc6304196ec483"
-                                     "f336cce7d031309e4d3592d")},
+        {0, BlockHash::fromHex("0xbb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e")},
+        {483173, BlockHash::fromHex("0xa804201ca0aceb7e937ef7a3c613a9b7589245b10cc095148c4ce4965b0b73b5")},
+        {591117, BlockHash::fromHex("0x5f6b93b2c28cedf32467d900369b8be6700f0649388a7dbfd3ebd4a01b1ffad8")},
+        {658924, BlockHash::fromHex("0xed6c8324d9a77195ee080f225a0fca6346495e08ded99bcda47a8eea5a8a620b")},
+        {703635, BlockHash::fromHex("0x839fa54617adcd582d53030a37455c14a87a806f6615aa8213f13e196230ff7f")},
+        {1000000, BlockHash::fromHex("0x1fe4d44ea4d1edb031f52f0d7c635db8190dc871a190654c41d2450086b8ef0e")},
+        {1202214, BlockHash::fromHex("0xa2179767a87ee4e95944703976fee63578ec04fa3ac2fc1c9c2c83587d096977")},
+        {1250000, BlockHash::fromHex("0xb46affb421872ca8efa30366b09694e2f9bf077f7258213be14adb05a9f41883")},
+        {1500000, BlockHash::fromHex("0x0caa041b47b4d18a4f44bdc05cef1a96d5196ce7b2e32ad3e4eb9ba505144917")},
+        {1750000, BlockHash::fromHex("0x8042462366d854ad39b8b95ed2ca12e89a526ceee5a90042d55ebb24d5aab7e9")},
+        {2000000, BlockHash::fromHex("0xd6acde73e1b42fc17f29dcc76f63946d378ae1bd4eafab44d801a25be784103c")},
+        {2250000, BlockHash::fromHex("0xc4342ae6d9a522a02e5607411df1b00e9329563ef844a758d762d601d42c86dc")},
+        {2500000, BlockHash::fromHex("0x3a66ec4933fbb348c9b1889aaf2f732fe429fd9a8f74fee6895eae061ac897e2")},
+        {2750000, BlockHash::fromHex("0x473ea9f625d59f534ffcc9738ffc58f7b7b1e0e993078614f5484a9505885563")},
+        {3062910, BlockHash::fromHex("0x113c41c00934f940a41f99d18b2ad9aefd183a4b7fe80527e1e6c12779bd0246")},
+        {3286675, BlockHash::fromHex("0x07fef07a255d510297c9189dc96da5f4e41a8184bc979df8294487f07fee1cf3")},
+        {3445426, BlockHash::fromHex("0x70574db7856bd685abe7b0a8a3e79b29882620645bd763b01459176bceb58cd1")},
+        {3976284, BlockHash::fromHex("0xaf23c3e750bb4f2ce091235f006e7e4e2af453d4c866282e7870471dcfeb4382")},
+        {5900000, BlockHash::fromHex("0x199bea6a442310589cbb50a193a30b097c228bd5a0f21af21e4e53dd57c382d3")},
     }};
 
 static CCheckpointData regTestCheckpointData = {
