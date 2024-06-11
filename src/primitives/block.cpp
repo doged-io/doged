@@ -28,6 +28,19 @@ BlockHash CBlockHeader::GetPoWHash() const {
     return BlockHash(thash);
 }
 
+void CBlockHeader::SetAuxpow (CAuxPow* apow)
+{
+    if (apow)
+    {
+        auxpow.reset(apow);
+        SetAuxpowFlag(true);
+    } else
+    {
+        auxpow.reset();
+        SetAuxpowFlag(false);
+    }
+}
+
 std::string CBlock::ToString() const {
     std::stringstream s;
     s << strprintf("CBlock(hash=%s, ver=0x%08x, hashPrevBlock=%s, "
@@ -40,3 +53,4 @@ std::string CBlock::ToString() const {
     }
     return s.str();
 }
+

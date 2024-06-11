@@ -9,7 +9,7 @@
 
 #include "consensus/params.h"
 #include "consensus/validation.h"
-#include "primitives/block.h"
+#include "primitives/pureheader.h"
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
@@ -23,11 +23,11 @@ class CBlockIndex;
 /** Header for merge-mining data in the coinbase.  */
 static const unsigned char pchMergedMiningHeader[] = { 0xfa, 0xbe, 'm', 'm' };
 
-/* Because it is needed for auxpow, the definition of CMerkleTx is moved
+/* Because it is needed for auxpow, the definition of CHeaderMerkleTx is moved
    here from wallet.h.  */
 
 /** A transaction with a merkle branch linking it to the block chain. */
-class CMerkleTx
+class CHeaderMerkleTx
 {
 private:
   /** Constant used in hashBlock to indicate tx has been abandoned */
@@ -47,19 +47,19 @@ public:
      */
     int nIndex;
 
-    CMerkleTx()
+    CHeaderMerkleTx()
     {
         SetTx(MakeTransactionRef());
         Init();
     }
 
-    CMerkleTx(CTransactionRef arg)
+    CHeaderMerkleTx(CTransactionRef arg)
     {
         SetTx(std::move(arg));
         Init();
     }
 
-    /** Helper conversion operator to allow passing CMerkleTx where CTransaction is expected.
+    /** Helper conversion operator to allow passing CHeaderMerkleTx where CTransaction is expected.
      *  TODO: adapt callers and remove this operator. */
     operator const CTransaction&() const { return *tx; }
 
@@ -74,14 +74,8 @@ public:
         tx = std::move(arg);
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(tx);
-        READWRITE(hashBlock);
-        READWRITE(vMerkleBranch);
-        READWRITE(nIndex);
+    SERIALIZE_METHODS(CHeaderMerkleTx, obj) {
+        READWRITE(obj.tx, obj.hashBlock, obj.vMerkleBranch, obj.nIndex);
     }
 
     /**
@@ -94,23 +88,11 @@ public:
 
     void SetMerkleBranch(const CBlockIndex* pindex, int posInBlock);
 
-    /**
-     * Return depth of transaction in blockchain:
-     * <0  : conflicts with a transaction this deep in the blockchain
-     *  0  : in memory pool, waiting to be included in a block
-     * >=1 : this many blocks deep in the main chain
-     */
-    int GetDepthInMainChain(const CBlockIndex* &pindexRet) const;
-    int GetDepthInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet); }
-    bool IsInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet) > 0; }
-    int GetBlocksToMaturity() const;
-    /** Pass this transaction to the mempool. Fails if absolute fee exceeds absurd fee. */
-    bool AcceptToMemoryPool(const CAmount& nAbsurdFee, CValidationState& state);
     bool hashUnset() const { return (hashBlock.IsNull() || hashBlock == ABANDON_HASH); }
     bool isAbandoned() const { return (hashBlock == ABANDON_HASH); }
     void setAbandoned() { hashBlock = ABANDON_HASH; }
 
-    const uint256& GetHash() const { return tx->GetHash(); }
+    const uint256 GetHash() const { return tx->GetHash(); }
     bool IsCoinBase() const { return tx->IsCoinBase(); }
 };
 
@@ -120,7 +102,7 @@ public:
  * transaction's input (the coinbase script) contains the reference
  * to the actual merge-mined block.
  */
-class CAuxPow : public CMerkleTx
+class CAuxPow : public CHeaderMerkleTx
 {
 
 /* Public for the unit tests.  */
@@ -139,25 +121,20 @@ public:
 
   /* Prevent accidental conversion.  */
   inline explicit CAuxPow(CTransactionRef txIn)
-    : CMerkleTx(txIn)
+    : CHeaderMerkleTx(txIn)
   {
   }
 
   inline CAuxPow()
-    : CMerkleTx()
+    : CHeaderMerkleTx()
   {
   }
 
-  ADD_SERIALIZE_METHODS;
-
-  template<typename Stream, typename Operation>
-    inline void
-    SerializationOp (Stream& s, Operation ser_action)
-  {
-    READWRITE (*static_cast<CMerkleTx*> (this));
-    READWRITE (vChainMerkleBranch);
-    READWRITE (nChainIndex);
-    READWRITE (parentBlock);
+  SERIALIZE_METHODS(CAuxPow, obj) {
+      READWRITEAS(CHeaderMerkleTx, obj);
+      READWRITE(obj.vChainMerkleBranch);
+      READWRITE(obj.nChainIndex);
+      READWRITE(obj.parentBlock);
   }
 
   /**

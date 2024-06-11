@@ -14,6 +14,7 @@
 #include <util/translation.h>
 #include <util/vector.h>
 #include <version.h>
+#include <validation.h>
 
 #include <cstdint>
 #include <memory>
@@ -348,9 +349,8 @@ bool CBlockTreeDB::LoadBlockIndexGuts(
         pindexNew->nStatus = diskindex.nStatus;
         pindexNew->nTx = diskindex.nTx;
 
-        if (!CheckProofOfWork(pindexNew->GetBlockHeader().GetPoWHash(),
-                              pindexNew->nBits, params)) {
-            return error("%s: CheckProofOfWork failed: %s", __func__,
+        if (!CheckAuxPowProofOfWork(pindexNew->GetBlockHeader(), params)) {
+            return error("%s: CheckAuxPowProofOfWork failed: %s", __func__,
                          pindexNew->ToString());
         }
 

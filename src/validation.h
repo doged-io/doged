@@ -192,6 +192,7 @@ void StopScriptCheckWorkerThreads();
 
 Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams);
 Amount GetDogecoinBlockSubsidy(int nHeight, const Consensus::Params &consensusParams);
+bool CheckAuxPowProofOfWork(const CBlockHeader& block, const Consensus::Params& params);
 
 bool AbortNode(BlockValidationState &state, const std::string &strMessage,
                const bilingual_str &userMessage = bilingual_str{});

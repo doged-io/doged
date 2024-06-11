@@ -547,6 +547,8 @@ add_library(common
 	outputtype.cpp
 	policy/policy.cpp
 	primitives/block.cpp
+	primitives/pureheader.cpp
+	primitives/auxpow.cpp
 	protocol.cpp
 	psbt.cpp
 	rpc/rawtransaction_util.cpp

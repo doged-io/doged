@@ -1168,6 +1168,44 @@ int static generateMTRandom(unsigned int s, int range)
     return dist(gen);
 }
 
+bool CheckAuxPowProofOfWork(const CBlockHeader& block, const Consensus::Params& params)
+{
+    const int32_t nAuxpowChainId = 0x0062;
+    /* Except for legacy blocks with full version 1, ensure that
+       the chain ID is correct.  Legacy blocks are not allowed since
+       the merge-mining start, which is checked in AcceptBlockHeader
+       where the height is known.  */
+    if (!block.IsLegacy() && /*params.fStrictChainId &&*/ block.GetChainId() != nAuxpowChainId)
+        return error("%s : block does not have our chain ID"
+                     " (got %d, expected %d, full nVersion %d)",
+                     __func__, block.GetChainId(),
+                     nAuxpowChainId, block.nVersion);
+
+    /* If there is no auxpow, just check the block hash.  */
+    if (!block.auxpow) {
+        if (block.IsAuxpow())
+            return error("%s : no auxpow on block with auxpow version",
+                         __func__);
+
+        if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, params))
+            return error("%s : non-AUX proof of work failed", __func__);
+
+        return true;
+    }
+
+    /* We have auxpow.  Check it.  */
+
+    if (!block.IsAuxpow())
+        return error("%s : auxpow on block with non-auxpow version", __func__);
+
+    if (!block.auxpow->check(block.GetHash(), block.GetChainId(), params))
+        return error("%s : AUX POW is not valid", __func__);
+    if (!CheckProofOfWork(BlockHash(block.auxpow->getParentBlockPoWHash()), block.nBits, params))
+        return error("%s : AUX proof of work failed", __func__);
+
+    return true;
+}
+
 Amount static GetDogecoinBlockSubsidy(int nHeight, const Consensus::Params& consensusParams, uint256 prevHash)
 {
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
@@ -3829,7 +3867,7 @@ static bool CheckBlockHeader(const CBlockHeader &block,
                              BlockValidationOptions validationOptions) {
     // Check proof of work matches claimed amount
     if (validationOptions.shouldValidatePoW() &&
-        !CheckProofOfWork(block.GetPoWHash(), block.nBits, params)) {
+        !CheckAuxPowProofOfWork(block, params)) {
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER,
                              "high-hash", "proof of work failed");
     }
