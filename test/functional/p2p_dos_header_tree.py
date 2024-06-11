@@ -54,7 +54,7 @@ class RejectLowDifficultyHeadersTest(BitcoinTestFramework):
         peer_checkpoint.send_and_ping(msg_headers(self.headers))
         assert {
             "height": 546,
-            "hash": "000000002a936ca763904c3c35fce2f3556c559c0214345d31b1bcebf76acb70",
+            "hash": "ac537cfeda975e45040e9938d08e40a16e0fbd6388d02d9b4928b8ae0108c626",
             "branchlen": 546,
             "status": "headers-only",
         } in self.nodes[0].getchaintips()
@@ -71,7 +71,7 @@ class RejectLowDifficultyHeadersTest(BitcoinTestFramework):
         peer_no_checkpoint.send_and_ping(msg_headers(self.headers_fork))
         assert {
             "height": 2,
-            "hash": "00000000b0494bd6c3d5ff79c497cfce40831871cbf39b1bc28bd1dac817dc39",
+            "hash": "fec29ddbe561550d58abeb950f55c74f69c0885342651b2ee889091acc77a5e3",
             "branchlen": 2,
             "status": "headers-only",
         } in self.nodes[0].getchaintips()
@@ -82,7 +82,7 @@ class RejectLowDifficultyHeadersTest(BitcoinTestFramework):
         peer_before_checkpoint.send_and_ping(msg_headers(self.headers_fork))
         assert {
             "height": 2,
-            "hash": "00000000b0494bd6c3d5ff79c497cfce40831871cbf39b1bc28bd1dac817dc39",
+            "hash": "fec29ddbe561550d58abeb950f55c74f69c0885342651b2ee889091acc77a5e3",
             "branchlen": 2,
             "status": "headers-only",
         } in self.nodes[1].getchaintips()

@@ -58,6 +58,7 @@ static CCheckpointData mainNetCheckpointData = {
 static CCheckpointData testNetCheckpointData = {
     .mapCheckpoints = {
         {0, BlockHash::fromHex("0xbb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e")},
+        {546, BlockHash::fromHex("ac537cfeda975e45040e9938d08e40a16e0fbd6388d02d9b4928b8ae0108c626")},
         {483173, BlockHash::fromHex("0xa804201ca0aceb7e937ef7a3c613a9b7589245b10cc095148c4ce4965b0b73b5")},
         {591117, BlockHash::fromHex("0x5f6b93b2c28cedf32467d900369b8be6700f0649388a7dbfd3ebd4a01b1ffad8")},
         {658924, BlockHash::fromHex("0xed6c8324d9a77195ee080f225a0fca6346495e08ded99bcda47a8eea5a8a620b")},
