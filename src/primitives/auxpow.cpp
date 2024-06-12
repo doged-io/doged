@@ -15,7 +15,7 @@
 #include "hash.h"
 #include "script/script.h"
 #include "txmempool.h"
-#include "util.h"
+//#include "util.h"
 #include "blockindex.h"
 
 //#include "utilstrencodings.h"
