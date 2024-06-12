@@ -73,7 +73,7 @@ public:
 
     bool IsNull() const { return (nBits == 0); }
 
-    BlockHash GetHash() const;
+    //BlockHash GetHash() const;
 
     BlockHash GetPoWHash() const;
 

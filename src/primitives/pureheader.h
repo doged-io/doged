@@ -59,7 +59,7 @@ public:
         return (nBits == 0);
     }
 
-    uint256 GetHash() const;
+    BlockHash GetHash() const;
 
     uint256 GetPoWHash() const;
 

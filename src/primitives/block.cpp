@@ -11,9 +11,9 @@
 #include <hash.h>
 #include <streams.h>
 
-BlockHash CBlockHeader::GetHash() const {
+/*BlockHash CBlockHeader::GetHash() const {
     return BlockHash(SerializeHash(*this));
-}
+}*/
 
 BlockHash CBlockHeader::GetPoWHash() const {
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);

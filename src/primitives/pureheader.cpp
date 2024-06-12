@@ -17,9 +17,9 @@ void CPureBlockHeader::SetBaseVersion(int32_t nBaseVersion, int32_t nChainId)
     nVersion = nBaseVersion | (nChainId * VERSION_CHAIN_START);
 }
 
-uint256 CPureBlockHeader::GetHash() const
+BlockHash CPureBlockHeader::GetHash() const
 {
-    return SerializeHash(*this);
+    return BlockHash(SerializeHash(*this));
 }
 
 uint256 CPureBlockHeader::GetPoWHash() const

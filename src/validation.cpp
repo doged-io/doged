@@ -3967,8 +3967,33 @@ bool HasValidProofOfWork(const std::vector<CBlockHeader> &headers,
                          const Consensus::Params &consensusParams) {
     return std::all_of(
         headers.cbegin(), headers.cend(), [&](const auto &header) {
-            return CheckProofOfWork(header.GetPoWHash(), header.nBits,
-                                    consensusParams);
+            bool isValid = CheckAuxPowProofOfWork(header, consensusParams);
+            if (!isValid) {
+                LogPrintf("Invalid header found: %s\n", header.GetHash().ToString());
+                LogPrintf("nVersion: %08x\n", header.nVersion);
+                LogPrintf("hashPrevBlock: %s\n", header.hashPrevBlock.ToString());
+                LogPrintf("hashMerkleRoot: %s\n", header.hashMerkleRoot.ToString());
+                LogPrintf("nTime: %d\n", header.nTime);
+                LogPrintf("nBits: %08x\n", header.nBits);
+                LogPrintf("nNonce: %d\n", header.nNonce);
+                if (header.IsAuxpow()) {
+                    LogPrintf("auxpow.tx ID: %s\n", header.auxpow->tx->GetId().ToString());
+                    LogPrintf("auxpow.tx: %s\n", header.auxpow->tx->ToString());
+                    LogPrintf("auxpow.hashBlock: %s\n", header.auxpow->hashBlock.ToString());
+                    LogPrintf("auxpow.vMerkleBranch len: %d\n", header.auxpow->vMerkleBranch.size());
+                    LogPrintf("auxpow.nIndex: %d\n", header.auxpow->nIndex);
+                    LogPrintf("auxpow.vChainMerkleBranch len: %d\n", header.auxpow->vChainMerkleBranch.size());
+                    LogPrintf("auxpow.nChainIndex: %d\n", header.auxpow->nChainIndex);
+                    LogPrintf("parentBlock.hash: %s\n", header.auxpow->parentBlock.GetHash().ToString());
+                    LogPrintf("parentBlock.nVersion: %08x\n", header.auxpow->parentBlock.nVersion);
+                    LogPrintf("parentBlock.hashPrevBlock: %s\n", header.auxpow->parentBlock.hashPrevBlock.ToString());
+                    LogPrintf("parentBlock.hashMerkleRoot: %s\n", header.auxpow->parentBlock.hashMerkleRoot.ToString());
+                    LogPrintf("parentBlock.nTime: %d\n", header.auxpow->parentBlock.nTime);
+                    LogPrintf("parentBlock.nBits: %08x\n", header.auxpow->parentBlock.nBits);
+                    LogPrintf("parentBlock.nNonce: %d\n", header.auxpow->parentBlock.nNonce);
+                }
+            }
+            return isValid;
         });
 }
 
