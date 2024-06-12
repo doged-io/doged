@@ -2,6 +2,9 @@
 
 project(crypto)
 
+# For dogecoin (temporarily)
+find_package(OpenSSL REQUIRED)
+
 # The library
 add_library(crypto
 	aes.cpp
@@ -13,6 +16,7 @@ add_library(crypto
 	muhash.cpp
 	poly1305.cpp
 	ripemd160.cpp
+	scrypt.cpp
 	sha1.cpp
 	sha256.cpp
 	sha256_sse4.cpp
@@ -28,6 +32,8 @@ target_include_directories(crypto
 		# To access the config.
 		${CMAKE_CURRENT_BINARY_DIR}/..
 )
+
+target_link_libraries(crypto OpenSSL::SSL)
 
 target_compile_definitions(crypto PUBLIC HAVE_CONFIG_H)
 
