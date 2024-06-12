@@ -1829,14 +1829,6 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
     // chain is irreversibly beyond that time it is applied to all blocks
     // except the two in the chain that violate it. This prevents exploiting
     // the issue against nodes during their initial block download.
-    bool fEnforceBIP30 = !((pindex->nHeight == 91842 &&
-                            pindex->GetBlockHash() ==
-                                uint256S("0x00000000000a4d0a398161ffc163c503763"
-                                         "b1f4360639393e0e4c8e300e0caec")) ||
-                           (pindex->nHeight == 91880 &&
-                            pindex->GetBlockHash() ==
-                                uint256S("0x00000000000743f190a18c5577a3c2d2a1f"
-                                         "610ae9601ac046a38084ccb7cd721")));
 
     // Once BIP34 activated it was not possible to create new duplicate
     // coinbases and thus other than starting with the 2 existing duplicate
@@ -1847,27 +1839,6 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
     // further duplicate transactions descending from the known pairs either. If
     // we're on the known chain at height greater than where BIP34 activated, we
     // can save the db accesses needed for the BIP30 check.
-
-    // BIP34 requires that a block at height X (block X) has its coinbase
-    // scriptSig start with a CScriptNum of X (indicated height X).  The above
-    // logic of no longer requiring BIP30 once BIP34 activates is flawed in the
-    // case that there is a block X before the BIP34 height of 227,931 which has
-    // an indicated height Y where Y is greater than X.  The coinbase for block
-    // X would also be a valid coinbase for block Y, which could be a BIP30
-    // violation.  An exhaustive search of all mainnet coinbases before the
-    // BIP34 height which have an indicated height greater than the block height
-    // reveals many occurrences. The 3 lowest indicated heights found are
-    // 209,921, 490,897, and 1,983,702 and thus coinbases for blocks at these 3
-    // heights would be the first opportunity for BIP30 to be violated.
-
-    // The search reveals a great many blocks which have an indicated height
-    // greater than 1,983,702, so we simply remove the optimization to skip
-    // BIP30 checking for blocks at height 1,983,702 or higher.  Before we reach
-    // that block in another 25 years or so, we should take advantage of a
-    // future consensus change to do a new and improved version of BIP34 that
-    // will actually prevent ever creating any duplicate coinbases in the
-    // future.
-    static constexpr int BIP34_IMPLIES_BIP30_LIMIT = 1983702;
 
     // There is no potential to create a duplicate coinbase at block 209,921
     // because this is still before the BIP34 height and so explicit BIP30
@@ -1900,17 +1871,12 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
     assert(pindex->pprev);
     CBlockIndex *pindexBIP34height =
         pindex->pprev->GetAncestor(consensusParams.BIP34Height);
-    // Only continue to enforce if we're below BIP34 activation height or the
-    // block hash at that height doesn't correspond.
-    fEnforceBIP30 =
-        fEnforceBIP30 &&
-        (!pindexBIP34height ||
-         !(pindexBIP34height->GetBlockHash() == consensusParams.BIP34Hash));
+    // Only continue to enforce if we're below BIP34 activation height
+    bool fEnforceBIP30 =
+        !pindexBIP34height ||
+        !(pindexBIP34height->GetBlockHash() == consensusParams.BIP34Hash);
 
-    // TODO: Remove BIP30 checking from block height 1,983,702 on, once we have
-    // a consensus change that ensures coinbases at those heights can not
-    // duplicate earlier coinbases.
-    if (fEnforceBIP30 || pindex->nHeight >= BIP34_IMPLIES_BIP30_LIMIT) {
+    if (fEnforceBIP30) {
         for (const auto &tx : block.vtx) {
             for (size_t o = 0; o < tx->vout.size(); o++) {
                 if (view.HaveCoin(COutPoint(tx->GetId(), o))) {
