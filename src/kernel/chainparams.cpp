@@ -154,10 +154,10 @@ public:
          * normal data. The characters are rarely used upper ASCII, not valid as
          * UTF-8, and produce a large 32-bit integer with any alignment.
          */
-        diskMagic[0] = 0xf9;
-        diskMagic[1] = 0xbe;
-        diskMagic[2] = 0xb4;
-        diskMagic[3] = 0xd9;
+        diskMagic[0] = 0xcb;
+        diskMagic[1] = 0x98;
+        diskMagic[2] = 0xa6;
+        diskMagic[3] = 0xb0;
         netMagic[0] = 0xc0;
         netMagic[1] = 0xc0;
         netMagic[2] = 0xc0;
@@ -296,10 +296,10 @@ public:
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
 
-        diskMagic[0] = 0x0b;
-        diskMagic[1] = 0x11;
-        diskMagic[2] = 0x09;
-        diskMagic[3] = 0x07;
+        diskMagic[0] = 0xfb;
+        diskMagic[1] = 0x87;
+        diskMagic[2] = 0xb5;
+        diskMagic[3] = 0xbf;
         netMagic[0] = 0xfc;
         netMagic[1] = 0xc1;
         netMagic[2] = 0xb7;
@@ -424,10 +424,10 @@ public:
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
 
-        diskMagic[0] = 0xfa;
-        diskMagic[1] = 0xbf;
-        diskMagic[2] = 0xb5;
-        diskMagic[3] = 0xda;
+        diskMagic[0] = 0x94;
+        diskMagic[1] = 0xb1;
+        diskMagic[2] = 0xca;
+        diskMagic[3] = 0xd2;
         netMagic[0] = 0xda;
         netMagic[1] = 0xb5;
         netMagic[2] = 0xbf;

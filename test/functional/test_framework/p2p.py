@@ -139,9 +139,9 @@ NET_MAGIC_BYTES = {
 }
 
 DISK_MAGIC_BYTES = {
-    "mainnet": b"\xf9\xbe\xb4\xd9",
-    "testnet3": b"\x0b\x11\x09\x07",
-    "regtest": b"\xfa\xbf\xb5\xda",
+    "mainnet": b"\xcb\x98\xa6\xb0",
+    "testnet3": b"\xfb\x87\xb5\xbf",
+    "regtest": b"\x94\xb1\xca\xd2",
 }
 
 

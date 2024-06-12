@@ -16,7 +16,7 @@ def serialize_addrman(
     *,
     addrman_format=1,
     lowest_compatible=4,
-    net_magic=b"\xfa\xbf\xb5\xda",
+    net_magic=b"\x94\xb1\xca\xd2",
     bucket_key=1,
     len_new=None,
     len_tried=None,
