@@ -93,8 +93,10 @@ public:
         // 34cd2cbba4ba366f47e5aa0db5f02c19eba2adf679ceb6653ac003bdc9a0ef1f -
         // first v4 block after the last v3 block
         consensus.BIP65Height = 3464751;
-        // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
-        consensus.BIP66Height = 363725;
+        // 80d1364201e5df97e696c03bdd24dc885e8617b9de51e453c10a4f629b1e797a -
+        // this is the last block that could be v2, 1900 blocks past the last v2
+        // block
+        consensus.BIP66Height = 1034383;
         // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
         consensus.CSVHeight = 419328;
         consensus.powLimit = uint256S(
@@ -240,8 +242,8 @@ public:
             "21b8b97dcdb94caa67c7f8f6dbf22e61e0cfe0e46e1fff3528b22864659e9b38");
         // 955bd496d23790aba1ecfacb722b089a6ae7ddabaedf7d8fb0878f48308a71f9
         consensus.BIP65Height = 1854705;
-        // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
-        consensus.BIP66Height = 330776;
+        // 21b8b97dcdb94caa67c7f8f6dbf22e61e0cfe0e46e1fff3528b22864659e9b38
+        consensus.BIP66Height = 708658;
         // 00000000025e930139bac5c6c31a403776da130831ab85be56578f3fa75369bb
         consensus.CSVHeight = 770112;
         consensus.powLimit = uint256S(
