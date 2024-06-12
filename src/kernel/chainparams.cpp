@@ -87,9 +87,9 @@ public:
         // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 -
         // April 1, 2012
         consensus.BIP16Height = 0;
-        consensus.BIP34Height = 227931;
+        consensus.BIP34Height = 1034383;
         consensus.BIP34Hash = BlockHash::fromHex(
-            "000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
+            "80d1364201e5df97e696c03bdd24dc885e8617b9de51e453c10a4f629b1e797a");
         // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
         consensus.BIP65Height = 388381;
         // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
@@ -234,9 +234,9 @@ public:
         consensus.nSubsidyHalvingInterval = 210000;
         // 00000000040b4e986385315e14bee30ad876d8b47f748025b26683116d21aa65
         consensus.BIP16Height = 0;
-        consensus.BIP34Height = 21111;
+        consensus.BIP34Height = 708658;
         consensus.BIP34Hash = BlockHash::fromHex(
-            "0000000023b3a96d3484e5abb3755c413e7d41500f8e2a5c3f0dd01299cd8ef8");
+            "21b8b97dcdb94caa67c7f8f6dbf22e61e0cfe0e46e1fff3528b22864659e9b38");
         // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
         consensus.BIP65Height = 581885;
         // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
