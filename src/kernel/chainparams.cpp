@@ -97,8 +97,8 @@ public:
         // this is the last block that could be v2, 1900 blocks past the last v2
         // block
         consensus.BIP66Height = 1034383;
-        // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
-        consensus.CSVHeight = 419328;
+        // TODO: CSV not activated yet
+        consensus.CSVHeight = 9000000;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // two weeks
@@ -244,8 +244,8 @@ public:
         consensus.BIP65Height = 1854705;
         // 21b8b97dcdb94caa67c7f8f6dbf22e61e0cfe0e46e1fff3528b22864659e9b38
         consensus.BIP66Height = 708658;
-        // 00000000025e930139bac5c6c31a403776da130831ab85be56578f3fa75369bb
-        consensus.CSVHeight = 770112;
+        // TODO: CSV not activated yet
+        consensus.CSVHeight = 9000000;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // two weeks
