@@ -13,6 +13,7 @@
 #include <serialize.h>
 #include <uint256.h>
 #include <util/time.h>
+#include <logging.h>
 
 /**
  * Nodes collect new transactions into a block, hash them into a hash tree, and
@@ -38,6 +39,15 @@ public:
         s << *(CPureBlockHeader*)this;
         
         if (this->IsAuxpow()) {
+            if (!auxpow) {
+                LogPrintf("Header missing auxpow found: %s\n", this->GetHash().ToString());
+                LogPrintf("nVersion: %08x\n", this->nVersion);
+                LogPrintf("hashPrevBlock: %s\n", this->hashPrevBlock.ToString());
+                LogPrintf("hashMerkleRoot: %s\n", this->hashMerkleRoot.ToString());
+                LogPrintf("nTime: %d\n", this->nTime);
+                LogPrintf("nBits: %08x\n", this->nBits);
+                LogPrintf("nNonce: %d\n", this->nNonce);
+            }
             assert(auxpow);
             s << *auxpow;
         }
