@@ -47,8 +47,9 @@ public:
                 LogPrintf("nTime: %d\n", this->nTime);
                 LogPrintf("nBits: %08x\n", this->nBits);
                 LogPrintf("nNonce: %d\n", this->nNonce);
+                throw std::ios_base::failure(
+                    "Missing auxpow in header that claims to have it");
             }
-            assert(auxpow);
             s << *auxpow;
         }
     }
