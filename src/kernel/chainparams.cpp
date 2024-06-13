@@ -98,7 +98,7 @@ public:
         // block
         consensus.BIP66Height = 1034383;
         // TODO: CSV not activated yet
-        consensus.CSVHeight = 9000000;
+        consensus.CSVHeight = 0x7fffffff;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // two weeks
@@ -245,7 +245,7 @@ public:
         // 21b8b97dcdb94caa67c7f8f6dbf22e61e0cfe0e46e1fff3528b22864659e9b38
         consensus.BIP66Height = 708658;
         // TODO: CSV not activated yet
-        consensus.CSVHeight = 9000000;
+        consensus.CSVHeight = 0x7fffffff;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // two weeks
