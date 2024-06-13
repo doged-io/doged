@@ -54,21 +54,20 @@ BOOST_AUTO_TEST_CASE(scrypt_hashtest) {
     scrypt_detect_sse2();
 #endif
 
-    char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+    uint8_t scratchpad[SCRYPT_SCRATCHPAD_SIZE];
     for (const TestCase &test_case : TEST_CASES) {
         uint256 scrypthash;
         std::vector<uint8_t> input = ParseHex(test_case.input);
 
 #if defined(USE_SSE2)
         // Test SSE2 scrypt
-        scrypt_1024_1_1_256_sp_sse2((const char *)&input[0],
-                                    (char *)scrypthash.data(), scratchpad);
+        scrypt_1024_1_1_256_sp_sse2(&input[0], scrypthash.data(), scratchpad);
         BOOST_CHECK_EQUAL(scrypthash.ToString().c_str(), test_case.output);
 #endif
 
         // Test generic scrypt
-        scrypt_1024_1_1_256_sp_generic((const char *)&input[0],
-                                       (char *)scrypthash.data(), scratchpad);
+        scrypt_1024_1_1_256_sp_generic(&input[0], scrypthash.data(),
+                                       scratchpad);
         BOOST_CHECK_EQUAL(scrypthash.ToString().c_str(), test_case.output);
     }
 }

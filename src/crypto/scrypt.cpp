@@ -47,11 +47,6 @@
 #endif
 
 #ifndef __FreeBSD__
-static inline uint32_t be32dec(const void *pp) {
-    const uint8_t *p = (uint8_t const *)pp;
-    return ((uint32_t)(p[3]) + ((uint32_t)(p[2]) << 8) +
-            ((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
-}
 
 static inline void be32enc(void *pp, uint32_t x) {
     uint8_t *p = (uint8_t *)pp;
@@ -62,6 +57,21 @@ static inline void be32enc(void *pp, uint32_t x) {
 }
 
 #endif
+
+static inline uint32_t le32dec(const void *pp) {
+    const uint8_t *p = (uint8_t const *)pp;
+    return ((uint32_t)(p[0]) + ((uint32_t)(p[1]) << 8) +
+            ((uint32_t)(p[2]) << 16) + ((uint32_t)(p[3]) << 24));
+}
+
+static inline void le32enc(void *pp, uint32_t x) {
+    uint8_t *p = (uint8_t *)pp;
+    p[0] = x & 0xff;
+    p[1] = (x >> 8) & 0xff;
+    p[2] = (x >> 16) & 0xff;
+    p[3] = (x >> 24) & 0xff;
+}
+
 /**
  * PBKDF2_SHA256(passwd, passwdlen, salt, saltlen, c, buf, dkLen):
  * Compute PBKDF2(passwd, salt, c, dkLen) using HMAC-SHA256 as the PRF, and
@@ -69,9 +79,8 @@ static inline void be32enc(void *pp, uint32_t x) {
  */
 void PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
                    size_t saltlen, uint64_t c, uint8_t *buf, size_t dkLen) {
-    CHMAC_SHA256 baseCtx = CHMAC_SHA256(passwd, passwdlen);
-    CHMAC_SHA256 PShctx = CHMAC_SHA256(passwd, passwdlen);
-    CHMAC_SHA256 hctx = CHMAC_SHA256(passwd, passwdlen);
+    CHMAC_SHA256 baseCtx(passwd, passwdlen);
+    CHMAC_SHA256 hctx = baseCtx;
     size_t i;
     uint8_t ivec[4];
     uint8_t U[CHMAC_SHA256::OUTPUT_SIZE];
@@ -81,6 +90,7 @@ void PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
     size_t clen;
 
     /* Compute HMAC state after processing P and S. */
+    CHMAC_SHA256 PShctx = baseCtx;
     PShctx.Write(salt, saltlen);
 
     /* Iterate through the blocks. */
@@ -89,7 +99,7 @@ void PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
         be32enc(ivec, (uint32_t)(i + 1));
 
         /* Compute U_1 = PRF(P, S || INT(i)). */
-        PShctx.Copy(&hctx);
+        hctx = PShctx;
         hctx.Write(ivec, 4);
         hctx.Finalize(U);
 
@@ -98,18 +108,21 @@ void PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
 
         for (j = 2; j <= c; j++) {
             /* Compute U_j. */
-            baseCtx.Copy(&hctx);
+            hctx = baseCtx;
             hctx.Write(U, CHMAC_SHA256::OUTPUT_SIZE);
             hctx.Finalize(U);
 
             /* ... xor U_j ... */
-            for (k = 0; k < CHMAC_SHA256::OUTPUT_SIZE; k++)
+            for (k = 0; k < CHMAC_SHA256::OUTPUT_SIZE; k++) {
                 T[k] ^= U[k];
+            }
         }
 
         /* Copy as many bytes as necessary into buf. */
         clen = dkLen - i * CHMAC_SHA256::OUTPUT_SIZE;
-        if (clen > CHMAC_SHA256::OUTPUT_SIZE) clen = CHMAC_SHA256::OUTPUT_SIZE;
+        if (clen > CHMAC_SHA256::OUTPUT_SIZE) {
+            clen = CHMAC_SHA256::OUTPUT_SIZE;
+        }
         memcpy(&buf[i * CHMAC_SHA256::OUTPUT_SIZE], T, clen);
     }
 }
@@ -198,8 +211,8 @@ static inline void xor_salsa8(uint32_t B[16], const uint32_t Bx[16]) {
     B[15] += x15;
 }
 
-void scrypt_1024_1_1_256_sp_generic(const char *input, char *output,
-                                    char *scratchpad) {
+void scrypt_1024_1_1_256_sp_generic(const uint8_t *input, uint8_t *output,
+                                    uint8_t *scratchpad) {
     uint8_t B[128];
     uint32_t X[32];
     uint32_t *V;
@@ -207,8 +220,7 @@ void scrypt_1024_1_1_256_sp_generic(const char *input, char *output,
 
     V = (uint32_t *)(((uintptr_t)(scratchpad) + 63) & ~(uintptr_t)(63));
 
-    PBKDF2_SHA256((const uint8_t *)input, 80, (const uint8_t *)input, 80, 1, B,
-                  128);
+    PBKDF2_SHA256(input, 80, input, 80, 1, B, 128);
 
     for (k = 0; k < 32; k++) {
         X[k] = le32dec(&B[4 * k]);
@@ -231,14 +243,14 @@ void scrypt_1024_1_1_256_sp_generic(const char *input, char *output,
         le32enc(&B[4 * k], X[k]);
     }
 
-    PBKDF2_SHA256((const uint8_t *)input, 80, B, 128, 1, (uint8_t *)output, 32);
+    PBKDF2_SHA256(input, 80, B, 128, 1, output, 32);
 }
 
 #if defined(USE_SSE2)
 // By default, set to generic scrypt function. This will prevent crash in case
 // when scrypt_detect_sse2() wasn't called
-void (*scrypt_1024_1_1_256_sp_detected)(const char *input, char *output,
-                                        char *scratchpad) =
+void (*scrypt_1024_1_1_256_sp_detected)(const uint8_t *input, uint8_t *output,
+                                        uint8_t *scratchpad) =
     &scrypt_1024_1_1_256_sp_generic;
 
 void scrypt_detect_sse2() {
@@ -269,8 +281,8 @@ void scrypt_detect_sse2() {
 }
 #endif
 
-void scrypt_1024_1_1_256(const char *input, char *output) {
-    thread_local char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
+void scrypt_1024_1_1_256(const uint8_t *input, uint8_t *output) {
+    thread_local uint8_t scratchpad[SCRYPT_SCRATCHPAD_SIZE];
     memset(scratchpad, 0, sizeof(scratchpad));
     scrypt_1024_1_1_256_sp(input, output, scratchpad);
 }
