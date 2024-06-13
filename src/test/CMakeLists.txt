@@ -136,6 +136,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		base32_tests.cpp
 		base58_tests.cpp
 		base64_tests.cpp
+		baseheader_tests.cpp
 		bip32_tests.cpp
 		bitmanip_tests.cpp
 		blockchain_tests.cpp
