@@ -33,9 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Currently, we depend on OpenSSL for PBKDF2, but eventually should be removed
-#include <openssl/sha.h>
-
 #if defined(USE_SSE2) && !defined(USE_SSE2_ALWAYS)
 #ifdef _MSC_VER
 // MSVC 64bit is unable to use inline asm
