@@ -80,7 +80,7 @@ static inline void le32enc(void *pp, uint32_t x) {
 void PBKDF2_SHA256(const uint8_t *passwd, size_t passwdlen, const uint8_t *salt,
                    size_t saltlen, uint64_t c, uint8_t *buf, size_t dkLen) {
     CHMAC_SHA256 baseCtx(passwd, passwdlen);
-    CHMAC_SHA256 hctx = baseCtx;
+    CHMAC_SHA256 hctx(nullptr, 0);
     size_t i;
     uint8_t ivec[4];
     uint8_t U[CHMAC_SHA256::OUTPUT_SIZE];

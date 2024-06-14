@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <cstring>
 
 /** A hasher class for HMAC-SHA-256. */
 class CHMAC_SHA256 {
