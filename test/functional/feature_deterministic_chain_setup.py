@@ -19,7 +19,7 @@ def get_coinbase_scriptsig(height: int) -> bytes:
         bip34_coinbase_height = bytes([OP_1 + height - 1])
     else:
         bip34_coinbase_height = CScriptNum.encode(CScriptNum(height))
-    excessive_blocksize_sig = CScriptOp.encode_op_pushdata(b"/EB32.0/")
+    excessive_blocksize_sig = CScriptOp.encode_op_pushdata(b"/EB1.0/")
     return bip34_coinbase_height + excessive_blocksize_sig
 
 
@@ -86,7 +86,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         self.log.info("Reproduce the assertion in the TestChain100Setup constructor.")
         mine_blocks(100)
         assert_equal(
-            tip, "8916b4cf6a6dbb901536365ed5541e39f9ec3b95880762300d0401360bd9cce9"
+            tip, "349766ba691ce76e0d2a0b27656004913a2e363510be135f6d660d50197aa7ce"
         )
 
         self.log.info("Check m_assumeutxo_data at height 110.")
@@ -94,7 +94,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         assert_equal(node.getblockchaininfo()["blocks"], 110)
         assert_equal(
             node.gettxoutsetinfo()["hash_serialized"],
-            "1044c43d9fb50a5370fa67c114db0555b4f14842b955cb11652663a4c22d1be2",
+            "4766e0ece526f39cf0a3311092b78b4e52dfc6718b631f1e1c483c83792f98ce",
         )
 
         self.log.info("Check m_assumeutxo_data at height 210.")
@@ -102,7 +102,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         assert_equal(node.getblockchaininfo()["blocks"], 210)
         assert_equal(
             node.gettxoutsetinfo()["hash_serialized"],
-            "9aba7b8b03f5cd2396f9dfab892e17f8c9307b9d9e1ebcacd1bd4fa99eb01249",
+            "de9f683a76655d2140c4a0be0e79ca1fdb9a4c61b40ed287ce56e203094baccb",
         )
 
 

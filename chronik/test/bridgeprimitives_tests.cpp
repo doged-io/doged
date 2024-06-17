@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_genesis, TestChain100Setup) {
                                                 bridgedGenesisTx.data_pos)));
 }
 
-BOOST_FIXTURE_TEST_CASE(test_bridge_detailled, TestChain100Setup) {
+BOOST_FIXTURE_TEST_CASE(test_bridge_detailed, TestChain100Setup) {
     LOCK(cs_main);
 
     const chronik_bridge::ChronikBridge bridge(m_node);
@@ -309,13 +309,13 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_detailled, TestChain100Setup) {
         .timestamp = 1598888152,
         .height = 202,
         .file_num = 0,
-        .data_pos = 39487,
+        .data_pos = 39287,
         .undo_pos = 8249,
         .size = 578,
         .txs = {
-            {.tx = expectedTestTx0, .data_pos = 39568, .undo_pos = 0},
-            {.tx = expectedTestTx1, .data_pos = 39668, .undo_pos = 8250},
-            {.tx = expectedTestTx2, .data_pos = 39851, .undo_pos = 8257},
+            {.tx = expectedTestTx0, .data_pos = 39368, .undo_pos = 0},
+            {.tx = expectedTestTx1, .data_pos = 39468, .undo_pos = 8250},
+            {.tx = expectedTestTx2, .data_pos = 39651, .undo_pos = 8257},
         }};
 
     CheckBlocksEqual(bridgedTestBlock, expectedBridgedTestBlock);
@@ -396,7 +396,9 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_big, TestChain100Setup) {
 
     std::vector<size_t> testNumTxsCases = {
         0,   1,   2,   3,   10,  62,  63,  64,  65,  126, 127, 128,
-        129, 130, 250, 251, 252, 253, 254, 255, 256, 257, 258, 65536};
+        129, 130, 250, 251, 252, 253, 254, 255, 256, 257, 258,
+        // 65536, TODO: Reintroduce when block size is increased
+    };
 
     std::vector<CBlock> coinblocks;
     for (size_t idx = 0; idx < testNumTxsCases.size(); ++idx) {
