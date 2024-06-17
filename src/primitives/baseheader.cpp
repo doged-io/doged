@@ -16,7 +16,7 @@ BlockHash CBaseBlockHeader::GetHash() const {
 BlockHash CBaseBlockHeader::GetPowHash() const {
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << *this;
-    uint256 thash;
-    scrypt_1024_1_1_256((const uint8_t *)ss.data(), thash.data());
-    return BlockHash(thash);
+    uint256 hash;
+    scrypt_1024_1_1_256((const uint8_t *)ss.data(), hash.data());
+    return BlockHash(hash);
 }
