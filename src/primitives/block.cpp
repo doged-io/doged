@@ -1,16 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2024 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <primitives/block.h>
 
-#include <hash.h>
 #include <tinyformat.h>
-
-BlockHash CBlockHeader::GetHash() const {
-    return BlockHash(SerializeHash(*this));
-}
 
 std::string CBlock::ToString() const {
     std::stringstream s;
