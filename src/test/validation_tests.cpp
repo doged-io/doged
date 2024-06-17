@@ -151,13 +151,13 @@ BOOST_AUTO_TEST_CASE(test_assumeutxo) {
     const auto out110 = *ExpectedAssumeutxo(110, *params);
     BOOST_CHECK_EQUAL(
         out110.hash_serialized.ToString(),
-        "1044c43d9fb50a5370fa67c114db0555b4f14842b955cb11652663a4c22d1be2");
+        "4766e0ece526f39cf0a3311092b78b4e52dfc6718b631f1e1c483c83792f98ce");
     BOOST_CHECK_EQUAL(out110.nChainTx, (unsigned int)110);
 
     const auto out210 = *ExpectedAssumeutxo(210, *params);
     BOOST_CHECK_EQUAL(
         out210.hash_serialized.ToString(),
-        "9aba7b8b03f5cd2396f9dfab892e17f8c9307b9d9e1ebcacd1bd4fa99eb01249");
+        "de9f683a76655d2140c4a0be0e79ca1fdb9a4c61b40ed287ce56e203094baccb");
     BOOST_CHECK_EQUAL(out210.nChainTx, (unsigned int)210);
 }
 

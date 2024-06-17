@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE(max_block_size) {
     BOOST_CHECK(!config.SetMaxBlockSize(0));
     BOOST_CHECK(!config.SetMaxBlockSize(12345));
     BOOST_CHECK(!config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE - 1));
-    BOOST_CHECK(!config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE));
 
-    // LEGACY_MAX_BLOCK_SIZE + 1
+    // Smallest
+    BOOST_CHECK(config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE));
     BOOST_CHECK(config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE + 1));
     BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), LEGACY_MAX_BLOCK_SIZE + 1);
 

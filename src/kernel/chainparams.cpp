@@ -124,7 +124,7 @@ public:
         consensus.gravitonHeight = 0x7ffffffe;
         consensus.phononHeight = 0x7ffffffe;
         consensus.axionHeight = 0x7ffffffe;
-        consensus.wellingtonHeight = 800000; // keep alive for tests
+        consensus.wellingtonHeight = 800000;    // keep alive for tests
         consensus.cowperthwaiteHeight = 900000; // keep alive for tests
         consensus.augustoActivationTime = 0x7ffffffe;
 
@@ -437,14 +437,14 @@ public:
         m_assumeutxo_data = MapAssumeutxo{
             {
                 110,
-                {AssumeutxoHash{uint256S("0x1044c43d9fb50a5370fa67c114db0555b4f"
-                                         "14842b955cb11652663a4c22d1be2")},
+                {AssumeutxoHash{uint256S("0x4766e0ece526f39cf0a3311092b78b4e52d"
+                                         "fc6718b631f1e1c483c83792f98ce")},
                  110},
             },
             {
                 210,
-                {AssumeutxoHash{uint256S("0x9aba7b8b03f5cd2396f9dfab892e17f8c93"
-                                         "07b9d9e1ebcacd1bd4fa99eb01249")},
+                {AssumeutxoHash{uint256S("0xde9f683a76655d2140c4a0be0e79ca1fdb9"
+                                         "a4c61b40ed287ce56e203094baccb")},
                  210},
             },
         };

@@ -99,7 +99,7 @@ class ABC_CmdLine_Test(BitcoinTestFramework):
         )
         self.stop_node(0)
         self.nodes[0].assert_start_raises_init_error(
-            [f"-excessiveblocksize={LEGACY_MAX_BLOCK_SIZE}"],
+            [f"-excessiveblocksize={LEGACY_MAX_BLOCK_SIZE - 1}"],
             "Error: Excessive block size must be > 1,000,000 bytes (1MB)",
         )
         self.nodes[0].assert_start_raises_init_error(

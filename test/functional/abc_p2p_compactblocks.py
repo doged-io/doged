@@ -81,7 +81,7 @@ class FullBlockTest(BitcoinTestFramework):
         self.block_heights = {}
         self.tip = None
         self.blocks = {}
-        self.excessive_block_size = 16 * ONE_MEGABYTE
+        self.excessive_block_size = ONE_MEGABYTE
         self.extra_args = [
             [
                 "-whitelist=noban@127.0.0.1",
@@ -280,7 +280,7 @@ class FullBlockTest(BitcoinTestFramework):
         test_p2p.send_message(test_p2p.last_headers)
 
         # Send a block
-        b1 = block(1, spend=out[0], block_size=ONE_MEGABYTE + 1)
+        b1 = block(1, spend=out[0], block_size=int(ONE_MEGABYTE / 2))
         default_p2p.send_blocks_and_test([self.tip], node)
 
         # Checks the node to forward it via compact block
@@ -299,7 +299,7 @@ class FullBlockTest(BitcoinTestFramework):
         b2 = block(
             2,
             spend=out[1],
-            extra_txns=70000,
+            extra_txns=9000,
             block_size=self.excessive_block_size - 1000,
         )
         default_p2p.send_blocks_and_test([self.tip], node)
