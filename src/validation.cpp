@@ -6643,6 +6643,13 @@ util::Result<void> ChainstateManager::ActivateSnapshot(
                 base_blockhash.ToString())};
         }
 
+        if (snapshot_start_block->nStatus.isInvalid()) {
+            return util::Error{strprintf(
+                Untranslated(
+                    "The base block header (%s) is part of an invalid chain"),
+                base_blockhash.ToString())};
+        }
+
         if (Assert(m_active_chainstate->GetMempool())->size() > 0) {
             return util::Error{Untranslated(
                 "Can't activate a snapshot when mempool not empty.")};
