@@ -89,7 +89,7 @@ CBlock BuildChainTestingSetup::CreateBlock(
     }
     createCoinbaseAndMerkleRoot(&block, prev, config.GetMaxBlockSize());
 
-    while (!CheckProofOfWork(block.GetHash(), block.nBits,
+    while (!CheckProofOfWork(block.GetPowHash(), block.nBits,
                              config.GetChainParams().GetConsensus())) {
         ++block.nNonce;
     }

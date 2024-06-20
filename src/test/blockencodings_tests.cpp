@@ -54,7 +54,7 @@ static CBlock BuildBlockTestCase() {
 
     GlobalConfig config;
     const Consensus::Params &params = config.GetChainParams().GetConsensus();
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, params)) {
+    while (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
         ++block.nNonce;
     }
 
@@ -335,7 +335,7 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest) {
 
     GlobalConfig config;
     const Consensus::Params &params = config.GetChainParams().GetConsensus();
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, params)) {
+    while (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
         ++block.nNonce;
     }
 

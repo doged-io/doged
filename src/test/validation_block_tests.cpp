@@ -111,7 +111,7 @@ MinerTestingSetup::FinalizeBlock(const Consensus::Params &params,
                                  std::shared_ptr<CBlock> pblock) {
     pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
 
-    while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, params)) {
+    while (!CheckProofOfWork(pblock->GetPowHash(), pblock->nBits, params)) {
         ++(pblock->nNonce);
     }
 

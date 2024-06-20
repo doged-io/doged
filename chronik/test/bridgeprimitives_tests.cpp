@@ -138,7 +138,7 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_genesis, TestChain100Setup) {
             .coin = {}, // null coin
         }},
         .outputs = {{
-            .value = 5000000000,
+            .value = 8800000000,
             .script =
                 ToRustVec<uint8_t>(genesisBlock.vtx[0]->vout[0].scriptPubKey),
         }},
@@ -153,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_genesis, TestChain100Setup) {
         .file_num = 0,
         .data_pos = 8, // 8 magic bytes in block file
         .undo_pos = 0, // genesis has no undo data
-        .size = 285,
+        .size = 224,
         .txs = {{
             .tx = expectedGenesisTx,
             .data_pos = 89, // +80 header +1 compact size
@@ -309,13 +309,13 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_detailled, TestChain100Setup) {
         .timestamp = 1598888152,
         .height = 202,
         .file_num = 0,
-        .data_pos = 39548,
+        .data_pos = 39487,
         .undo_pos = 8249,
         .size = 578,
         .txs = {
-            {.tx = expectedTestTx0, .data_pos = 39629, .undo_pos = 0},
-            {.tx = expectedTestTx1, .data_pos = 39729, .undo_pos = 8250},
-            {.tx = expectedTestTx2, .data_pos = 39912, .undo_pos = 8257},
+            {.tx = expectedTestTx0, .data_pos = 39568, .undo_pos = 0},
+            {.tx = expectedTestTx1, .data_pos = 39668, .undo_pos = 8250},
+            {.tx = expectedTestTx2, .data_pos = 39851, .undo_pos = 8257},
         }};
 
     CheckBlocksEqual(bridgedTestBlock, expectedBridgedTestBlock);

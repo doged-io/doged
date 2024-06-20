@@ -27,7 +27,7 @@ class UTXOSetHashTest(BitcoinTestFramework):
         # the cache
         assert_equal(
             self.nodes[0].gettxoutsetinfo()["hash_serialized"],
-            "b32ec1dda5a53cd025b95387aad344a801825fe46a60ff952ce26528f01d3be8",
+            "16bee72c17a3d033aa7bc44179bc4d66da6086afc1179f18db07d5616515852a",
         )
         assert_equal(
             self.nodes[0].gettxoutsetinfo("muhash")["muhash"],

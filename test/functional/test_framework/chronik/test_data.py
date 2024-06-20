@@ -25,7 +25,7 @@ def genesis_cb_tx():
         ],
         outputs=[
             pb.TxOutput(
-                value=5000000000,
+                value=8800000000,
                 output_script=bytes(GENESIS_CB_SCRIPT_PUBKEY),
             )
         ],
@@ -36,6 +36,6 @@ def genesis_cb_tx():
             timestamp=TIME_GENESIS_BLOCK,
         ),
         time_first_seen=0,
-        size=204,
+        size=143,
         is_coinbase=True,
     )
