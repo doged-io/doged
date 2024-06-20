@@ -73,10 +73,17 @@ bool ParseMoney(const std::string &money_string, Amount &nRet) {
     // because it's on no critical path, and it's very unlikely to support a 19
     // decimal (or more) currency anyway.
     assert(currency.decimals <= 18);
+    const size_t maxStrLen = size_t(19) - currency.decimals;
 
     // guard against 63 bit overflow
-    if (strWhole.size() > (size_t(18) - currency.decimals)) {
+    if (strWhole.size() > maxStrLen) {
         return false;
+    }
+    if (strWhole.size() == maxStrLen) {
+        // Allow 18 decimals, but only with a leading 1
+        if (strWhole[0] > '1') {
+            return false;
+        }
     }
     if (nUnits < Amount::zero() || nUnits > currency.baseunit) {
         return false;

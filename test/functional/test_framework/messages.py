@@ -41,7 +41,7 @@ MAX_BLOOM_HASH_FUNCS = 50
 COIN = 100000000
 # 1 XEC in satoshis
 XEC = 100
-MAX_MONEY = 21000000 * COIN
+MAX_MONEY = 10_000_000_000 * COIN
 
 # Maximum length of incoming protocol messages
 MAX_PROTOCOL_MESSAGE_LENGTH = 2 * 1024 * 1024
