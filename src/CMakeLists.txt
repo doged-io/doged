@@ -684,10 +684,7 @@ add_library(server
 	policy/fees.cpp
 	policy/packages.cpp
 	policy/settings.cpp
-	pow/aserti32d.cpp
-	pow/daa.cpp
 	pow/eda.cpp
-	pow/grasberg.cpp
 	pow/pow.cpp
 	rest.cpp
 	rpc/abc.cpp
@@ -897,8 +894,6 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		policy/packages.cpp
 		policy/policy.cpp
 		policy/settings.cpp
-		pow/aserti32d.cpp
-		pow/daa.cpp
 		pow/eda.cpp
 		pow/pow.cpp
 		primitives/block.cpp

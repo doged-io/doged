@@ -51,6 +51,14 @@ BOOST_AUTO_TEST_CASE(get_next_work_pow_limit) {
     pindexLast.nBits = 0x1d00ffff;
     unsigned int expected_nbits = 0x1d00ffffU;
     auto consensus_params = config.GetChainParams().GetConsensus();
+
+    // TODO: Temporary fix for Dogecoin: Restore Bitcoin parameters
+    // Replace this test suite with Dogecoin DAA tests
+    consensus_params.powLimit = uint256S(
+        "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    consensus_params.nPowTargetTimespan = 14 * 24 * 60 * 60;
+    consensus_params.nPowTargetSpacing = 10 * 60;
+
     BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime,
                                                 consensus_params),
                       expected_nbits);
@@ -238,43 +246,39 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
             initialBits);
     }
 
-    // Now we expect the difficulty to decrease.
+    // Difficulty remains unchanged
     blocks[110] = GetBlockIndex(&blocks[109], 2 * 3600, initialBits);
     currentPow.SetCompact(currentPow.GetCompact());
-    currentPow += (currentPow >> 2);
     BOOST_CHECK_EQUAL(
         GetNextEDAWorkRequired(&blocks[110], &blkHeaderDummy, params),
         currentPow.GetCompact());
 
-    // As we continue with 2h blocks, difficulty continue to decrease.
+    // As we continue with 2h blocks, difficulty remains unchanged.
     blocks[111] =
         GetBlockIndex(&blocks[110], 2 * 3600, currentPow.GetCompact());
     currentPow.SetCompact(currentPow.GetCompact());
-    currentPow += (currentPow >> 2);
     BOOST_CHECK_EQUAL(
         GetNextEDAWorkRequired(&blocks[111], &blkHeaderDummy, params),
         currentPow.GetCompact());
 
-    // We decrease again.
+    // Difficulty remains unchanged.
     blocks[112] =
         GetBlockIndex(&blocks[111], 2 * 3600, currentPow.GetCompact());
     currentPow.SetCompact(currentPow.GetCompact());
-    currentPow += (currentPow >> 2);
     BOOST_CHECK_EQUAL(
         GetNextEDAWorkRequired(&blocks[112], &blkHeaderDummy, params),
         currentPow.GetCompact());
 
-    // We check that we do not go below the minimal difficulty.
+    // Difficulty remains unchanged, so we don't go below powLimit anyway.
     blocks[113] =
         GetBlockIndex(&blocks[112], 2 * 3600, currentPow.GetCompact());
     currentPow.SetCompact(currentPow.GetCompact());
-    currentPow += (currentPow >> 2);
     BOOST_CHECK(powLimit.GetCompact() != currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
         GetNextEDAWorkRequired(&blocks[113], &blkHeaderDummy, params),
-        powLimit.GetCompact());
+        currentPow.GetCompact());
 
-    // Once we reached the minimal difficulty, we stick with it.
+    // Difficulty remains unchanged, so we don't go below powLimit anyway.
     blocks[114] = GetBlockIndex(&blocks[113], 2 * 3600, powLimit.GetCompact());
     BOOST_CHECK(powLimit.GetCompact() != currentPow.GetCompact());
     BOOST_CHECK_EQUAL(

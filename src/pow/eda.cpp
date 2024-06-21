@@ -81,37 +81,7 @@ uint32_t GetNextEDAWorkRequired(const CBlockIndex *pindexPrev,
         return pindex->nBits;
     }
 
-    // We can't go below the minimum, so bail early.
-    uint32_t nBits = pindexPrev->nBits;
-    if (nBits == nProofOfWorkLimit) {
-        return nProofOfWorkLimit;
-    }
-
-    // If producing the last 6 blocks took less than 12h, we keep the same
-    // difficulty.
-    const CBlockIndex *pindex6 = pindexPrev->GetAncestor(nHeight - 7);
-    assert(pindex6);
-    int64_t mtp6blocks =
-        pindexPrev->GetMedianTimePast() - pindex6->GetMedianTimePast();
-    if (mtp6blocks < 12 * 3600) {
-        return nBits;
-    }
-
-    // If producing the last 6 blocks took more than 12h, increase the
-    // difficulty target by 1/4 (which reduces the difficulty by 20%).
-    // This ensures that the chain does not get stuck in case we lose
-    // hashrate abruptly.
-    arith_uint256 nPow;
-    nPow.SetCompact(nBits);
-    nPow += (nPow >> 2);
-
-    // Make sure we do not go below allowed values.
-    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
-    if (nPow > bnPowLimit) {
-        nPow = bnPowLimit;
-    }
-
-    return nPow.GetCompact();
+    return pindexPrev->nBits;
 }
 
 // Check that on difficulty adjustments, the new difficulty does not increase

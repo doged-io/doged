@@ -12,10 +12,7 @@
 #include <common/system.h>
 #include <consensus/activation.h>
 #include <consensus/params.h>
-#include <pow/aserti32d.h>
-#include <pow/daa.h>
 #include <pow/eda.h>
-#include <pow/grasberg.h>
 #include <primitives/blockhash.h>
 
 uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
@@ -29,14 +26,6 @@ uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
     // Special rule for regtest: we never retarget.
     if (params.fPowNoRetargeting) {
         return pindexPrev->nBits;
-    }
-
-    if (IsAxionEnabled(params, pindexPrev)) {
-        return GetNextASERTWorkRequired(pindexPrev, pblock, params);
-    }
-
-    if (IsDAAEnabled(params, pindexPrev)) {
-        return GetNextDAAWorkRequired(pindexPrev, pblock, params);
     }
 
     return GetNextEDAWorkRequired(pindexPrev, pblock, params);
