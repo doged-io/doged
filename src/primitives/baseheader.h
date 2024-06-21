@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PRIMITIVES_BASE_HEADER_H
-#define BITCOIN_PRIMITIVES_BASE_HEADER_H
+#ifndef BITCOIN_PRIMITIVES_BASEHEADER_H
+#define BITCOIN_PRIMITIVES_BASEHEADER_H
 
 #include <primitives/blockhash.h>
 #include <serialize.h>
@@ -66,4 +66,4 @@ public:
     int64_t GetBlockTime() const { return (int64_t)nTime; }
 };
 
-#endif // BITCOIN_PRIMITIVES_BASE_HEADER_H
+#endif // BITCOIN_PRIMITIVES_BASEHEADER_H
