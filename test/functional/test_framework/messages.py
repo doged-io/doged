@@ -77,6 +77,12 @@ def hash256(s):
     return sha256(sha256(s))
 
 
+def scrypt(s):
+    if not hasattr(hashlib, "scrypt"):
+        raise ValueError("Python version built with OpenSSL required")
+    return hashlib.scrypt(s, salt=s, n=1024, r=1, p=1, dklen=32)
+
+
 def ser_compact_size(size):
     r = b""
     if size < 253:
@@ -2366,3 +2372,25 @@ class TestFrameworkMessages(unittest.TestCase):
         msg_proof = msg_avaproof()
         msg_proof.proof = avaproof
         self.assertEqual(ToHex(msg_proof), proof_hex)
+
+    def test_scrypt_hash(self):
+        self.assertEqual(
+            scrypt(
+                bytes.fromhex(
+                    "020000004c1271c211717198227392b029a64a7971931d351b387bb80db027f270"
+                    "411e398a07046f7d4a08dd815412a8712f874a7ebf0507e3878bd24e20a3b73fd7"
+                    "50a667d2f451eac7471b00de6659"
+                )
+            )[::-1].hex(),
+            "00000000002bef4107f882f6115e0b01f348d21195dacd3582aa2dabd7985806",
+        )
+        self.assertEqual(
+            scrypt(
+                bytes.fromhex(
+                    "0200000011503ee6a855e900c00cfdd98f5f55fffeaee9b6bf55bea9b852d9de2c"
+                    "e35828e204eef76acfd36949ae56d1fbe81c1ac9c0209e6331ad56414f9072506a"
+                    "77f8c6faf551eac7471b00389d01"
+                )
+            )[::-1].hex(),
+            "00000000003a0d11bdd5eb634e08b7feddcfbbf228ed35d250daf19f1c88fc94",
+        )
