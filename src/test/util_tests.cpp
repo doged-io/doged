@@ -1502,7 +1502,7 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney) {
     BOOST_CHECK(ParseMoney("1234567.89", ret));
     BOOST_CHECK_EQUAL(ret, 123456789 * SATOSHI);
 
-    BOOST_CHECK(ParseMoney("21000000000000.00", ret));
+    BOOST_CHECK(ParseMoney("10000000000000000.00", ret));
     BOOST_CHECK_EQUAL(ret, MAX_MONEY);
 
     const auto XEC = Currency::get().baseunit;
@@ -1566,8 +1566,10 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney) {
     // Max possible value with the max number of digits
     BOOST_CHECK(ParseMoney("9999999999999999.99", ret));
     BOOST_CHECK_EQUAL(ret, int64_t(999999999999999999) * SATOSHI);
+    BOOST_CHECK(ParseMoney("19999999999999999.99", ret));
+    BOOST_CHECK_EQUAL(ret, int64_t(1999999999999999999) * SATOSHI);
     // Attempted 63 bit overflow should fail
-    BOOST_CHECK(!ParseMoney("10000000000000000.00", ret));
+    BOOST_CHECK(!ParseMoney("20000000000000000.00", ret));
     BOOST_CHECK(!ParseMoney("92233720368547758.08", ret));
 
     // Parsing negative amounts must fail

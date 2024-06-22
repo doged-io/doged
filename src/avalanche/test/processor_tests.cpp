@@ -1636,7 +1636,7 @@ BOOST_AUTO_TEST_CASE(quorum_detection_parameter_validation) {
             // Min stake is out of range
             {"-1", "0", "0", false},
             {"-0.01", "0", "0", false},
-            {"21000000000000.01", "0", "0", false},
+            {"10000000000000000.01", "0", "0", false},
 
             // Min connected ratio is out of range
             {"0", "-1", "0", false},
@@ -1652,7 +1652,7 @@ BOOST_AUTO_TEST_CASE(quorum_detection_parameter_validation) {
             {"1", "0.1", "0", true},
             {"10", "0.5", "0", true},
             {"10", "1", "0", true},
-            {"21000000000000.00", "0", "0", true},
+            {"10000000000000000.00", "0", "0", true},
             {"0", "0", "1", true},
             {"0", "0", "100", true},
         };
