@@ -9,6 +9,7 @@
 #include <chainparamsconstants.h>
 #include <chainparamsseeds.h>
 #include <consensus/amount.h>
+#include <consensus/consensus.h>
 #include <consensus/merkle.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
@@ -151,6 +152,10 @@ public:
 
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
+
+        // Dogecoin: Digishield activation height
+        consensus.digishieldHeight = 145000;
+        consensus.initialCoinbaseMaturity = 30;
 
         /**
          * The message start string is designed to be unlikely to occur in
@@ -299,6 +304,10 @@ public:
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
 
+        // Dogecoin: Digishield activation height
+        consensus.digishieldHeight = 145000;
+        consensus.initialCoinbaseMaturity = 30;
+
         diskMagic[0] = 0xfb;
         diskMagic[1] = 0x87;
         diskMagic[2] = 0xb5;
@@ -426,6 +435,11 @@ public:
 
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
+
+        // Digishield activation height
+        consensus.digishieldHeight = 1450;
+        // keep maturity same as Bitcoin for tests
+        consensus.initialCoinbaseMaturity = REGTEST_COINBASE_MATURITY;
 
         diskMagic[0] = 0x94;
         diskMagic[1] = 0xb1;

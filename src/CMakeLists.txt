@@ -591,6 +591,7 @@ add_library(bitcoinconsensus
 	uint256.cpp
 	util/strencodings.cpp
 	consensus/amount.cpp
+	consensus/consensus.cpp
 	consensus/tx_check.cpp
 )
 
@@ -871,6 +872,7 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		config.cpp
 		consensus/activation.cpp
 		consensus/amount.cpp
+		consensus/consensus.cpp
 		consensus/merkle.cpp
 		consensus/tx_check.cpp
 		consensus/tx_verify.cpp

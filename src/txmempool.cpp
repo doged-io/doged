@@ -437,8 +437,9 @@ void CTxMemPool::check(const CCoinsViewCache &active_coins_tip,
         TxValidationState dummy_state;
         Amount txfee{Amount::zero()};
         assert(!tx.IsCoinBase());
-        assert(Consensus::CheckTxInputs(tx, dummy_state, mempoolDuplicate,
-                                        spendheight, txfee));
+        assert(Consensus::CheckTxInputs(
+            tx, dummy_state, mempoolDuplicate, spendheight, txfee,
+            GetConfig().GetChainParams().GetConsensus()));
         for (const auto &input : tx.vin) {
             mempoolDuplicate.SpendCoin(input.prevout);
         }
