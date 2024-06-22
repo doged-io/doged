@@ -29,13 +29,13 @@ static void AssembleBlock(benchmark::Bench &bench) {
     // Collect some loose transactions that spend the coinbases of our mined
     // blocks
     constexpr size_t NUM_BLOCKS{200};
-    std::array<CTransactionRef, NUM_BLOCKS - COINBASE_MATURITY + 1> txs;
+    std::array<CTransactionRef, NUM_BLOCKS - REGTEST_COINBASE_MATURITY + 1> txs;
     for (size_t b = 0; b < NUM_BLOCKS; ++b) {
         CMutableTransaction tx;
         tx.vin.push_back(MineBlock(config, test_setup->m_node, SCRIPT_PUB));
         tx.vin.back().scriptSig = scriptSig;
         tx.vout.emplace_back(1337 * SATOSHI, SCRIPT_PUB);
-        if (NUM_BLOCKS - b >= COINBASE_MATURITY) {
+        if (NUM_BLOCKS - b >= REGTEST_COINBASE_MATURITY) {
             txs.at(b) = MakeTransactionRef(tx);
         }
     }

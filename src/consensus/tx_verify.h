@@ -26,7 +26,7 @@ struct Params;
  */
 bool CheckTxInputs(const CTransaction &tx, TxValidationState &state,
                    const CCoinsViewCache &inputs, int nSpendHeight,
-                   Amount &txfee);
+                   Amount &txfee, const Consensus::Params &params);
 
 } // namespace Consensus
 

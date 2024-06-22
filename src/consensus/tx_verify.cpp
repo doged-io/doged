@@ -167,7 +167,7 @@ bool SequenceLocks(const CTransaction &tx, int flags,
 namespace Consensus {
 bool CheckTxInputs(const CTransaction &tx, TxValidationState &state,
                    const CCoinsViewCache &inputs, int nSpendHeight,
-                   Amount &txfee) {
+                   Amount &txfee, const Consensus::Params &params) {
     // are the actual inputs available?
     if (!inputs.HaveInputs(tx)) {
         return state.Invalid(TxValidationResult::TX_MISSING_INPUTS,
@@ -182,8 +182,8 @@ bool CheckTxInputs(const CTransaction &tx, TxValidationState &state,
         assert(!coin.IsSpent());
 
         // If prev is coinbase, check that it's matured
-        if (coin.IsCoinBase() &&
-            nSpendHeight - coin.GetHeight() < COINBASE_MATURITY) {
+        if (coin.IsCoinBase() && nSpendHeight - (int)coin.GetHeight() <
+                                     CoinbaseMaturity(params, nSpendHeight)) {
             return state.Invalid(
                 TxValidationResult::TX_PREMATURE_SPEND,
                 "bad-txns-premature-spend-of-coinbase",

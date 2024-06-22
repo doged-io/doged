@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE(mempool_locks_reorg) {
         }
 
         // Mature the inputs of the txs
-        for (int j = COINBASE_MATURITY; j > 0; --j) {
+        for (int j = REGTEST_COINBASE_MATURITY; j > 0; --j) {
             last_mined = GoodBlock(config, last_mined->GetHash());
             BOOST_REQUIRE(ProcessBlock(last_mined));
         }
@@ -382,7 +382,8 @@ BOOST_AUTO_TEST_CASE(mempool_locks_reorg) {
         std::vector<std::shared_ptr<const CBlock>> reorg;
         last_mined = GoodBlock(config, split_hash);
         reorg.push_back(last_mined);
-        for (size_t j = COINBASE_MATURITY + txs.size() + 1; j > 0; --j) {
+        for (size_t j = REGTEST_COINBASE_MATURITY + txs.size() + 1; j > 0;
+             --j) {
             last_mined = GoodBlock(config, last_mined->GetHash());
             reorg.push_back(last_mined);
         }

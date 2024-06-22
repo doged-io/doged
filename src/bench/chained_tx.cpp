@@ -43,7 +43,7 @@ static std::vector<CTxIn> createUTXOs(const Config &config, size_t n,
         utxos.emplace_back(MineBlock(config, node, SCRIPT_PUB_KEY));
     }
 
-    for (size_t i = 0; i < COINBASE_MATURITY + 1; ++i) {
+    for (size_t i = 0; i < REGTEST_COINBASE_MATURITY + 1; ++i) {
         MineBlock(config, node, SCRIPT_PUB_KEY);
     }
 

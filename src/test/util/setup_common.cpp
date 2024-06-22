@@ -317,7 +317,7 @@ TestChain100Setup::TestChain100Setup(
     coinbaseKey.Set(vchKey.begin(), vchKey.end(), true);
 
     // Generate a 100-block chain:
-    this->mineBlocks(COINBASE_MATURITY);
+    this->mineBlocks(REGTEST_COINBASE_MATURITY);
 
     {
         LOCK(::cs_main);

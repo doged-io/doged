@@ -64,6 +64,12 @@ struct Params {
     /** Unix time used for MTP activation of 15 Nov 2024 12:00:00 UTC upgrade */
     int augustoActivationTime;
 
+    /** Dogecoin "Digishield" activation height */
+    int digishieldHeight;
+
+    /** Coinbase maturity before Digishield */
+    int32_t initialCoinbaseMaturity;
+
     /** Enable or disable the miner fund by default */
     bool enableMinerFund;
 

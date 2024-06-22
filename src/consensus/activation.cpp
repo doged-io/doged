@@ -128,3 +128,7 @@ bool IsAugustoEnabled(const Consensus::Params &params,
 
     return IsAugustoEnabled(params, pindexPrev->GetMedianTimePast());
 }
+
+bool IsDigishieldEnabled(const Consensus::Params &params, int32_t nHeight) {
+    return nHeight >= params.digishieldHeight;
+}
