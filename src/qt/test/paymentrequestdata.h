@@ -496,7 +496,8 @@ d2hj739GDLz0b5KuJ2SG6VknMRQM976w/m2qlq0ccVGaaZ2zMIGfpzL3p6adwx/5\
 
 //
 // Payment request with amount overflow (amount is set to
-// 21,000,001,000,000 XEC)
+// 10,000,000,001 DOGE)
+// Note: Signature is unchecked (and signs 21M+1 DOGE)
 //
 const char *paymentrequest5_cert2_BASE64 = "\
 Egt4NTA5K3NoYTI1NhrQBArNBDCCAkkwggExoAMCAQICAQEwDQYJKoZIhvcNAQEL\
