@@ -28,6 +28,72 @@
 
 BOOST_FIXTURE_TEST_SUITE(validation_tests, TestingSetup)
 
+BOOST_AUTO_TEST_CASE(subsidy_first_100k_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params &params = chainParams->GetConsensus();
+    Amount nSum = Amount::zero();
+    arith_uint256 prevHash = UintToArith256(uint256S("0"));
+
+    for (int nHeight = 0; nHeight <= 100000; nHeight++) {
+        Amount nSubsidy =
+            GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK(nSubsidy <= 1000000 * COIN);
+        nSum += nSubsidy;
+        // Use nSubsidy to give us some variation in previous block hash,
+        // without requiring full block templates
+        prevHash += nSubsidy / SATOSHI;
+    }
+
+    const Amount expected = 54894174438LL * COIN;
+    BOOST_CHECK_EQUAL(expected, nSum);
+}
+
+BOOST_AUTO_TEST_CASE(subsidy_100k_145k_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params &params = chainParams->GetConsensus();
+    Amount nSum = Amount::zero();
+    arith_uint256 prevHash = UintToArith256(uint256S("0"));
+
+    for (int nHeight = 100000; nHeight <= 145000; nHeight++) {
+        Amount nSubsidy =
+            GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK(nSubsidy <= 500000 * COIN);
+        nSum += nSubsidy;
+        // Use nSubsidy to give us some variation in previous block hash,
+        // without requiring full block templates
+        prevHash += nSubsidy / SATOSHI;
+    }
+
+    const Amount expected = 12349960000LL * COIN;
+    BOOST_CHECK_EQUAL(expected, nSum);
+}
+
+// Check the simplified rewards after block 145,000
+BOOST_AUTO_TEST_CASE(subsidy_post_145k_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params &params = chainParams->GetConsensus();
+    const uint256 prevHash = uint256S("0");
+
+    for (int nHeight = 145000; nHeight < 600000; nHeight++) {
+        Amount nSubsidy = GetBlockSubsidy(nHeight, params, prevHash);
+        Amount nExpectedSubsidy = (500000 >> (nHeight / 100000)) * COIN;
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK_EQUAL(nSubsidy, nExpectedSubsidy);
+    }
+
+    // Test reward at 600k+ is constant
+    Amount nConstantSubsidy = GetBlockSubsidy(600000, params, prevHash);
+    BOOST_CHECK_EQUAL(nConstantSubsidy, 10000 * COIN);
+
+    nConstantSubsidy = GetBlockSubsidy(700000, params, prevHash);
+    BOOST_CHECK_EQUAL(nConstantSubsidy, 10000 * COIN);
+}
+
 static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams) {
     int maxHalvings = 64;
     Amount nInitialSubsidy = 50 * COIN;
@@ -37,28 +103,27 @@ static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams) {
     BOOST_CHECK_EQUAL(nPreviousSubsidy, 2 * nInitialSubsidy);
     for (int nHalvings = 0; nHalvings < maxHalvings; nHalvings++) {
         int nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval;
-        Amount nSubsidy = GetBlockSubsidy(nHeight, consensusParams);
+        Amount nSubsidy = GetBlockSubsidy(nHeight, consensusParams, uint256());
         BOOST_CHECK(nSubsidy <= nInitialSubsidy);
         BOOST_CHECK_EQUAL(nSubsidy, nPreviousSubsidy / 2);
         nPreviousSubsidy = nSubsidy;
     }
     BOOST_CHECK_EQUAL(
         GetBlockSubsidy(maxHalvings * consensusParams.nSubsidyHalvingInterval,
-                        consensusParams),
+                        consensusParams, uint256()),
         Amount::zero());
 }
 
 static void TestBlockSubsidyHalvings(int nSubsidyHalvingInterval) {
     Consensus::Params consensusParams;
+    consensusParams.fPowNoRetargeting = true;
     consensusParams.nSubsidyHalvingInterval = nSubsidyHalvingInterval;
     TestBlockSubsidyHalvings(consensusParams);
 }
 
 BOOST_AUTO_TEST_CASE(block_subsidy_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
-    // As in main
-    TestBlockSubsidyHalvings(chainParams->GetConsensus());
+    // As in Bitcoin
+    TestBlockSubsidyHalvings(210000);
     // As in regtest
     TestBlockSubsidyHalvings(150);
     // Just another interval
@@ -66,11 +131,12 @@ BOOST_AUTO_TEST_CASE(block_subsidy_test) {
 }
 
 BOOST_AUTO_TEST_CASE(subsidy_limit_test) {
-    const auto chainParams =
-        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    Consensus::Params params;
+    params.fPowNoRetargeting = true;
+    params.nSubsidyHalvingInterval = 210000; // Bitcoin
     Amount nSum = Amount::zero();
     for (int nHeight = 0; nHeight < 14000000; nHeight += 1000) {
-        Amount nSubsidy = GetBlockSubsidy(nHeight, chainParams->GetConsensus());
+        Amount nSubsidy = GetBlockSubsidy(nHeight, params, uint256());
         BOOST_CHECK(nSubsidy <= 50 * COIN);
         nSum += 1000 * nSubsidy;
         BOOST_CHECK(MoneyRange(nSum));
