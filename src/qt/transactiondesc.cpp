@@ -22,6 +22,7 @@
 #include <qt/transactionrecord.h>
 #include <validation.h>
 #include <wallet/ismine.h>
+#include <wallet/wallet.h>
 
 #include <cstdint>
 #include <string>
@@ -358,7 +359,7 @@ QString TransactionDesc::toHTML(interfaces::Node &node,
     if (wtx.is_coinbase) {
         quint32 numBlocksToMaturity =
             CoinbaseMaturity(wallet.getChainParams().GetConsensus(),
-                             wallet.wallet->GetLastBlockHeight()) +
+                             wallet.wallet()->GetLastBlockHeight()) +
             1;
         strHTML +=
             "<br>" +

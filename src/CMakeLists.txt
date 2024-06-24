@@ -590,6 +590,7 @@ add_library(bitcoinconsensus
 	pubkey.cpp
 	uint256.cpp
 	util/strencodings.cpp
+	consensus/activation.cpp
 	consensus/amount.cpp
 	consensus/consensus.cpp
 	consensus/tx_check.cpp
