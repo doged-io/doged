@@ -94,7 +94,7 @@ bool PeerManager::addNodeToPeer(const PeerSet::iterator &it) {
 
         // We need to allocate this peer.
         p.index = uint32_t(slots.size());
-        const uint32_t score = p.getScore();
+        const Score score = p.getScore();
         const uint64_t start = slotCount;
         slots.emplace_back(start, score, it->peerid);
         slotCount = start + score;
@@ -770,7 +770,7 @@ uint64_t PeerManager::compact() {
 
 bool PeerManager::verify() const {
     uint64_t prevStop = 0;
-    uint32_t scoreFromSlots = 0;
+    Score scoreFromSlots = 0;
     for (size_t i = 0; i < slots.size(); i++) {
         const Slot &s = slots[i];
 
@@ -801,8 +801,8 @@ bool PeerManager::verify() const {
         return false;
     }
 
-    uint32_t scoreFromAllPeers = 0;
-    uint32_t scoreFromPeersWithNodes = 0;
+    Score scoreFromAllPeers = 0;
+    Score scoreFromPeersWithNodes = 0;
 
     std::unordered_set<COutPoint, SaltedOutpointHasher> peersUtxos;
     for (const auto &p : peers) {

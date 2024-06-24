@@ -26,8 +26,8 @@ struct ProofRefComparatorByAddress {
  */
 struct ProofComparatorByScore {
     bool operator()(const Proof &lhs, const Proof &rhs) const {
-        uint32_t scoreLhs = lhs.getScore();
-        uint32_t scoreRhs = rhs.getScore();
+        Score scoreLhs = lhs.getScore();
+        Score scoreRhs = rhs.getScore();
 
         return (scoreLhs != scoreRhs) ? scoreLhs > scoreRhs
                                       : lhs.getId() < rhs.getId();

@@ -21,12 +21,12 @@ BOOST_FIXTURE_TEST_SUITE(proofcomparator_tests, TestingSetup)
 
 BOOST_AUTO_TEST_CASE(proof_shared_pointer_comparator) {
     Chainstate &active_chainstate = Assert(m_node.chainman)->ActiveChainstate();
-    uint32_t score = MIN_VALID_PROOF_SCORE;
+    Score score = MIN_VALID_PROOF_SCORE;
 
     auto proofMinScore =
         buildRandomProof(active_chainstate, MIN_VALID_PROOF_SCORE);
-    auto proofMaxScore = buildRandomProof(active_chainstate,
-                                          std::numeric_limits<uint32_t>::max());
+    auto proofMaxScore =
+        buildRandomProof(active_chainstate, std::numeric_limits<Score>::max());
 
     const ProofComparatorByScore comparator;
 

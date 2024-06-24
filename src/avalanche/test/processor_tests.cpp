@@ -52,7 +52,7 @@ namespace {
 
         static uint64_t getRound(const Processor &p) { return p.round; }
 
-        static uint32_t getMinQuorumScore(const Processor &p) {
+        static Score getMinQuorumScore(const Processor &p) {
             return p.minQuorumScore;
         }
 
@@ -1311,10 +1311,10 @@ BOOST_AUTO_TEST_CASE(destructor) {
 }
 
 BOOST_AUTO_TEST_CASE(add_proof_to_reconcile) {
-    uint32_t score = MIN_VALID_PROOF_SCORE;
+    Score score = MIN_VALID_PROOF_SCORE;
     Chainstate &active_chainstate = Assert(m_node.chainman)->ActiveChainstate();
 
-    auto addProofToReconcile = [&](uint32_t proofScore) {
+    auto addProofToReconcile = [&](Score proofScore) {
         auto proof = buildRandomProof(active_chainstate, proofScore);
         m_processor->withPeerManager([&](avalanche::PeerManager &pm) {
             BOOST_CHECK(pm.registerProof(proof));
@@ -1457,7 +1457,7 @@ BOOST_AUTO_TEST_CASE(quorum_detection) {
 
     // Create a new processor with our given quorum parameters
     const auto currency = Currency::get();
-    uint32_t minScore = Proof::amountToScore(minStake * currency.baseunit);
+    Score minScore = Proof::amountToScore(minStake * currency.baseunit);
 
     Chainstate &active_chainstate = Assert(m_node.chainman)->ActiveChainstate();
 
@@ -2068,11 +2068,11 @@ BOOST_AUTO_TEST_CASE(vote_map_comparator) {
 
         // The first batch of items is the proofs ordered by score
         // (descending)
-        uint32_t lastScore = std::numeric_limits<uint32_t>::max();
+        Score lastScore = std::numeric_limits<Score>::max();
         for (size_t i = 0; i < numberElementsEachType; i++) {
             BOOST_CHECK(std::holds_alternative<const ProofRef>(it->first));
 
-            uint32_t currentScore =
+            Score currentScore =
                 std::get<const ProofRef>(it->first)->getScore();
             BOOST_CHECK_LT(currentScore, lastScore);
             lastScore = currentScore;

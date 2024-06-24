@@ -14,13 +14,13 @@
 
 namespace avalanche {
 
-constexpr uint32_t MIN_VALID_PROOF_SCORE = 100 * PROOF_DUST_THRESHOLD / COIN;
+constexpr Score MIN_VALID_PROOF_SCORE = 100 * PROOF_DUST_THRESHOLD / COIN;
 
 const CScript UNSPENDABLE_ECREG_PAYOUT_SCRIPT =
     CScript() << OP_DUP << OP_HASH160 << std::vector<uint8_t>(20, 0)
               << OP_EQUALVERIFY << OP_CHECKSIG;
 
-ProofRef buildRandomProof(Chainstate &active_chainstate, uint32_t score,
+ProofRef buildRandomProof(Chainstate &active_chainstate, Score score,
                           int height = 100,
                           const CKey &masterKey = CKey::MakeCompressedKey());
 

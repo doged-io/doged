@@ -42,6 +42,7 @@ static constexpr Amount PROOF_DUST_THRESHOLD = 100 * COIN;
 class ProofValidationState;
 
 using StakeId = uint256;
+using Score = uint64_t;
 
 struct StakeCommitment : public uint256 {
     StakeCommitment(int64_t expirationTime, const CPubKey &master);
@@ -111,7 +112,7 @@ class Proof {
     ProofId proofid;
     void computeProofId();
 
-    uint32_t score;
+    Score score;
     void computeScore();
 
     IMPLEMENT_RCU_REFCOUNT(uint64_t);
@@ -157,7 +158,7 @@ public:
                         bilingual_str &errorOut);
     std::string ToHex() const;
 
-    static uint32_t amountToScore(Amount amount);
+    static Score amountToScore(Amount amount);
 
     uint64_t getSequence() const { return sequence; }
     int64_t getExpirationTime() const { return expirationTime; }
@@ -171,7 +172,7 @@ public:
     const StakeCommitment getStakeCommitment() const {
         return StakeCommitment(expirationTime, master);
     };
-    uint32_t getScore() const { return score; }
+    Score getScore() const { return score; }
     Amount getStakedAmount() const;
 
     bool verify(const Amount &stakeUtxoDustThreshold,

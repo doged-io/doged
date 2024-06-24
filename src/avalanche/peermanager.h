@@ -52,11 +52,11 @@ namespace {
 struct Slot {
 private:
     uint64_t start;
-    uint32_t score;
+    Score score;
     PeerId peerid;
 
 public:
-    Slot(uint64_t startIn, uint32_t scoreIn, PeerId peeridIn)
+    Slot(uint64_t startIn, Score scoreIn, PeerId peeridIn)
         : start(startIn), score(scoreIn), peerid(peeridIn) {}
 
     Slot withStart(uint64_t startIn) const {
@@ -71,7 +71,7 @@ public:
 
     uint64_t getStart() const { return start; }
     uint64_t getStop() const { return start + score; }
-    uint32_t getScore() const { return score; }
+    Score getScore() const { return score; }
     PeerId getPeerId() const { return peerid; }
 
     bool contains(uint64_t slot) const {
@@ -108,7 +108,7 @@ struct Peer {
           nextPossibleConflictTime(std::move(nextPossibleConflictTime_)) {}
 
     const ProofId &getProofId() const { return proof->getId(); }
-    uint32_t getScore() const { return proof->getScore(); }
+    Score getScore() const { return proof->getScore(); }
 };
 
 struct proof_index {
@@ -117,7 +117,7 @@ struct proof_index {
 };
 
 struct score_index {
-    using result_type = uint32_t;
+    using result_type = Score;
     result_type operator()(const Peer &p) const { return p.getScore(); }
 };
 
@@ -177,7 +177,7 @@ class PeerManager {
                                      SaltedProofIdHasher>,
                   // ordered by score, decreasing order
                   bmi::ordered_non_unique<bmi::tag<by_score>, score_index,
-                                          std::greater<uint32_t>>>>;
+                                          std::greater<Score>>>>;
 
     PeerId nextPeerId = 0;
     PeerSet peers;
@@ -235,8 +235,8 @@ class PeerManager {
     /**
      * Quorum management.
      */
-    uint32_t totalPeersScore = 0;
-    uint32_t connectedPeersScore = 0;
+    Score totalPeersScore = 0;
+    Score connectedPeersScore = 0;
 
     Amount stakeUtxoDustThreshold;
 
@@ -432,8 +432,8 @@ public:
     /*
      * Quorum management
      */
-    uint32_t getTotalPeersScore() const { return totalPeersScore; }
-    uint32_t getConnectedPeersScore() const { return connectedPeersScore; }
+    Score getTotalPeersScore() const { return totalPeersScore; }
+    Score getConnectedPeersScore() const { return connectedPeersScore; }
 
     bool saveRemoteProof(const ProofId &proofid, const NodeId nodeid,
                          const bool present);

@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(get_lowest_score_proof) {
     BOOST_CHECK_EQUAL(testPool.getLowestScoreProof(), nullptr);
 
     const CKey key = CKey::MakeCompressedKey();
-    auto buildProofWithRandomOutpoints = [&](uint32_t score) {
+    auto buildProofWithRandomOutpoints = [&](Score score) {
         int numOutpoints = InsecureRand32() % 10 + 1;
         ProofBuilder pb(0, 0, key, UNSPENDABLE_ECREG_PAYOUT_SCRIPT);
         for (int i = 0; i < numOutpoints; i++) {

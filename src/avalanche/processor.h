@@ -242,7 +242,7 @@ class Processor final : public NetEventsInterface {
     /**
      * Quorum management.
      */
-    uint32_t minQuorumScore;
+    Score minQuorumScore;
     double minQuorumConnectedScoreRatio;
     std::atomic<bool> quorumIsEstablished{false};
     std::atomic<bool> m_canShareLocalProof{false};
@@ -283,7 +283,7 @@ class Processor final : public NetEventsInterface {
     Processor(Config avaconfig, interfaces::Chain &chain, CConnman *connmanIn,
               ChainstateManager &chainman, CTxMemPool *mempoolIn,
               CScheduler &scheduler, std::unique_ptr<PeerData> peerDataIn,
-              CKey sessionKeyIn, uint32_t minQuorumTotalScoreIn,
+              CKey sessionKeyIn, Score minQuorumTotalScoreIn,
               double minQuorumConnectedScoreRatioIn,
               int64_t minAvaproofsNodeCountIn, uint32_t staleVoteThresholdIn,
               uint32_t staleVoteFactorIn, Amount stakeUtxoDustThresholdIn,

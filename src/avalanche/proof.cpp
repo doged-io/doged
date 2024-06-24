@@ -97,8 +97,11 @@ void Proof::computeScore() {
     score = amountToScore(total);
 }
 
-uint32_t Proof::amountToScore(Amount amount) {
-    return (100 * amount) / COIN;
+Score Proof::amountToScore(Amount amount) {
+    // TODO: Cleanup this hack that allows us to compute score when it does not
+    // fit in Amount
+    return (100 * uint64_t(amount / Amount::satoshi())) /
+           (COIN / Amount::satoshi());
 }
 
 Amount Proof::getStakedAmount() const {

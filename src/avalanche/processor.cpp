@@ -142,7 +142,7 @@ Processor::Processor(Config avaconfigIn, interfaces::Chain &chain,
                      CConnman *connmanIn, ChainstateManager &chainmanIn,
                      CTxMemPool *mempoolIn, CScheduler &scheduler,
                      std::unique_ptr<PeerData> peerDataIn, CKey sessionKeyIn,
-                     uint32_t minQuorumTotalScoreIn,
+                     Score minQuorumTotalScoreIn,
                      double minQuorumConnectedScoreRatioIn,
                      int64_t minAvaproofsNodeCountIn,
                      uint32_t staleVoteThresholdIn, uint32_t staleVoteFactorIn,
@@ -814,8 +814,8 @@ bool Processor::isQuorumEstablished() {
     auto localProof = getLocalProof();
 
     // Get the registered proof score and registered score we have nodes for
-    uint32_t totalPeersScore;
-    uint32_t connectedPeersScore;
+    Score totalPeersScore;
+    Score connectedPeersScore;
     {
         LOCK(cs_peerManager);
         totalPeersScore = peerManager->getTotalPeersScore();
@@ -837,7 +837,7 @@ bool Processor::isQuorumEstablished() {
     }
 
     // Ensure we have connected score for enough of the overall score
-    uint32_t minConnectedScore =
+    Score minConnectedScore =
         std::round(double(totalPeersScore) * minQuorumConnectedScoreRatio);
     if (connectedPeersScore < minConnectedScore) {
         return false;

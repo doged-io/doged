@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(proof_random) {
     Chainstate &active_chainstate = Assert(m_node.chainman)->ActiveChainstate();
 
     for (int i = 0; i < 1000; i++) {
-        const uint32_t score = InsecureRand32();
+        const Score score = InsecureRand32();
         auto p = buildRandomProof(active_chainstate, score);
         BOOST_CHECK_EQUAL(p->getScore(), score);
 
@@ -75,7 +75,7 @@ struct TestVector {
     std::string name;
     std::string hex;
     ProofId proofid;
-    uint32_t score;
+    Score score;
     ProofValidationResult result;
 };
 

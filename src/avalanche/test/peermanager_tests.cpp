@@ -60,8 +60,8 @@ namespace {
             return getPeerIdForProofId(pm, proof->getId());
         }
 
-        static std::vector<uint32_t> getOrderedScores(const PeerManager &pm) {
-            std::vector<uint32_t> scores;
+        static std::vector<Score> getOrderedScores(const PeerManager &pm) {
+            std::vector<Score> scores;
 
             auto &peerView = pm.peers.get<by_score>();
             for (const Peer &peer : peerView) {
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(select_peer_random) {
 
         for (size_t i = 0; i < size; i++) {
             const uint64_t start = next();
-            const uint32_t score = InsecureRandBits(3);
+            const Score score = InsecureRandBits(3);
             max += score;
             slots.emplace_back(start, score, i);
         }
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE(select_peer_random) {
 
 static void addNodeWithScore(Chainstate &active_chainstate,
                              avalanche::PeerManager &pm, NodeId node,
-                             uint32_t score) {
+                             Score score) {
     auto proof = buildRandomProof(active_chainstate, score);
     BOOST_CHECK(pm.registerProof(proof));
     BOOST_CHECK(pm.addNode(node, proof->getId()));
@@ -1594,14 +1594,14 @@ BOOST_AUTO_TEST_CASE(score_ordering) {
     ChainstateManager &chainman = *Assert(m_node.chainman);
     avalanche::PeerManager pm(PROOF_DUST_THRESHOLD, chainman);
 
-    std::vector<uint32_t> expectedScores(10);
+    std::vector<Score> expectedScores(10);
     // Expect the peers to be ordered by descending score
     std::generate(expectedScores.rbegin(), expectedScores.rend(),
                   [n = 1]() mutable { return n++ * MIN_VALID_PROOF_SCORE; });
 
     std::vector<ProofRef> proofs;
     proofs.reserve(expectedScores.size());
-    for (uint32_t score : expectedScores) {
+    for (Score score : expectedScores) {
         proofs.push_back(buildRandomProof(chainman.ActiveChainstate(), score));
     }
 
@@ -1647,8 +1647,8 @@ BOOST_FIXTURE_TEST_CASE(known_score_tracking, NoCoolDownFixture) {
                     {createUtxo(active_chainstate, key, amount1), amount1}},
                    key, 30);
 
-    const uint32_t peer1Score1 = Proof::amountToScore(amount1 + amount2);
-    const uint32_t peer1Score2 = Proof::amountToScore(amount1);
+    const Score peer1Score1 = Proof::amountToScore(amount1 + amount2);
+    const Score peer1Score2 = Proof::amountToScore(amount1);
 
     // Add first peer and check that we have its score tracked
     BOOST_CHECK_EQUAL(pm.getTotalPeersScore(), 0);
@@ -1715,7 +1715,7 @@ BOOST_FIXTURE_TEST_CASE(known_score_tracking, NoCoolDownFixture) {
     BOOST_CHECK_EQUAL(pm.getTotalPeersScore(), peer1Score2);
 
     // Now add another peer and check that combined scores are correct
-    uint32_t peer2Score = 1 * MIN_VALID_PROOF_SCORE;
+    Score peer2Score = 1 * MIN_VALID_PROOF_SCORE;
     auto peer2Proof1 = buildRandomProof(active_chainstate, peer2Score, 99);
     PeerId peerid2 = TestPeerManager::registerAndGetPeerId(pm, peer2Proof1);
     BOOST_CHECK_EQUAL(pm.getTotalPeersScore(), peer1Score2 + peer2Score);
@@ -1737,7 +1737,7 @@ BOOST_AUTO_TEST_CASE(connected_score_tracking) {
     ChainstateManager &chainman = *Assert(m_node.chainman);
     avalanche::PeerManager pm(PROOF_DUST_THRESHOLD, chainman);
 
-    const auto checkScores = [&pm](uint32_t known, uint32_t connected) {
+    const auto checkScores = [&pm](Score known, Score connected) {
         BOOST_CHECK_EQUAL(pm.getTotalPeersScore(), known);
         BOOST_CHECK_EQUAL(pm.getConnectedPeersScore(), connected);
     };
@@ -1749,7 +1749,7 @@ BOOST_AUTO_TEST_CASE(connected_score_tracking) {
 
     // Create one peer without a node. Its score should be registered but not
     // connected
-    uint32_t score1 = 10000000 * MIN_VALID_PROOF_SCORE;
+    Score score1 = 10000000 * MIN_VALID_PROOF_SCORE;
     auto proof1 = buildRandomProof(active_chainstate, score1);
     PeerId peerid1 = TestPeerManager::registerAndGetPeerId(pm, proof1);
     checkScores(score1, 0);
@@ -1779,7 +1779,7 @@ BOOST_AUTO_TEST_CASE(connected_score_tracking) {
     BOOST_CHECK(pm.addNode(1, proofid1));
     checkScores(score1, score1);
 
-    uint32_t score2 = 1 * MIN_VALID_PROOF_SCORE;
+    Score score2 = 1 * MIN_VALID_PROOF_SCORE;
     auto proof2 = buildRandomProof(active_chainstate, score2);
     PeerId peerid2 = TestPeerManager::registerAndGetPeerId(pm, proof2);
     checkScores(score1 + score2, score1);
