@@ -93,7 +93,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
                         ),
                         block_height=0,
                         is_coinbase=True,
-                        value=coinvalue,
+                        value=8800000000,
                         is_final=False,
                     )
                 ],

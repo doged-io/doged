@@ -323,7 +323,7 @@ TestChain100Setup::TestChain100Setup(
         LOCK(::cs_main);
         assert(
             m_node.chainman->ActiveTip()->GetBlockHash().ToString() ==
-            "5afde277a26b6f36aee8f61a1dbf755587e1c6be63e654a88abe2a1ff0fbfb05");
+            "8916b4cf6a6dbb901536365ed5541e39f9ec3b95880762300d0401360bd9cce9");
     }
 }
 
@@ -365,7 +365,7 @@ TestChain100Setup::CreateBlock(const std::vector<CMutableTransaction> &txns,
                                 config.GetMaxBlockSize());
 
     const Consensus::Params &params = config.GetChainParams().GetConsensus();
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, params)) {
+    while (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
         ++block.nNonce;
     }
 

@@ -15,6 +15,7 @@
 #include <hash.h>
 #include <kernel/chainparams.h>
 #include <logging.h>
+#include <pow/auxpow.h>
 #include <pow/pow.h>
 #include <reverse_iterator.h>
 #include <shutdown.h>
@@ -800,7 +801,7 @@ bool BlockManager::ReadBlockFromDisk(CBlock &block,
     }
 
     // Check the header
-    if (!CheckProofOfWork(block.GetHash(), block.nBits, GetConsensus())) {
+    if (!CheckAuxProofOfWork(block, GetConsensus())) {
         return error("ReadBlockFromDisk: Errors in block header at %s",
                      pos.ToString());
     }

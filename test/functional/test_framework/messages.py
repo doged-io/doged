@@ -515,6 +515,8 @@ class CBlockHeader:
         "nTime",
         "nVersion",
         "sha256",
+        "powHash",
+        "powHashHex",
     )
 
     def __init__(self, header=None):
@@ -529,6 +531,8 @@ class CBlockHeader:
             self.nNonce = header.nNonce
             self.sha256 = header.sha256
             self.hash = header.hash
+            self.powHash = header.powHash
+            self.powHashHex = header.powHashHex
             self.calc_sha256()
 
     def set_null(self):
@@ -540,6 +544,8 @@ class CBlockHeader:
         self.nNonce = 0
         self.sha256 = None
         self.hash = None
+        self.powHash = None
+        self.powHashHex = None
 
     def deserialize(self, f):
         self.nVersion = struct.unpack("<i", f.read(4))[0]
@@ -550,8 +556,10 @@ class CBlockHeader:
         self.nNonce = struct.unpack("<I", f.read(4))[0]
         self.sha256 = None
         self.hash = None
+        self.powHash = None
+        self.powHashHex = None
 
-    def serialize(self):
+    def _serheader(self):
         r = b""
         r += struct.pack("<i", self.nVersion)
         r += ser_uint256(self.hashPrevBlock)
@@ -561,22 +569,31 @@ class CBlockHeader:
         r += struct.pack("<I", self.nNonce)
         return r
 
+    def serialize(self):
+        return self._serheader()
+
     def calc_sha256(self):
         if self.sha256 is None:
-            r = b""
-            r += struct.pack("<i", self.nVersion)
-            r += ser_uint256(self.hashPrevBlock)
-            r += ser_uint256(self.hashMerkleRoot)
-            r += struct.pack("<I", self.nTime)
-            r += struct.pack("<I", self.nBits)
-            r += struct.pack("<I", self.nNonce)
+            r = self._serheader()
             self.sha256 = uint256_from_str(hash256(r))
             self.hash = hash256(r)[::-1].hex()
+
+    def calc_powHash(self):
+        if self.powHash is None:
+            r = self._serheader()
+            hashBytes = scrypt(r)
+            self.powHash = uint256_from_str(hashBytes)
+            self.powHashHex = hashBytes[::-1].hex()
 
     def rehash(self):
         self.sha256 = None
         self.calc_sha256()
         return self.sha256
+
+    def rehashPow(self):
+        self.powHash = None
+        self.calc_powHash()
+        return self.powHash
 
     def __repr__(self):
         return (
@@ -638,11 +655,12 @@ class CBlock(CBlockHeader):
         return True
 
     def solve(self):
-        self.rehash()
+        self.rehashPow()
         target = uint256_from_compact(self.nBits)
-        while self.sha256 > target:
+        while self.powHash > target:
             self.nNonce += 1
-            self.rehash()
+            self.rehashPow()
+        self.rehash()
 
     def __repr__(self):
         return (

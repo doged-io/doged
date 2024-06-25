@@ -53,12 +53,11 @@ class ChronikRawTxTest(BitcoinTestFramework):
             chronik.raw_tx(GENESIS_CB_TXID).ok(),
             pb.RawTx(
                 raw_tx=bytes.fromhex(
-                    "0100000001000000000000000000000000000000000000000000000000000000000000"
-                    "0000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f323030"
-                    "39204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e6420626169"
-                    "6c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe"
-                    "5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4"
-                    "f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000"
+                    "0100000001000000000000000000000000000000000000000000000000000000"
+                    "0000000000ffffffff1004ffff001d0104084e696e746f6e646fffffffff0100"
+                    "58850c020000004341040184710fa689ad5023690c80f3a49c8f13f8d45b8c85"
+                    "7fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf"
+                    "21b179c45070ac7b03a9ac00000000"
                 )
             ),
         )

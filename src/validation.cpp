@@ -39,6 +39,7 @@
 #include <policy/block/stakingrewards.h>
 #include <policy/policy.h>
 #include <policy/settings.h>
+#include <pow/auxpow.h>
 #include <pow/pow.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
@@ -3773,7 +3774,7 @@ static bool CheckBlockHeader(const CBlockHeader &block,
                              BlockValidationOptions validationOptions) {
     // Check proof of work matches claimed amount
     if (validationOptions.shouldValidatePoW() &&
-        !CheckProofOfWork(block.GetHash(), block.nBits, params)) {
+        !CheckAuxProofOfWork(block, params)) {
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER,
                              "high-hash", "proof of work failed");
     }
@@ -3873,8 +3874,7 @@ bool HasValidProofOfWork(const std::vector<CBlockHeader> &headers,
                          const Consensus::Params &consensusParams) {
     return std::all_of(headers.cbegin(), headers.cend(),
                        [&](const auto &header) {
-                           return CheckProofOfWork(
-                               header.GetHash(), header.nBits, consensusParams);
+                           return CheckAuxProofOfWork(header, consensusParams);
                        });
 }
 

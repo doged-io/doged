@@ -686,6 +686,7 @@ add_library(server
 	policy/fees.cpp
 	policy/packages.cpp
 	policy/settings.cpp
+	pow/auxpow.cpp
 	pow/eda.cpp
 	pow/pow.cpp
 	rest.cpp
@@ -897,6 +898,7 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		policy/packages.cpp
 		policy/policy.cpp
 		policy/settings.cpp
+		pow/auxpow.cpp
 		pow/eda.cpp
 		pow/pow.cpp
 		primitives/block.cpp
