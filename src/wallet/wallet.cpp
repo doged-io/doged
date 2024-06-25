@@ -3127,8 +3127,8 @@ int CWallet::GetTxBlocksToMaturity(const CWalletTx &wtx) const {
     if (!wtx.IsCoinBase()) {
         return 0;
     }
-    const int32_t coinbaseMaturity =
-        CoinbaseMaturity(GetChainParams().GetConsensus(), GetLastBlockHeight());
+    const int32_t coinbaseMaturity = CoinbaseMaturity(
+        GetChainParams().GetConsensus(), wtx.m_confirm.block_height);
     int chain_depth = GetTxDepthInMainChain(wtx);
     // coinbase tx should not be conflicted
     assert(chain_depth >= 0);

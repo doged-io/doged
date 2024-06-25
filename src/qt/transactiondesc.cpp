@@ -359,7 +359,7 @@ QString TransactionDesc::toHTML(interfaces::Node &node,
     if (wtx.is_coinbase) {
         quint32 numBlocksToMaturity =
             CoinbaseMaturity(wallet.getChainParams().GetConsensus(),
-                             wallet.wallet()->GetLastBlockHeight()) +
+                             status.block_height) +
             1;
         strHTML +=
             "<br>" +

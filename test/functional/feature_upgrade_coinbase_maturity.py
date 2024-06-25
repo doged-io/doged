@@ -1,7 +1,7 @@
 # Copyright (c) 2024 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test coinbase maturity upgrades."""
+"""Test Dogecoin's coinbase maturity upgrade."""
 
 from test_framework.address import (
     ADDRESS_ECREG_P2SH_OP_TRUE,
@@ -61,70 +61,54 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
         minedhash = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
         assert_equal(node.getrawtransaction(tx.hash, 2)["blockhash"], minedhash)
 
-        # Generate blocks until we're 241 blocks before upgrade height
+        # Generate blocks until we're 2 blocks before upgrade height
         UPGRADE_HEIGHT = 1450
         OLD_MATURITY = 100
         DIGISHIELD_MATURITY = 240
         self.generatetoaddress(
             node,
-            UPGRADE_HEIGHT - DIGISHIELD_MATURITY - OLD_MATURITY - 2,
+            UPGRADE_HEIGHT - 103,
             ADDRESS_ECREG_UNSPENDABLE,
         )
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - DIGISHIELD_MATURITY - 1)
-
-        # Get us two coins with 239 and 240 maturity at upgrade
-        mature240hash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
-        mature240txid = node.getblock(mature240hash)["tx"][0]
-        mature239hash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
-        mature239txid = node.getblock(mature239hash)["tx"][0]
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - DIGISHIELD_MATURITY + 1)
-
-        self.generatetoaddress(
-            node, DIGISHIELD_MATURITY - OLD_MATURITY - 3, ADDRESS_ECREG_UNSPENDABLE
-        )
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - OLD_MATURITY - 2)
-
-        # Generate two coins with 99 and 100 maturity one block before upgrade
-        mature100hash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
-        mature100txid = node.getblock(mature100hash)["tx"][0]
-        mature99hash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
-        mature99txid = node.getblock(mature99hash)["tx"][0]
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - OLD_MATURITY)
-
-        self.generatetoaddress(node, OLD_MATURITY - 2, ADDRESS_ECREG_UNSPENDABLE)
         assert_equal(node.getblockcount(), UPGRADE_HEIGHT - 2)
 
-        # After that many blocks, we had 8 halvings
-        coinvalue >>= 8
+        # Get us a coin one block before upgrade
+        preupgradehash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
+        preupgradetxid = node.getblock(preupgradehash)["tx"][0]
+        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - 1)
 
-        # For the mempool, we are still 1 block before upgrade.
-        # We can spend the 100 mature coin fine, ...
-        spend100tx = CTransaction()
-        spend100tx.vin = [
-            CTxIn(COutPoint(int(mature100txid, 16), 0), SCRIPTSIG_OP_TRUE)
+        # Get us a coin after the upgrade
+        postupgradehash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
+        postupgradetxid = node.getblock(postupgradehash)["tx"][0]
+        assert_equal(node.getblockcount(), UPGRADE_HEIGHT)
+
+        # After that many blocks, we had 9 halvings
+        coinvalue >>= 9
+
+        # Mature first coin to 98 (mempool thinks it's 99)
+        self.generatetoaddress(node, OLD_MATURITY - 3, ADDRESS_ECREG_UNSPENDABLE)
+        assert_equal(node.getblockcount(), UPGRADE_HEIGHT + OLD_MATURITY - 3)
+
+        # The pre-upgrade coin still needs 1 extra block
+        spend_preupgradetx = CTransaction()
+        spend_preupgradetx.vin = [
+            CTxIn(COutPoint(int(preupgradetxid, 16), 0), SCRIPTSIG_OP_TRUE)
         ]
-        spend100tx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
-        pad_tx(spend100tx)
-        node.sendrawtransaction(spend100tx.serialize().hex())
-
-        # ...but not the 99 mature coin
-        spend99tx = CTransaction()
-        spend99tx.vin = [CTxIn(COutPoint(int(mature99txid, 16), 0), SCRIPTSIG_OP_TRUE)]
-        spend99tx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
-        pad_tx(spend99tx)
+        spend_preupgradetx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
+        pad_tx(spend_preupgradetx)
         assert_raises_rpc_error(
             -26,
             "bad-txns-premature-spend-of-coinbase, tried to spend coinbase at depth 99",
             node.sendrawtransaction,
-            spend99tx.serialize().hex(),
+            spend_preupgradetx.serialize().hex(),
         )
 
-        # Can't mine the 99 mature coin spend, ...
+        # Can't mine the 99 mature coin spend
         block = create_block(
             int(node.getbestblockhash(), 16), create_coinbase(node.getblockcount() + 1)
         )
         block.nVersion = 4
-        block.vtx += [spend99tx]
+        block.vtx += [spend_preupgradetx]
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
         peer.send_blocks_and_test(
@@ -133,47 +117,44 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
             success=False,
             reject_reason="bad-txns-premature-spend-of-coinbase, tried to spend coinbase at depth 99",
             expect_disconnect=True,
-            timeout=5,
         )
         peer = self.reconnect_p2p()
 
-        # ... but we can mine the 100 mature coin spend
-        # Also, this activates the upgrade
+        # After 1 extra block, pre-upgrade coin is mature
+        self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)
+        node.sendrawtransaction(spend_preupgradetx.serialize().hex())
+
+        # Make sure we actually mined the tx
         minedhash1 = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
         assert_equal(
-            node.getrawtransaction(spend100tx.hash, 2)["blockhash"], minedhash1
+            node.getrawtransaction(spend_preupgradetx.hash, 2)["blockhash"], minedhash1
         )
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT - 1)
 
-        # For the mempool the upgrade is now activated, so we can't spend a 239 mature coin
-        spend239tx = CTransaction()
-        spend239tx.vin = [
-            CTxIn(COutPoint(int(mature239txid, 16), 0), SCRIPTSIG_OP_TRUE)
+        # Mature second coin to 238 (mempool thinks it's 239)
+        self.generatetoaddress(
+            node, DIGISHIELD_MATURITY - OLD_MATURITY - 1, ADDRESS_ECREG_UNSPENDABLE
+        )
+        assert_equal(node.getblockcount(), UPGRADE_HEIGHT + DIGISHIELD_MATURITY - 2)
+
+        spend_postupgradetx = CTransaction()
+        spend_postupgradetx.vin = [
+            CTxIn(COutPoint(int(postupgradetxid, 16), 0), SCRIPTSIG_OP_TRUE)
         ]
-        spend239tx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
-        pad_tx(spend239tx)
+        spend_postupgradetx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
+        pad_tx(spend_postupgradetx)
         assert_raises_rpc_error(
             -26,
             "bad-txns-premature-spend-of-coinbase, tried to spend coinbase at depth 239",
             node.sendrawtransaction,
-            spend239tx.serialize().hex(),
+            spend_postupgradetx.serialize().hex(),
         )
 
-        # But, we can spend the 240 mature coin
-        spend240tx = CTransaction()
-        spend240tx.vin = [
-            CTxIn(COutPoint(int(mature240txid, 16), 0), SCRIPTSIG_OP_TRUE)
-        ]
-        spend240tx.vout = [CTxOut(coinvalue - 10000, SCRIPT_UNSPENDABLE)]
-        pad_tx(spend240tx)
-        node.sendrawtransaction(spend240tx.serialize().hex())
-
-        # Can't mine the 239 mature coin spend, ...
+        # Can't mine the 239 mature coin spend
         block = create_block(
             int(node.getbestblockhash(), 16), create_coinbase(node.getblockcount() + 1)
         )
         block.nVersion = 4
-        block.vtx += [spend239tx]
+        block.vtx += [spend_postupgradetx]
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
         peer.send_blocks_and_test(
@@ -185,12 +166,15 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
         )
         peer = self.reconnect_p2p()
 
-        # ... but we can mine the 240 mature coin spend
+        # After 1 extra block, post-upgrade coin is mature
+        self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)
+        node.sendrawtransaction(spend_postupgradetx.serialize().hex())
+
+        # Make sure we actually mined the tx
         minedhash2 = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
         assert_equal(
-            node.getrawtransaction(spend240tx.hash, 2)["blockhash"], minedhash2
+            node.getrawtransaction(spend_postupgradetx.hash, 2)["blockhash"], minedhash2
         )
-        assert_equal(node.getblockcount(), UPGRADE_HEIGHT)
 
 
 if __name__ == "__main__":
