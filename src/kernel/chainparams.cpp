@@ -111,11 +111,11 @@ public:
         // two days
         consensus.nDAAHalfLife = 2 * 24 * 60 * 60;
 
-        // The miner fund is enabled by default on mainnet.
-        consensus.enableMinerFund = true;
+        // The miner fund is disabled by default on Dogecoin mainnet.
+        consensus.enableMinerFund = false;
 
-        // The staking rewards are enabled by default on mainnet.
-        consensus.enableStakingRewards = true;
+        // The staking rewards are disabled by default on Dogecoin mainnet.
+        consensus.enableStakingRewards = false;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork =
@@ -126,32 +126,17 @@ public:
         consensus.defaultAssumeValid =
             ChainParamsConstants::MAINNET_DEFAULT_ASSUME_VALID;
 
-        // August 1, 2017 hard fork
-        consensus.uahfHeight = 478558;
-
-        // November 13, 2017 hard fork
-        consensus.daaHeight = 504031;
-
-        // November 15, 2018 hard fork
-        consensus.magneticAnomalyHeight = 556766;
-
-        // November 15, 2019 protocol upgrade
-        consensus.gravitonHeight = 609135;
-
-        // May 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.phononHeight = 635258;
-
-        // Nov 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.axionHeight = 661647;
-
-        // May 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.wellingtonHeight = 792116;
-
-        // Nov 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.cowperthwaiteHeight = 818669;
-
-        // Nov 15, 2024 12:00:00 UTC protocol upgrade
-        consensus.augustoActivationTime = 1731672000;
+        // BCH/XEC upgrades, disabled on Dogecoin
+        // Avoid using 0x7fffffff since some tests would overflow
+        consensus.uahfHeight = 0x7ffffffe;
+        consensus.daaHeight = 0x7ffffffe;
+        consensus.magneticAnomalyHeight = 0x7ffffffe;
+        consensus.gravitonHeight = 0x7ffffffe;
+        consensus.phononHeight = 0x7ffffffe;
+        consensus.axionHeight = 0x7ffffffe;
+        consensus.wellingtonHeight = 800000; // keep alive for tests
+        consensus.cowperthwaiteHeight = 900000; // keep alive for tests
+        consensus.augustoActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
@@ -277,32 +262,16 @@ public:
         consensus.defaultAssumeValid =
             ChainParamsConstants::TESTNET_DEFAULT_ASSUME_VALID;
 
-        // August 1, 2017 hard fork
-        consensus.uahfHeight = 1155875;
-
-        // November 13, 2017 hard fork
-        consensus.daaHeight = 1188697;
-
-        // November 15, 2018 hard fork
-        consensus.magneticAnomalyHeight = 1267996;
-
-        // November 15, 2019 protocol upgrade
-        consensus.gravitonHeight = 1341711;
-
-        // May 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.phononHeight = 1378460;
-
-        // Nov 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.axionHeight = 1421481;
-
-        // May 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.wellingtonHeight = 1556117;
-
-        // Nov 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.cowperthwaiteHeight = 1584485;
-
-        // Nov 15, 2024 12:00:00 UTC protocol upgrade
-        consensus.augustoActivationTime = 1731672000;
+        // BCH/XEC upgrades, disabled on Dogecoin
+        consensus.uahfHeight = 0x7ffffffe;
+        consensus.daaHeight = 0x7ffffffe;
+        consensus.magneticAnomalyHeight = 0x7ffffffe;
+        consensus.gravitonHeight = 0x7ffffffe;
+        consensus.phononHeight = 0x7ffffffe;
+        consensus.axionHeight = 0x7ffffffe;
+        consensus.wellingtonHeight = 0x7ffffffe;
+        consensus.cowperthwaiteHeight = 0x7ffffffe;
+        consensus.augustoActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;

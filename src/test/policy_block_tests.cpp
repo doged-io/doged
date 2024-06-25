@@ -45,6 +45,7 @@ static CBlock BlockWithMinerFund(const CChainParams &chainparams,
 BOOST_AUTO_TEST_CASE(policy_minerfund) {
     const CChainParams &chainparams = Params();
     const Consensus::Params &consensusParams = chainparams.GetConsensus();
+    Assert(m_node.args)->ForceSetArg("-enableminerfund", "1");
 
     std::array<BlockHash, 12> blockhashes;
     std::array<CBlockIndex, 12> blocks;
@@ -146,6 +147,8 @@ BOOST_AUTO_TEST_CASE(policy_minerfund) {
         checkMinerFundPolicy(BlockWithMinerFund(chainparams, amount),
                              cowperthwaiteBlockIndex, true);
     }
+
+    Assert(m_node.args)->ClearForcedArg("-enableminerfund");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
