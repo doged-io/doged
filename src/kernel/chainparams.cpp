@@ -262,32 +262,16 @@ public:
         consensus.defaultAssumeValid =
             ChainParamsConstants::TESTNET_DEFAULT_ASSUME_VALID;
 
-        // August 1, 2017 hard fork
-        consensus.uahfHeight = 1155875;
-
-        // November 13, 2017 hard fork
-        consensus.daaHeight = 1188697;
-
-        // November 15, 2018 hard fork
-        consensus.magneticAnomalyHeight = 1267996;
-
-        // November 15, 2019 protocol upgrade
-        consensus.gravitonHeight = 1341711;
-
-        // May 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.phononHeight = 1378460;
-
-        // Nov 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.axionHeight = 1421481;
-
-        // May 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.wellingtonHeight = 1556117;
-
-        // Nov 15, 2023 12:00:00 UTC protocol upgrade
-        consensus.cowperthwaiteHeight = 1584485;
-
-        // Nov 15, 2024 12:00:00 UTC protocol upgrade
-        consensus.augustoActivationTime = 1731672000;
+        // BCH/XEC upgrades, disabled on Dogecoin
+        consensus.uahfHeight = 0x7ffffffe;
+        consensus.daaHeight = 0x7ffffffe;
+        consensus.magneticAnomalyHeight = 0x7ffffffe;
+        consensus.gravitonHeight = 0x7ffffffe;
+        consensus.phononHeight = 0x7ffffffe;
+        consensus.axionHeight = 0x7ffffffe;
+        consensus.wellingtonHeight = 0x7ffffffe;
+        consensus.cowperthwaiteHeight = 0x7ffffffe;
+        consensus.augustoActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
