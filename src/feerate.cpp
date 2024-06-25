@@ -5,6 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <feerate.h>
+#include <policy/fees.h>
 
 #include <tinyformat.h>
 
@@ -12,8 +13,12 @@ CFeeRate::CFeeRate(const Amount nFeePaid, size_t nBytes_) {
     assert(nBytes_ <= uint64_t(std::numeric_limits<int64_t>::max()));
     int64_t nSize = int64_t(nBytes_);
 
-    if (nSize > 0) {
-        nSatoshisPerK = 1000 * nFeePaid / nSize;
+    if (nFeePaid > MAX_MONEY / 1000) {
+        // This computation will not fit in Amount. Since it is not realistic,
+        // just set the max fee rate.
+        nSatoshisPerK = MAX_FEERATE;
+    } else if (nSize > 0) {
+        nSatoshisPerK = (1000 * nFeePaid) / nSize;
     } else {
         nSatoshisPerK = Amount::zero();
     }

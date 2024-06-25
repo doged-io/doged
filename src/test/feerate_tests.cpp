@@ -4,6 +4,7 @@
 
 #include <consensus/amount.h>
 
+#include <policy/fees.h>
 #include <test/util/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
@@ -84,8 +85,21 @@ BOOST_AUTO_TEST_CASE(GetFeeTest) {
     // some more integer checks
     BOOST_CHECK(CFeeRate(26 * SATOSHI, 789) == CFeeRate(32 * SATOSHI));
     BOOST_CHECK(CFeeRate(27 * SATOSHI, 789) == CFeeRate(34 * SATOSHI));
+    // Near computation boundary
+    BOOST_CHECK(CFeeRate(MAX_MONEY / 1000 - Amount::satoshi(),
+                         std::numeric_limits<size_t>::max() >> 1) ==
+                CFeeRate(Amount::zero()));
+    BOOST_CHECK(CFeeRate(MAX_MONEY / 1000, std::numeric_limits<size_t>::max() >>
+                                               1) == CFeeRate(Amount::zero()));
+    BOOST_CHECK(CFeeRate(MAX_MONEY / 1000 + Amount::satoshi(),
+                         std::numeric_limits<size_t>::max() >> 1) ==
+                CFeeRate(MAX_FEERATE));
     // Maximum size in bytes, should not crash
-    CFeeRate(MAX_MONEY, std::numeric_limits<size_t>::max() >> 1).GetFeePerK();
+    BOOST_CHECK(CFeeRate(MAX_MONEY - Amount::satoshi(),
+                         std::numeric_limits<size_t>::max() >> 1) ==
+                CFeeRate(MAX_FEERATE));
+    BOOST_CHECK(CFeeRate(MAX_MONEY, std::numeric_limits<size_t>::max() >> 1) ==
+                CFeeRate(MAX_FEERATE));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
