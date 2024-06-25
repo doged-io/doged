@@ -79,8 +79,8 @@ static constexpr auto HEADERS_RESPONSE_TIME{2min};
 static constexpr int32_t MAX_OUTBOUND_PEERS_TO_PROTECT_FROM_DISCONNECT = 4;
 /** Timeout for (unprotected) outbound peers to sync to our chainwork */
 static constexpr auto CHAIN_SYNC_TIMEOUT{20min};
-/** How frequently to check for stale tips */
-static constexpr auto STALE_CHECK_INTERVAL{10min};
+/** How frequently to check for stale tips (Dogecoin: 1 minute block time) */
+static constexpr auto STALE_CHECK_INTERVAL{1min};
 /** How frequently to check for extra outbound peers and disconnect. */
 static constexpr auto EXTRA_PEER_CHECK_INTERVAL{45s};
 /**

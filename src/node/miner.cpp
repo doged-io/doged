@@ -47,7 +47,9 @@ int64_t UpdateTime(CBlockHeader *pblock, const CChainParams &chainParams,
     }
 
     // Updating time can change work required on testnet:
-    if (chainParams.GetConsensus().fPowAllowMinDifficultyBlocks) {
+    if (chainParams.GetConsensus()
+            .DaaParamsAtHeight(pindexPrev->nHeight + 1)
+            .fPowAllowMinDifficultyBlocks) {
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, chainParams);
     }
 

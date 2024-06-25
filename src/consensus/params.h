@@ -28,6 +28,18 @@ constexpr bool ValidDeployment(BuriedDeployment dep) {
     return dep <= DEPLOYMENT_CSV;
 }
 
+struct DaaParams {
+    bool fPowAllowMinDifficultyBlocks;
+    bool fDigishieldDifficultyCalculation;
+
+    /** Copied from Consensus::Params */
+    int64_t nPowTargetSpacing;
+
+    int64_t nPowTargetTimespan;
+    int64_t nMinTimespan;
+    int64_t nMaxTimespan;
+};
+
 /**
  * Parameters that influence chain consensus.
  */
@@ -70,6 +82,9 @@ struct Params {
     /** Coinbase maturity before Digishield */
     int32_t initialCoinbaseMaturity;
 
+    /** Testnet allows min difficulty for some block height ranges */
+    bool enableTestnetMinDifficulty;
+
     /** Enable or disable the miner fund by default */
     bool enableMinerFund;
 
@@ -78,16 +93,14 @@ struct Params {
 
     /** Proof of work parameters */
     uint256 powLimit;
-    bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
     int64_t nDAAHalfLife;
     int64_t nPowTargetSpacing;
-    int64_t nPowTargetTimespan;
     std::chrono::seconds PowTargetSpacing() const {
         return std::chrono::seconds{nPowTargetSpacing};
     }
-    int64_t DifficultyAdjustmentInterval() const {
-        return nPowTargetTimespan / nPowTargetSpacing;
+    int64_t DifficultyAdjustmentInterval(const DaaParams &daaParams) const {
+        return daaParams.nPowTargetTimespan / nPowTargetSpacing;
     }
     uint256 nMinimumChainWork;
     BlockHash defaultAssumeValid;
@@ -107,6 +120,8 @@ struct Params {
         } // no default case, so the compiler can warn about missing cases
         return std::numeric_limits<int>::max();
     }
+
+    DaaParams DaaParamsAtHeight(int32_t nHeight) const;
 };
 
 } // namespace Consensus
