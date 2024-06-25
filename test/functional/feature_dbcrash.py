@@ -230,7 +230,7 @@ class ChainstateWriteCrashTest(BitcoinTestFramework):
         # Start by creating a lot of utxos on node3
         initial_height = self.nodes[3].getblockcount()
         utxo_list = create_confirmed_utxos(
-            self, self.nodes[3], 5000, sync_fun=self.no_op
+            self, self.nodes[3], 5000, sync_fun=self.no_op, age=240,
         )
         self.log.info(f"Prepped {len(utxo_list)} utxo entries")
 
