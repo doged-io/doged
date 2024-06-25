@@ -43,7 +43,10 @@ BOOST_FIXTURE_TEST_SUITE(stakingrewards_tests,
 BOOST_AUTO_TEST_CASE(isstakingrewardsactivated) {
     checkStakingRewardsActivation("regtest", false);
     checkStakingRewardsActivation("test", false);
+
+    Assert(m_node.args)->ForceSetArg("-avalanchestakingrewards", "1");
     checkStakingRewardsActivation("main", true);
+    Assert(m_node.args)->ClearForcedArg("-avalanchestakingrewards");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

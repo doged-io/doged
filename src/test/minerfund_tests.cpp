@@ -31,6 +31,7 @@ CheckWhitelist(const Consensus::Params &consensusParams,
 BOOST_AUTO_TEST_CASE(minerfund_whitelist) {
     const CChainParams &chainparams = Params();
     const Consensus::Params &consensusParams = chainparams.GetConsensus();
+    Assert(m_node.args)->ForceSetArg("-enableminerfund", "1");
 
     std::array<CBlockIndex, 3> blocks;
 
@@ -53,6 +54,8 @@ BOOST_AUTO_TEST_CASE(minerfund_whitelist) {
 
     BOOST_CHECK(IsWellingtonEnabled(consensusParams, blocks[2].pprev));
     CheckWhitelist(consensusParams, &blocks[2], expectedMinerFund);
+
+    Assert(m_node.args)->ClearForcedArg("-enableminerfund");
 }
 
 BOOST_AUTO_TEST_CASE(minerfund_amount) {
