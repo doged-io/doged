@@ -593,6 +593,7 @@ add_library(bitcoinconsensus
 	consensus/activation.cpp
 	consensus/amount.cpp
 	consensus/consensus.cpp
+	consensus/params.cpp
 	consensus/tx_check.cpp
 )
 
@@ -687,7 +688,6 @@ add_library(server
 	policy/packages.cpp
 	policy/settings.cpp
 	pow/auxpow.cpp
-	pow/eda.cpp
 	pow/pow.cpp
 	rest.cpp
 	rpc/abc.cpp
@@ -876,6 +876,7 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		consensus/amount.cpp
 		consensus/consensus.cpp
 		consensus/merkle.cpp
+		consensus/params.cpp
 		consensus/tx_check.cpp
 		consensus/tx_verify.cpp
 		core_read.cpp
@@ -899,7 +900,6 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		policy/policy.cpp
 		policy/settings.cpp
 		pow/auxpow.cpp
-		pow/eda.cpp
 		pow/pow.cpp
 		primitives/block.cpp
 		primitives/transaction.cpp

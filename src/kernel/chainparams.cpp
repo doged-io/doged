@@ -93,13 +93,14 @@ public:
         consensus.powLimit = uint256S("0x00000fffffffffffffffffffffffffffffffff"
                                       "ffffffffffffffffffffffffff");
         // two weeks
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
-        consensus.nPowTargetSpacing = 10 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.nPowTargetSpacing = 60; // one minute
         consensus.fPowNoRetargeting = false;
 
         // two days
         consensus.nDAAHalfLife = 2 * 24 * 60 * 60;
+
+        // Disable min difficulty rules on mainnet
+        consensus.enableTestnetMinDifficulty = false;
 
         // The miner fund is disabled by default on Dogecoin mainnet.
         consensus.enableMinerFund = false;
@@ -229,13 +230,14 @@ public:
         consensus.powLimit = uint256S("0x00000fffffffffffffffffffffffffffffffff"
                                       "ffffffffffffffffffffffffff");
         // two weeks
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 10 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
 
         // two days
         consensus.nDAAHalfLife = 2 * 24 * 60 * 60;
+
+        // Enable min difficulty rules on testnet
+        consensus.enableTestnetMinDifficulty = true;
 
         // The miner fund is disabled by default on testnet.
         consensus.enableMinerFund = false;
@@ -347,13 +349,14 @@ public:
         consensus.powLimit = uint256S(
             "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // two weeks
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 10 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
 
         // two days
         consensus.nDAAHalfLife = 2 * 24 * 60 * 60;
+
+        // Disable min difficulty rules on regtest
+        consensus.enableTestnetMinDifficulty = false;
 
         // The miner fund is disabled by default on regtest.
         consensus.enableMinerFund = false;

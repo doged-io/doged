@@ -2,7 +2,6 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <pow/eda.h>
 #include <pow/pow.h>
 
 #include <chain.h>
@@ -14,108 +13,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(eda_tests, BasicTestingSetup)
-
-/* Test calculation of next difficulty target with no constraints applying */
-BOOST_AUTO_TEST_CASE(get_next_work) {
-    DummyConfig config(CBaseChainParams::MAIN);
-
-    int64_t nLastRetargetTime = 1261130161; // Block #30240
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 32255;
-    pindexLast.nTime = 1262152739; // Block #32255
-    pindexLast.nBits = 0x1d00ffff;
-
-    // Here (and below): expected_nbits is calculated in
-    // CalculateNextWorkRequired(); redoing the calculation here would be just
-    // reimplementing the same code that is written in pow.cpp. Rather than
-    // copy that code, we just hardcode the expected result.
-    unsigned int expected_nbits = 0x1d00d86aU;
-    auto consensus_params = config.GetChainParams().GetConsensus();
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime,
-                                                consensus_params),
-                      expected_nbits);
-    BOOST_CHECK(
-        PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                      pindexLast.nBits, expected_nbits));
-}
-
-/* Test the constraint on the upper bound for next work */
-BOOST_AUTO_TEST_CASE(get_next_work_pow_limit) {
-    DummyConfig config(CBaseChainParams::MAIN);
-
-    int64_t nLastRetargetTime = 1231006505; // Block #0
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 2015;
-    pindexLast.nTime = 1233061996; // Block #2015
-    pindexLast.nBits = 0x1d00ffff;
-    unsigned int expected_nbits = 0x1d00ffffU;
-    auto consensus_params = config.GetChainParams().GetConsensus();
-
-    // TODO: Temporary fix for Dogecoin: Restore Bitcoin parameters
-    // Replace this test suite with Dogecoin DAA tests
-    consensus_params.powLimit = uint256S(
-        "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    consensus_params.nPowTargetTimespan = 14 * 24 * 60 * 60;
-    consensus_params.nPowTargetSpacing = 10 * 60;
-
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime,
-                                                consensus_params),
-                      expected_nbits);
-    BOOST_CHECK(
-        PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                      pindexLast.nBits, expected_nbits));
-}
-
-/* Test the constraint on the lower bound for actual time taken */
-BOOST_AUTO_TEST_CASE(get_next_work_lower_limit_actual) {
-    DummyConfig config(CBaseChainParams::MAIN);
-
-    int64_t nLastRetargetTime = 1279008237; // Block #66528
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 68543;
-    pindexLast.nTime = 1279297671; // Block #68543
-    pindexLast.nBits = 0x1c05a3f4;
-    unsigned int expected_nbits = 0x1c0168fdU;
-    auto consensus_params = config.GetChainParams().GetConsensus();
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime,
-                                                consensus_params),
-                      expected_nbits);
-    BOOST_CHECK(
-        PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                      pindexLast.nBits, expected_nbits));
-    // Test that reducing nbits further would not be a
-    // PermittedDifficultyTransition.
-    unsigned int invalid_nbits = expected_nbits - 1;
-    BOOST_CHECK(
-        !PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                       pindexLast.nBits, invalid_nbits));
-}
-
-/* Test the constraint on the upper bound for actual time taken */
-BOOST_AUTO_TEST_CASE(get_next_work_upper_limit_actual) {
-    DummyConfig config(CBaseChainParams::MAIN);
-
-    int64_t nLastRetargetTime = 1263163443; // NOTE: Not an actual block time
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 46367;
-    pindexLast.nTime = 1269211443; // Block #46367
-    pindexLast.nBits = 0x1c387f6f;
-    unsigned int expected_nbits = 0x1d00e1fdU;
-    auto consensus_params = config.GetChainParams().GetConsensus();
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime,
-                                                consensus_params),
-                      expected_nbits);
-    BOOST_CHECK(
-        PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                      pindexLast.nBits, expected_nbits));
-    // Test that increasing nbits further would not be a
-    // PermittedDifficultyTransition.
-    unsigned int invalid_nbits = expected_nbits + 1;
-    BOOST_CHECK(
-        !PermittedDifficultyTransition(consensus_params, pindexLast.nHeight + 1,
-                                       pindexLast.nBits, invalid_nbits));
-}
+BOOST_FIXTURE_TEST_SUITE(daa_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(CheckProofOfWork_test_negative_target) {
     const auto consensus =
@@ -181,7 +79,7 @@ BOOST_AUTO_TEST_CASE(GetBlockProofEquivalentTime_test) {
         blocks[i].nTime =
             1269211443 +
             i * config.GetChainParams().GetConsensus().nPowTargetSpacing;
-        blocks[i].nBits = 0x207fffff; /* target 0x7fffff000... */
+        blocks[i].nBits = 0x207fffff; // target 0x7fffff000...
         blocks[i].nChainWork =
             i ? blocks[i - 1].nChainWork + GetBlockProof(blocks[i])
               : arith_uint256(0);
@@ -215,7 +113,8 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
 
     std::vector<CBlockIndex> blocks(115);
 
-    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    const CChainParams &chainParams = config.GetChainParams();
+    const Consensus::Params &params = chainParams.GetConsensus();
     const arith_uint256 powLimit = UintToArith256(params.powLimit);
     arith_uint256 currentPow = powLimit >> 1;
     uint32_t initialBits = currentPow.GetCompact();
@@ -242,7 +141,7 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
     for (size_t i = 100; i < 110; i++) {
         blocks[i] = GetBlockIndex(&blocks[i - 1], 2 * 3600, initialBits);
         BOOST_CHECK_EQUAL(
-            GetNextEDAWorkRequired(&blocks[i], &blkHeaderDummy, params),
+            GetNextWorkRequired(&blocks[i], &blkHeaderDummy, chainParams),
             initialBits);
     }
 
@@ -250,7 +149,7 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
     blocks[110] = GetBlockIndex(&blocks[109], 2 * 3600, initialBits);
     currentPow.SetCompact(currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
-        GetNextEDAWorkRequired(&blocks[110], &blkHeaderDummy, params),
+        GetNextWorkRequired(&blocks[110], &blkHeaderDummy, chainParams),
         currentPow.GetCompact());
 
     // As we continue with 2h blocks, difficulty remains unchanged.
@@ -258,7 +157,7 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
         GetBlockIndex(&blocks[110], 2 * 3600, currentPow.GetCompact());
     currentPow.SetCompact(currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
-        GetNextEDAWorkRequired(&blocks[111], &blkHeaderDummy, params),
+        GetNextWorkRequired(&blocks[111], &blkHeaderDummy, chainParams),
         currentPow.GetCompact());
 
     // Difficulty remains unchanged.
@@ -266,7 +165,7 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
         GetBlockIndex(&blocks[111], 2 * 3600, currentPow.GetCompact());
     currentPow.SetCompact(currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
-        GetNextEDAWorkRequired(&blocks[112], &blkHeaderDummy, params),
+        GetNextWorkRequired(&blocks[112], &blkHeaderDummy, chainParams),
         currentPow.GetCompact());
 
     // Difficulty remains unchanged, so we don't go below powLimit anyway.
@@ -275,14 +174,14 @@ BOOST_AUTO_TEST_CASE(retargeting_test) {
     currentPow.SetCompact(currentPow.GetCompact());
     BOOST_CHECK(powLimit.GetCompact() != currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
-        GetNextEDAWorkRequired(&blocks[113], &blkHeaderDummy, params),
+        GetNextWorkRequired(&blocks[113], &blkHeaderDummy, chainParams),
         currentPow.GetCompact());
 
     // Difficulty remains unchanged, so we don't go below powLimit anyway.
     blocks[114] = GetBlockIndex(&blocks[113], 2 * 3600, powLimit.GetCompact());
     BOOST_CHECK(powLimit.GetCompact() != currentPow.GetCompact());
     BOOST_CHECK_EQUAL(
-        GetNextEDAWorkRequired(&blocks[114], &blkHeaderDummy, params),
+        GetNextWorkRequired(&blocks[114], &blkHeaderDummy, chainParams),
         powLimit.GetCompact());
 }
 

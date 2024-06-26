@@ -81,7 +81,8 @@ FUZZ_TARGET_INIT(pow, initialize_pow) {
             (void)GetBlockProof(current_block);
             if (current_block.nHeight != std::numeric_limits<int>::max() &&
                 current_block.nHeight -
-                        (consensus_params.DifficultyAdjustmentInterval() - 1) >=
+                        (consensus_params.DifficultyAdjustmentInterval({}) -
+                         1) >=
                     0) {
                 (void)GetNextWorkRequired(&current_block, &(*block_header),
                                           chainparams);
