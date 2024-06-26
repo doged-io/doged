@@ -74,6 +74,9 @@
 #include <string>
 #include <thread>
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+
 using kernel::CCoinsStats;
 using kernel::CoinStatsHashType;
 using kernel::ComputeUTXOStats;
@@ -1137,17 +1140,46 @@ PackageMempoolAcceptResult ProcessNewPackage(Chainstate &active_chainstate,
     return result;
 }
 
-Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams) {
+Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams,
+                       uint256 prevHash) {
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
-    // Force block reward to zero when right shift is undefined.
-    if (halvings >= 64) {
-        return Amount::zero();
+
+    // On regtest, use the Bitcoin halving mechanism
+    if (consensusParams.fPowNoRetargeting) {
+        // Force block reward to zero when right shift is undefined.
+        if (halvings >= 64) {
+            return Amount::zero();
+        }
+
+        Amount nSubsidy = 50 * COIN;
+        // Subsidy is cut in half every 210,000 blocks which will occur
+        // approximately every 4 years.
+        return ((nSubsidy / SATOSHI) >> halvings) * SATOSHI;
     }
 
-    Amount nSubsidy = 50 * COIN;
-    // Subsidy is cut in half every 210,000 blocks which will occur
-    // approximately every 4 years.
-    return ((nSubsidy / SATOSHI) >> halvings) * SATOSHI;
+    if (!IsDigishieldEnabled(consensusParams, nHeight)) {
+        int64_t maxReward = (1000000 >> halvings) - 1;
+
+        // Old-style rewards derived from the previous block hash
+        // Extract bits 200 to 227
+        // 0000000XXXXXXX00000000000000000000000000000000000000000000000000
+        arith_uint256 prev = UintToArith256(prevHash);
+        prev <<= 28; // Remove leading 7 hex digits
+        prev >>= 256 - 28;
+        int64_t seed = (int64_t)prev.GetLow64();
+
+        boost::mt19937 gen(seed);
+        boost::uniform_int<> dist(1, maxReward);
+        int32_t rand = dist(gen);
+
+        return (1 + rand) * COIN;
+    } else if (nHeight < (6 * consensusParams.nSubsidyHalvingInterval)) {
+        // New-style constant rewards for each halving interval
+        return ((500000 * COIN / SATOSHI) >> halvings) * SATOSHI;
+    } else {
+        // Constant inflation
+        return 10000 * COIN;
+    }
 }
 
 CoinsViews::CoinsViews(DBParams db_params, CoinsViewOptions options)
@@ -2050,7 +2082,8 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
              nTimeConnect * MICRO, nTimeConnect * MILLI / nBlocksTotal);
 
     const Amount blockReward =
-        nFees + GetBlockSubsidy(pindex->nHeight, consensusParams);
+        nFees + GetBlockSubsidy(pindex->nHeight, consensusParams,
+                                pindex->pprev->GetBlockHash());
     if (block.vtx[0]->GetValueOut() > blockReward) {
         LogPrintf("ERROR: ConnectBlock(): coinbase pays too much (actual=%d vs "
                   "limit=%d)\n",
@@ -2609,8 +2642,8 @@ bool Chainstate::ConnectTip(BlockValidationState &state,
             m_filterParkingPoliciesApplied.insert(blockhash);
 
             const Amount blockReward =
-                blockFees +
-                GetBlockSubsidy(pindexNew->nHeight, consensusParams);
+                blockFees + GetBlockSubsidy(pindexNew->nHeight, consensusParams,
+                                            pindexNew->pprev->GetBlockHash());
 
             std::vector<std::unique_ptr<ParkingPolicy>> parkingPolicies;
             parkingPolicies.emplace_back(std::make_unique<MinerFundPolicy>(

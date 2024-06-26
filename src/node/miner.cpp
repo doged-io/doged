@@ -190,7 +190,8 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue =
-        nFees + GetBlockSubsidy(nHeight, consensusParams);
+        nFees +
+        GetBlockSubsidy(nHeight, consensusParams, pindexPrev->GetBlockHash());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
 
     const Amount blockReward = coinbaseTx.vout[0].nValue;

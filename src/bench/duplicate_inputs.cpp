@@ -42,7 +42,8 @@ static void DuplicateInputs(benchmark::Bench &bench) {
     coinbaseTx.vin[0].prevout = COutPoint();
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = SCRIPT_PUB;
-    coinbaseTx.vout[0].nValue = GetBlockSubsidy(nHeight, consensusParams);
+    coinbaseTx.vout[0].nValue =
+        GetBlockSubsidy(nHeight, consensusParams, pindexPrev->GetBlockHash());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
 
     naughtyTx.vout.resize(1);

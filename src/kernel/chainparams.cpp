@@ -74,7 +74,7 @@ class CMainParams : public CChainParams {
 public:
     explicit CMainParams(const ChainOptions &opts) {
         strNetworkID = CBaseChainParams::MAIN;
-        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.nSubsidyHalvingInterval = 100000;
         // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 -
         // April 1, 2012
         consensus.BIP16Height = 0;
@@ -215,7 +215,7 @@ class CTestNetParams : public CChainParams {
 public:
     explicit CTestNetParams(const ChainOptions &opts) {
         strNetworkID = CBaseChainParams::TESTNET;
-        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.nSubsidyHalvingInterval = 100000;
         // 00000000040b4e986385315e14bee30ad876d8b47f748025b26683116d21aa65
         consensus.BIP16Height = 0;
         consensus.BIP34Height = 708658;

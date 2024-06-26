@@ -163,7 +163,8 @@ void StartScriptCheckWorkerThreads(int threads_num);
  */
 void StopScriptCheckWorkerThreads();
 
-Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams);
+Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams,
+                       uint256 prevHash);
 
 bool AbortNode(BlockValidationState &state, const std::string &strMessage,
                const bilingual_str &userMessage = bilingual_str{});

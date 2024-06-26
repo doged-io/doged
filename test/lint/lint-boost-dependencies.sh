@@ -22,6 +22,8 @@ EXPECTED_BOOST_INCLUDES=(
     boost/multi_index/ordered_index.hpp
     boost/multi_index/sequenced_index.hpp
     boost/multi_index_container.hpp
+    boost/random/mersenne_twister.hpp
+    boost/random/uniform_int.hpp
     boost/range/iterator.hpp
     boost/range/adaptor/sliced.hpp
     boost/signals2/connection.hpp
