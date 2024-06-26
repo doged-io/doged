@@ -68,6 +68,11 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_manual_random_flags) {
     MMIXLinearCongruentialGenerator lcg;
     for (size_t i = 0; i < 4096; i++) {
         uint32_t flags = lcg.next();
+        if (flags & SCRIPT_DOGECOIN) {
+            // Dogecoin has OP_REVERSEBYTES disabled
+            continue;
+        }
+
         CheckPassForCombinations(flags, {}, {});
         CheckPassForCombinations(flags, {99}, {99});
         CheckPassForCombinations(flags, {0xde, 0xad}, {0xad, 0xde});
@@ -91,6 +96,11 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_iota) {
         valtype iota_data_reversed = {iota_data.rbegin(), iota_data.rend()};
         for (size_t i = 0; i < 4096; i++) {
             uint32_t flags = lcg.next();
+            if (flags & SCRIPT_DOGECOIN) {
+                // Dogecoin has OP_REVERSEBYTES disabled
+                continue;
+            }
+
             CheckPassForCombinations(flags, iota_data, iota_data_reversed);
         }
     }
@@ -131,6 +141,11 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_random_and_palindrome) {
         }
 
         for (const uint32_t flags : flaglist) {
+            if (flags & SCRIPT_DOGECOIN) {
+                // Dogecoin has OP_REVERSEBYTES disabled
+                continue;
+            }
+
             // Verify random data passes.
             CheckPassForCombinations(flags, random_data, random_data_reversed);
             // Verify palindrome check passes.
@@ -145,6 +160,13 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_failures) {
     // Test for random flags (proxy for exhaustive testing).
     for (size_t i = 0; i < 4096; i++) {
         uint32_t flags = lcg.next();
+
+        if (flags & SCRIPT_DOGECOIN) {
+            // Dogecoin has OP_REVERSEBYTES disabled
+            CheckErrorWithFlags(flags, {}, CScript() << OP_REVERSEBYTES,
+                                ScriptError::BAD_OPCODE);
+            continue;
+        }
 
         // Verify non-palindrome fails.
         CheckErrorWithFlags(flags, {{0x01, 0x02, 0x03, 0x02, 0x02}},

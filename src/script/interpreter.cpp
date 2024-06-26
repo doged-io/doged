@@ -996,6 +996,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                     case OP_CHECKDATASIG:
                     case OP_CHECKDATASIGVERIFY: {
+                        // Disabled on Dogecoin
+                        if (flags & SCRIPT_DOGECOIN) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+
                         // (sig message pubkey -- bool)
                         if (stack.size() < 3) {
                             return set_error(
@@ -1020,7 +1025,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 .Write(vchMessage.data(), vchMessage.size())
                                 .Finalize(vchHash.data());
                             fSuccess = checker.VerifySignature(
-                                vchSig, CPubKey(vchPubKey), uint256(vchHash));
+                                vchSig, CPubKey(vchPubKey), uint256(vchHash),
+                                flags);
                             metrics.nSigChecks += 1;
 
                             if (!fSuccess && (flags & SCRIPT_VERIFY_NULLFAIL)) {
@@ -1324,6 +1330,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break;
 
                     case OP_REVERSEBYTES: {
+                        // Disabled on Dogecoin
+                        if (flags & SCRIPT_DOGECOIN) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+
                         // (in -- out)
                         if (stack.size() < 1) {
                             return set_error(
@@ -1657,8 +1668,9 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
 
 bool BaseSignatureChecker::VerifySignature(const std::vector<uint8_t> &vchSig,
                                            const CPubKey &pubkey,
-                                           const uint256 &sighash) const {
-    if (vchSig.size() == 64) {
+                                           const uint256 &sighash,
+                                           uint32_t flags) const {
+    if (vchSig.size() == 64 && (flags & SCRIPT_DOGECOIN) == 0) {
         return pubkey.VerifySchnorr(sighash, vchSig);
     } else {
         return pubkey.VerifyECDSA(sighash, vchSig);
@@ -1685,7 +1697,7 @@ bool GenericTransactionSignatureChecker<T>::CheckSig(
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, sigHashType, amount,
                                     this->txdata, flags);
 
-    if (!VerifySignature(vchSig, pubkey, sighash)) {
+    if (!VerifySignature(vchSig, pubkey, sighash, flags)) {
         return false;
     }
 

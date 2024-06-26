@@ -39,7 +39,7 @@ public:
 
     inline bool VerifyAndStore(const std::vector<uint8_t> &vchSig,
                                const CPubKey &pubkey, const uint256 &sighash) {
-        return pchecker->VerifySignature(vchSig, pubkey, sighash);
+        return pchecker->VerifySignature(vchSig, pubkey, sighash, 0);
     }
 
     inline bool IsCached(const std::vector<uint8_t> &vchSig,

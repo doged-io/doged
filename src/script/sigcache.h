@@ -35,8 +35,8 @@ public:
           store(storeIn) {}
 
     bool VerifySignature(const std::vector<uint8_t> &vchSig,
-                         const CPubKey &vchPubKey,
-                         const uint256 &sighash) const override;
+                         const CPubKey &vchPubKey, const uint256 &sighash,
+                         uint32_t flags) const override;
 
     friend class TestCachingTransactionSignatureChecker;
 };
