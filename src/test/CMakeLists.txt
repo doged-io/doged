@@ -49,6 +49,7 @@ add_library(testutil OBJECT
 	util/blockindex.cpp
 	util/coins.cpp
 	util/logging.cpp
+	util/merkle.cpp
 	util/mining.cpp
 	util/net.cpp
 	util/random.cpp
