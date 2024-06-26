@@ -31,10 +31,6 @@ constexpr bool ValidDeployment(BuriedDeployment dep) {
 struct DaaParams {
     bool fPowAllowMinDifficultyBlocks;
     bool fDigishieldDifficultyCalculation;
-
-    /** Copied from Consensus::Params */
-    int64_t nPowTargetSpacing;
-
     int64_t nPowTargetTimespan;
     int64_t nMinTimespan;
     int64_t nMaxTimespan;

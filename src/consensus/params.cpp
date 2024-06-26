@@ -21,7 +21,6 @@ DaaParams Params::DaaParamsAtHeight(int32_t nHeight) const {
 
     daaParams.fDigishieldDifficultyCalculation = hasDigishield;
 
-    daaParams.nPowTargetSpacing = nPowTargetSpacing;
     daaParams.nPowTargetTimespan = hasDigishield ? 60 : 4 * 60 * 60;
 
     if (hasDigishield) {
