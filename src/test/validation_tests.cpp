@@ -29,8 +29,9 @@
 
 BOOST_FIXTURE_TEST_SUITE(validation_tests, TestingSetup)
 
-// First 20 blocks on the DOGECOIN network, with their coinbase subsidy
+// First 20 blocks on the Dogecoin network, with their coinbase subsidy
 const std::vector<std::tuple<std::string, int64_t>> DOGECOIN_BLOCKS = {
+    // Genesis block has 88 DOGE blockreward, but not used in the tests here.
     {"1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c9902eb318182c355691", 88},
     {"82bc68038f6034c0596b6e313729793a887fded6e92a31fbdf70863f89d9bea2", 68416},
     {"ea5380659e02a68c073369e502125c634b2fb0aaf351b9360c673368c4f20c96",
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE(subsidy_first_100k_test) {
     Amount nSum;
     arith_uint256 prevHash;
 
-    for (int nHeight = 0; nHeight <= 100000; nHeight++) {
+    for (int32_t nHeight = 0; nHeight <= 100000; nHeight++) {
         Amount nSubsidy =
             GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
         BOOST_CHECK(MoneyRange(nSubsidy));
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE(subsidy_100k_145k_test) {
     Amount nSum;
     arith_uint256 prevHash;
 
-    for (int nHeight = 100000; nHeight <= 145000; nHeight++) {
+    for (int32_t nHeight = 100000; nHeight <= 145000; nHeight++) {
         Amount nSubsidy =
             GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
         BOOST_CHECK(MoneyRange(nSubsidy));
@@ -135,7 +136,7 @@ BOOST_AUTO_TEST_CASE(subsidy_post_145k_test) {
     const Consensus::Params &params = chainParams->GetConsensus();
     const uint256 prevHash;
 
-    for (int nHeight = 145000; nHeight < 600000; nHeight++) {
+    for (int32_t nHeight = 145000; nHeight < 600000; nHeight++) {
         Amount nSubsidy = GetBlockSubsidy(nHeight, params, prevHash);
         Amount nExpectedSubsidy = (500000 >> (nHeight / 100000)) * COIN;
         BOOST_CHECK(MoneyRange(nSubsidy));
@@ -150,6 +151,51 @@ BOOST_AUTO_TEST_CASE(subsidy_post_145k_test) {
     BOOST_CHECK_EQUAL(nConstantSubsidy, 10000 * COIN);
 }
 
+// This test is broken; it is copied from the original dogecoin test suite to
+// prevent divergence. The test tweaks prevHash, but the bits determining the
+// seed are untouched, such that the seed is always 0, resulting in no test
+// coverage for the seed extraction code.
+BOOST_AUTO_TEST_CASE(broken_dogecoin_subsidy_first_100k_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params &params = chainParams->GetConsensus();
+    Amount nSum;
+    arith_uint256 prevHash;
+
+    for (int nHeight = 0; nHeight <= 100000; nHeight++) {
+        Amount nSubsidy =
+            GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK(nSubsidy <= 1000000 * COIN);
+        nSum += nSubsidy;
+        prevHash += nSubsidy / SATOSHI;
+    }
+
+    const Amount expected = int64_t(54894174438LL) * COIN;
+    BOOST_CHECK_EQUAL(expected, nSum);
+}
+
+// This test is broken, see broken_dogecoin_subsidy_first_100k_test
+BOOST_AUTO_TEST_CASE(broken_dogecoin_subsidy_100k_145k_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::MAIN);
+    const Consensus::Params &params = chainParams->GetConsensus();
+    Amount nSum;
+    arith_uint256 prevHash;
+
+    for (int nHeight = 100000; nHeight <= 145000; nHeight++) {
+        Amount nSubsidy =
+            GetBlockSubsidy(nHeight, params, ArithToUint256(prevHash));
+        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK(nSubsidy <= 500000 * COIN);
+        nSum += nSubsidy;
+        prevHash += nSubsidy / SATOSHI;
+    }
+
+    const Amount expected = int64_t(12349960000LL) * COIN;
+    BOOST_CHECK_EQUAL(expected, nSum);
+}
+
 static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams) {
     int maxHalvings = 64;
     Amount nInitialSubsidy = 50 * COIN;
@@ -157,8 +203,8 @@ static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams) {
     // for height == 0
     Amount nPreviousSubsidy = 2 * nInitialSubsidy;
     BOOST_CHECK_EQUAL(nPreviousSubsidy, 2 * nInitialSubsidy);
-    for (int nHalvings = 0; nHalvings < maxHalvings; nHalvings++) {
-        int nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval;
+    for (int32_t nHalvings = 0; nHalvings < maxHalvings; nHalvings++) {
+        int32_t nHeight = nHalvings * consensusParams.nSubsidyHalvingInterval;
         Amount nSubsidy = GetBlockSubsidy(nHeight, consensusParams, uint256());
         BOOST_CHECK(nSubsidy <= nInitialSubsidy);
         BOOST_CHECK_EQUAL(nSubsidy, nPreviousSubsidy / 2);
