@@ -2161,13 +2161,9 @@ static RPCHelpMan getblockstats() {
             ret_all.pushKV("mintxsize",
                            mintxsize == blockMaxSize ? 0 : mintxsize);
             ret_all.pushKV("outs", outputs);
-            uint256 prevHash;
-            if (pindex.pprev) {
-                prevHash = pindex.pprev->GetBlockHash();
-            }
-            ret_all.pushKV("subsidy",
-                           GetBlockSubsidy(pindex.nHeight,
-                                           chainman.GetConsensus(), prevHash));
+            ret_all.pushKV("subsidy", GetBlockSubsidy(pindex.nHeight,
+                                                      chainman.GetConsensus(),
+                                                      block.hashPrevBlock));
             ret_all.pushKV("time", pindex.GetBlockTime());
             ret_all.pushKV("total_out", total_out);
             ret_all.pushKV("total_size", total_size);

@@ -1140,12 +1140,6 @@ PackageMempoolAcceptResult ProcessNewPackage(Chainstate &active_chainstate,
     return result;
 }
 
-int32_t static generateMTRandom(uint32_t s, int32_t range) {
-    boost::mt19937 gen(s);
-    boost::uniform_int<> dist(1, range);
-    return dist(gen);
-}
-
 Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams,
                        uint256 prevHash) {
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
@@ -1164,13 +1158,19 @@ Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams,
     }
 
     if (!IsDigishieldEnabled(consensusParams, nHeight)) {
-        // Old-style rewards derived from the previous block hash
-        const std::string cseed_str = prevHash.ToString().substr(7, 7);
-        const char *cseed = cseed_str.c_str();
-        char *endp = NULL;
-        long seed = strtol(cseed, &endp, 16);
         int64_t maxReward = (1000000 >> halvings) - 1;
-        int rand = generateMTRandom(seed, maxReward);
+
+        // Old-style rewards derived from the previous block hash
+        // Extract bits 200 to 227
+        // 0000000XXXXXXX00000000000000000000000000000000000000000000000000
+        arith_uint256 prev = UintToArith256(prevHash);
+        prev <<= 28; // Remove leading 7 hex digits
+        prev >>= 256 - 28;
+        int64_t seed = (int64_t)prev.GetLow64();
+
+        boost::mt19937 gen(seed);
+        boost::uniform_int<> dist(1, maxReward);
+        int32_t rand = dist(gen);
 
         return (1 + rand) * COIN;
     } else if (nHeight < (6 * consensusParams.nSubsidyHalvingInterval)) {
