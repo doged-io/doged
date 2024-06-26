@@ -91,6 +91,18 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
             // Disabled opcodes.
             return true;
 
+        case OP_CAT:
+        case OP_SPLIT:
+        case OP_NUM2BIN:
+        case OP_BIN2NUM:
+        case OP_AND:
+        case OP_OR:
+        case OP_XOR:
+        case OP_DIV:
+        case OP_MOD:
+            // Disabled on Dogecoin
+            return (flags & SCRIPT_DOGECOIN) != 0;
+
         default:
             break;
     }

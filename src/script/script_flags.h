@@ -104,6 +104,9 @@ enum {
 
     // A utility flag to decide whether we must enforce sigcheck limits.
     SCRIPT_ENFORCE_SIGCHECKS = (1U << 23),
+
+    // Whether to run the interpreter like on Dogecoin
+    SCRIPT_DOGECOIN = (1U << 24),
 };
 
 #endif // BITCOIN_SCRIPT_SCRIPT_FLAGS_H
