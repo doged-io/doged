@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(subsidy_first_100k_test) {
         prevHash += nSubsidy / SATOSHI;
     }
 
-    const Amount expected = 54894174438LL * COIN;
+    const Amount expected = int64_t(54894174438LL) * COIN;
     BOOST_CHECK_EQUAL(expected, nSum);
 }
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(subsidy_100k_145k_test) {
         prevHash += nSubsidy / SATOSHI;
     }
 
-    const Amount expected = 12349960000LL * COIN;
+    const Amount expected = int64_t(12349960000LL) * COIN;
     BOOST_CHECK_EQUAL(expected, nSum);
 }
 

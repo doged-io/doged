@@ -215,7 +215,7 @@ class CTestNetParams : public CChainParams {
 public:
     explicit CTestNetParams(const ChainOptions &opts) {
         strNetworkID = CBaseChainParams::TESTNET;
-        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.nSubsidyHalvingInterval = 100000;
         // 00000000040b4e986385315e14bee30ad876d8b47f748025b26683116d21aa65
         consensus.BIP16Height = 0;
         consensus.BIP34Height = 708658;
