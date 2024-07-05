@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_manual_random_flags) {
     MMIXLinearCongruentialGenerator lcg;
     for (size_t i = 0; i < 4096; i++) {
         uint32_t flags = lcg.next();
-        if (flags & SCRIPT_DOGECOIN) {
-            // Dogecoin has OP_REVERSEBYTES disabled
+        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+            // Legacy has OP_REVERSEBYTES disabled
             continue;
         }
 
@@ -96,8 +96,8 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_iota) {
         valtype iota_data_reversed = {iota_data.rbegin(), iota_data.rend()};
         for (size_t i = 0; i < 4096; i++) {
             uint32_t flags = lcg.next();
-            if (flags & SCRIPT_DOGECOIN) {
-                // Dogecoin has OP_REVERSEBYTES disabled
+            if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+                // Legacy has OP_REVERSEBYTES disabled
                 continue;
             }
 
@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_random_and_palindrome) {
         }
 
         for (const uint32_t flags : flaglist) {
-            if (flags & SCRIPT_DOGECOIN) {
-                // Dogecoin has OP_REVERSEBYTES disabled
+            if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+                // Legacy has OP_REVERSEBYTES disabled
                 continue;
             }
 
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(op_reversebytes_failures) {
     for (size_t i = 0; i < 4096; i++) {
         uint32_t flags = lcg.next();
 
-        if (flags & SCRIPT_DOGECOIN) {
-            // Dogecoin has OP_REVERSEBYTES disabled
+        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+            // Legacy has OP_REVERSEBYTES disabled
             CheckErrorWithFlags(flags, {}, CScript() << OP_REVERSEBYTES,
                                 ScriptError::BAD_OPCODE);
             continue;

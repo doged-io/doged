@@ -100,8 +100,8 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_XOR:
         case OP_DIV:
         case OP_MOD:
-            // Disabled on Dogecoin
-            return (flags & SCRIPT_DOGECOIN) != 0;
+            // Disabled on legacy mode
+            return (flags & SCRIPT_VERIFY_LEGACY_RULES) != 0;
 
         default:
             break;
@@ -996,8 +996,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                     case OP_CHECKDATASIG:
                     case OP_CHECKDATASIGVERIFY: {
-                        // Disabled on Dogecoin
-                        if (flags & SCRIPT_DOGECOIN) {
+                        // Disabled on legacy mode
+                        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
                             return set_error(serror, ScriptError::BAD_OPCODE);
                         }
 
@@ -1330,8 +1330,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break;
 
                     case OP_REVERSEBYTES: {
-                        // Disabled on Dogecoin
-                        if (flags & SCRIPT_DOGECOIN) {
+                        // Disabled on legacy mode
+                        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
                             return set_error(serror, ScriptError::BAD_OPCODE);
                         }
 
@@ -1670,7 +1670,8 @@ bool BaseSignatureChecker::VerifySignature(const std::vector<uint8_t> &vchSig,
                                            const CPubKey &pubkey,
                                            const uint256 &sighash,
                                            uint32_t flags) const {
-    if (vchSig.size() == 64 && (flags & SCRIPT_DOGECOIN) == 0) {
+    // 64-byte signatures are Schnorr signatures, except on legacy rules
+    if (vchSig.size() == 64 && (flags & SCRIPT_VERIFY_LEGACY_RULES) == 0) {
         return pubkey.VerifySchnorr(sighash, vchSig);
     } else {
         return pubkey.VerifyECDSA(sighash, vchSig);

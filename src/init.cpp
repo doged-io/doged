@@ -450,6 +450,7 @@ void SetupServerArgs(NodeContext &node) {
         "-parkdeepreorg",
         "-automaticunparking",
         "-replayprotectionactivationtime",
+        "-legacyscriptrules",
         "-enableminerfund",
         "-chronikallowpause",
         "-chronikcors",

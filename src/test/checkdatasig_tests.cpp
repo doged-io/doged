@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE(checkdatasig_test) {
     for (int i = 0; i < 4096; i++) {
         uint32_t flags = lcg.next();
 
-        if (flags & SCRIPT_DOGECOIN) {
-            // Dogecoin has OP_CHECKDATASIG and OP_CHECKDATASIGVERIFY disabled
+        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+            // Legacy has OP_CHECKDATASIG and OP_CHECKDATASIGVERIFY disabled
             CheckError(flags, {nondersig, message, pubkeyC}, script,
                        ScriptError::BAD_OPCODE);
             CheckError(flags, {nondersig, message, pubkeyC}, scriptverify,

@@ -132,6 +132,8 @@ public:
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
         consensus.initialCoinbaseMaturity = 30;
+        // Dogecoin: Enforce legacy script rules on mainnet
+        consensus.enforceLegacyScriptRules = true;
 
         /**
          * The message start string is designed to be unlikely to occur in
@@ -268,6 +270,8 @@ public:
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
         consensus.initialCoinbaseMaturity = 30;
+        // Dogecoin: Enforce legacy script rules on testnet
+        consensus.enforceLegacyScriptRules = true;
 
         diskMagic[0] = 0xfb;
         diskMagic[1] = 0x87;
@@ -402,6 +406,8 @@ public:
         consensus.digishieldHeight = 1450;
         // keep maturity same as Bitcoin for tests
         consensus.initialCoinbaseMaturity = REGTEST_COINBASE_MATURITY;
+        // legacy rules disabled for regtest so we don't refactor the universe
+        consensus.enforceLegacyScriptRules = false;
 
         diskMagic[0] = 0x94;
         diskMagic[1] = 0xb1;

@@ -81,6 +81,10 @@ struct Params {
     /** Testnet allows min difficulty for some block height ranges */
     bool enableTestnetMinDifficulty;
 
+    /** Whether to enforce the old legacy Script rules (see
+     * SCRIPT_VERIFY_LEGACY_RULES). */
+    bool enforceLegacyScriptRules;
+
     /** Enable or disable the miner fund by default */
     bool enableMinerFund;
 

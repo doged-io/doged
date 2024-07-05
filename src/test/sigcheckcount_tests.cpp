@@ -57,8 +57,7 @@ static class : public BaseSignatureChecker {
      * value verify false as well. Otherwise, checks verify as true.
      */
     bool VerifySignature(const std::vector<uint8_t> &vchSig,
-                         const CPubKey &vchPubKey,
-                         const uint256 &sighash,
+                         const CPubKey &vchPubKey, const uint256 &sighash,
                          uint32_t flags) const final {
         if (vchPubKey == CPubKey(badpub)) {
             return false;

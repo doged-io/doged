@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(opcodes_random_flags) {
 
         const bool hasForkId = (flags & SCRIPT_ENABLE_SIGHASH_FORKID) != 0;
         const bool hasNullFail = (flags & SCRIPT_VERIFY_NULLFAIL) != 0;
-        const bool hasDogecoin = (flags & SCRIPT_DOGECOIN) != 0;
+        const bool isLegacy = (flags & SCRIPT_VERIFY_LEGACY_RULES) != 0;
 
         // Prepare 65-byte transaction sigs with right hashtype byte.
         valtype DER64_with_hashtype =
@@ -122,25 +122,25 @@ BOOST_AUTO_TEST_CASE(opcodes_random_flags) {
             CheckError(flags, {Zero64_with_hashtype, pubkeyC},
                        scriptCHECKSIGVERIFY, ScriptError::SIG_NULLFAIL);
             CheckError(flags, {Zero64, {}, pubkeyC}, scriptCHECKDATASIG,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::SIG_NULLFAIL);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::SIG_NULLFAIL);
             CheckError(flags, {Zero64, {}, pubkeyC}, scriptCHECKDATASIGVERIFY,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::SIG_NULLFAIL);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::SIG_NULLFAIL);
         } else {
             CheckPass(flags, {Zero64_with_hashtype, pubkeyC}, scriptCHECKSIG,
                       {});
             CheckError(flags, {Zero64_with_hashtype, pubkeyC},
                        scriptCHECKSIGVERIFY, ScriptError::CHECKSIGVERIFY);
-            if (hasDogecoin) {
+            if (isLegacy) {
                 CheckError(flags, {Zero64, {}, pubkeyC}, scriptCHECKDATASIG,
                            ScriptError::BAD_OPCODE);
             } else {
                 CheckPass(flags, {Zero64, {}, pubkeyC}, scriptCHECKDATASIG, {});
             }
             CheckError(flags, {Zero64, {}, pubkeyC}, scriptCHECKDATASIGVERIFY,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::CHECKDATASIGVERIFY);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::CHECKDATASIGVERIFY);
         }
 
         // Test CHECKSIG & CHECKDATASIG with DER sig, which fails upon
@@ -151,25 +151,25 @@ BOOST_AUTO_TEST_CASE(opcodes_random_flags) {
             CheckError(flags, {DER64_with_hashtype, pubkeyC},
                        scriptCHECKSIGVERIFY, ScriptError::SIG_NULLFAIL);
             CheckError(flags, {DER64, {}, pubkeyC}, scriptCHECKDATASIG,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::SIG_NULLFAIL);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::SIG_NULLFAIL);
             CheckError(flags, {DER64, {}, pubkeyC}, scriptCHECKDATASIGVERIFY,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::SIG_NULLFAIL);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::SIG_NULLFAIL);
         } else {
             CheckPass(flags, {DER64_with_hashtype, pubkeyC}, scriptCHECKSIG,
                       {});
             CheckError(flags, {DER64_with_hashtype, pubkeyC},
                        scriptCHECKSIGVERIFY, ScriptError::CHECKSIGVERIFY);
-            if (hasDogecoin) {
+            if (isLegacy) {
                 CheckError(flags, {DER64, {}, pubkeyC}, scriptCHECKDATASIG,
                            ScriptError::BAD_OPCODE);
             } else {
                 CheckPass(flags, {DER64, {}, pubkeyC}, scriptCHECKDATASIG, {});
             }
             CheckError(flags, {DER64, {}, pubkeyC}, scriptCHECKDATASIGVERIFY,
-                       hasDogecoin ? ScriptError::BAD_OPCODE
-                                   : ScriptError::CHECKDATASIGVERIFY);
+                       isLegacy ? ScriptError::BAD_OPCODE
+                                : ScriptError::CHECKDATASIGVERIFY);
         }
 
         // test OP_CHECKMULTISIG/VERIFY
