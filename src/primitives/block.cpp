@@ -20,3 +20,13 @@ std::string CBlock::ToString() const {
     }
     return s.str();
 }
+
+void CBlockHeader::SetAuxPow(CAuxPow *apow) {
+    if (apow) {
+        auxpow.reset(apow);
+        SetAuxPowVersion(true);
+    } else {
+        auxpow.reset();
+        SetAuxPowVersion(false);
+    }
+}

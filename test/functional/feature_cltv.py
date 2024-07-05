@@ -8,6 +8,7 @@ Test that the CHECKLOCKTIMEVERIFY soft-fork activates at (regtest) block height
 """
 
 from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
     create_tx_with_script,
@@ -97,7 +98,7 @@ class BIP65Test(BitcoinTestFramework):
         tip = self.nodes[0].getbestblockhash()
         block_time = self.nodes[0].getblockheader(tip)["mediantime"] + 1
         block = create_block(int(tip, 16), create_coinbase(CLTV_HEIGHT - 1), block_time)
-        block.nVersion = 3
+        block.nVersion = VERSION_CHAIN_ID_BITS | 3
         block.vtx.append(fundtx)
         # include the -1 CLTV in block
         block.vtx.append(spendtx)
@@ -113,11 +114,11 @@ class BIP65Test(BitcoinTestFramework):
         tip = block.sha256
         block_time += 1
         block = create_block(tip, create_coinbase(CLTV_HEIGHT), block_time)
-        block.nVersion = 3
+        block.nVersion = VERSION_CHAIN_ID_BITS | 3
         block.solve()
 
         with self.nodes[0].assert_debug_log(
-            expected_msgs=[f"{block.hash}, bad-version(0x00000003)"]
+            expected_msgs=[f"{block.hash}, bad-version(0x00620003)"]
         ):
             peer.send_and_ping(msg_block(block))
             assert_equal(int(self.nodes[0].getbestblockhash(), 16), tip)
@@ -126,7 +127,7 @@ class BIP65Test(BitcoinTestFramework):
         self.log.info(
             "Test that invalid-according-to-cltv transactions cannot appear in a block"
         )
-        block.nVersion = 4
+        block.nVersion = VERSION_CHAIN_ID_BITS | 4
 
         fundtx = wallet.create_self_transfer()["tx"]
         fundtx, spendtx = cltv_lock_to_height(fundtx)
@@ -165,7 +166,7 @@ class BIP65Test(BitcoinTestFramework):
         tip = block.hash
         block_time += 1
         block = create_block(block.sha256, create_coinbase(CLTV_HEIGHT + 1), block_time)
-        block.nVersion = 4
+        block.nVersion = VERSION_CHAIN_ID_BITS | 4
         block.vtx.append(spendtx)
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()

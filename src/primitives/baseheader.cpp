@@ -20,3 +20,10 @@ BlockHash CBaseBlockHeader::GetPowHash() const {
     scrypt_1024_1_1_256((const uint8_t *)ss.data(), hash.data());
     return BlockHash(hash);
 }
+
+void CBaseBlockHeader::SetVersionBits(int32_t nLowVersionBits,
+                                      int32_t nChainId) {
+    assert(nLowVersionBits >= 1 && nLowVersionBits < VERSION_AUXPOW_FLAG);
+    assert(!HasAuxPowVersion());
+    nVersion = nLowVersionBits | (nChainId << VERSION_CHAIN_ID_FIRST_BIT);
+}

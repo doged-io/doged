@@ -7,7 +7,11 @@ Test stalling logic during IBD
 
 import time
 
-from test_framework.blocktools import create_block, create_coinbase
+from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+)
 from test_framework.messages import (
     MSG_BLOCK,
     MSG_TYPE_MASK,
@@ -53,7 +57,12 @@ class P2PIBDStallingTest(BitcoinTestFramework):
         block_dict = {}
         for _ in range(NUM_BLOCKS):
             blocks.append(
-                create_block(tip, create_coinbase(height), block_time, version=4)
+                create_block(
+                    tip,
+                    create_coinbase(height),
+                    block_time,
+                    version=VERSION_CHAIN_ID_BITS | 4,
+                )
             )
             blocks[-1].solve()
             tip = blocks[-1].sha256

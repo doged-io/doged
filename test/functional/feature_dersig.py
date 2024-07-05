@@ -6,7 +6,12 @@
 Test that the DERSIG soft-fork activates at (regtest) height 1251.
 """
 
-from test_framework.blocktools import create_block, create_coinbase, create_transaction
+from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+    create_transaction,
+)
 from test_framework.messages import msg_block
 from test_framework.p2p import P2PInterface
 from test_framework.script import CScript
@@ -72,7 +77,7 @@ class BIP66Test(BitcoinTestFramework):
         self.log.info(
             "Test that transactions with non-DER signatures cannot appear in a block"
         )
-        block.nVersion = 3
+        block.nVersion = VERSION_CHAIN_ID_BITS | 3
 
         spendtx = create_transaction(
             self.nodes[0], self.coinbase_txids[1], self.nodeaddress, amount=1000000

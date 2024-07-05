@@ -46,6 +46,8 @@ GENESIS_CB_SCRIPT_SIG = CScript(b"\x04\xff\xff\x00\x1d\x01\x04\x08Nintondo")
 
 MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60
 
+VERSION_CHAIN_ID_BITS = 0x620000
+
 
 def create_block(
     hashprev: Optional[int] = None,

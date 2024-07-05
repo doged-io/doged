@@ -4,6 +4,7 @@
 """This test reproduces the unittest deterministic chain setup and verifies
 the checkpoints and coinstatindexes."""
 
+from test_framework.blocktools import VERSION_CHAIN_ID_BITS
 from test_framework.key import ECKey
 from test_framework.messages import COIN, CBlock, COutPoint, CTransaction, CTxIn, CTxOut
 from test_framework.script import OP_CHECKSIG, CScript, CScriptNum, CScriptOp
@@ -43,7 +44,7 @@ def get_empty_block(
     height: int, base_block_hash: str, block_time: int, coinbase_pubkey: bytes
 ) -> CBlock:
     block = CBlock()
-    block.nVersion = 0x20000000
+    block.nVersion = VERSION_CHAIN_ID_BITS | 4
     block.nTime = block_time
     block.hashPrevBlock = int(base_block_hash, 16)
     # difficulty retargeting is disabled in REGTEST chainparams
@@ -86,7 +87,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         self.log.info("Reproduce the assertion in the TestChain100Setup constructor.")
         mine_blocks(100)
         assert_equal(
-            tip, "349766ba691ce76e0d2a0b27656004913a2e363510be135f6d660d50197aa7ce"
+            tip, "70d4a03faae27910b308632943adf66e9ba5ca4e0b287a71a1e2fcc77031544d"
         )
 
         self.log.info("Check m_assumeutxo_data at height 110.")
@@ -94,7 +95,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         assert_equal(node.getblockchaininfo()["blocks"], 110)
         assert_equal(
             node.gettxoutsetinfo()["hash_serialized"],
-            "4766e0ece526f39cf0a3311092b78b4e52dfc6718b631f1e1c483c83792f98ce",
+            "fcfa07adecbe5f753b9f062b5e5621dcdd9f998a45968876cb98d350667d745e",
         )
 
         self.log.info("Check m_assumeutxo_data at height 210.")
@@ -102,7 +103,7 @@ class DeterministicChainSetupTest(BitcoinTestFramework):
         assert_equal(node.getblockchaininfo()["blocks"], 210)
         assert_equal(
             node.gettxoutsetinfo()["hash_serialized"],
-            "de9f683a76655d2140c4a0be0e79ca1fdb9a4c61b40ed287ce56e203094baccb",
+            "6fa0d0be104a5990d6f743820b8a5e9eb7d525cc55e2bdb595d49e0cde33e0b5",
         )
 
 

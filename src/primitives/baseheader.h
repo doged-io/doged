@@ -23,6 +23,13 @@
  */
 class CBaseBlockHeader {
 public:
+    /** Bit that indicates a block has auxillary PoW. Bits below that are
+     * interpreted as the "traditional" Bitcoin version. */
+    static const int32_t VERSION_AUXPOW_FLAG = (1 << 8);
+
+    /** Bits including and above are reserved for the auxpow chain ID. */
+    static const int32_t VERSION_CHAIN_ID_FIRST_BIT = 16;
+
     // header
     int32_t nVersion;
     BlockHash hashPrevBlock;
@@ -64,6 +71,72 @@ public:
     }
 
     int64_t GetBlockTime() const { return (int64_t)nTime; }
+
+    /**
+     * Extract the low version bits, which are interpreted as the "traditional"
+     * Bitcoin version. The upper bits are used to signal presence of AuxPow and
+     * to set the chain ID.
+     */
+    inline int32_t LowVersionBits() const {
+        return LowBitsFromVersion(nVersion);
+    }
+    static inline int32_t LowBitsFromVersion(int32_t ver) {
+        return ver % VERSION_AUXPOW_FLAG;
+    }
+
+    /**
+     * Set the version bits and (low and chain ID) in nVersion.
+     * Assumes HasAuxPowVersion() is false; should be used for initialization.
+     * @param nLowVersionBits The low version bits below the AuxPow flag.
+     * @param nChainId The auxpow chain ID.
+     */
+    void SetVersionBits(int32_t nLowVersionBits, int32_t nChainId);
+
+    /**
+     * Extract the chain ID from the nVersion.
+     */
+    inline int32_t GetChainId() const {
+        return nVersion >> VERSION_CHAIN_ID_FIRST_BIT;
+    }
+
+    /**
+     * Set the chain ID in the nVersion, keeping the other bits unchanged.
+     * @param chainId The chain ID to set.
+     */
+    inline void SetChainId(int32_t chainId) {
+        nVersion %= 1 << VERSION_CHAIN_ID_FIRST_BIT;
+        nVersion |= chainId << VERSION_CHAIN_ID_FIRST_BIT;
+    }
+
+    /**
+     * Check if the auxpow flag is set in nVersion.
+     */
+    inline bool HasAuxPowVersion() const {
+        return nVersion & VERSION_AUXPOW_FLAG;
+    }
+
+    /**
+     * Set the auxpow flag.
+     * @param hasAuxPow Whether to mark auxpow as true.
+     */
+    inline void SetAuxPowVersion(bool hasAuxPow) {
+        if (hasAuxPow) {
+            nVersion |= VERSION_AUXPOW_FLAG;
+        } else {
+            nVersion &= ~VERSION_AUXPOW_FLAG;
+        }
+    }
+
+    /**
+     * Check whether this is a "legacy" block without chain ID.
+     * @return True if it is.
+     */
+    inline bool HasLegacyVersion() const {
+        return nVersion == 1
+               // Dogecoin: We have a random v2 block with no AuxPoW, treat as
+               // legacy
+               || (nVersion == 2 && GetChainId() == 0);
+    }
 };
 
 #endif // BITCOIN_PRIMITIVES_BASEHEADER_H

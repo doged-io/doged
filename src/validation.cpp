@@ -4028,13 +4028,13 @@ static bool ContextualCheckBlockHeader(
     }
 
     // Reject blocks with outdated version
-    if ((block.nVersion < 2 &&
+    if ((block.LowVersionBits() < 2 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_HEIGHTINCB)) ||
-        (block.nVersion < 3 &&
+        (block.LowVersionBits() < 3 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_DERSIG)) ||
-        (block.nVersion < 4 &&
+        (block.LowVersionBits() < 4 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_CLTV))) {
         return state.Invalid(

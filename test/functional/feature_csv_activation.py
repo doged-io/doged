@@ -44,6 +44,7 @@ from decimal import Decimal
 from itertools import product
 
 from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
     make_conform_to_ctor,
@@ -206,7 +207,7 @@ class BIP68_112_113Test(BitcoinTestFramework):
             self.tipheight += 1
         return test_blocks
 
-    def create_test_block(self, txs, version=536870912):
+    def create_test_block(self, txs, version=VERSION_CHAIN_ID_BITS | 4):
         block = create_block(
             self.tip, create_coinbase(self.tipheight + 1), self.last_block_time + 600
         )
@@ -222,7 +223,9 @@ class BIP68_112_113Test(BitcoinTestFramework):
     # Spending utxos in the same block is OK as long as nSequence is not enforced.
     # Otherwise a number of intermediate blocks should be generated, and this
     # method should not be used.
-    def create_test_block_spend_utxos(self, node, txs, version=536870912):
+    def create_test_block_spend_utxos(
+        self, node, txs, version=VERSION_CHAIN_ID_BITS | 4
+    ):
         block = self.create_test_block(txs, version)
         block.vtx.extend([spend_tx(node, tx, self.nodeaddress) for tx in txs])
         make_conform_to_ctor(block)

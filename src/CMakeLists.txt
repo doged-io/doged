@@ -553,6 +553,7 @@ add_library(common
 	netbase.cpp
 	outputtype.cpp
 	policy/policy.cpp
+	primitives/auxpow.cpp
 	primitives/baseheader.cpp
 	primitives/block.cpp
 	protocol.cpp
@@ -902,6 +903,7 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		policy/settings.cpp
 		pow/auxpow.cpp
 		pow/pow.cpp
+		primitives/auxpow.cpp
 		primitives/block.cpp
 		primitives/transaction.cpp
 		pubkey.cpp

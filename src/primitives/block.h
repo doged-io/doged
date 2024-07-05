@@ -7,6 +7,7 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
+#include <primitives/auxpow.h>
 #include <primitives/baseheader.h>
 #include <primitives/blockhash.h>
 #include <primitives/transaction.h>
@@ -22,7 +23,51 @@
  * the block is a special one that creates a new coin owned by the creator of
  * the block.
  */
-class CBlockHeader : public CBaseBlockHeader {};
+class CBlockHeader : public CBaseBlockHeader {
+public:
+    // auxpow (if this is a merge-mined block)
+    std::shared_ptr<CAuxPow> auxpow;
+
+    template <typename Stream> inline void Serialize(Stream &s) const {
+        s << *(CBaseBlockHeader *)this;
+
+        if (this->HasAuxPowVersion()) {
+            if (!auxpow) {
+                throw std::ios_base::failure(
+                    "Missing auxpow in header that claims to have it");
+            }
+            s << *auxpow;
+        }
+    }
+
+    template <typename Stream> inline void Unserialize(Stream &s) {
+        s >> *(CBaseBlockHeader *)this;
+
+        if (this->HasAuxPowVersion()) {
+            auxpow.reset(new CAuxPow());
+            s >> *auxpow;
+        } else {
+            auxpow.reset();
+        }
+    }
+
+    void SetNull() {
+        nVersion = 0;
+        hashPrevBlock = BlockHash();
+        hashMerkleRoot.SetNull();
+        nTime = 0;
+        nBits = 0;
+        nNonce = 0;
+        auxpow.reset();
+    }
+
+    /**
+     * Set the block's auxpow (or unset it).  This takes care of updating
+     * the version accordingly.
+     * @param apow Pointer to the auxpow to use or NULL.
+     */
+    void SetAuxPow(CAuxPow *apow);
+};
 
 class CBlock : public CBlockHeader {
 public:

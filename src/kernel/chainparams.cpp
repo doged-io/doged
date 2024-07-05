@@ -102,6 +102,9 @@ public:
         // Disable min difficulty rules on mainnet
         consensus.enableTestnetMinDifficulty = false;
 
+        // Enforce strict chain ID on mainnet
+        consensus.enforceStrictAuxPowChainId = true;
+
         // The miner fund is disabled by default on Dogecoin mainnet.
         consensus.enableMinerFund = false;
 
@@ -241,6 +244,9 @@ public:
         // Enable min difficulty rules on testnet
         consensus.enableTestnetMinDifficulty = true;
 
+        // Testnet has no strict chain ID
+        consensus.enforceStrictAuxPowChainId = false;
+
         // The miner fund is disabled by default on testnet.
         consensus.enableMinerFund = false;
 
@@ -362,6 +368,9 @@ public:
         // Disable min difficulty rules on regtest
         consensus.enableTestnetMinDifficulty = false;
 
+        // Enforce strict chain ID on regtest
+        consensus.enforceStrictAuxPowChainId = true;
+
         // The miner fund is disabled by default on regtest.
         consensus.enableMinerFund = false;
 
@@ -446,14 +455,14 @@ public:
         m_assumeutxo_data = MapAssumeutxo{
             {
                 110,
-                {AssumeutxoHash{uint256S("0x4766e0ece526f39cf0a3311092b78b4e52d"
-                                         "fc6718b631f1e1c483c83792f98ce")},
+                {AssumeutxoHash{uint256S("0xfcfa07adecbe5f753b9f062b5e5621dcdd9"
+                                         "f998a45968876cb98d350667d745e")},
                  110},
             },
             {
                 210,
-                {AssumeutxoHash{uint256S("0xde9f683a76655d2140c4a0be0e79ca1fdb9"
-                                         "a4c61b40ed287ce56e203094baccb")},
+                {AssumeutxoHash{uint256S("0x6fa0d0be104a5990d6f743820b8a5e9eb7d"
+                                         "525cc55e2bdb595d49e0cde33e0b5")},
                  210},
             },
         };
