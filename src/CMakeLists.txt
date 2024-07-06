@@ -704,6 +704,7 @@ add_library(server
 	rpc/txoutproof.cpp
 	script/scriptcache.cpp
 	script/sigcache.cpp
+	script/sigops.cpp
 	shutdown.cpp
 	timedata.cpp
 	torcontrol.cpp
