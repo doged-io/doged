@@ -84,7 +84,7 @@ class ChronikAvalancheTest(BitcoinTestFramework):
         ]
         tx.vout = [
             CTxOut(
-                nValue=coinvalue - 10000, scriptPubKey=CScript([OP_RETURN, bytes(100)])
+                nValue=coinvalue - 10000, scriptPubKey=CScript([OP_RETURN, bytes(80)])
             )
         ]
 

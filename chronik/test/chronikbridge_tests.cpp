@@ -266,7 +266,7 @@ BOOST_FIXTURE_TEST_CASE(test_bridge_broadcast_tx, TestChain100Setup) {
 
     const CTransactionRef coinTx = coinsBlock.vtx[0];
 
-    CScript scriptPad = CScript() << OP_RETURN << std::vector<uint8_t>(100);
+    CScript scriptPad = CScript() << OP_RETURN << std::vector<uint8_t>(80);
     CMutableTransaction tx;
     tx.vin = {CTxIn(coinTx->GetId(), 0)};
     tx.vout = {

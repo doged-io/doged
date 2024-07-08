@@ -123,7 +123,7 @@ class ChronikScriptUnconfirmedTxsTest(BitcoinTestFramework):
         for mocktime_offset in mocktime_offsets:
             cointxid = cointxids.pop(0)
             time_first_seen = mocktime + mocktime_offset
-            pad_script = CScript([OP_RETURN, bytes(100)])
+            pad_script = CScript([OP_RETURN, bytes(80)])
 
             tx = CTransaction()
             tx.nVersion = 1
