@@ -121,9 +121,9 @@ bool CachingTransactionSignatureChecker::IsCached(
 
 bool CachingTransactionSignatureChecker::VerifySignature(
     const std::vector<uint8_t> &vchSig, const CPubKey &pubkey,
-    const uint256 &sighash) const {
+    const uint256 &sighash, uint32_t flags) const {
     return RunMemoizedCheck(vchSig, pubkey, sighash, store, [&] {
         return TransactionSignatureChecker::VerifySignature(vchSig, pubkey,
-                                                            sighash);
+                                                            sighash, flags);
     });
 }

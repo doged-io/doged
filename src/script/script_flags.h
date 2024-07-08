@@ -104,6 +104,14 @@ enum {
 
     // A utility flag to decide whether we must enforce sigcheck limits.
     SCRIPT_ENFORCE_SIGCHECKS = (1U << 23),
+
+    // Whether to run the interpreter in legacy mode (i.e. like on Dogecoin)
+    // - Disable OP_CAT, OP_SPLIT, OP_AND, OP_OR, OP_XOR, OP_DIV, OP_MOD,
+    //   OP_NUM2BIN, OP_BIN2NUM.
+    // - Remove OP_REVERSEBYTES.
+    // - Remove OP_CHECKDATASIG and OP_CHECKDATASIGVERIFY.
+    // - Disable Schnorr signatures.
+    SCRIPT_VERIFY_LEGACY_RULES = (1U << 24),
 };
 
 #endif // BITCOIN_SCRIPT_SCRIPT_FLAGS_H

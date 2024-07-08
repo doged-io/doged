@@ -50,6 +50,7 @@ SET_FALSE_POSITIVE_UNDOCUMENTED = {
     "-chronikallowpause",
     "-chronikcors",
     "-dbcrashratio",
+    "-legacyscriptrules",
     "-enableminerfund",
     "-forcecompactdb",
     "-maxaddrtosend",

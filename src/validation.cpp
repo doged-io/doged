@@ -239,6 +239,13 @@ static bool IsReplayProtectionEnabled(const Consensus::Params &params,
     return IsReplayProtectionEnabled(params, pindexPrev->GetMedianTimePast());
 }
 
+// Command-line argument "-legacyscriptrules" will make the node enforce the old
+// script rules (see SCRIPT_VERIFY_LEGACY_RULES).
+static bool IsLegacyScriptRulesEnabled(const Consensus::Params &params) {
+    return gArgs.GetBoolArg("-legacyscriptrules",
+                            params.enforceLegacyScriptRules);
+}
+
 /**
  * Checks to avoid mempool polluting consensus critical paths since cached
  * signature and script validity results will be reused if we validate this
@@ -1723,6 +1730,11 @@ static uint32_t GetNextBlockScriptFlags(const CBlockIndex *pindex,
     // fork.
     if (IsReplayProtectionEnabled(consensusparams, pindex)) {
         flags |= SCRIPT_ENABLE_REPLAY_PROTECTION;
+    }
+
+    // If we are on a legacy network (i.e. Dogecoin), keep the old Script rules
+    if (IsLegacyScriptRulesEnabled(consensusparams)) {
+        flags |= SCRIPT_VERIFY_LEGACY_RULES;
     }
 
     return flags;

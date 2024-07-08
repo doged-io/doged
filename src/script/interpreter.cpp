@@ -91,6 +91,18 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
             // Disabled opcodes.
             return true;
 
+        case OP_CAT:
+        case OP_SPLIT:
+        case OP_NUM2BIN:
+        case OP_BIN2NUM:
+        case OP_AND:
+        case OP_OR:
+        case OP_XOR:
+        case OP_DIV:
+        case OP_MOD:
+            // Disabled on legacy mode
+            return (flags & SCRIPT_VERIFY_LEGACY_RULES) != 0;
+
         default:
             break;
     }
@@ -984,6 +996,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                     case OP_CHECKDATASIG:
                     case OP_CHECKDATASIGVERIFY: {
+                        // Disabled on legacy mode
+                        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+
                         // (sig message pubkey -- bool)
                         if (stack.size() < 3) {
                             return set_error(
@@ -1008,7 +1025,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 .Write(vchMessage.data(), vchMessage.size())
                                 .Finalize(vchHash.data());
                             fSuccess = checker.VerifySignature(
-                                vchSig, CPubKey(vchPubKey), uint256(vchHash));
+                                vchSig, CPubKey(vchPubKey), uint256(vchHash),
+                                flags);
                             metrics.nSigChecks += 1;
 
                             if (!fSuccess && (flags & SCRIPT_VERIFY_NULLFAIL)) {
@@ -1312,6 +1330,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break;
 
                     case OP_REVERSEBYTES: {
+                        // Disabled on legacy mode
+                        if (flags & SCRIPT_VERIFY_LEGACY_RULES) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+
                         // (in -- out)
                         if (stack.size() < 1) {
                             return set_error(
@@ -1645,8 +1668,10 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
 
 bool BaseSignatureChecker::VerifySignature(const std::vector<uint8_t> &vchSig,
                                            const CPubKey &pubkey,
-                                           const uint256 &sighash) const {
-    if (vchSig.size() == 64) {
+                                           const uint256 &sighash,
+                                           uint32_t flags) const {
+    // 64-byte signatures are Schnorr signatures, except on legacy rules
+    if (vchSig.size() == 64 && (flags & SCRIPT_VERIFY_LEGACY_RULES) == 0) {
         return pubkey.VerifySchnorr(sighash, vchSig);
     } else {
         return pubkey.VerifyECDSA(sighash, vchSig);
@@ -1673,7 +1698,7 @@ bool GenericTransactionSignatureChecker<T>::CheckSig(
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, sigHashType, amount,
                                     this->txdata, flags);
 
-    if (!VerifySignature(vchSig, pubkey, sighash)) {
+    if (!VerifySignature(vchSig, pubkey, sighash, flags)) {
         return false;
     }
 

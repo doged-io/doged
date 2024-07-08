@@ -49,7 +49,8 @@ FUZZ_TARGET_INIT(script_sigcache, initialize_script_sigcache) {
             ConsumeRandomLengthByteVector(fuzzed_data_provider);
         if (!random_bytes.empty()) {
             (void)caching_transaction_signature_checker.VerifySignature(
-                random_bytes, *pub_key, ConsumeUInt256(fuzzed_data_provider));
+                random_bytes, *pub_key, ConsumeUInt256(fuzzed_data_provider),
+                0);
         }
     }
 }
