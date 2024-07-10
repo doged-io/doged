@@ -49,3 +49,22 @@ uint32_t CountScriptSigOps(const CScript &script, SigOpCountMode mode) {
 
     return nSigOps;
 }
+
+uint32_t CountScriptSigOpsP2SH(const CScript &scriptSig) {
+    // Get the last item that the scriptSig pushes onto the stack:
+    CScript::const_iterator pc = scriptSig.begin();
+    std::vector<uint8_t> vData;
+    while (pc < scriptSig.end()) {
+        opcodetype opcode;
+        if (!scriptSig.GetOp(pc, opcode, vData)) {
+            return 0;
+        }
+        if (opcode > OP_16) {
+            return 0;
+        }
+    }
+
+    // ... and return its opcount, using "ACCURATE" counting:
+    CScript subscript(vData.begin(), vData.end());
+    return CountScriptSigOps(subscript, SigOpCountMode::ACCURATE);
+}

@@ -10,3 +10,5 @@ enum class SigOpCountMode {
 };
 
 uint32_t CountScriptSigOps(const CScript &script, SigOpCountMode mode);
+
+uint32_t CountScriptSigOpsP2SH(const CScript &scriptSig);

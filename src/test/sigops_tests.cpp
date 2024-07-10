@@ -57,4 +57,63 @@ BOOST_AUTO_TEST_CASE(CountScriptSigOps_test) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(CountScriptSigOpsP2SH_test) {
+    BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript()), 0);
+    BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG), 0);
+
+    std::vector<uint8_t> dummy(20);
+
+    {
+        CScript script;
+        script << OP_CHECKSIG;
+        std::vector<uint8_t> scriptBytes(script.begin(), script.end());
+        BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript() << scriptBytes), 1);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << dummy << scriptBytes), 1);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << scriptBytes << dummy), 0);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG << scriptBytes), 0);
+    }
+
+    {
+        CScript script;
+        script << OP_CHECKSIG << OP_CHECKSIGVERIFY;
+        std::vector<uint8_t> scriptBytes(script.begin(), script.end());
+        BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript() << scriptBytes), 2);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << dummy << scriptBytes), 2);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << scriptBytes << dummy), 0);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG << scriptBytes), 0);
+    }
+
+    {
+        CScript script;
+        script << OP_1 << dummy << dummy << OP_4 << OP_CHECKMULTISIG;
+        std::vector<uint8_t> scriptBytes(script.begin(), script.end());
+        BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript() << scriptBytes), 4);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << dummy << scriptBytes), 4);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << scriptBytes << dummy), 0);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG << scriptBytes), 0);
+    }
+
+    {
+        CScript script;
+        script << OP_CHECKMULTISIG;
+        std::vector<uint8_t> scriptBytes(script.begin(), script.end());
+        BOOST_CHECK_EQUAL(CountScriptSigOpsP2SH(CScript() << scriptBytes), 20);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << dummy << scriptBytes), 20);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << scriptBytes << dummy), 0);
+        BOOST_CHECK_EQUAL(
+            CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG << scriptBytes), 0);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
