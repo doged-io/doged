@@ -10,6 +10,7 @@
 
 #include <consensus/consensus.h>
 #include <consensus/merkle.h>
+#include <consensus/params.h>
 #include <hash.h>
 #include <logging.h>
 #include <script/script.h>
