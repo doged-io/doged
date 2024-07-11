@@ -4,6 +4,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <coins.h>
 #include <script/script.h>
 #include <script/sigops.h>
 #include <script/standard.h>
@@ -113,6 +114,122 @@ BOOST_AUTO_TEST_CASE(CountScriptSigOpsP2SH_test) {
             CountScriptSigOpsP2SH(CScript() << scriptBytes << dummy), 0);
         BOOST_CHECK_EQUAL(
             CountScriptSigOpsP2SH(CScript() << OP_CHECKSIG << scriptBytes), 0);
+    }
+}
+
+/**
+ * Builds a creationTx from scriptPubKey and a spendingTx from scriptSig
+ * such that spendingTx spends output zero of creationTx. Also inserts
+ * creationTx's output into the coins view.
+ */
+static void BuildTxs(CMutableTransaction &spendingTx, CCoinsViewCache &coins,
+                     CMutableTransaction &creationTx,
+                     const CScript &scriptPubKey, const CScript &scriptSig) {
+    creationTx.nVersion = 1;
+    creationTx.vin.resize(1);
+    creationTx.vin[0].prevout = COutPoint();
+    creationTx.vin[0].scriptSig = CScript();
+    creationTx.vout.resize(1);
+    creationTx.vout[0].nValue = SATOSHI;
+    creationTx.vout[0].scriptPubKey = scriptPubKey;
+
+    spendingTx.nVersion = 1;
+    spendingTx.vin.resize(1);
+    spendingTx.vin[0].prevout = COutPoint(creationTx.GetId(), 0);
+    spendingTx.vin[0].scriptSig = scriptSig;
+    spendingTx.vout.resize(1);
+    spendingTx.vout[0].nValue = SATOSHI;
+    spendingTx.vout[0].scriptPubKey = CScript();
+
+    AddCoins(coins, CTransaction(creationTx), 0);
+}
+
+BOOST_AUTO_TEST_CASE(CountTxSigOps_test) {
+    // Transaction creates outputs
+    CMutableTransaction creationTx;
+    // Transaction that spends outputs and whose sig op count is going to be
+    // tested
+    CMutableTransaction spendingTx;
+
+    std::vector<uint8_t> dummy(20);
+
+    // Coinbase
+    {
+        CCoinsView coinsDummy;
+        CCoinsViewCache coins(&coinsDummy);
+
+        // Coinbase with a OP_CHECKSIG in the sig script is counted
+        creationTx.nVersion = 1;
+        creationTx.vin.resize(1);
+        creationTx.vin[0].prevout = COutPoint();
+        creationTx.vin[0].scriptSig = CScript() << OP_CHECKSIG;
+        CTransaction createTx(creationTx);
+        BOOST_CHECK_EQUAL(CountTxSigOps(createTx, coins), 1);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(createTx), 1);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(createTx, coins), 0);
+
+        // Coinbase with something looking like a P2SH redeemScript not counted
+        creationTx.vin[0].scriptSig = CScript()
+                                      << ToByteVector(CScript() << OP_CHECKSIG);
+        CTransaction createTx2(creationTx);
+        BOOST_CHECK_EQUAL(CountTxSigOps(createTx2, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(createTx2), 0);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(createTx2, coins), 0);
+    }
+
+    // Multisig script (legacy counting)
+    {
+        CCoinsView coinsDummy;
+        CCoinsViewCache coins(&coinsDummy);
+
+        CScript scriptPubKey = CScript() << 1 << dummy << dummy << 2
+                                         << OP_CHECKMULTISIGVERIFY;
+        // Do not use a valid signature to avoid using wallet operations.
+        CScript scriptSig = CScript() << OP_0 << OP_0;
+
+        BuildTxs(spendingTx, coins, creationTx, scriptPubKey, scriptSig);
+        CTransaction createTx(creationTx);
+        CTransaction spendTx(spendingTx);
+
+        // Legacy counting only includes signature operations in scriptSigs and
+        // scriptPubKeys of a transaction and does not take the actual executed
+        // sig operations into account. spendingTx in itself does not contain a
+        // signature operation.
+        BOOST_CHECK_EQUAL(CountTxSigOps(spendTx, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(spendTx, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(spendTx), 0);
+        // creationTx contains two signature operations in its scriptPubKey, but
+        // legacy counting is not accurate.
+        BOOST_CHECK_EQUAL(CountTxSigOps(createTx, coins),
+                          MAX_PUBKEYS_PER_MULTISIG);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(createTx, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(createTx),
+                          MAX_PUBKEYS_PER_MULTISIG);
+    }
+
+    // Multisig nested in P2SH
+    {
+        CCoinsView coinsDummy;
+        CCoinsViewCache coins(&coinsDummy);
+
+        CScript redeemScript = CScript() << 1 << dummy << dummy << 2
+                                         << OP_CHECKMULTISIGVERIFY;
+        CScript scriptPubKey =
+            GetScriptForDestination(ScriptHash(redeemScript));
+        CScript scriptSig = CScript()
+                            << OP_0 << OP_0 << ToByteVector(redeemScript);
+
+        BuildTxs(spendingTx, coins, creationTx, scriptPubKey, scriptSig);
+        CTransaction createTx(creationTx);
+        CTransaction spendTx(spendingTx);
+
+        BOOST_CHECK_EQUAL(CountTxSigOps(spendTx, coins), 2);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(spendTx, coins), 2);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(spendTx), 0);
+
+        BOOST_CHECK_EQUAL(CountTxSigOps(createTx, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxP2SHSigOps(createTx, coins), 0);
+        BOOST_CHECK_EQUAL(CountTxNonP2SHSigOps(createTx), 0);
     }
 }
 
