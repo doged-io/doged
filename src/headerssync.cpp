@@ -10,19 +10,23 @@
 
 // The two constants below are computed using the simulation script on
 // https://gist.github.com/sipa/016ae445c132cdf65a2791534dfb7ae1
-// with MINCHAINWORK_HEADERS = 826150 and TIME = datetime(2027, 1, 1)
+// with MINCHAINWORK_HEADERS = 5290242, TIME = datetime(2027, 1, 1),
+// BLOCK_INTERVAL = timedelta(seconds=60) and COMPACT_HEADER_SIZE = 64 * 8
 
 //! Store a commitment to a header every HEADER_COMMITMENT_PERIOD blocks.
-constexpr size_t HEADER_COMMITMENT_PERIOD{610};
+constexpr size_t HEADER_COMMITMENT_PERIOD{611};
 
 //! Only feed headers to validation once this many headers on top have been
 //! received and validated against commitments.
-// 14521/610 = ~23.8 commitments
-constexpr size_t REDOWNLOAD_BUFFER_SIZE{14521};
+// 10880 / 611 = ~17.8 commitments
+constexpr size_t REDOWNLOAD_BUFFER_SIZE{10880};
 
-// Our memory analysis assumes 48 bytes for a CompressedHeader (so we should
-// re-calculate parameters if we compress further)
-static_assert(sizeof(CompressedHeader) == 48);
+// Our memory analysis assumes 64 bytes for a CompressedHeader (so we should
+// re-calculate parameters if we compress further).
+// Note for Dogecoin: This isn't quite true for AuxPow headers, which store the
+// AuxPow data on the heap. TODO: Re-evaluate the problems of storing AuxPow on
+// the heap.
+static_assert(sizeof(CompressedHeader) == 64);
 
 HeadersSyncState::HeadersSyncState(NodeId id,
                                    const Consensus::Params &consensus_params,
