@@ -24,8 +24,8 @@ bool CheckAuxProofOfWork(const CBlockHeader &block,
     // If there is no auxpow, just check the block hash.
     if (!block.auxpow) {
         if (block.HasAuxPowVersion()) {
-            return error("%s: no auxpow on block with auxpow version",
-                         __func__);
+            return error("%s: no auxpow on block %s with auxpow version %08x",
+                         __func__, block.GetHash().ToString(), block.nVersion);
         }
 
         if (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
