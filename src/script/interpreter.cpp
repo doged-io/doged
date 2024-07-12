@@ -1197,6 +1197,12 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         } else {
                             // LEGACY MULTISIG (ECDSA / NULL)
 
+                            if ((flags & SCRIPT_VERIFY_NULLDUMMY) &&
+                                stacktop(-idxDummy).size() != 0) {
+                                return set_error(serror,
+                                                 ScriptError::SIG_NULLDUMMY);
+                            }
+
                             // Remove signature for pre-fork scripts
                             for (int k = 0; k < nSigsCount; k++) {
                                 valtype &vchSig = stacktop(-idxTopSig - k);

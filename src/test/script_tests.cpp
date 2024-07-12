@@ -81,6 +81,7 @@ static ScriptErrorDesc script_errors[] = {
     {ScriptError::MINIMALDATA, "MINIMALDATA"},
     {ScriptError::SIG_PUSHONLY, "SIG_PUSHONLY"},
     {ScriptError::SIG_HIGH_S, "SIG_HIGH_S"},
+    {ScriptError::SIG_NULLDUMMY, "SIG_NULLDUMMY"},
     {ScriptError::PUBKEYTYPE, "PUBKEYTYPE"},
     {ScriptError::CLEANSTACK, "CLEANSTACK"},
     {ScriptError::MINIMALIF, "MINIMALIF"},
