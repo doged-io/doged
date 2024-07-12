@@ -738,6 +738,27 @@ def SignatureHashForkId(script, txTo, inIdx, hashtype, amount):
     return hash256(ss)
 
 
+def count_tx_sigops(script, fAccurate):
+    """Get the SigOp count.
+
+    fAccurate - Accurately count CHECKMULTISIG, see BIP16 for details.
+
+    Note that this is consensus-critical.
+    """
+    n = 0
+    lastOpcode = OP_INVALIDOPCODE
+    for opcode, data, sop_idx in script.raw_iter():
+        if opcode in (OP_CHECKSIG, OP_CHECKSIGVERIFY):
+            n += 1
+        elif opcode in (OP_CHECKMULTISIG, OP_CHECKMULTISIGVERIFY):
+            if fAccurate and (OP_1 <= lastOpcode <= OP_16):
+                n += opcode.decode_op_n()
+            else:
+                n += 20
+        lastOpcode = opcode
+    return n
+
+
 class TestFrameworkScript(unittest.TestCase):
     def test_bn2vch(self):
         self.assertEqual(bn2vch(0), bytes([]))
