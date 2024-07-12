@@ -12,6 +12,7 @@
 #include <primitives/blockhash.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
+#include <tinyformat.h>
 #include <uint256.h>
 #include <util/time.h>
 
@@ -34,7 +35,9 @@ public:
         if (this->HasAuxPowVersion()) {
             if (!auxpow) {
                 throw std::ios_base::failure(
-                    "Missing auxpow in header that claims to have it");
+                    strprintf("Missing auxpow in header %s, version %08x that "
+                              "claims to have it",
+                              GetHash().ToString(), nVersion));
             }
             s << *auxpow;
         }
