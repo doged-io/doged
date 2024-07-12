@@ -38,6 +38,10 @@ static const int DIGISHIELD_COINBASE_MATURITY = 240;
 /** Coinbase scripts have their own script size limit. */
 static const int MAX_COINBASE_SCRIPTSIG_SIZE = 100;
 
+/** The maximum allowed number of signature check operations in a block (network
+ * rule) */
+static const int64_t MAX_BLOCK_SIGOPS = 20000;
+
 /** Flags for nSequence and nLockTime locks */
 /** Interpret sequence numbers as relative lock-time constraints. */
 static constexpr unsigned int LOCKTIME_VERIFY_SEQUENCE = (1 << 0);
