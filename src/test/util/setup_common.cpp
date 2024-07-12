@@ -117,6 +117,11 @@ BasicTestingSetup::BasicTestingSetup(
     fs::create_directories(m_path_root);
     m_args.ForceSetArg("-datadir", fs::PathToString(m_path_root));
     gArgs.ForceSetArg("-datadir", fs::PathToString(m_path_root));
+
+    // Dogecoin: Disable legacy (Dogecoin) script rules to not break all tests
+    m_args.ForceSetArg("-legacyscriptrules", "0");
+    gArgs.ForceSetArg("-legacyscriptrules", "0");
+
     gArgs.ClearPathCache();
     {
         SetupServerArgs(m_node);
