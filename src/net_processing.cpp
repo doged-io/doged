@@ -3629,9 +3629,10 @@ bool PeerManagerImpl::TryLowWorkHeadersSync(
             // of headers is known, some header in this set must be new, so
             // advancing to the first unknown header would be a small effect.
             LOCK(peer.m_headers_sync_mutex);
-            peer.m_headers_sync.reset(
-                new HeadersSyncState(peer.m_id, m_chainparams.GetConsensus(),
-                                     chain_start_header, minimum_chain_work));
+            peer.m_headers_sync.reset(new HeadersSyncState(
+                peer.m_id, m_chainparams.GetConsensus(), chain_start_header,
+                chain_start_header->GetBlockHeader(m_chainman.m_blockman),
+                minimum_chain_work));
 
             // Now a HeadersSyncState object for tracking this synchronization
             // is created, process the headers using it as normal.
@@ -5243,7 +5244,7 @@ void PeerManagerImpl::ProcessMessage(
                  hashStop.IsNull() ? "end" : hashStop.ToString(),
                  pfrom.GetId());
         for (; pindex; pindex = m_chainman.ActiveChain().Next(pindex)) {
-            vHeaders.push_back(pindex->GetBlockHeader());
+            vHeaders.push_back(pindex->GetBlockHeader(m_chainman.m_blockman));
             if (--nLimit <= 0 || pindex->GetBlockHash() == hashStop) {
                 break;
             }
@@ -7793,7 +7794,8 @@ bool PeerManagerImpl::SendMessages(const Config &config, CNode *pto) {
                     pBestIndex = pindex;
                     if (fFoundStartingHeader) {
                         // add this to the headers message
-                        vHeaders.push_back(pindex->GetBlockHeader());
+                        vHeaders.push_back(
+                            pindex->GetBlockHeader(m_chainman.m_blockman));
                     } else if (PeerHasHeader(&state, pindex)) {
                         // Keep looking for the first new block.
                         continue;
@@ -7802,7 +7804,8 @@ bool PeerManagerImpl::SendMessages(const Config &config, CNode *pto) {
                         // Peer doesn't have this header but they do have the
                         // prior one. Start sending headers.
                         fFoundStartingHeader = true;
-                        vHeaders.push_back(pindex->GetBlockHeader());
+                        vHeaders.push_back(
+                            pindex->GetBlockHeader(m_chainman.m_blockman));
                     } else {
                         // Peer doesn't have this header or the prior one --
                         // nothing will connect, so bail out.

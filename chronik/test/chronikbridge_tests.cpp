@@ -221,7 +221,7 @@ BOOST_FIXTURE_TEST_CASE(test_get_block_ancestor, TestChain100Setup) {
     // Block 99 is the prev of the tip
     BOOST_CHECK_EQUAL(
         chronik_bridge::get_block_ancestor(tip, 99).GetBlockHash(),
-        tip.GetBlockHeader().hashPrevBlock);
+        tip.pprev->GetBlockHash());
 
     // Genesis block is block 0
     BOOST_CHECK_EQUAL(chronik_bridge::get_block_ancestor(tip, 0).GetBlockHash(),

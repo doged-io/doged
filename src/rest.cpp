@@ -213,30 +213,29 @@ static bool rest_headers(Config &config, const std::any &context,
     const CBlockIndex *tip = nullptr;
     std::vector<const CBlockIndex *> headers;
     headers.reserve(count);
-    {
-        ChainstateManager *maybe_chainman = GetChainman(context, req);
-        if (!maybe_chainman) {
-            return false;
+
+    ChainstateManager *maybe_chainman = GetChainman(context, req);
+    if (!maybe_chainman) {
+        return false;
+    }
+    ChainstateManager &chainman = *maybe_chainman;
+    LOCK(cs_main);
+    CChain &active_chain = chainman.ActiveChain();
+    tip = active_chain.Tip();
+    const CBlockIndex *pindex = chainman.m_blockman.LookupBlockIndex(hash);
+    while (pindex != nullptr && active_chain.Contains(pindex)) {
+        headers.push_back(pindex);
+        if (headers.size() == size_t(count)) {
+            break;
         }
-        ChainstateManager &chainman = *maybe_chainman;
-        LOCK(cs_main);
-        CChain &active_chain = chainman.ActiveChain();
-        tip = active_chain.Tip();
-        const CBlockIndex *pindex = chainman.m_blockman.LookupBlockIndex(hash);
-        while (pindex != nullptr && active_chain.Contains(pindex)) {
-            headers.push_back(pindex);
-            if (headers.size() == size_t(count)) {
-                break;
-            }
-            pindex = active_chain.Next(pindex);
-        }
+        pindex = active_chain.Next(pindex);
     }
 
     switch (rf) {
         case RetFormat::BINARY: {
             CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
             for (const CBlockIndex *pindex : headers) {
-                ssHeader << pindex->GetBlockHeader();
+                ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
             }
 
             std::string binaryHeader = ssHeader.str();
@@ -248,7 +247,7 @@ static bool rest_headers(Config &config, const std::any &context,
         case RetFormat::HEX: {
             CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
             for (const CBlockIndex *pindex : headers) {
-                ssHeader << pindex->GetBlockHeader();
+                ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
             }
 
             std::string strHex = HexStr(ssHeader) + "\n";

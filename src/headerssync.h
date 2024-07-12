@@ -9,6 +9,7 @@
 #include <chain.h>
 #include <consensus/params.h>
 #include <net.h> // For NodeId
+#include <node/blockstorage.h>
 #include <primitives/block.h>
 #include <uint256.h>
 #include <util/bitdeque.h>
@@ -151,6 +152,7 @@ public:
      */
     HeadersSyncState(NodeId id, const Consensus::Params &consensus_params,
                      const CBlockIndex *chain_start,
+                     CBlockHeader chain_start_header,
                      const arith_uint256 &minimum_required_work);
 
     /** Result data structure for ProcessNextHeaders. */
