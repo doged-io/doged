@@ -239,13 +239,6 @@ static bool IsReplayProtectionEnabled(const Consensus::Params &params,
     return IsReplayProtectionEnabled(params, pindexPrev->GetMedianTimePast());
 }
 
-// Command-line argument "-legacyscriptrules" will make the node enforce the old
-// script rules (see SCRIPT_VERIFY_LEGACY_RULES).
-static bool IsLegacyScriptRulesEnabled(const Consensus::Params &params) {
-    return gArgs.GetBoolArg("-legacyscriptrules",
-                            params.enforceLegacyScriptRules);
-}
-
 /**
  * Checks to avoid mempool polluting consensus critical paths since cached
  * signature and script validity results will be reused if we validate this
@@ -653,8 +646,13 @@ bool MemPoolAccept::PreChecks(ATMPArgs &args, Workspace &ws) {
     }
 
     // Validate input scripts against standard script flags.
-    const uint32_t scriptVerifyFlags =
-        ws.m_next_block_script_verify_flags | STANDARD_SCRIPT_VERIFY_FLAGS;
+    uint32_t scriptVerifyFlags = ws.m_next_block_script_verify_flags;
+    if (IsLegacyScriptRulesEnabled(
+            args.m_config.GetChainParams().GetConsensus())) {
+        scriptVerifyFlags |= STANDARD_SCRIPT_VERIFY_FLAGS_LEGACY;
+    } else {
+        scriptVerifyFlags |= STANDARD_SCRIPT_VERIFY_FLAGS;
+    }
     ws.m_precomputed_txdata = PrecomputedTransactionData{tx};
     if (!CheckInputScripts(tx, state, m_view, scriptVerifyFlags, true, false,
                            ws.m_precomputed_txdata, ws.m_sig_checks_standard)) {
@@ -1693,6 +1691,13 @@ static uint32_t GetNextBlockScriptFlags(const CBlockIndex *pindex,
         flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
     }
 
+    // If we are on a legacy network (i.e. Dogecoin), keep the old Script rules,
+    // and don't add any BCH/XEC script flags.
+    if (IsLegacyScriptRulesEnabled(consensusparams)) {
+        flags |= SCRIPT_VERIFY_LEGACY_RULES;
+        return flags;
+    }
+
     // If the UAHF is enabled, we start accepting replay protected txns
     if (IsUAHFenabled(consensusparams, pindex)) {
         flags |= SCRIPT_VERIFY_STRICTENC;
@@ -1730,11 +1735,6 @@ static uint32_t GetNextBlockScriptFlags(const CBlockIndex *pindex,
     // fork.
     if (IsReplayProtectionEnabled(consensusparams, pindex)) {
         flags |= SCRIPT_ENABLE_REPLAY_PROTECTION;
-    }
-
-    // If we are on a legacy network (i.e. Dogecoin), keep the old Script rules
-    if (IsLegacyScriptRulesEnabled(consensusparams)) {
-        flags |= SCRIPT_VERIFY_LEGACY_RULES;
     }
 
     return flags;
