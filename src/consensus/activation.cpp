@@ -132,3 +132,10 @@ bool IsAugustoEnabled(const Consensus::Params &params,
 bool IsDigishieldEnabled(const Consensus::Params &params, int32_t nHeight) {
     return nHeight >= params.digishieldHeight;
 }
+
+// Command-line argument "-legacyscriptrules" will make the node enforce the old
+// script rules (see SCRIPT_VERIFY_LEGACY_RULES).
+bool IsLegacyScriptRulesEnabled(const Consensus::Params &params) {
+    return gArgs.GetBoolArg("-legacyscriptrules",
+                            params.enforceLegacyScriptRules);
+}
