@@ -42,6 +42,10 @@ static const int MAX_COINBASE_SCRIPTSIG_SIZE = 100;
  * rule) */
 static const int64_t MAX_BLOCK_SIGOPS = 20000;
 
+/** The maximum allowed number of signature check operations per transaction
+ * (network rule) */
+static const int64_t MAX_TX_SIGOPS = 20000;
+
 /** Flags for nSequence and nLockTime locks */
 /** Interpret sequence numbers as relative lock-time constraints. */
 static constexpr unsigned int LOCKTIME_VERIFY_SEQUENCE = (1 << 0);

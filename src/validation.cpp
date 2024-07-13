@@ -2007,7 +2007,14 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
         // CountTxSigOps counts 2 types of sigops:
         // * legacy (always)
         // * p2sh (when P2SH enabled in flags and excludes coinbase)
-        nSigOps += CountTxSigOps(tx, view);
+        uint64_t nTxSigOps = CountTxSigOps(tx, view);
+        if (nTxSigOps > MAX_TX_SIGOPS) {
+            state.Invalid(BlockValidationResult::BLOCK_CONSENSUS,
+                          "bad-txn-sigops");
+            return error("%s: too many sigops", __func__);
+        }
+
+        nSigOps += nTxSigOps;
 
         if (nSigOps > MAX_BLOCK_SIGOPS) {
             state.Invalid(BlockValidationResult::BLOCK_CONSENSUS,
