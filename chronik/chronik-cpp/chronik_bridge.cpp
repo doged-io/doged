@@ -103,7 +103,7 @@ chronik_bridge::BlockTx BridgeBlockTx(bool isCoinbase, const CTransaction &tx,
 }
 
 size_t GetFirstBlockTxOffset(const CBlock &block, const CBlockIndex &bindex) {
-    return bindex.nDataPos + ::GetSerializeSize(CBlockHeader()) +
+    return bindex.nDataPos + ::GetSerializeSize(block.GetBlockHeader()) +
            GetSizeOfCompactSize(block.vtx.size());
 }
 
