@@ -361,7 +361,7 @@ BOOST_FIXTURE_TEST_SUITE(descriptor_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(descriptor_test) {
     // Basic single-key compressed
-    Check("combo(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+    Check("combo(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
           "combo("
           "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
           SIGNABLE,
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "bdac",
             "76a9149a1c78a507689f6f54b847ad1cef1e614ee23f1e88ac"}},
           std::nullopt);
-    Check("pk(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+    Check("pk(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
           "pk("
           "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
           SIGNABLE,
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "bdac"}},
           std::nullopt);
     Check("pkh([deadbeef/1/2'/3/4']"
-          "L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+          "QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
           "pkh([deadbeef/1/2'/3/4']"
           "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
           SIGNABLE, {{"76a9149a1c78a507689f6f54b847ad1cef1e614ee23f1e88ac"}},
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
     // Missing start bracket in key origin
     CheckUnparsable(
         "pkh(deadbeef/1/2'/3/"
-        "4']L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+        "4']QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
         "pkh(deadbeef/1/2'/3/"
         "4']"
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
     // Multiple end brackets in key origin
     CheckUnparsable(
         "pkh([deadbeef]/1/2'/3/"
-        "4']L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+        "4']QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
         "pkh([deadbeef]/1/2'/3/"
         "4']"
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
 
     // Basic single-key uncompressed
     Check(
-        "combo(5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+        "combo(6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
         "combo("
         "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b8d"
         "ec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235)",
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
           "5b8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235ac",
           "76a914b5bd079c4d57cc7fc28ecf8213a6b791625b818388ac"}},
         std::nullopt);
-    Check("pk(5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+    Check("pk(6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
           "pk("
           "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b"
           "8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235)",
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "bd5b8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235"
             "ac"}},
           std::nullopt);
-    Check("pkh(5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+    Check("pkh(6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
           "pkh("
           "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b"
           "8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235)",
@@ -429,13 +429,13 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
 
     // Some unconventional single-key constructions
     Check(
-        "sh(pk(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1))",
+        "sh(pk(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe))",
         "sh(pk("
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd))",
         SIGNABLE, {{"a9141857af51a5e516552b3086430fd8ce55f7c1a52487"}},
         OutputType::LEGACY);
     Check(
-        "sh(pkh(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1))",
+        "sh(pkh(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe))",
         "sh(pkh("
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd))",
         SIGNABLE, {{"a9141a31ad23bf49c247dd531a623c2ef57da3c400c587"}},
@@ -543,8 +543,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
         "Key path value '1aa' is not a valid uint32");
 
     // Multisig constructions
-    Check("multi(1,L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1,"
-          "5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+    Check("multi(1,QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe,"
+          "6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
           "multi(1,"
           "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd,"
           "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b"
@@ -555,8 +555,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "40c5bd5b8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abe"
             "a23552ae"}},
           std::nullopt);
-    Check("sortedmulti(1,L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1,"
-          "5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+    Check("sortedmulti(1,QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe,"
+          "6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
           "sortedmulti(1,"
           "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd,"
           "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b"
@@ -567,8 +567,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "40c5bd5b8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abe"
             "a23552ae"}},
           std::nullopt);
-    Check("sortedmulti(1,5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss,"
-          "L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+    Check("sortedmulti(1,6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V,"
+          "QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
           "sortedmulti(1,"
           "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b"
           "8dec5235a0fa8722476c7709c02559e3aa73aa03918ba2d492eea75abea235,"
@@ -683,8 +683,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
         "P2SH script is too large, 547 bytes is larger than 520 bytes");
     // Invalid threshold
     CheckUnparsable(
-        "multi(a,L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1,"
-        "5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+        "multi(a,QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe,"
+        "6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
         "multi(a,"
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd,"
         "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b8d"
@@ -692,8 +692,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
         "Multi threshold 'a' is not valid");
     // Threshold of 0
     CheckUnparsable(
-        "multi(0,L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1,"
-        "5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+        "multi(0,QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe,"
+        "6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
         "multi(0,"
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd,"
         "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b8d"
@@ -701,8 +701,8 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
         "Multisig threshold cannot be 0, must be at least 1");
     // Threshold larger than number of keys
     CheckUnparsable(
-        "multi(3,L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1,"
-        "5KYZdUEo39z3FPrtuX2QbbwGnNP5zTd7yyr2SC1j299sBCnWjss)",
+        "multi(3,QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe,"
+        "6KrtvRhkbvGqJ1J46uePDDvWFnrdVauPb9yFkgecqoMVyv8NJ4V)",
         "multi(3,"
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd,"
         "04a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd5b8d"
@@ -739,7 +739,7 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
         "KyBXTPy4T7YG4q9tcAM3LkvfRpD1ybHMvcJ2ehaWXaSqeGUxEdkP,"
         "KzJDe9iwJRPtKP2F2AoN6zBgzS7uiuAwhWCfGdNeYJ3PC1HNJ8M8,"
         "L1xbHrxynrqLKkoYc4qtoQPx6uy5qYXR5ZDYVYBSRmCV5piU3JG9,"
-        "L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1))",
+        "QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe))",
         "sh(multi(16,"
         "03669b8afcec803a0d323e9a17f3ea8e68e8abe5a278020a929adbec52421adbd0,"
         "0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600,"
@@ -765,20 +765,20 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
 
     // P2SH needs a script, not a key
     CheckUnparsable(
-        "sh(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)",
+        "sh(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)",
         "sh("
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd)",
         "A function is needed within P2SH");
     // Old must be top level
     CheckUnparsable(
         "sh(combo("
-        "L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1))",
+        "QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe))",
         "sh(combo("
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd))",
         "Cannot have combo in non-top level");
     // Cannot embed P2SH inside P2SH
     CheckUnparsable(
-        "sh(sh(pk(L4rK1yDtCWekvXuE6oXD9jCYfFNV2cWRpVuPLBcCU2z8TrisoyY1)))",
+        "sh(sh(pk(QWFEAp2sT88tA4JGh5N12x3A8HQ45AeEhkbJ7p13CPbUunhfAjLe)))",
         "sh(sh(pk("
         "03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd))"
         ")",

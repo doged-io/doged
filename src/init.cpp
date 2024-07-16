@@ -2548,7 +2548,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Encoded addresses using cashaddr instead of base58.
     // We do this by default to avoid confusion with BTC addresses.
-    config.SetCashAddrEncoding(args.GetBoolArg("-usecashaddr", true));
+    config.SetCashAddrEncoding(args.GetBoolArg("-usecashaddr", false));
 
     // Step 8: load indexers
     if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {

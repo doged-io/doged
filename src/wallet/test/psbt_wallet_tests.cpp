@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(psbt_updater_test) {
     // Mainnet and uncompressed form of
     // cUkG8i1RFfWGWy5ziR11zJ5V4U4W3viSFCfyJmZnvQaUsd1xuF3T
     CKey key =
-        DecodeSecret("5KSSJQ7UNfFGwVgpCZDSHm5rVNhMFcFtvWM3zQ8mW4qNDEN7LFd");
+        DecodeSecret("6KkmbMaRwRY4z77yPwqQuP55xoAtkjYAXgUHJtmfKj311vTGFEJ");
     CPubKey master_pub_key = spk_man->DeriveNewSeed(key);
     spk_man->SetHDSeed(master_pub_key);
     spk_man->NewKeyPool();

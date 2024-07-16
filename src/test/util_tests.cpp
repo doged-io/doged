@@ -2702,39 +2702,39 @@ BOOST_AUTO_TEST_CASE(message_verify) {
                       MessageVerificationResult::ERR_INVALID_ADDRESS);
 
     BOOST_CHECK_EQUAL(
-        MessageVerify(*params, "3B5fQsEXEaV8v6U3ejYc8XaKXAkyQj2MjV",
+        MessageVerify(*params, "A1pv9iJRJeN2pTqX4sD2NfChDk91ZwVQqH",
                       "signature should be irrelevant", "message too"),
         MessageVerificationResult::ERR_ADDRESS_NO_KEY);
 
     BOOST_CHECK_EQUAL(MessageVerify(*params,
-                                    "1KqbBpLy5FARmTPD4VZnDDpYjkUvkr82Pm",
+                                    "DPygj5HcNf4iJTZoo5ZLkyz9ctDE7BFjZB",
                                     "invalid signature, not in base64 encoding",
                                     "message should be irrelevant"),
                       MessageVerificationResult::ERR_MALFORMED_SIGNATURE);
 
     BOOST_CHECK_EQUAL(
-        MessageVerify(*params, "1KqbBpLy5FARmTPD4VZnDDpYjkUvkr82Pm",
+        MessageVerify(*params, "DPygj5HcNf4iJTZoo5ZLkyz9ctDE7BFjZB",
                       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
                       "message should be irrelevant"),
         MessageVerificationResult::ERR_PUBKEY_NOT_RECOVERED);
 
     BOOST_CHECK_EQUAL(
-        MessageVerify(*params, "15CRxFdyRpGZLW9w8HnHvVduizdL5jKNbs",
+        MessageVerify(*params, "D9LXVWacjEAqsWLXrsmrUFoWc8MdPuYuMP",
                       "IPojfrX2dfPnH26UegfbGQQLrdK844DlHq5157/P6h57WyuS/Qsl+h/"
                       "WSVGDF4MUi4rWSswW38oimDYfNNUBUOk=",
                       "I never signed this"),
         MessageVerificationResult::ERR_NOT_SIGNED);
 
     BOOST_CHECK_EQUAL(
-        MessageVerify(*params, "15CRxFdyRpGZLW9w8HnHvVduizdL5jKNbs",
+        MessageVerify(*params, "D9LXVWacjEAqsWLXrsmrUFoWc8MdPuYuMP",
                       "H3CcyS18y471Ya5WTYAke25spvA5eyBMvAuNhxDkuAjsdNGX+"
                       "NoouNlY1KoselGvF65Werf7OdtKAoOZ9WB17Rc=",
                       "Trust no one"),
         MessageVerificationResult::OK);
 
     BOOST_CHECK_EQUAL(
-        MessageVerify(*params, "1NoJrossxPBKfCHuJXT4HadJrXRE9Fxiqs",
+        MessageVerify(*params, "DSwQQ4pXFo5cCCUW37ScqLnujf9XTqAFvn",
                       "HxO6qEsMrNvPA7QTMUbdzF/uXbW78yPG6gFITses9XVvMdBULIFwrfhN"
                       "f196N+rxnK5eSl8eF3aKe4INunzFJXg=",
                       "Trust me"),
