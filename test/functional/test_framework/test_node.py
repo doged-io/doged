@@ -242,15 +242,67 @@ class TestNode:
             "cPiRWE8KMjTRxH1MWkPerhfoHFn5iHPWVK5aPqjW8NxmdwenFinJ",
         ),
     ]
+    PRIV_KEYS_TESTNET = [
+        # address , privkey
+        AddressKeyPair(
+            address="nY8xUFpK7LVNNvbmmGaWY8P2wb4MMphFJT",
+            key="cnyWHLn3E8Cy5Mm5ypVU8VHkGqKkm4E5qbhoUo3vtJcVFy4PwZN7",
+        ),
+        AddressKeyPair(
+            address="ngCJhd8WP5JTaugG5DzHJeQH7r5J16Yac3",
+            key="cn88fJ3muTBSMVbhodCHu7NZwngfcHKNExPaos6g6m4q2hoCXmPX",
+        ),
+        AddressKeyPair(
+            address="nbUzAaZrZpgvWK1DPuorqqphY6ZMYACsp9",
+            key="cm1xFxU2Wx8u3d4tXfwP9fKcvdn9A2tjNDgjs8jpRCjQZPrRvhi1",
+        ),
+        AddressKeyPair(
+            address="ndz7noTheExfHkAaGm9fLXazj9RT8cYoJV",
+            key="co4aTtqUwxXWMxXND9uV8xnCe6F5VwrgWD5moRYjAXXcszJ9y3pu",
+        ),
+        AddressKeyPair(
+            address="ngDnaL2W3SuhPy6QpbQcvx8mULMQLL2NPE",
+            key="chNTLE3R5td6UFqjwjQA35jeTWp2o6deVmXGLnSEbVVFu2b1uVnT",
+        ),
+        AddressKeyPair(
+            address="nqXzshPWm3TbJ22v5bQZU1fzLC5CVUwTZX",
+            key="chk1uz7EgkfbF1NnP5xcudsUybCxy388p9wyHy1PZgJ1CrusvJeR",
+        ),
+        AddressKeyPair(
+            address="nng7NB2XJ1ygZ9GQxq4JHPvEHSBpzyqb5E",
+            key="chX5Mf2jWS3TbBQ9WkRb2wCACdfGAa3fQZgEyFFPsnQfiEBy5Nfa",
+        ),
+        AddressKeyPair(
+            address="niT9RnxU2KA97kDwP1r12Atj4Gwmg3K9xK",
+            key="cjh2ZeFHy7eBeQQ2vmA6r29qxjs7CvNNW2TkzAT4DxjoUSv9uRXT",
+        ),
+        AddressKeyPair(
+            address="ndAKYV3Gn7DxCYsgA5mMXwQWAPod12EVeQ",
+            key="cjxo2RcZQ8gF15VtgkKtEpejuv3k9NoLVuxdX7xsZzzuM6Kwmum6",
+        ),
+        AddressKeyPair(
+            address="ndjs9bECAdpgAu3tnTpDjMm18bw4Q5jhgW",
+            key="cfELmuNoe7jD8ChhRfHToxzoKdsftiwtzUMnTpaeKbg74GSnM8tR",
+        ),
+        AddressKeyPair(
+            address="ncvNFSL6XgnQKDL2YeZGWExM1cTn2W1Zdr",
+            key="ckH6TSPpJ4NWJxMM3mpMSsCCaXVc4wzoLwLjnkHPhvkYKE7F5Cjd",
+        ),
+        AddressKeyPair(
+            address="no6r6d9w5ddpmCFgFiJfdDVoWsUvFD6EMk",
+            key="cgsgeYr7i3HhuK2tcuBST3rmn8BPP7vxpCKqWkRh7LUCCc7y3ELb",
+        ),
+    ]
 
     def get_deterministic_priv_key(self):
         """Return a deterministic priv key in base58, that only depends on the node's index"""
-        num_keys = len(self.PRIV_KEYS)
+        priv_keys = self.PRIV_KEYS_TESTNET if self.chain == 'testnet3' else self.PRIV_KEYS
+        num_keys = len(priv_keys)
         assert self.index < num_keys, (
             f"Only {num_keys} keys are defined, please extend TestNode.PRIV_KEYS if "
             "more are needed."
         )
-        return self.PRIV_KEYS[self.index]
+        return priv_keys[self.index]
 
     def _node_msg(self, msg: str) -> str:
         """Return a modified msg that identifies this node by its index as a debugging aid."""

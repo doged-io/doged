@@ -20,21 +20,21 @@
 #include <vector>
 
 static const std::string strSecret1 =
-    "5HxWvvfubhXpYYpS3tJkw6fq9jE9j18THftkZjHHfmFiWtmAbrj";
+    "6JGrDt8sATpcbAFbFGvjYif4d9hhE8Qitr1ytDvBVRTMKTeM6gK";
 static const std::string strSecret2 =
-    "5KC4ejrDjv152FGwP386VD1i2NYc5KkfSMyv1nGy1VGDxGHqVY3";
+    "6KWPwhKBJgHs4ri6aRk56pzwVo29aT2w3Y79LGurq9Trku6s8Bf";
 static const std::string strSecret1C =
-    "Kwr371tjA9u2rFSMZjTNun2PXXP3WPZu2afRHTcta6KxEUdm1vEw";
+    "QPExFrhiQmPA5mqQA1JAnzrzzZQcYwhhuqML561jJSwJgQae13KH";
 static const std::string strTestSecret1C =
-    "cND2ZvtabDbJ1gucx9GWH6XT9kgTAqfb6cotPt5Q5CyxVDhid2EN";
+    "cfNHiFcNwXRZxiwA4J4HsSiRed5kqgD3RW49Wnmb4AVP3tASBfvX";
 static const std::string strSecret2C =
-    "L3Hq7a8FEQwJkW1M2GNKDW28546Vp5miewcCzSqUD9kCAXrJdS3g";
-static const std::string addr1 = "1QFqqMUD55ZV3PJEJZtaKCsQmjLT6JkjvJ";
-static const std::string addr2 = "1F5y5E5FMc5YzdJtB9hLaUe43GDxEKXENJ";
-static const std::string addr1C = "1NoJrossxPBKfCHuJXT4HadJrXRE9Fxiqs";
-static const std::string addr2C = "1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs";
+    "QUgkGQwEV2RRz2QPcYD76irjY684rduXYCJ7n5EJwWMYcTuqT3DW";
+static const std::string addr1 = "DUPwNcQrNVTmaPUq39t8ry31es4kPtV24v";
+static const std::string addr2 = "DKE4cV1tf1yqXdVUujgu8EoevPxFWYkHdv";
+static const std::string addr1C = "DSwQQ4pXFo5cCCUW37ScqLnujf9XTqAFvn";
+static const std::string addr2C = "DGZpZYuzJcRoXHM84ztGp79HZWBSowYjKM";
 
-static const std::string strAddressBad = "1HV9Lc3sNHZxwj4Zk6fB38tEmBryq2cBiF";
+static const std::string strAddressBad = "DMdEsrzWfhUFUjFAUgejau3qeKbHCy6GGG";
 
 // get r value produced by ECDSA signing algorithm
 // (assumes ECDSA r is encoded in the canonical manner)

@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE(test_addresses) {
         "ecash:qpm2qsznhks23z7629mms6s4cwef74vcwva87rkuu2";
     std::string cashaddr_script =
         "ecash:ppm2qsznhks23z7629mms6s4cwef74vcwv2zrv3l8h";
-    std::string base58_pubkey = "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu";
-    std::string base58_script = "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC";
+    std::string base58_pubkey = "DFxLFMAJWaNYA7TVTUstzPMFRSevAwTSLq";
+    std::string base58_script = "A3FWNUmzq8fXceLoG8DM7PAxPQbNUjae2B";
 
     DummyCashAddrConfig config;
 

@@ -123,7 +123,7 @@ void URITests::uriTestFormatURI() {
     {
         // Legacy addresses are converted.
         SendCoinsRecipient r;
-        r.address = "12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX";
+        r.address = "D6kBkhf7MqjKv4kZjJKXYcVgDu5VAyukJz";
         r.message = "test";
         QString uri = GUIUtil::formatBitcoinURI(*params, r);
         QVERIFY(uri == "ecash:qqgekzvw96vq5g57zwdfa5q6g609rrn0yccu9hrtvr?"

@@ -2547,8 +2547,9 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     RegisterValidationInterface(node.peerman.get());
 
     // Encoded addresses using cashaddr instead of base58.
-    // We do this by default to avoid confusion with BTC addresses.
-    config.SetCashAddrEncoding(args.GetBoolArg("-usecashaddr", true));
+    // We don't this by default because Dogecoin uses base58 with a custom
+    // prefix, so ambiguity with BTC addresses is avoided.
+    config.SetCashAddrEncoding(args.GetBoolArg("-usecashaddr", false));
 
     // Step 8: load indexers
     if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
