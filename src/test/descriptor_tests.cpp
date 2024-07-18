@@ -24,7 +24,7 @@ void CheckUnparsable(const std::string &prv, const std::string &pub,
     auto parse_pub = Parse(pub, keys_pub, error);
     BOOST_CHECK_MESSAGE(!parse_priv, prv);
     BOOST_CHECK_MESSAGE(!parse_pub, pub);
-    BOOST_CHECK(error == expected_error);
+    BOOST_CHECK_EQUAL(error, expected_error);
 }
 
 constexpr int DEFAULT = 0;
@@ -209,7 +209,7 @@ void DoCheck(const std::string &prv, const std::string &pub, int flags,
                     const CPubKey &pk = origin_pair.second.first;
                     BOOST_CHECK(pubkeys.count(pk) > 0);
                 }
-            } else if (pub1.find("xpub") != std::string::npos) {
+            } else if (pub1.find("dgub") != std::string::npos) {
                 // For ranged, hardened derivation, or not ranged, but has an
                 // xpub, all of the keys should appear in the cache
                 BOOST_CHECK(der_xpub_cache.size() + parent_xpub_cache.size() ==
@@ -443,40 +443,40 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
 
     // Versions with BIP32 derivations
     Check("combo([01234567]"
-          "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39"
-          "njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc)",
+          "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7d"
+          "gtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP)",
           "combo([01234567]"
-          "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4"
-          "koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL)",
+          "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLX"
+          "kYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3)",
           SIGNABLE,
           {{"2102d2b36900396c9282fa14628566582f206a5dd0bcc8d5e892611806cafb0301"
             "f0ac",
             "76a91431a507b815593dfc51ffc7245ae7e5aee304246e88ac"}},
           std::nullopt);
     Check("pk("
-          "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7"
-          "AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0)",
+          "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb"
+          "4L41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0)",
           "pk("
-          "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHB"
-          "aohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0)",
+          "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5Rge"
+          "aYDGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0)",
           DEFAULT,
           {{"210379e45b3cf75f9c5f9befd8e9506fb962f6a9d185ac87001ec44a8d3df8d4a9"
             "e3ac"}},
           std::nullopt, {{0}});
     Check("pkh("
-          "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssr"
-          "dK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U/2147483647'/0)",
+          "dgpv51eADS3spNJh8tFDoJ8p4bevsC4qFqZgqSdgHxVkvhyy92FwJKTArBsKgvsqB2xL"
+          "XUjqaZQHukqQr6VxB9o3o32pW1C7bPngcrpg75LUw8V/2147483647'/0)",
           "pkh("
-          "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6o"
-          "DMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/2147483647'/0)",
+          "dgub8kXBZ7ymNWy2RjuNqXknBTCXKkSU5xbQ83QtT4tjiq2yh5Ndi5zwVVGyGCjCXUWG"
+          "D5xaMzGHjiqkcnt8LamvDpJrZkWqpyXQV4TjDhfyo9Q/2147483647'/0)",
           HARDENED, {{"76a914ebdc90806a9c4356c1c88e42216611e1cb4c1c1788ac"}},
           OutputType::LEGACY, {{0xFFFFFFFFUL, 0}});
     Check("pkh([ffffffff/13']"
-          "xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih"
-          "2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt/1/2/*)",
+          "dgpv54uuV9jqJP8mf9qWw5Wh8Q4TE9p5xp3yPcP3TmXD17qvpzhusaoF12SaGS9dp6oA"
+          "w8yfUZp2LvFYCc8mjSJ6jGCDWBcAysxRkGjEUK7pYvw/1/2/*)",
           "pkh([ffffffff/13']"
-          "xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7E"
-          "RfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/1/2/*)",
+          "dgub8onvpqfirXo6x1VfyK8fFFc3giBinw5ggDAFcsvBoEtwP3pcHMM1eKrDqfh6KZWh"
+          "RQSkEDG38ogimxJpDjULZQy8qoFWjKfncYaPesrSURc/1/2/*)",
           RANGE,
           {{"76a914326b2249e3a25d5dc60935f044ee835d090ba85988ac"},
            {"76a914af0bd98abc2f2cae66e36896a39ffe2d32984fb788ac"},
@@ -486,11 +486,11 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
            {0x8000000DUL, 1, 2, 1},
            {0x8000000DUL, 1, 2, 2}});
     Check("sh(pkh("
-          "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKm"
-          "PGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi/10/20/30/40/*'))",
+          "dgpv51eADS3spNJh9Gjth94XcPwAczvQaDJs9rqx11kvxKs6r3Ek8AgERHhjLs6mzXQF"
+          "HRzQqGwqdeoDkZmr8jQMBfi43b7sT3sx3cCSk5fGeUR/10/20/30/40/*'))",
           "sh(pkh("
-          "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjq"
-          "JoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8/10/20/30/40/*'))",
+          "dgub8kXBZ7ymNWy2S8Q3jNgVjFUm5ZJ3QLLaSTdAA89ukSv7Q6MSXwE14b7Nv6eDpE9J"
+          "JXinTKc8LeLVu19uDPrm5uJuhpKNzV2kAgncwo6bNpP/10/20/30/40/*'))",
           RANGE | HARDENED | DERIVE_HARDENED,
           {{"a9149976cc014a7c012bbc43954a38cdee554865bd1987"},
            {"a914ad29a49cb0420b53d9d6bb8944bcd819c5ff716e87"},
@@ -500,11 +500,11 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
            {10, 20, 30, 40, 0x80000001UL},
            {10, 20, 30, 40, 0x80000002UL}});
     Check("combo("
-          "xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb2Tyh8RfQMuPh"
-          "7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334/*)",
+          "dgpv5AvNHtr3Bgq94yBra1SVLg8PKAd7rTRMYp4f4fjVMTneDorY8jARc1yDmYGFS4UB"
+          "1pntDn3dRwsaJexzh6w45PJiP6QPTnRMBfN3rDUiyyH/*)",
           "combo("
-          "xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBqaGJAyiLjTAwm"
-          "6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV/*)",
+          "dgub8uoPdamvjqVUMpr1cF4TTXfymizkgaT4qQqsDn8U9aqemryEYViCFKNsLnqiq9ME"
+          "6HrJrN4DcZN9UTM9S9jmcVDfhLUpJZtk3jGwnGkhd8u/*)",
           RANGE,
           {{"2102df12b7035bdac8e3bab862a3a83d06ea6b17b6753d52edecba9be46f5d09e0"
             "76ac",
@@ -516,30 +516,30 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
 
     // Too long key fingerprint
     CheckUnparsable("combo([012345678]"
-                    "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3x"
-                    "z7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc)",
+                    "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdW"
+                    "yeMHZdCV7dgtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP)",
                     "combo([012345678]"
-                    "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbm"
-                    "JbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL)",
+                    "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3Gp"
+                    "PHvWFr4YLXkYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3)",
                     "Fingerprint is not 4 bytes (9 characters instead of 8 "
                     "characters)");
     // BIP 32 path element overflow
     CheckUnparsable(
         "pkh("
-        "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK"
-        "4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U/2147483648)",
+        "dgpv51eADS3spNJh8tFDoJ8p4bevsC4qFqZgqSdgHxVkvhyy92FwJKTArBsKgvsqB2xLXU"
+        "jqaZQHukqQr6VxB9o3o32pW1C7bPngcrpg75LUw8V/2147483648)",
         "pkh("
-        "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDM"
-        "Sgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/2147483648)",
+        "dgub8kXBZ7ymNWy2RjuNqXknBTCXKkSU5xbQ83QtT4tjiq2yh5Ndi5zwVVGyGCjCXUWGD5"
+        "xaMzGHjiqkcnt8LamvDpJrZkWqpyXQV4TjDhfyo9Q/2147483648)",
         "Key path value 2147483648 is out of range");
     // Path is not valid uint
     CheckUnparsable(
         "pkh("
-        "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK"
-        "4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U/1aa)",
+        "dgpv51eADS3spNJh8tFDoJ8p4bevsC4qFqZgqSdgHxVkvhyy92FwJKTArBsKgvsqB2xLXU"
+        "jqaZQHukqQr6VxB9o3o32pW1C7bPngcrpg75LUw8V/1aa)",
         "pkh("
-        "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDM"
-        "Sgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/1aa)",
+        "dgub8kXBZ7ymNWy2RjuNqXknBTCXKkSU5xbQ83QtT4tjiq2yh5Ndi5zwVVGyGCjCXUWGD5"
+        "xaMzGHjiqkcnt8LamvDpJrZkWqpyXQV4TjDhfyo9Q/1aa)",
         "Key path value '1aa' is not a valid uint32");
 
     // Multisig constructions
@@ -580,29 +580,29 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "a23552ae"}},
           std::nullopt);
     Check("sh(multi(2,[00000000/111'/222]"
-          "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39"
-          "njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-          "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7"
-          "AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))",
+          "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7d"
+          "gtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+          "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb"
+          "4L41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))",
           "sh(multi(2,[00000000/111'/222]"
-          "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4"
-          "koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-          "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHB"
-          "aohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))",
+          "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLX"
+          "kYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+          "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5Rge"
+          "aYDGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))",
           DEFAULT, {{"a91445a9a622a8b0a1269944be477640eedc447bbd8487"}},
           OutputType::LEGACY, {{0x8000006FUL, 222}, {0}});
     Check("sortedmulti(2,"
-          "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39"
-          "njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc/"
+          "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7d"
+          "gtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP/"
           "*,"
-          "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7"
-          "AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0/0/*)",
+          "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb"
+          "4L41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0/0/*)",
           "sortedmulti(2,"
-          "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4"
-          "koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/"
+          "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLX"
+          "kYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3/"
           "*,"
-          "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHB"
-          "aohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0/0/*)",
+          "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5Rge"
+          "aYDGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0/0/*)",
           RANGE,
           {{"5221025d5fc65ebb8d44a5274b53bac21ff8307fec2334a32df05553459f8b1f7f"
             "e1b62102fbd47cc8034098f0e6a94c6aeee8528abf0a2153a5d8e46d325b7284c0"
@@ -615,23 +615,23 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
             "fe1f9c52ae"}},
           std::nullopt, {{0}, {1}, {2}, {0, 0, 0}, {0, 0, 1}, {0, 0, 2}});
     Check("sh(multi(2,"
-          "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssr"
-          "dK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U/2147483647'/"
+          "dgpv51eADS3spNJh8tFDoJ8p4bevsC4qFqZgqSdgHxVkvhyy92FwJKTArBsKgvsqB2xL"
+          "XUjqaZQHukqQr6VxB9o3o32pW1C7bPngcrpg75LUw8V/2147483647'/"
           "0,"
-          "xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih"
-          "2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt/1/2/"
+          "dgpv54uuV9jqJP8mf9qWw5Wh8Q4TE9p5xp3yPcP3TmXD17qvpzhusaoF12SaGS9dp6oA"
+          "w8yfUZp2LvFYCc8mjSJ6jGCDWBcAysxRkGjEUK7pYvw/1/2/"
           "*,"
-          "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKm"
-          "PGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi/10/20/30/40/*'))",
+          "dgpv51eADS3spNJh9Gjth94XcPwAczvQaDJs9rqx11kvxKs6r3Ek8AgERHhjLs6mzXQF"
+          "HRzQqGwqdeoDkZmr8jQMBfi43b7sT3sx3cCSk5fGeUR/10/20/30/40/*'))",
           "sh(multi(2,"
-          "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6o"
-          "DMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/2147483647'/"
+          "dgub8kXBZ7ymNWy2RjuNqXknBTCXKkSU5xbQ83QtT4tjiq2yh5Ndi5zwVVGyGCjCXUWG"
+          "D5xaMzGHjiqkcnt8LamvDpJrZkWqpyXQV4TjDhfyo9Q/2147483647'/"
           "0,"
-          "xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7E"
-          "RfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/1/2/"
+          "dgub8onvpqfirXo6x1VfyK8fFFc3giBinw5ggDAFcsvBoEtwP3pcHMM1eKrDqfh6KZWh"
+          "RQSkEDG38ogimxJpDjULZQy8qoFWjKfncYaPesrSURc/1/2/"
           "*,"
-          "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjq"
-          "JoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8/10/20/30/40/*'))",
+          "dgub8kXBZ7ymNWy2S8Q3jNgVjFUm5ZJ3QLLaSTdAA89ukSv7Q6MSXwE14b7Nv6eDpE9J"
+          "JXinTKc8LeLVu19uDPrm5uJuhpKNzV2kAgncwo6bNpP/10/20/30/40/*'))",
           HARDENED | RANGE | DERIVE_HARDENED,
           {{"a914261bbb58cd9714f92e91668d3eed7c4c860f4cdc87"},
            {"a914ff07ad97dc4458ed5236c52bb94ccb7339dedff887"},
@@ -787,123 +787,123 @@ BOOST_AUTO_TEST_CASE(descriptor_test) {
     // Checksums
     Check("sh(multi(2,[00000000/111'/"
           "222]"
-          "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39"
-          "njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-          "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7"
-          "AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#ggrsrxfy",
+          "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7d"
+          "gtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+          "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb"
+          "4L41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#5pd0mgtv",
           "sh(multi(2,[00000000/111'/"
           "222]"
-          "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4"
-          "koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-          "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHB"
-          "aohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5t",
+          "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLX"
+          "kYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+          "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5Rge"
+          "aYDGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#uzxdm0tx",
           DEFAULT, {{"a91445a9a622a8b0a1269944be477640eedc447bbd8487"}},
           OutputType::LEGACY, {{0x8000006FUL, 222}, {0}});
     Check("sh(multi(2,[00000000/111'/"
           "222]"
-          "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39"
-          "njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-          "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7"
-          "AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))",
+          "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7d"
+          "gtwxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+          "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb"
+          "4L41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))",
           "sh(multi(2,[00000000/111'/"
           "222]"
-          "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4"
-          "koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-          "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHB"
-          "aohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))",
+          "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLX"
+          "kYUUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+          "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5Rge"
+          "aYDGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))",
           DEFAULT, {{"a91445a9a622a8b0a1269944be477640eedc447bbd8487"}},
           OutputType::LEGACY, {{0x8000006FUL, 222}, {0}});
     // Empty checksum
     CheckUnparsable(
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#",
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#",
         "Expected 8 character checksum, not 0 characters");
     // Too long checksum
     CheckUnparsable(
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#ggrsrxfyq",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#ggrsrxfyq",
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5tq",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#tjg09x5tq",
         "Expected 8 character checksum, not 9 characters");
     // Too short checksum
     CheckUnparsable(
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#ggrsrxf",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#ggrsrxf",
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#tjg09x5",
         "Expected 8 character checksum, not 7 characters");
     // Error in payload
     CheckUnparsable(
         "sh(multi(3,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#ggrsrxfy",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#ggrsrxfy",
         "sh(multi(3,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjg09x5t",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#tjg09x5t",
         "Provided checksum 'tjg09x5t' does not match computed checksum "
-        "'d4x0uxyv'");
+        "'69gdz0mp'");
     // Error in checksum
     CheckUnparsable(
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))#ggssrxfy",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))#ggssrxfy",
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))#tjq09x4t",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))#tjq09x4t",
         "Provided checksum 'tjq09x4t' does not match computed checksum "
-        "'tjg09x5t'");
+        "'uzxdm0tx'");
     // Error in checksum
     CheckUnparsable(
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39nj"
-        "GVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc,"
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L/0))##ggssrxfy",
+        "dgpv5A3y4jgeTKZnDaxS9fUSwCNRsANrfTmRpugKkwnioWE1QU8TtegGdWyeMHZdCV7dgt"
+        "wxJhs3Br1Smfk52eL6zt8EtcudjhghMSW1nDNfmHP,"
+        "dgpv541MxPt1Vjg3KUnnYpy7KqfdSC1KAZ8rxGeBWVDA8hz8NHcfXxTzsutZUgxMU1Wb4L"
+        "41ARtGTvCarHkQyoXELGjhTRfoXzQU2bSgiK5zPHD/0))##ggssrxfy",
         "sh(multi(2,[00000000/111'/"
         "222]"
-        "xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4ko"
-        "xb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,"
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0))##tjq09x4t",
+        "dgub8tvzQRcY1UE7WScbBu6R43v2KikVVao97WTXv4BhbdH1xXFAJRE3GpPHvWFr4YLXkY"
+        "UUXCGb7kk1B4bZbRVvGFb8F4PurtTRGvbXH6bMPN3,"
+        "dgub8ntPJ5ou3tLNcLSwb4b5ShDDtkNwzgAaEsRPfbc8vq38vLjMwj1mXDJD3v6h5RgeaY"
+        "DGxwu2yLs6gZTP7XkYDQEwN6Mx7PU3kxLLQaYubK9/0))##tjq09x4t",
         "Multiple '#' symbols");
 
     // Addr and raw tests
