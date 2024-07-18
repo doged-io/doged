@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <coins.h>
+#include <primitives/transaction.h>
 #include <script/script.h>
 #include <script/sigops.h>
 
@@ -67,4 +69,37 @@ uint32_t CountScriptSigOpsP2SH(const CScript &scriptSig) {
     // ... and return its opcount, using "ACCURATE" counting:
     CScript subscript(vData.begin(), vData.end());
     return CountScriptSigOps(subscript, SigOpCountMode::ACCURATE);
+}
+
+uint64_t CountTxNonP2SHSigOps(const CTransaction &tx) {
+    uint64_t nSigOps = 0;
+    for (const CTxIn &txin : tx.vin) {
+        nSigOps += CountScriptSigOps(txin.scriptSig, SigOpCountMode::ESTIMATED);
+    }
+    for (const CTxOut &txout : tx.vout) {
+        nSigOps +=
+            CountScriptSigOps(txout.scriptPubKey, SigOpCountMode::ESTIMATED);
+    }
+    return nSigOps;
+}
+
+uint64_t CountTxP2SHSigOps(const CTransaction &tx,
+                           const CCoinsViewCache &view) {
+    if (tx.IsCoinBase()) {
+        return 0;
+    }
+
+    uint64_t nSigOps = 0;
+    for (const CTxIn &txin : tx.vin) {
+        const Coin &coin = view.AccessCoin(txin.prevout);
+        if (coin.GetTxOut().scriptPubKey.IsPayToScriptHash()) {
+            nSigOps += CountScriptSigOpsP2SH(txin.scriptSig);
+        }
+    }
+
+    return nSigOps;
+}
+
+uint64_t CountTxSigOps(const CTransaction &tx, const CCoinsViewCache &view) {
+    return CountTxNonP2SHSigOps(tx) + CountTxP2SHSigOps(tx, view);
 }
