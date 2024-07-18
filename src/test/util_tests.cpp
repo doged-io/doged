@@ -1471,27 +1471,26 @@ BOOST_AUTO_TEST_CASE(util_ReadWriteSettings) {
 
 BOOST_AUTO_TEST_CASE(util_FormatMoney) {
     BOOST_CHECK_EQUAL(FormatMoney(Amount::zero()), "0.00");
-    BOOST_CHECK_EQUAL(FormatMoney(123456789 * (COIN / 10000)),
-                      "12345678900.00");
-    BOOST_CHECK_EQUAL(FormatMoney(-1 * COIN), "-1000000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(123456789 * (COIN / 10000)), "12345.6789");
+    BOOST_CHECK_EQUAL(FormatMoney(-1 * COIN), "-1.00");
 
-    BOOST_CHECK_EQUAL(FormatMoney(100000000 * COIN), "100000000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(10000000 * COIN), "10000000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(1000000 * COIN), "1000000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(100000 * COIN), "100000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(10000 * COIN), "10000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(1000 * COIN), "1000000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(100 * COIN), "100000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(10 * COIN), "10000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN), "1000000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10), "100000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100), "10000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 1000), "1000.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10000), "100.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100000), "10.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 1000000), "1.00");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10000000), "0.10");
-    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100000000), "0.01");
+    BOOST_CHECK_EQUAL(FormatMoney(100000000 * COIN), "100000000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(10000000 * COIN), "10000000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(1000000 * COIN), "1000000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(100000 * COIN), "100000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(10000 * COIN), "10000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(1000 * COIN), "1000.00");
+    BOOST_CHECK_EQUAL(FormatMoney(100 * COIN), "100.00");
+    BOOST_CHECK_EQUAL(FormatMoney(10 * COIN), "10.00");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN), "1.00");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10), "0.10");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100), "0.01");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 1000), "0.001");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10000), "0.0001");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100000), "0.00001");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 1000000), "0.000001");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 10000000), "0.0000001");
+    BOOST_CHECK_EQUAL(FormatMoney(COIN / 100000000), "0.00000001");
 }
 
 BOOST_AUTO_TEST_CASE(util_ParseMoney) {
@@ -1500,9 +1499,9 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney) {
     BOOST_CHECK_EQUAL(ret, Amount::zero());
 
     BOOST_CHECK(ParseMoney("1234567.89", ret));
-    BOOST_CHECK_EQUAL(ret, 123456789 * SATOSHI);
+    BOOST_CHECK_EQUAL(ret, int64_t(123456789000000LL) * SATOSHI);
 
-    BOOST_CHECK(ParseMoney("10000000000000000.00", ret));
+    BOOST_CHECK(ParseMoney("10000000000.00000000", ret));
     BOOST_CHECK_EQUAL(ret, MAX_MONEY);
 
     const auto XEC = Currency::get().baseunit;
@@ -1544,13 +1543,13 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney) {
     BOOST_CHECK_EQUAL(ret, XEC / 100);
 
     // Parsing amount that can not be represented in ret should fail
-    BOOST_CHECK(!ParseMoney("0.001", ret));
-    BOOST_CHECK(!ParseMoney("0.0001", ret));
-    BOOST_CHECK(!ParseMoney("0.00001", ret));
-    BOOST_CHECK(!ParseMoney("0.000001", ret));
-    BOOST_CHECK(!ParseMoney("0.0000001", ret));
-    BOOST_CHECK(!ParseMoney("0.00000001", ret));
     BOOST_CHECK(!ParseMoney("0.000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.0000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.00000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.000000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.0000000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.00000000000001", ret));
+    BOOST_CHECK(!ParseMoney("0.000000000000001", ret));
 
     // Parsing empty string should fail
     BOOST_CHECK(!ParseMoney("", ret));
@@ -1564,13 +1563,13 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney) {
     BOOST_CHECK(!ParseMoney(" 1 2.3 ", ret));
 
     // Max possible value with the max number of digits
-    BOOST_CHECK(ParseMoney("9999999999999999.99", ret));
+    BOOST_CHECK(ParseMoney("9999999999.99999999", ret));
     BOOST_CHECK_EQUAL(ret, int64_t(999999999999999999) * SATOSHI);
-    BOOST_CHECK(ParseMoney("19999999999999999.99", ret));
+    BOOST_CHECK(ParseMoney("19999999999.99999999", ret));
     BOOST_CHECK_EQUAL(ret, int64_t(1999999999999999999) * SATOSHI);
     // Attempted 63 bit overflow should fail
-    BOOST_CHECK(!ParseMoney("20000000000000000.00", ret));
-    BOOST_CHECK(!ParseMoney("92233720368547758.08", ret));
+    BOOST_CHECK(!ParseMoney("20000000000.00000000", ret));
+    BOOST_CHECK(!ParseMoney("92233720368.54775808", ret));
 
     // Parsing negative amounts must fail
     BOOST_CHECK(!ParseMoney("-1", ret));
