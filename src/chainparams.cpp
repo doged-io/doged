@@ -6,6 +6,7 @@
 
 #include <chainparams.h>
 
+#include <cashaddr.h>
 #include <common/args.h>
 #include <consensus/merkle.h>
 #include <currencyunit.h>
@@ -23,7 +24,7 @@ const CChainParams &Params() {
 
 void ReadChainArgs(const ArgsManager &args,
                    CChainParams::ChainOptions &options) {
-    options.ecash = args.GetBoolArg("-ecash", DEFAULT_ECASH);
+    options.ecash = args.GetBoolArg("-ecash", cashaddr::DEFAULT_ECASH);
     // Only relevant for REGTEST
     options.fastprune = args.GetBoolArg("-fastprune", false);
 }

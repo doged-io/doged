@@ -39,15 +39,17 @@ class ECashRPCTest(BitcoinTestFramework):
         )
 
     def run_test(self):
-        self.log.info("Test with -ecash enabled (default setting)")
-        self.test_currency(ticker="XEC", satoshis_per_unit=100, decimals=2)
+        self.log.info(
+            "Test with -usedogeunit disabled (default setting in our test framework)"
+        )
+        self.test_currency(ticker="µDOGE", satoshis_per_unit=100, decimals=2)
 
-        self.log.info("Test with -ecash disabled")
+        self.log.info("Test with -usedogeunit enabled")
         # Disable fallbackfee, because its default setting for tests
         # is adapted to XEC only.
-        # In BCHA mode, it triggers a "-fallbackfee is set very high!" error.
-        self.restart_node(0, ["-ecash=0", "-fallbackfee=0"])
-        self.test_currency(ticker="BCHA", satoshis_per_unit=100_000_000, decimals=8)
+        # In DOGE mode, it triggers a "-fallbackfee is set very high!" error.
+        self.restart_node(0, ["-usedogeunit=1", "-fallbackfee=0"])
+        self.test_currency(ticker="DOGE", satoshis_per_unit=100_000_000, decimals=8)
 
 
 if __name__ == "__main__":

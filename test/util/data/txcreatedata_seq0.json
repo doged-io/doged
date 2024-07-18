@@ -1,6 +1,6 @@
 {
-    "txid": "8df6ed527472542dd5e137c242a7c5a9f337ac34f7b257ae4af886aeaebb51b0",
-    "hash": "8df6ed527472542dd5e137c242a7c5a9f337ac34f7b257ae4af886aeaebb51b0",
+    "txid": "c1e8b9210c838acbd3ef821d426f52306c7843a1f0c4390fe54d79e00544d299",
+    "hash": "c1e8b9210c838acbd3ef821d426f52306c7843a1f0c4390fe54d79e00544d299",
     "version": 2,
     "size": 85,
     "locktime": 0,
@@ -17,7 +17,7 @@
     ],
     "vout": [
         {
-            "value": 180000.00,
+            "value": 180000.00000000,
             "n": 0,
             "scriptPubKey": {
                 "asm": "OP_DUP OP_HASH160 1fc11f39be1729bf973a7ab6a615ca4729d64574 OP_EQUALVERIFY OP_CHECKSIG",
@@ -30,5 +30,5 @@
             }
         }
     ],
-    "hex": "02000000011f5c38dfcf6f1a5f5a87c416076d392c87e6d41970d5ad5e477a02d66bde97580000000000fdffffff0180a81201000000001976a9141fc11f39be1729bf973a7ab6a615ca4729d6457488ac00000000"
+    "hex": "02000000011f5c38dfcf6f1a5f5a87c416076d392c87e6d41970d5ad5e477a02d66bde97580000000000fdffffff0100209bf35e1000001976a9141fc11f39be1729bf973a7ab6a615ca4729d6457488ac00000000"
 }

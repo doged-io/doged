@@ -341,8 +341,8 @@ class WalletSendTest(BitcoinTestFramework):
             expect_error=(
                 -4,
                 (
-                    "Fee rate (1.00 XEC/kB) is lower than the minimum fee rate setting"
-                    " (10.00 XEC/kB)"
+                    "Fee rate (1.00 µDOGE/kB) is lower than the minimum fee rate setting"
+                    " (10.00 µDOGE/kB)"
                 ),
             ),
         )

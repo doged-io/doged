@@ -5,6 +5,7 @@
 #include <minerfund.h>
 
 #include <blockindex.h>
+#include <cashaddr.h>
 #include <chainparams.h>
 #include <common/args.h>
 #include <consensus/activation.h>
@@ -40,9 +41,10 @@ static const CTxDestination &GetMinerFundDestination() {
         "ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07";
     static const std::string bitcoinCashMinerFund =
         "bitcoincash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvq5zsvycff";
-    static CTxDestination dest = BuildDestination(
-        gArgs.GetBoolArg("-ecash", DEFAULT_ECASH) ? ecashMinerFund
-                                                  : bitcoinCashMinerFund);
+    static CTxDestination dest =
+        BuildDestination(gArgs.GetBoolArg("-ecash", cashaddr::DEFAULT_ECASH)
+                             ? ecashMinerFund
+                             : bitcoinCashMinerFund);
 
     return dest;
 }
