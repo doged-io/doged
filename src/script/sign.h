@@ -167,6 +167,9 @@ void SerializeHDKeypaths(Stream &s,
     }
 }
 
+/** Get the script_flags to be used for signing */
+uint32_t GetSignScriptFlags();
+
 /** Produce a script signature using a generic signature creator. */
 bool ProduceSignature(const SigningProvider &provider,
                       const BaseSignatureCreator &creator,

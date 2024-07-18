@@ -3690,10 +3690,7 @@ RPCHelpMan signrawtransactionwithwallet() {
             ParsePrevouts(request.params[1], nullptr, coins);
 
             SigHashType nHashType = ParseSighashString(request.params[2]);
-            if (!nHashType.hasForkId()) {
-                throw JSONRPCError(RPC_INVALID_PARAMETER,
-                                   "Signature must use SIGHASH_FORKID");
-            }
+            EnsureCorrectSighash(nHashType);
 
             // Script verification errors
             std::map<int, std::string> input_errors;
@@ -4614,10 +4611,7 @@ static RPCHelpMan walletprocesspsbt() {
 
             // Get the sighash type
             SigHashType nHashType = ParseSighashString(request.params[2]);
-            if (!nHashType.hasForkId()) {
-                throw JSONRPCError(RPC_INVALID_PARAMETER,
-                                   "Signature must use SIGHASH_FORKID");
-            }
+            EnsureCorrectSighash(nHashType);
 
             // Fill transaction with our data and also sign
             bool sign = request.params[1].isNull()
