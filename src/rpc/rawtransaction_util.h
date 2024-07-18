@@ -16,6 +16,10 @@ class Coin;
 class COutPoint;
 class SigningProvider;
 class UniValue;
+class SigHashType;
+
+/** Make sure we're using a compatible SIGHASH */
+void EnsureCorrectSighash(SigHashType sigHashType);
 
 /**
  * Sign a transaction with the given keystore and previous transactions

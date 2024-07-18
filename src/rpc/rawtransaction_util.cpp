@@ -19,6 +19,20 @@
 #include <univalue.h>
 #include <util/strencodings.h>
 
+void EnsureCorrectSighash(SigHashType sigHashType) {
+    if (GetSignScriptFlags() & SCRIPT_ENABLE_SIGHASH_FORKID) {
+        if (!sigHashType.hasForkId()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER,
+                               "Signature must use SIGHASH_FORKID");
+        }
+    } else {
+        if (sigHashType.hasForkId()) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER,
+                               "Illegal use of SIGHASH_FORKID");
+        }
+    }
+}
+
 CMutableTransaction ConstructTransaction(const CChainParams &params,
                                          const UniValue &inputs_in,
                                          const UniValue &outputs_in,
@@ -264,10 +278,7 @@ void SignTransaction(CMutableTransaction &mtx, const SigningProvider *keystore,
                      const std::map<COutPoint, Coin> &coins,
                      const UniValue &hashType, UniValue &result) {
     SigHashType sigHashType = ParseSighashString(hashType);
-    if (!sigHashType.hasForkId()) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER,
-                           "Signature must use SIGHASH_FORKID");
-    }
+    EnsureCorrectSighash(sigHashType);
 
     // Script verification errors
     std::map<int, std::string> input_errors;
