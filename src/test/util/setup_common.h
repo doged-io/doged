@@ -32,6 +32,7 @@
 #include <type_traits>
 #include <vector>
 
+class arith_uint256;
 class CFeeRate;
 class Config;
 class FastRandomContext;
@@ -333,8 +334,9 @@ struct TestMemPoolEntryHelper {
 
 enum class ScriptError;
 
-// define implicit conversions here so that these types may be used in
-// BOOST_*_EQUAL
+// Make types usable in BOOST_CHECK_*
+std::ostream &operator<<(std::ostream &os, const arith_uint256 &num);
+std::ostream &operator<<(std::ostream &os, const uint160 &num);
 std::ostream &operator<<(std::ostream &os, const uint256 &num);
 std::ostream &operator<<(std::ostream &os, const ScriptError &err);
 
