@@ -1,7 +1,7 @@
 :root {
-    --primary-background: #000c25;
+    --primary-background: #000C25;
     --secondary-background: #000c25;
-    --accent: #00abe7;
+    --accent: #E1C888;
 }
 
 h1,
@@ -235,7 +235,6 @@ table.dataTable.no-footer {
 
 .page_ctn::after {
     content: '';
-    background: url('/assets/network-background2.png') no-repeat;
     position: absolute;
     top: 0;
     right: 0;
@@ -628,7 +627,7 @@ table.dataTable thead .sorting {
     }
 }
 
-/*************************************** ECASH *****************************************************/
+/*************************************** DOGECOIN *****************************************************/
 
 .no-padding {
     padding: 0 !important;
@@ -976,7 +975,7 @@ table.tx-details-table tr:last-child td {
 }
 
 .nextblock-btn {
-    color: #00abe7;
+    color: #fff;
     font-weight: 600;
 }
 
@@ -1708,7 +1707,7 @@ div.dt-buttons button {
 }
 
 div.dt-buttons button:hover {
-    background: #00abe7 !important;
+    background: var(--primary-background) !important;
 }
 
 @media screen and (max-width: 640px) {

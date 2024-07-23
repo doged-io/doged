@@ -1,6 +1,6 @@
-# eCash Block Explorer
+# Dogecoin Block Explorer
 
-A no-frills eCash explorer focused on speed and providing in-depth information
+A no-frills dogecoin explorer focused on speed and providing in-depth information
 
 ## Development
 
