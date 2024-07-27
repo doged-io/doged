@@ -5,6 +5,8 @@
 
 #include <script/sign.h>
 
+#include <chainparams.h>
+#include <consensus/activation.h>
 #include <consensus/amount.h>
 #include <key.h>
 #include <policy/policy.h>
@@ -36,6 +38,12 @@ bool MutableTransactionSignatureCreator::CreateSig(
 
     vchSig.push_back(uint8_t(sigHashType.getRawSigHashType()));
     return true;
+}
+
+uint32_t GetSignScriptFlags() {
+    return IsLegacyScriptRulesEnabled(Params().GetConsensus())
+               ? STANDARD_SCRIPT_VERIFY_FLAGS_LEGACY
+               : STANDARD_SCRIPT_VERIFY_FLAGS;
 }
 
 static bool GetCScript(const SigningProvider &provider,
@@ -228,7 +236,7 @@ bool ProduceSignature(const SigningProvider &provider,
     // Test solution
     sigdata.complete =
         solved && VerifyScript(sigdata.scriptSig, fromPubKey,
-                               STANDARD_SCRIPT_VERIFY_FLAGS, creator.Checker());
+                               GetSignScriptFlags(), creator.Checker());
     return sigdata.complete;
 }
 
@@ -282,8 +290,8 @@ SignatureData DataFromTransaction(const CMutableTransaction &tx,
     // Get signatures
     MutableTransactionSignatureChecker tx_checker(&tx, nIn, txout.nValue);
     SignatureExtractorChecker extractor_checker(data, tx_checker);
-    if (VerifyScript(data.scriptSig, txout.scriptPubKey,
-                     STANDARD_SCRIPT_VERIFY_FLAGS, extractor_checker)) {
+    if (VerifyScript(data.scriptSig, txout.scriptPubKey, GetSignScriptFlags(),
+                     extractor_checker)) {
         data.complete = true;
         return data;
     }
@@ -317,7 +325,7 @@ SignatureData DataFromTransaction(const CMutableTransaction &tx,
                 // a signature and it is valid
                 if (data.signatures.count(CPubKey(pubkey).GetID()) ||
                     extractor_checker.CheckSig(sig, pubkey, next_script,
-                                               STANDARD_SCRIPT_VERIFY_FLAGS)) {
+                                               GetSignScriptFlags())) {
                     last_success_key = i + 1;
                     break;
                 }
@@ -429,9 +437,8 @@ bool IsSolvable(const SigningProvider &provider, const CScript &script) {
     SignatureData sigs;
     if (ProduceSignature(provider, DUMMY_SIGNATURE_CREATOR, script, sigs)) {
         // VerifyScript check is just defensive, and should never fail.
-        bool verified =
-            VerifyScript(sigs.scriptSig, script, STANDARD_SCRIPT_VERIFY_FLAGS,
-                         DUMMY_CHECKER);
+        bool verified = VerifyScript(sigs.scriptSig, script,
+                                     GetSignScriptFlags(), DUMMY_CHECKER);
         assert(verified);
         return true;
     }
@@ -476,9 +483,9 @@ bool SignTransaction(CMutableTransaction &mtx, const SigningProvider *keystore,
         }
 
         ScriptError serror = ScriptError::OK;
-        if (!VerifyScript(
-                txin.scriptSig, prevPubKey, STANDARD_SCRIPT_VERIFY_FLAGS,
-                TransactionSignatureChecker(&txConst, i, amount), &serror)) {
+        if (!VerifyScript(txin.scriptSig, prevPubKey, GetSignScriptFlags(),
+                          TransactionSignatureChecker(&txConst, i, amount),
+                          &serror)) {
             if (serror == ScriptError::INVALID_STACK_OPERATION) {
                 // Unable to sign input and verification failed (possible
                 // attempt to partially sign).
