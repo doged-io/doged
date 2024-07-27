@@ -34,12 +34,13 @@ from test_framework.script import (
     OP_SPLIT,
     OP_XOR,
     CScript,
+    SignatureHash,
     SignatureHashForkId,
     hash160,
 )
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
-from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.util import assert_raises_rpc_error
 
 
 class LegacyScriptRulesTest(BitcoinTestFramework):
@@ -223,8 +224,8 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         spend_tx.vin = [CTxIn(COutPoint(int(txid, 16), checksig_out_idx))]
         pad_tx(spend_tx)
         script = CScript([OP_CHECKSIG])
-        sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
-        txsig = private_key.sign_schnorr(sighash) + b"\x41"
+        (sighash, _) = SignatureHash(script, spend_tx, 0, 0x01)
+        txsig = private_key.sign_schnorr(sighash) + b"\x01"
         spend_tx.vin[0].scriptSig = CScript([txsig, public_key, script])
 
         # Regtest has SCRIPT_VERIFY_NULLFAIL, which comes in handy here
@@ -237,6 +238,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         peer = check_mined_tx_fails(
             node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
         )
+        # Schnorr sigs allowed on XEC with FORKID
+        sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
+        txsig = private_key.sign_schnorr(sighash) + b"\x41"
+        spend_tx.vin[0].scriptSig = CScript([txsig, public_key, script])
         nonlegacy_node.sendrawtransaction(spend_tx.serialize().hex())
         check_mined_tx_success(nonlegacy_node, nonlegacy_peer, spend_tx)
 
@@ -245,8 +250,8 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         spend_tx.vin = [CTxIn(COutPoint(int(txid, 16), checksig_out_idx + 1))]
         pad_tx(spend_tx)
         script = CScript([OP_CHECKSIGVERIFY])
-        sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
-        txsig = private_key.sign_schnorr(sighash) + b"\x41"
+        (sighash, _) = SignatureHash(script, spend_tx, 0, 0x01)
+        txsig = private_key.sign_schnorr(sighash) + b"\x01"
         spend_tx.vin[0].scriptSig = CScript([True, txsig, public_key, script])
 
         assert_raises_rpc_error(
@@ -258,6 +263,9 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         peer = check_mined_tx_fails(
             node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
         )
+        sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
+        txsig = private_key.sign_schnorr(sighash) + b"\x41"
+        spend_tx.vin[0].scriptSig = CScript([True, txsig, public_key, script])
         nonlegacy_node.sendrawtransaction(spend_tx.serialize().hex())
         check_mined_tx_success(nonlegacy_node, nonlegacy_peer, spend_tx)
 

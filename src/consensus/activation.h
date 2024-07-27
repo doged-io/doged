@@ -60,4 +60,7 @@ bool IsAugustoEnabled(const Consensus::Params &params,
 /** Check if Dogecoin Digishield protocol upgrade has activated. */
 bool IsDigishieldEnabled(const Consensus::Params &params, int32_t nHeight);
 
+/** Check if the legacy script rules are active (not based on height) */
+bool IsLegacyScriptRulesEnabled(const Consensus::Params &params);
+
 #endif // BITCOIN_CONSENSUS_ACTIVATION_H
