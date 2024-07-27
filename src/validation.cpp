@@ -48,6 +48,7 @@
 #include <script/script.h>
 #include <script/scriptcache.h>
 #include <script/sigcache.h>
+#include <script/sigops.h>
 #include <shutdown.h>
 #include <tinyformat.h>
 #include <txdb.h>
@@ -1957,13 +1958,17 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
     Amount nFees = Amount::zero();
     int nInputs = 0;
 
+    uint64_t nMaxBlockSigChecks =
+        GetMaxBlockSigChecksCount(options.getExcessiveBlockSize());
+    // Dogecoin: We don't use SigChecks (instead we use SigOps), so we
+    // disable the system by setting the sig checks to an absurd number.
+    nMaxBlockSigChecks = 0x7fffffff;
     // Limit the total executed signature operations in the block, a consensus
     // rule. Tracking during the CPU-consuming part (validation of uncached
     // inputs) is per-input atomic and validation in each thread stops very
     // quickly after the limit is exceeded, so an adversary cannot cause us to
     // exceed the limit by much at all.
-    CheckInputsLimiter nSigChecksBlockLimiter(
-        GetMaxBlockSigChecksCount(options.getExcessiveBlockSize()));
+    CheckInputsLimiter nSigChecksBlockLimiter(nMaxBlockSigChecks);
 
     std::vector<TxSigCheckLimiter> nSigChecksTxLimiters;
     nSigChecksTxLimiters.resize(block.vtx.size() - 1);
@@ -1993,6 +1998,7 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
                              "tx-duplicate");
     }
 
+    uint64_t nSigOps = 0;
     size_t txIndex = 0;
     // nSigChecksRet may be accurate (found in cache) or 0 (checks were
     // deferred into vChecks).
@@ -2001,6 +2007,18 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
         const CTransaction &tx = *ptx;
         const bool isCoinBase = tx.IsCoinBase();
         nInputs += tx.vin.size();
+
+        // CountTxSigOps counts 2 types of sigops:
+        // * legacy (always)
+        // * p2sh (when P2SH enabled in flags and excludes coinbase)
+        nSigOps += CountTxSigOps(tx, view);
+
+        if (nSigOps > MAX_BLOCK_SIGOPS) {
+            state.Invalid(BlockValidationResult::BLOCK_CONSENSUS,
+                          "bad-blk-sigops",
+                          strprintf("%s: too many sigops", __func__));
+            return error("%s: too many sigops", __func__);
+        }
 
         {
             Amount txfee = Amount::zero();

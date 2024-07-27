@@ -74,6 +74,9 @@ DEFAULT_MAX_BLOCK_SIZE = eval(match.group(1))
 # They *should* cause test failures if application code is changed in ways
 # that violate current consensus.
 
+# The maximum allowed number of signature check operations in a block (network rule)
+MAX_BLOCK_SIGOPS = 20000
+
 # The minimum number of max_block_size bytes required per executed signature
 # check operation in a block. I.e. maximum_block_sigchecks = maximum_block_size
 # / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO (network rule).
