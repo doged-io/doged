@@ -44,11 +44,11 @@ input.input_script|get_script %}
                 endif %} {% endif %}
 
                 <div>
-                    <small>{{ input.value|render_sats|safe }} XEC</small>
+                    <small>{{ input.value|render_sats|safe }} DOGE</small>
                 </div>
-                {% when None %} {{ input.value|render_sats|safe }} XEC {% when
+                {% when None %} {{ input.value|render_sats|safe }} DOGE {% when
                 None %} {% endmatch %} {% when None %} {{
-                input.value|render_sats|safe }} XEC {% endmatch %}
+                input.value|render_sats|safe }} DOGE {% endmatch %}
             </div>
         </div>
     </div>

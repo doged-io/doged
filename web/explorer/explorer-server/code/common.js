@@ -1,4 +1,5 @@
 const DEFAULT_ROWS_PER_PAGE = 100;
+const SATS_PER_DOGE = 100000000;
 
 var tzOffset;
 
@@ -71,8 +72,8 @@ function renderAmount(baseAmount, decimals) {
 }
 
 function renderSats(sats) {
-    var coins = sats / 100;
-    var fmt = coins.toFixed('2');
+    var coins = sats / SATS_PER_DOGE;
+    var fmt = coins.toFixed('8');
     var parts = fmt.split('.');
     var integerPart = parseInt(parts[0]);
     var fractPart = parts[1];
@@ -91,7 +92,7 @@ const renderFee = (_value, _type, row) => {
     }
 
     const fee = renderInteger(
-        (row.stats.satsInput - row.stats.satsOutput) / 100,
+        (row.stats.satsInput - row.stats.satsOutput) / SATS_PER_DOGE,
     );
     let markup = '';
 

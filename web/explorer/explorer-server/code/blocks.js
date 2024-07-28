@@ -132,12 +132,6 @@ const dataTable = () => {
                 orderSequence: ['desc', 'asc'],
             },
             {
-                name: 'final',
-                data: 'isFinal',
-                orderable: false,
-                render: renderFinal,
-            },
-            {
                 data: 'hash',
                 orderable: false,
                 className: 'hash',

@@ -17,11 +17,11 @@ block content %}
                         </div>
                     </div>
                     <h4>Balance</h4>
-                    <h2>{{ total_xec|render_sats|safe }} XEC</h2>
+                    <h2>{{ total_xec|render_sats|safe }} DOGE</h2>
 
                     {% if token_dust > 0 %}
                     <h4 class="token-dust">
-                        +{{ token_dust|render_sats|safe }} XEC in token dust
+                        +{{ token_dust|render_sats|safe }} DOGE in token dust
                     </h4>
                     {% endif %}
 
@@ -45,16 +45,7 @@ block content %}
                                         onclick="$('#qr-code-img').attr('src', '/address-qr/{{ sats_address }}'); $('.qr-kind').attr('id', 'selected-address-1'); $('#address').html('{{ sats_address }}');"
                                         }
                                     >
-                                        XEC Address
-                                    </a>
-                                </div>
-
-                                <div class="address2">
-                                    <a
-                                        onclick="$('#qr-code-img').attr('src', '/address-qr/{{ token_address }}'); $('.qr-kind').attr('id', 'selected-address-2');$('#address').html('{{ token_address }}');"
-                                        }
-                                    >
-                                        eToken Address
+                                        DOGE Address
                                     </a>
                                 </div>
 
@@ -119,7 +110,7 @@ block content %}
                             {{ genesis_info.token_name|string_from_lossy_utf8 }}
                         </div>
                         <div class="etoken-row-cell etrc-dust">
-                            +{{ json_balance.sats_amount|render_sats|safe }} XEC
+                            +{{ json_balance.sats_amount|render_sats|safe }} DOGE
                             dust
                         </div>
                         <div class="etoken-row-cell etrc-last">
@@ -172,7 +163,7 @@ block content %}
                         <th data-priority="5">Fee</th>
                         <th data-priority="4">Inputs</th>
                         <th data-priority="4">Outputs</th>
-                        <th data-priority="1">Amount XEC</th>
+                        <th data-priority="1">Amount DOGE</th>
                         <th data-priority="2">Amount Token</th>
                         <th></th>
                     </tr>

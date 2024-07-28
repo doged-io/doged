@@ -121,15 +121,6 @@ import "components/output.html" as output %} {% import
                 </div>
 
                 <div class="tx-details-row">
-                    <div>Final</div>
-                    <div>
-                        {% match tx.block %}{% when Some with (block) %}{% if
-                        block.is_final %}Yes{% else %}No{% endif %}{% when None
-                        %}No{% endmatch %}
-                    </div>
-                </div>
-
-                <div class="tx-details-row">
                     <div>Block</div>
                     <div>
                         {% match tx.block %} {% when Some with (block_meta) %}
@@ -176,19 +167,19 @@ import "components/output.html" as output %} {% import
 
                 <div class="tx-details-row">
                     <div>Total Input</div>
-                    <div>{{ sats_input|render_sats|safe }} XEC</div>
+                    <div>{{ sats_input|render_sats|safe }} DOGE</div>
                 </div>
 
                 <div class="tx-details-row">
                     <div>Total Output</div>
-                    <div>{{ sats_output|render_sats|safe }} XEC</div>
+                    <div>{{ sats_output|render_sats|safe }} DOGE</div>
                 </div>
 
                 <div class="tx-details-row">
                     <div>Fee</div>
                     <div>
                         {{ (sats_input - sats_output)|max(0)|render_sats|safe }}
-                        XEC
+                        DOGE
                     </div>
                 </div>
             </div>
@@ -246,22 +237,12 @@ import "components/output.html" as output %} {% import
                         <h4>Inputs ({{ tx.inputs.len() }})</h4>
                         <div class="time-icons-ctn">
                             <div id="tx_date">{{ timestamp }}</div>
-                            <div class="time-icon hide-time-icon" id="pre_xec">
-                                <img src="/assets/pre-ecash-icon.png" />
-                                <span>Pre-XEC<br />(Nov 15, 2020)</span>
-                            </div>
-
                             <div
                                 class="time-icon hide-time-icon"
                                 id="five_years"
                             >
                                 <img src="/assets/five-years-icon.png" />
                                 <span>Over Five<br />Years Old</span>
-                            </div>
-
-                            <div class="time-icon hide-time-icon" id="pre_bch">
-                                <img src="/assets/pre-bch-icon.png" />
-                                <span>Pre-BCH<br />(Aug 8, 2017)</span>
                             </div>
                         </div>
                     </div>
@@ -326,32 +307,16 @@ import "components/output.html" as output %} {% import
 </script>
 
 <script type="text/javascript">
-    var xec = document.getElementById('pre_xec');
-    var bch = document.getElementById('pre_bch');
     var five = document.getElementById('five_years');
     var txDateObject = document.getElementById('tx_date').textContent;
     var txDate = new Date(txDateObject).getTime() / 1000;
     var today = Date.now() / 1000;
-    var xecDate = 1605441600;
-    var bchDate = 1502193600;
     var fiveYearsAgo = today - 157800000;
-    const checkXecDate = () => {
-        if (txDate < xecDate) {
-            xec.classList.remove('hide-time-icon');
-        } else return;
-    };
-    const checkBchDate = () => {
-        if (txDate < bchDate) {
-            bch.classList.remove('hide-time-icon');
-        } else return;
-    };
     const checkFiveYearDate = () => {
         if (txDate < fiveYearsAgo) {
             five.classList.remove('hide-time-icon');
         } else return;
     };
-    checkXecDate();
-    checkBchDate();
     checkFiveYearDate();
 </script>
 {% endblock %}

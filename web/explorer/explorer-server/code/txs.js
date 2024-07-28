@@ -15,33 +15,19 @@ const renderHash = data => {
 
 var today = Date.now() / 1000;
 var fiveYearsAgo = today - 157800000;
-var xecDate = 1605441600;
-var bchDate = 1502193600;
 
 const renderSize = size => formatByteSize(size);
 
 const renderInput = data => {
     const txDate = data.timestamp;
-    let xecIcon = '';
-    let bchIcon = '';
     let fiveIcon = '';
-    if (txDate < xecDate) {
-        xecIcon =
-            '<div class="age-icon"><img src="/assets/pre-ecash-icon.png" /><span>Pre-XEC<br />(Nov 15, 2020)</span></div>';
-    }
-    if (txDate < bchDate) {
-        bchIcon =
-            '<div class="age-icon"><img src="/assets/pre-bch-icon.png" /><span>Pre-BCH<br />(Aug 8, 2017)</span></div>';
-    }
     if (txDate < fiveYearsAgo) {
         fiveIcon =
             '<div class="age-icon"><img src="/assets/five-years-icon.png" /><span>Over Five<br />Years Old</span></div>';
     }
     return (
         '<div class="age-icons-ctn">' +
-        xecIcon +
         fiveIcon +
-        bchIcon +
         `<div class="input-margin">${data.numInputs}</div></div>`
     );
 };
@@ -57,7 +43,7 @@ const renderOutput = (satsOutput, _type, row) => {
         return renderAmount(row.stats.tokenOutput, row.token.decimals) + ticker;
     }
     return (
-        '<div class="num-col-suffix" data-suffix="XEC">' +
+        '<div class="num-col-suffix" data-suffix="DOGE">' +
         renderSats(row.stats.satsOutput) +
         '</div>'
     );
