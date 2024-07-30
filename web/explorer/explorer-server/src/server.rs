@@ -10,7 +10,7 @@ use bitcoinsuite_chronik_client::proto::{
     token_type, ScriptUtxo, SlpTokenType, TokenInfo, TokenTxType, TokenType,
 };
 use bitcoinsuite_chronik_client::{proto::OutPoint, ChronikClient};
-use bitcoinsuite_core::{CashAddress, Hashed, Sha256d};
+use bitcoinsuite_core::{Hashed, Sha256d};
 use bitcoinsuite_error::Result;
 use chrono::{TimeZone, Utc};
 use eyre::{bail, eyre};
@@ -21,10 +21,11 @@ use crate::{
         block_txs_to_json, calc_tx_stats, tokens_to_json, tx_history_to_json,
     },
     blockchain::{
-        calculate_block_difficulty, cash_addr_to_script_type_payload,
-        from_be_hex, to_be_hex, to_legacy_address,
+        calculate_block_difficulty, doge_addr_to_script_type_payload,
+        from_be_hex, to_be_hex,
     },
     chain::Chain,
+    dogeaddress::DogeAddress,
     server_http::{
         address, address_qr, block, block_height, blocks, data_address_txs,
         data_block_txs, data_blocks, search, serve_files, tx,
@@ -40,8 +41,7 @@ use crate::{
 pub struct Server {
     chronik: ChronikClient,
     base_dir: PathBuf,
-    satoshi_addr_prefix: &'static str,
-    tokens_addr_prefix: &'static str,
+    chain: Chain
 }
 
 impl Server {
@@ -53,12 +53,7 @@ impl Server {
         Ok(Server {
             chronik,
             base_dir,
-            satoshi_addr_prefix: match chain {
-                Chain::Mainnet => "ecash",
-                Chain::Testnet => "ectest",
-                Chain::Regtest => "ecregtest",
-            },
-            tokens_addr_prefix: "etoken",
+            chain
         })
     }
 
@@ -185,9 +180,9 @@ impl Server {
         address: &str,
         query: HashMap<String, String>,
     ) -> Result<JsonTxsResponse> {
-        let address = CashAddress::parse_cow(address.into())?;
+        let address = DogeAddress::parse_cow(address.into(), &self.chain)?;
         let (script_type, script_payload) =
-            cash_addr_to_script_type_payload(&address);
+            doge_addr_to_script_type_payload(&address);
         let script_endpoint = self.chronik.script(script_type, &script_payload);
 
         let page: usize = query
@@ -428,8 +423,7 @@ impl Server {
 
         let transaction_template = TransactionTemplate {
             title: &title,
-            sats_addr_prefix: &self.satoshi_addr_prefix,
-            tokens_addr_prefix: &self.tokens_addr_prefix,
+            chain: &self.chain,
             token_section_title: &token_section_title,
             is_token,
             tx_hex,
@@ -455,16 +449,10 @@ impl Server {
 
 impl Server {
     pub async fn address<'a>(&'a self, address: &str) -> Result<String> {
-        let address = CashAddress::parse_cow(address.into())?;
-        let sats_address = address.with_prefix(self.satoshi_addr_prefix);
-        let token_address = address.with_prefix(self.tokens_addr_prefix);
-
-        let legacy_address = to_legacy_address(&address);
-        let sats_address = sats_address.as_str();
-        let token_address = token_address.as_str();
+        let address = DogeAddress::parse_cow(address.into(), &self.chain)?;
 
         let (script_type, script_payload) =
-            cash_addr_to_script_type_payload(&address);
+            doge_addr_to_script_type_payload(&address);
         let script_endpoint = self.chronik.script(script_type, &script_payload);
         let page_size = 1;
         let address_tx_history =
@@ -543,14 +531,10 @@ impl Server {
 
         let address_template = AddressTemplate {
             tokens,
-            token_utxos,
             token_dust,
             total_xec,
             address_num_txs,
             address: address.as_str(),
-            sats_address,
-            token_address,
-            legacy_address,
             json_balances,
             encoded_tokens,
             encoded_balances,
@@ -610,19 +594,7 @@ impl Server {
     }
 
     pub async fn search(&self, query: &str) -> Result<Redirect> {
-        if let Ok(address) = CashAddress::parse_cow(query.into()) {
-            return Ok(self.redirect(format!("/address/{}", address.as_str())));
-        }
-
-        // Check for prefixless address search
-        if let Ok(address) = format!("{}:{}", self.satoshi_addr_prefix, query)
-            .parse::<CashAddress>()
-        {
-            return Ok(self.redirect(format!("/address/{}", address.as_str())));
-        }
-        if let Ok(address) = format!("{}:{}", self.tokens_addr_prefix, query)
-            .parse::<CashAddress>()
-        {
+        if let Ok(address) = DogeAddress::parse_cow(query.into(), &self.chain) {
             return Ok(self.redirect(format!("/address/{}", address.as_str())));
         }
 

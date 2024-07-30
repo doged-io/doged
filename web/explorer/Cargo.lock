@@ -500,6 +500,7 @@ dependencies = [
  "bitcoinsuite-chronik-client",
  "bitcoinsuite-core",
  "bitcoinsuite-error",
+ "bs58",
  "chrono",
  "chrono-humanize",
  "eyre",

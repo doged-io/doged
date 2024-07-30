@@ -8,7 +8,7 @@ use humansize::{file_size_opts as options, FileSize};
 use maud::{html, PreEscaped};
 use num_format::{Locale, ToFormattedString};
 
-use crate::blockchain;
+use crate::{blockchain, chain::Chain};
 
 fn render_integer_with_small_flag(
     int: i128,
@@ -39,16 +39,9 @@ pub fn check_is_coinbase(outpoint: &OutPoint) -> askama::Result<bool> {
 
 pub fn destination_from_script<'a>(
     script: &'a [u8],
-    is_token: &bool,
-    sats_addr_prefix: &'a str,
-    tokens_addr_prefix: &'a str,
+    chain: &'a Chain,
 ) -> askama::Result<blockchain::Destination<'a>> {
-    let prefix = if *is_token {
-        tokens_addr_prefix
-    } else {
-        sats_addr_prefix
-    };
-    Ok(blockchain::destination_from_script(prefix, script))
+    Ok(blockchain::destination_from_script(script, chain))
 }
 
 pub fn get_script(signature_script: &[u8]) -> askama::Result<String> {

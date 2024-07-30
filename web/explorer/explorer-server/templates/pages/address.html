@@ -7,11 +7,7 @@ block content %}
                 <div class="address-info-ctn">
                     <h4>Address</h4>
                     <div class="address-copy-ctn">
-                        {% if sats_address == address %}
-                        <h2 id="address">{{ sats_address }}</h2>
-                        {% else %}
-                        <h2 id="address">{{ token_address }}</h2>
-                        {% endif %}
+                        <h2 id="address">{{ address }}</h2>
                         <div class="copy-btn" onclick="copyText('address')">
                             <span class="tooltiptext">Copy to clipboard</span>
                         </div>
@@ -35,32 +31,18 @@ block content %}
                     </div>
 
                     <div class="select-address-ctn">
-                        {% if sats_address == address %}
                         <div class="qr-kind" id="selected-address-1">
-                            {% else %}
-                            <div class="qr-kind" id="selected-address-2">
-                                {% endif %}
-                                <div class="address1">
-                                    <a
-                                        onclick="$('#qr-code-img').attr('src', '/address-qr/{{ sats_address }}'); $('.qr-kind').attr('id', 'selected-address-1'); $('#address').html('{{ sats_address }}');"
-                                        }
-                                    >
-                                        DOGE Address
-                                    </a>
-                                </div>
-
-                                <div class="address3">
-                                    <a
-                                        onclick="$('#qr-code-img').attr('src', '/address-qr/{{ legacy_address }}'); $('.qr-kind').attr('id', 'selected-address-3');$('#address').html('{{ legacy_address }}');"
-                                        }
-                                    >
-                                        Legacy Address
-                                    </a>
-                                </div>
+                            <div class="address1">
+                                <a
+                                    onclick="$('#qr-code-img').attr('src', '/address-qr/{{ address }}'); $('.qr-kind').attr('id', 'selected-address-1'); $('#address').html('{{ address }}');"
+                                    }
+                                >
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
                 {% if total_xec > 0 %}
                 <div class="address-ctn-divider"></div>

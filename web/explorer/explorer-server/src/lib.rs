@@ -1,6 +1,7 @@
 mod api;
 mod blockchain;
 pub mod chain;
+pub mod dogeaddress;
 pub mod config;
 pub mod server;
 pub mod server_error;

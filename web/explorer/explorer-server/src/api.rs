@@ -3,13 +3,11 @@ use std::collections::HashMap;
 use bitcoinsuite_chronik_client::proto::{
     token_type, Block, GenesisInfo, TokenInfo, TokenType, Tx, TxHistoryPage,
 };
-use bitcoinsuite_core::CashAddress;
 use bitcoinsuite_error::Result;
 use eyre::eyre;
 
 use crate::{
-    blockchain::to_be_hex,
-    server_primitives::{JsonToken, JsonTx, JsonTxStats},
+    blockchain::to_be_hex, dogeaddress::DogeAddress, server_primitives::{JsonToken, JsonTx, JsonTxStats}
 };
 
 pub fn token_type_to_int(token_type_in: &Option<TokenType>) -> Result<i32> {
@@ -54,7 +52,7 @@ pub fn tokens_to_json(
 }
 
 pub fn tx_history_to_json(
-    address: &CashAddress,
+    address: &DogeAddress,
     address_tx_history: TxHistoryPage,
     json_tokens: &HashMap<String, JsonToken>,
 ) -> Result<Vec<JsonTx>> {
