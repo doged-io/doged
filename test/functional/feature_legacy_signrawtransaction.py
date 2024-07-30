@@ -12,8 +12,8 @@ from test_framework.script import (
     OP_EQUALVERIFY,
     OP_HASH160,
     CScript,
-    hash160,
 )
+from test_framework.hash import hash160
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_raises_rpc_error
 from test_framework.wallet_util import bytes_to_wif

@@ -27,10 +27,12 @@ from test_framework.script import (
     OP_RETURN,
     OP_TRUE,
     CScript,
+)
+from test_framework.signature_hash import (
     SignatureHash,
     SignatureHashForkId,
-    hash160,
 )
+from test_framework.hash import hash160
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
 from test_framework.util import assert_raises_rpc_error

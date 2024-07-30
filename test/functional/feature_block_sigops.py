@@ -31,13 +31,15 @@ from test_framework.script import (
     OP_EQUAL,
     OP_HASH160,
     OP_TRUE,
+    CScript,
+    count_tx_sigops,
+)
+from test_framework.signature_hash import (
     SIGHASH_ALL,
     SIGHASH_FORKID,
-    CScript,
     SignatureHashForkId,
-    count_tx_sigops,
-    hash160,
 )
+from test_framework.hash import hash160
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
 from test_framework.util import assert_equal
