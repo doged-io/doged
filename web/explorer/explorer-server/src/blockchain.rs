@@ -1,8 +1,9 @@
 use bitcoinsuite_chronik_client::ScriptType;
-use bitcoinsuite_core::{
-    AddressType, CashAddress, Hashed, Op, Script, ShaRmd160,
-};
+use bitcoinsuite_core::{AddressType, Hashed, Op, Script, ShaRmd160};
 use bitcoinsuite_error::Result;
+
+use crate::chain::Chain;
+use crate::dogeaddress::DogeAddress;
 
 pub fn to_be_hex(slice: &[u8]) -> String {
     let mut vec = slice.to_vec();
@@ -19,14 +20,14 @@ pub fn from_be_hex(string: &str) -> Result<Vec<u8>> {
 #[derive(Clone, Debug)]
 pub enum Destination<'a> {
     Nulldata(Vec<Op>),
-    Address(CashAddress<'a>),
+    Address(DogeAddress<'a>),
     P2PK(Vec<u8>),
     Unknown(Vec<u8>),
 }
 
 pub fn destination_from_script<'a>(
-    prefix: &'a str,
     script: &[u8],
+    chain: &'a Chain,
 ) -> Destination<'a> {
     const OP_RETURN: u8 = 106;
     const OP_DUP: u8 = 118;
@@ -37,18 +38,26 @@ pub fn destination_from_script<'a>(
 
     match script {
         [OP_DUP, OP_HASH160, 20, hash @ .., OP_EQUALVERIFY, OP_CHECKSIG] => {
-            Destination::Address(CashAddress::from_hash(
-                prefix,
+            DogeAddress::from_hash(
                 AddressType::P2PKH,
                 ShaRmd160::from_slice(hash).expect("Invalid hash"),
-            ))
+                chain,
+            )
+            .map_or_else(
+                |_| Destination::Unknown(script.to_vec()),
+                |addr| Destination::Address(addr),
+            )
         }
         [OP_HASH160, 20, hash @ .., OP_EQUAL] => {
-            Destination::Address(CashAddress::from_hash(
-                prefix,
+            DogeAddress::from_hash(
                 AddressType::P2SH,
                 ShaRmd160::from_slice(hash).expect("Invalid hash"),
-            ))
+                chain,
+            )
+            .map_or_else(
+                |_| Destination::Unknown(script.to_vec()),
+                |addr| Destination::Address(addr),
+            )
         }
         [33, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
         [65, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
@@ -61,27 +70,6 @@ pub fn destination_from_script<'a>(
     }
 }
 
-pub fn to_legacy_address(cash_address: &CashAddress) -> String {
-    use bitcoin::{
-        hashes::{hash160, Hash},
-        PubkeyHash, ScriptHash,
-    };
-    let hash = hash160::Hash::from_slice(cash_address.hash().as_slice())
-        .expect("Impossible");
-    let script = match cash_address.addr_type() {
-        AddressType::P2PKH => {
-            bitcoin::Script::new_p2pkh(&PubkeyHash::from_hash(hash))
-        }
-        AddressType::P2SH => {
-            bitcoin::Script::new_p2sh(&ScriptHash::from_hash(hash))
-        }
-    };
-    let address =
-        bitcoin::Address::from_script(&script, bitcoin::Network::Bitcoin)
-            .expect("Invalid address");
-    address.to_string()
-}
-
 pub fn calculate_block_difficulty(n_bits: u32) -> f64 {
     let max_target = 0x00ffff as f64 * 2f64.powi(8 * (0x1d - 3));
     let n_size = n_bits >> 24;
@@ -90,8 +78,8 @@ pub fn calculate_block_difficulty(n_bits: u32) -> f64 {
     max_target / (n_word * 2f64.powi(8 * (n_size as i32 - 3)))
 }
 
-pub fn cash_addr_to_script_type_payload(
-    addr: &CashAddress,
+pub fn doge_addr_to_script_type_payload(
+    addr: &DogeAddress,
 ) -> (ScriptType, [u8; 20]) {
     let script_type = match addr.addr_type() {
         AddressType::P2PKH => ScriptType::P2pkh,
