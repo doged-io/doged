@@ -207,8 +207,8 @@ pub fn render_integer_with_commas(int: &u64) -> askama::Result<String> {
 }
 
 pub fn render_sats(sats: &i64) -> askama::Result<String> {
-    let coins = *sats as f64 / 100.0;
-    let fmt = format!("{:.2}", coins);
+    let coins = *sats as f64 / 100_000_000.0;
+    let fmt = format!("{:.8}", coins);
     let mut parts = fmt.split('.');
     let integer_part: u64 = parts.next().unwrap().parse().unwrap();
     let fract_part = parts.next().unwrap();

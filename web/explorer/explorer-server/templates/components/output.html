@@ -31,11 +31,11 @@ output.output_script|get_script %}
                 endif %} {% endif %}
 
                 <div>
-                    <small>{{ output.value|render_sats|safe }} XEC</small>
+                    <small>{{ output.value|render_sats|safe }} DOGE</small>
                 </div>
-                {% when None %} {{ output.value|render_sats|safe }} XEC {%
+                {% when None %} {{ output.value|render_sats|safe }} DOGE {%
                 endmatch %} {% when None %} {{ output.value|render_sats|safe }}
-                XEC {% endmatch %}
+                DOGE {% endmatch %}
             </div>
         </div>
 
