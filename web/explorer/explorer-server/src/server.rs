@@ -41,7 +41,7 @@ use crate::{
 pub struct Server {
     chronik: ChronikClient,
     base_dir: PathBuf,
-    chain: Chain
+    chain: Chain,
 }
 
 impl Server {
@@ -53,7 +53,7 @@ impl Server {
         Ok(Server {
             chronik,
             base_dir,
-            chain
+            chain,
         })
     }
 
@@ -358,13 +358,11 @@ impl Server {
                             _ => ("Unknown", "Unknown")
                         }
                     }
-                    token_type::TokenType::Alp(_) => {
-                        (
-                            "ALP",
-                            "https://ecashbuilders.notion.site/\
-                            ALP-a862a4130877448387373b9e6a93dd97"
-                        )
-                    }
+                    token_type::TokenType::Alp(_) => (
+                        "ALP",
+                        "https://ecashbuilders.notion.site/\
+                            ALP-a862a4130877448387373b9e6a93dd97",
+                    ),
                 };
 
                 (

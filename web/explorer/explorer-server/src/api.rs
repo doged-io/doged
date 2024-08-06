@@ -7,7 +7,9 @@ use bitcoinsuite_error::Result;
 use eyre::eyre;
 
 use crate::{
-    blockchain::to_be_hex, dogeaddress::DogeAddress, server_primitives::{JsonToken, JsonTx, JsonTxStats}
+    blockchain::to_be_hex,
+    dogeaddress::DogeAddress,
+    server_primitives::{JsonToken, JsonTx, JsonTxStats},
 };
 
 pub fn token_type_to_int(token_type_in: &Option<TokenType>) -> Result<i32> {

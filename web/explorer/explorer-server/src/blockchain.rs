@@ -48,17 +48,15 @@ pub fn destination_from_script<'a>(
                 |addr| Destination::Address(addr),
             )
         }
-        [OP_HASH160, 20, hash @ .., OP_EQUAL] => {
-            DogeAddress::from_hash(
-                AddressType::P2SH,
-                ShaRmd160::from_slice(hash).expect("Invalid hash"),
-                chain,
-            )
-            .map_or_else(
-                |_| Destination::Unknown(script.to_vec()),
-                |addr| Destination::Address(addr),
-            )
-        }
+        [OP_HASH160, 20, hash @ .., OP_EQUAL] => DogeAddress::from_hash(
+            AddressType::P2SH,
+            ShaRmd160::from_slice(hash).expect("Invalid hash"),
+            chain,
+        )
+        .map_or_else(
+            |_| Destination::Unknown(script.to_vec()),
+            |addr| Destination::Address(addr),
+        ),
         [33, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
         [65, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
         [OP_RETURN, data @ ..] => {

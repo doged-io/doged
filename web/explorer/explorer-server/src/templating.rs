@@ -6,7 +6,9 @@ use bitcoinsuite_chronik_client::proto::{
 };
 use chrono::{DateTime, Utc};
 
-use crate::{blockchain::Destination, chain::Chain, server_primitives::JsonBalance};
+use crate::{
+    blockchain::Destination, chain::Chain, server_primitives::JsonBalance,
+};
 
 mod filters;
 
@@ -73,4 +75,3 @@ pub struct AddressTemplate<'a> {
 pub struct ErrorTemplate {
     pub message: String,
 }
-

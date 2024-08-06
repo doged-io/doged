@@ -1,7 +1,8 @@
+use std::borrow::Cow;
+
 use bitcoinsuite_core::{
     AddressType, BytesMut, Hashed, Script, Sha256d, ShaRmd160,
 };
-use std::borrow::Cow;
 use thiserror::Error;
 
 use crate::chain::Chain;
