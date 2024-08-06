@@ -6,7 +6,9 @@ use bitcoinsuite_chronik_client::proto::{
 };
 use chrono::{DateTime, Utc};
 
-use crate::{blockchain::Destination, server_primitives::JsonBalance};
+use crate::{
+    blockchain::Destination, chain::Chain, server_primitives::JsonBalance,
+};
 
 mod filters;
 
@@ -32,8 +34,7 @@ pub struct BlockTemplate<'a> {
 #[template(path = "pages/transaction.html")]
 pub struct TransactionTemplate<'a> {
     pub title: &'a str,
-    pub sats_addr_prefix: &'a str,
-    pub tokens_addr_prefix: &'a str,
+    pub chain: &'a Chain,
     pub token_section_title: &'a str,
     pub is_token: bool,
     pub tx_hex: &'a str,
@@ -64,7 +65,6 @@ pub struct AddressTemplate<'a> {
     pub address: &'a str,
     pub sats_address: &'a str,
     pub token_address: &'a str,
-    pub legacy_address: String,
     pub json_balances: HashMap<String, JsonBalance>,
     pub encoded_tokens: String,
     pub encoded_balances: String,
