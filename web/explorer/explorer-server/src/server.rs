@@ -289,7 +289,7 @@ impl Server {
                 (format!("{} Transaction", token_ticker).into(), true)
             }
             None => match &tx.token_failed_parsings.get(0) {
-                None => ("Doge Transaction".into(), false),
+                None => ("Dogecoin Transaction".into(), false),
                 Some(_) => ("Invalid eToken Transaction".into(), true),
             },
         };
