@@ -213,6 +213,7 @@ static bool rest_headers(Config &config, const std::any &context,
     const CBlockIndex *tip = nullptr;
     std::vector<const CBlockIndex *> headers;
     headers.reserve(count);
+
     {
         ChainstateManager *maybe_chainman = GetChainman(context, req);
         if (!maybe_chainman) {
@@ -230,47 +231,51 @@ static bool rest_headers(Config &config, const std::any &context,
             }
             pindex = active_chain.Next(pindex);
         }
+
+        switch (rf) {
+            case RetFormat::BINARY: {
+                CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
+                for (const CBlockIndex *pindex : headers) {
+                    ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
+                }
+
+                std::string binaryHeader = ssHeader.str();
+                req->WriteHeader("Content-Type", "application/octet-stream");
+                req->WriteReply(HTTP_OK, binaryHeader);
+                return true;
+            }
+
+            case RetFormat::HEX: {
+                CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
+                for (const CBlockIndex *pindex : headers) {
+                    ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
+                }
+
+                std::string strHex = HexStr(ssHeader) + "\n";
+                req->WriteHeader("Content-Type", "text/plain");
+                req->WriteReply(HTTP_OK, strHex);
+                return true;
+            }
+            case RetFormat::JSON:
+                // handle below
+                break;
+            default: {
+                return RESTERR(
+                    req, HTTP_NOT_FOUND,
+                    "output format not found (available: .bin, .hex, .json)");
+            }
+        }
     }
 
-    switch (rf) {
-        case RetFormat::BINARY: {
-            CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
-            for (const CBlockIndex *pindex : headers) {
-                ssHeader << pindex->GetBlockHeader();
-            }
-
-            std::string binaryHeader = ssHeader.str();
-            req->WriteHeader("Content-Type", "application/octet-stream");
-            req->WriteReply(HTTP_OK, binaryHeader);
-            return true;
+    {
+        UniValue jsonHeaders(UniValue::VARR);
+        for (const CBlockIndex *pindex : headers) {
+            jsonHeaders.push_back(blockheaderToJSON(tip, pindex));
         }
-
-        case RetFormat::HEX: {
-            CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
-            for (const CBlockIndex *pindex : headers) {
-                ssHeader << pindex->GetBlockHeader();
-            }
-
-            std::string strHex = HexStr(ssHeader) + "\n";
-            req->WriteHeader("Content-Type", "text/plain");
-            req->WriteReply(HTTP_OK, strHex);
-            return true;
-        }
-        case RetFormat::JSON: {
-            UniValue jsonHeaders(UniValue::VARR);
-            for (const CBlockIndex *pindex : headers) {
-                jsonHeaders.push_back(blockheaderToJSON(tip, pindex));
-            }
-            std::string strJSON = jsonHeaders.write() + "\n";
-            req->WriteHeader("Content-Type", "application/json");
-            req->WriteReply(HTTP_OK, strJSON);
-            return true;
-        }
-        default: {
-            return RESTERR(
-                req, HTTP_NOT_FOUND,
-                "output format not found (available: .bin, .hex, .json)");
-        }
+        std::string strJSON = jsonHeaders.write() + "\n";
+        req->WriteHeader("Content-Type", "application/json");
+        req->WriteReply(HTTP_OK, strJSON);
+        return true;
     }
 }
 

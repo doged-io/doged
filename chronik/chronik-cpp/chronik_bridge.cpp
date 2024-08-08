@@ -281,6 +281,13 @@ rust::Vec<uint8_t> ChronikBridge::load_raw_tx(uint32_t file_num,
     return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(raw_tx));
 }
 
+rust::Vec<uint8_t>
+ChronikBridge::get_block_header(const CBlockIndex &index) const {
+    CDataStream ser_header{SER_NETWORK, PROTOCOL_VERSION};
+    ser_header << index.GetBlockHeader(m_node.chainman->m_blockman);
+    return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(ser_header));
+}
+
 Tx bridge_tx(const CTransaction &tx, const std::vector<::Coin> &spent_coins) {
     return BridgeTx(false, tx, spent_coins);
 }
@@ -387,14 +394,6 @@ BlockInfo get_block_info(const CBlockIndex &bindex) {
         .hash = chronik::util::HashToArray(bindex.GetBlockHash()),
         .height = bindex.nHeight,
     };
-}
-
-std::array<uint8_t, 80> get_block_header(const CBlockIndex &index) {
-    CDataStream ser_header{SER_NETWORK, PROTOCOL_VERSION};
-    ser_header << index.GetBlockHeader();
-    std::array<uint8_t, 80> array;
-    std::copy_n(MakeUCharSpan(ser_header).begin(), 80, array.begin());
-    return array;
 }
 
 const CBlockIndex &get_block_ancestor(const CBlockIndex &index,

@@ -221,7 +221,7 @@ BOOST_FIXTURE_TEST_CASE(test_get_block_ancestor, TestChain100Setup) {
     // Block 99 is the prev of the tip
     BOOST_CHECK_EQUAL(
         chronik_bridge::get_block_ancestor(tip, 99).GetBlockHash(),
-        tip.GetBlockHeader().hashPrevBlock);
+        tip.pprev->GetBlockHash());
 
     // Genesis block is block 0
     BOOST_CHECK_EQUAL(chronik_bridge::get_block_ancestor(tip, 0).GetBlockHash(),
@@ -257,14 +257,14 @@ BOOST_FIXTURE_TEST_CASE(test_get_block_info, TestChain100Setup) {
 BOOST_FIXTURE_TEST_CASE(test_get_block_header, TestChain100Setup) {
     LOCK(::cs_main);
     ChainstateManager &chainman = *Assert(m_node.chainman);
+    const chronik_bridge::ChronikBridge bridge(m_node);
     const CBlockIndex &tip = *chainman.ActiveTip();
 
-    BOOST_CHECK_EQUAL(
-        HexStr(chronik_bridge::get_block_header(*tip.GetAncestor(0))),
-        "0100000000000000000000000000000000000000000000000000000000000000000000"
-        "00696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5bdae5"
-        "494dffff7f2002000000");
-    BOOST_CHECK_EQUAL(HexStr(chronik_bridge::get_block_header(tip)),
+    BOOST_CHECK_EQUAL(HexStr(bridge.get_block_header(*tip.GetAncestor(0))),
+                      "01000000000000000000000000000000000000000000000000000000"
+                      "0000000000000000696ad20e2dd4365c7459b4a4a5af743d5e92c6da"
+                      "3229e6532cd605f6533f2a5bdae5494dffff7f2002000000");
+    BOOST_CHECK_EQUAL(HexStr(bridge.get_block_header(tip)),
                       "04006200f135310383b8e7d16e4d33d2fc2cc9e0205552c81b74eafe"
                       "bb6f49822c739694af76957a2607cb105bb2a8f4ec222e2b8efe00c2"
                       "dd843b016fec9e31150e229773184d5fffff7f2002000000");
