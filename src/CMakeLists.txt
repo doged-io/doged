@@ -553,6 +553,7 @@ add_library(common
 	netbase.cpp
 	outputtype.cpp
 	policy/policy.cpp
+	primitives/auxpow.cpp
 	primitives/baseheader.cpp
 	primitives/block.cpp
 	protocol.cpp
