@@ -826,6 +826,51 @@ bool BlockManager::ReadBlockFromDisk(CBlock &block,
     return true;
 }
 
+bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
+                                           const FlatFilePos &pos) const {
+    header.SetNull();
+
+    // Open history file to read
+    CAutoFile filein(OpenBlockFile(pos, true), SER_DISK, CLIENT_VERSION);
+    if (filein.IsNull()) {
+        return error("ReadBlockHeaderFromDisk: OpenBlockFile failed for %s",
+                     pos.ToString());
+    }
+
+    // Read header
+    try {
+        filein >> header;
+    } catch (const std::exception &e) {
+        return error("%s: Deserialize or I/O error - %s at %s", __func__,
+                     e.what(), pos.ToString());
+    }
+
+    // Check the header
+    if (!CheckAuxProofOfWork(header, GetConsensus())) {
+        return error("ReadBlockHeaderFromDisk: Errors in block header at %s",
+                     pos.ToString());
+    }
+
+    return true;
+}
+
+bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
+                                           const CBlockIndex &index) const {
+    const FlatFilePos block_pos{WITH_LOCK(cs_main, return index.GetBlockPos())};
+
+    if (!ReadBlockHeaderFromDisk(header, block_pos)) {
+        return false;
+    }
+
+    if (header.GetHash() != index.GetBlockHash()) {
+        return error("ReadBlockHeaderFromDisk(CBlock&, CBlockIndex*): "
+                     "GetHash() doesn't match index for %s at %s",
+                     index.ToString(), block_pos.ToString());
+    }
+
+    return true;
+}
+
 bool BlockManager::ReadTxFromDisk(CMutableTransaction &tx,
                                   const FlatFilePos &pos) const {
     // Open history file to read
