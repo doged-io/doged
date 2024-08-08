@@ -59,4 +59,49 @@ BOOST_AUTO_TEST_CASE(VersionWithAuxPow_test) {
     BOOST_CHECK_EQUAL(VersionWithAuxPow(0xffff01ab, true), 0xffff01ab);
 }
 
+BOOST_AUTO_TEST_CASE(VersionLowBits_test) {
+    BOOST_CHECK_EQUAL(VersionLowBits(0), 0);
+    BOOST_CHECK_EQUAL(VersionLowBits(1), 1);
+    BOOST_CHECK_EQUAL(VersionLowBits(0xab), 0xab);
+    BOOST_CHECK_EQUAL(VersionLowBits(0x100), 0);
+    BOOST_CHECK_EQUAL(VersionLowBits(0x6200ab), 0xab);
+    BOOST_CHECK_EQUAL(VersionLowBits(0x6201ab), 0xab);
+    BOOST_CHECK_EQUAL(VersionLowBits(0xffff0100), 0x00);
+    BOOST_CHECK_EQUAL(VersionLowBits(0xffff01ab), 0xab);
+}
+
+BOOST_AUTO_TEST_CASE(VersionChainId_test) {
+    BOOST_CHECK_EQUAL(VersionChainId(0), 0);
+    BOOST_CHECK_EQUAL(VersionChainId(1), 0);
+    BOOST_CHECK_EQUAL(VersionChainId(0xab), 0);
+    BOOST_CHECK_EQUAL(VersionChainId(0x100), 0);
+    BOOST_CHECK_EQUAL(VersionChainId(0x6200ab), AUXPOW_CHAIN_ID);
+    BOOST_CHECK_EQUAL(VersionChainId(0x6201ab), AUXPOW_CHAIN_ID);
+    BOOST_CHECK_EQUAL(VersionChainId(0xffff0100), 0xffff);
+    BOOST_CHECK_EQUAL(VersionChainId(0xffff01ab), 0xffff);
+}
+
+BOOST_AUTO_TEST_CASE(VersionHasAuxPow_test) {
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0), false);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(1), false);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0xab), false);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0x100), true);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0x6200ab), false);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0x6201ab), true);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0xffff0100), true);
+    BOOST_CHECK_EQUAL(VersionHasAuxPow(0xffff01ab), true);
+}
+
+BOOST_AUTO_TEST_CASE(VersionIsLegacy_test) {
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(1), true);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(2), true);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(3), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0x100), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0x6200ab), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0x6201ab), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0xffff0100), false);
+    BOOST_CHECK_EQUAL(VersionIsLegacy(0xffff01ab), false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

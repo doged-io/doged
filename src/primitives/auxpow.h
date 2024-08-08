@@ -36,4 +36,37 @@ int32_t MakeVersionWithChainId(uint32_t nChainId, uint32_t nLowVersionBits);
  */
 int32_t VersionWithAuxPow(uint32_t nVersion, bool hasAuxPow);
 
+/**
+ * Extract the low version bits, which are interpreted as the "traditional"
+ * Bitcoin version. The upper bits are used to signal presence of AuxPow and
+ * to set the chain ID.
+ */
+inline uint32_t VersionLowBits(int32_t nVersion) {
+    return nVersion & (VERSION_AUXPOW_BIT - 1);
+}
+
+/**
+ * Extract the chain ID from the nVersion.
+ */
+inline uint32_t VersionChainId(int32_t nVersion) {
+    return uint32_t(nVersion) >> VERSION_CHAIN_ID_BIT_POS;
+}
+
+/**
+ * Check if the auxpow flag is set in nVersion.
+ */
+inline bool VersionHasAuxPow(int32_t nVersion) {
+    return nVersion & VERSION_AUXPOW_BIT;
+}
+
+/**
+ * Check whether this is a "legacy" block without chain ID.
+ */
+inline bool VersionIsLegacy(int32_t nVersion) {
+    return nVersion == 1
+           // Dogecoin: We have a random v2 block with no AuxPoW, treat as
+           // legacy
+           || nVersion == 2;
+}
+
 #endif // BITCOIN_PRIMITIVES_AUXPOW_H
