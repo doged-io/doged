@@ -29,7 +29,12 @@ Start three nodes:
       isn't buried by at least two weeks' work.
 """
 
-from test_framework.blocktools import COINBASE_MATURITY, create_block, create_coinbase
+from test_framework.blocktools import (
+    COINBASE_MATURITY,
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+)
 from test_framework.key import ECKey
 from test_framework.messages import (
     CBlockHeader,
@@ -139,7 +144,7 @@ class AssumeValidTest(BitcoinTestFramework):
         # Bury the assumed valid block 2100 deep
         for _ in range(2100):
             block = create_block(self.tip, create_coinbase(height), self.block_time)
-            block.nVersion = 4
+            block.nVersion = VERSION_CHAIN_ID_BITS | 4
             block.solve()
             self.blocks.append(block)
             self.tip = block.sha256

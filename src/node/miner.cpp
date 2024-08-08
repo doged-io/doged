@@ -23,6 +23,7 @@
 #include <policy/policy.h>
 #include <policy/settings.h>
 #include <pow/pow.h>
+#include <primitives/auxpow.h>
 #include <primitives/transaction.h>
 #include <timedata.h>
 #include <util/moneystr.h>
@@ -152,7 +153,9 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios
     if (chainParams.MineBlocksOnDemand()) {
-        pblock->nVersion = gArgs.GetIntArg("-blockversion", pblock->nVersion);
+        pblock->nVersion = MakeVersionWithChainId(
+            AUXPOW_CHAIN_ID,
+            gArgs.GetIntArg("-blockversion", VersionLowBits(pblock->nVersion)));
     }
 
     pblock->nTime = TicksSinceEpoch<std::chrono::seconds>(GetAdjustedTime());

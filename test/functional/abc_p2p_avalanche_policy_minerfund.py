@@ -5,7 +5,11 @@
 import random
 
 from test_framework.avatools import can_find_inv_in_poll, get_ava_p2p_interface
-from test_framework.blocktools import create_block, create_coinbase
+from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+)
 from test_framework.cashaddr import decode
 from test_framework.messages import (
     XEC,
@@ -109,7 +113,10 @@ class AvalancheMinerFundTest(BitcoinTestFramework):
             # Create a new block paying to the specified miner fund
             cb = create_cb_pay_to_address(miner_fund_addr, miner_fund_amount)
             block = create_block(
-                int(tip, 16), cb, node.getblock(tip)["time"] + 1, version=4
+                int(tip, 16),
+                cb,
+                node.getblock(tip)["time"] + 1,
+                version=VERSION_CHAIN_ID_BITS | 4,
             )
             block.solve()
             node.submitblock(ToHex(block))

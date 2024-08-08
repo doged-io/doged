@@ -3,10 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <consensus/params.h>
+#include <primitives/auxpow.h>
 #include <versionbits.h>
 
 int32_t ComputeBlockVersion(const CBlockIndex *pindexPrev,
                             const Consensus::Params &params) {
-    // Clear the last 4 bits (miner fund activation).
-    return VERSIONBITS_TOP_BITS & ~uint32_t(0x0f);
+    // Set valid auxpow version
+    return MakeVersionWithChainId(AUXPOW_CHAIN_ID, /*nLowVersionBits=*/0x04);
 }

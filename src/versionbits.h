@@ -10,9 +10,6 @@
 
 #include <map>
 
-/** What bits to set in version for versionbits blocks */
-static const int32_t VERSIONBITS_TOP_BITS = 0x20000000UL;
-
 /**
  * Determine what nVersion a new block should use
  */

@@ -9,10 +9,12 @@ from test_framework.address import (
     SCRIPTSIG_OP_TRUE,
 )
 from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
     make_conform_to_ctor,
 )
+from test_framework.hash import hash160
 from test_framework.key import ECKey
 from test_framework.messages import COutPoint, CTransaction, CTxIn, CTxOut
 from test_framework.p2p import P2PDataStore
@@ -28,11 +30,7 @@ from test_framework.script import (
     OP_TRUE,
     CScript,
 )
-from test_framework.signature_hash import (
-    SignatureHash,
-    SignatureHashForkId,
-)
-from test_framework.hash import hash160
+from test_framework.signature_hash import SignatureHash, SignatureHashForkId
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
 from test_framework.util import assert_raises_rpc_error
@@ -64,7 +62,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
                 int(node.getbestblockhash(), 16),
                 create_coinbase(node.getblockcount() + 1),
             )
-            block.nVersion = 4
+            block.nVersion = VERSION_CHAIN_ID_BITS | 4
             block.vtx += txs
             make_conform_to_ctor(block)
             block.hashMerkleRoot = block.calc_merkle_root()

@@ -50,6 +50,9 @@ MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60
 # (network rule)
 COINBASE_MATURITY = 100
 
+# Bits for the nVersion chain ID for Dogecoin
+VERSION_CHAIN_ID_BITS = 0x620000
+
 
 def create_block(
     hashprev: Optional[int] = None,

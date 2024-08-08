@@ -10,13 +10,15 @@
 import copy
 from decimal import Decimal
 
-from test_framework.blocktools import TIME_GENESIS_BLOCK, create_coinbase
+from test_framework.blocktools import (
+    TIME_GENESIS_BLOCK,
+    VERSION_CHAIN_ID_BITS,
+    create_coinbase,
+)
 from test_framework.messages import BLOCK_HEADER_SIZE, CBlock, CBlockHeader
 from test_framework.p2p import P2PDataStore
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
-
-VERSIONBITS_TOP_BITS = 0x20000000
 
 
 def assert_template(node, block, expect, rehash=True):
@@ -47,12 +49,16 @@ class MiningTest(BitcoinTestFramework):
         assert_equal(mining_info["currentblocksize"], 1000)
 
         self.log.info("test blockversion")
-        self.restart_node(0, extra_args=[f"-mocktime={t}", "-blockversion=1337"])
+        self.restart_node(0, extra_args=[f"-mocktime={t}", f"-blockversion={0x37}"])
         self.connect_nodes(0, 1)
-        assert_equal(1337, self.nodes[0].getblocktemplate()["version"])
+        assert_equal(
+            VERSION_CHAIN_ID_BITS | 0x37, self.nodes[0].getblocktemplate()["version"]
+        )
         self.restart_node(0, extra_args=[f"-mocktime={t}"])
         self.connect_nodes(0, 1)
-        assert_equal(VERSIONBITS_TOP_BITS, self.nodes[0].getblocktemplate()["version"])
+        assert_equal(
+            VERSION_CHAIN_ID_BITS | 4, self.nodes[0].getblocktemplate()["version"]
+        )
         self.restart_node(0)
         self.connect_nodes(0, 1)
 

@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <pow/auxpow.h>
+#include <pow/pow.h>
 #include <primitives/auxpow.h>
 
 #include <test/util/setup_common.h>
@@ -102,6 +104,70 @@ BOOST_AUTO_TEST_CASE(VersionIsLegacy_test) {
     BOOST_CHECK_EQUAL(VersionIsLegacy(0x6201ab), false);
     BOOST_CHECK_EQUAL(VersionIsLegacy(0xffff0100), false);
     BOOST_CHECK_EQUAL(VersionIsLegacy(0xffff01ab), false);
+}
+
+void SolveBlock(CBlockHeader &block, const Consensus::Params &params) {
+    while (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
+        ++block.nNonce;
+    }
+}
+
+BOOST_AUTO_TEST_CASE(CheckAuxProofOfWork_nVersion_test) {
+    const auto chainParams =
+        CreateChainParams(*m_node.args, CBaseChainParams::REGTEST);
+    const Consensus::Params &params = chainParams->GetConsensus();
+
+    CBlockHeader header;
+    header.nBits = 0x207fffff;
+
+    header.nVersion = 0; // not allowed
+    SolveBlock(header, params);
+    BOOST_CHECK(!CheckAuxProofOfWork(header, params));
+
+    header.nVersion = 1; // allowed
+    SolveBlock(header, params);
+    BOOST_CHECK(CheckAuxProofOfWork(header, params));
+
+    header.nVersion = 2; // allowed
+    SolveBlock(header, params);
+    BOOST_CHECK(CheckAuxProofOfWork(header, params));
+
+    header.nVersion = 3; // not allowed
+    SolveBlock(header, params);
+    BOOST_CHECK(!CheckAuxProofOfWork(header, params));
+
+    // With chain ID set, all numbers 0-0xffff allowed.
+    // Fixed list is just to speed up the test.
+    std::vector<uint32_t> test_bits = {
+        0,      1,      2,      3,      4,      5,      6,      7,
+        8,      9,      10,     11,     12,     13,     14,     15,
+        0x10,   0x15,   0x20,   0x2f,   0x30,   0x3f,   0x70,   0x7f,
+        0x80,   0x8f,   0x90,   0x9f,   0xf0,   0xf1,   0xff,   0x100,
+        0x101,  0x10f,  0x111,  0x123,  0x700,  0xf00,  0xfff,  0x1000,
+        0x1fff, 0x7000, 0x7fff, 0xf000, 0xff00, 0xfff0, 0xfff1, 0xffff,
+    };
+
+    // With chain ID set, all bits allowed
+    for (uint32_t bits : test_bits) {
+        header.nVersion = 0x620000 | bits;
+        // Disable auxpow for this test
+        header.nVersion &= ~VERSION_AUXPOW_BIT;
+        SolveBlock(header, params);
+        BOOST_CHECK(CheckAuxProofOfWork(header, params));
+    }
+
+    // With chain ID set, only 1 and 2 are allowed
+    for (uint32_t bits : test_bits) {
+        header.nVersion = bits;
+        // Disable auxpow for this test
+        header.nVersion &= ~VERSION_AUXPOW_BIT;
+        SolveBlock(header, params);
+        if (header.nVersion == 1 || header.nVersion == 2) {
+            BOOST_CHECK_MESSAGE(CheckAuxProofOfWork(header, params), bits);
+        } else {
+            BOOST_CHECK_MESSAGE(!CheckAuxProofOfWork(header, params), bits);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

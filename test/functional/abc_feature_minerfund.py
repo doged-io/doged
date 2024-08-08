@@ -4,7 +4,11 @@
 
 from decimal import Decimal
 
-from test_framework.blocktools import create_block, create_coinbase
+from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+)
 from test_framework.cashaddr import decode
 from test_framework.messages import XEC, CTxOut, ToHex
 from test_framework.script import OP_EQUAL, OP_HASH160, CScript
@@ -92,7 +96,7 @@ class MinerFundTest(BitcoinTestFramework):
             int(tip, 16),
             create_cb_pay_to_address(),
             node.getblock(tip)["time"] + 1,
-            version=4,
+            version=VERSION_CHAIN_ID_BITS | 4,
         )
         good_block.solve()
 

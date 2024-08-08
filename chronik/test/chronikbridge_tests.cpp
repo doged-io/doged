@@ -265,9 +265,9 @@ BOOST_FIXTURE_TEST_CASE(test_get_block_header, TestChain100Setup) {
         "00696ad20e2dd4365c7459b4a4a5af743d5e92c6da3229e6532cd605f6533f2a5bdae5"
         "494dffff7f2002000000");
     BOOST_CHECK_EQUAL(HexStr(chronik_bridge::get_block_header(tip)),
-                      "00000020bf8fea9e9aa748d47706f4c221083ad317825524c3fad252"
-                      "4e09ed2265525bd5af76957a2607cb105bb2a8f4ec222e2b8efe00c2"
-                      "dd843b016fec9e31150e229773184d5fffff7f2004000000");
+                      "04006200f135310383b8e7d16e4d33d2fc2cc9e0205552c81b74eafe"
+                      "bb6f49822c739694af76957a2607cb105bb2a8f4ec222e2b8efe00c2"
+                      "dd843b016fec9e31150e229773184d5fffff7f2002000000");
 }
 
 BOOST_FIXTURE_TEST_CASE(test_bridge_broadcast_tx, TestChain100Setup) {
