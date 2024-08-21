@@ -522,10 +522,14 @@ impl Server {
         let tokens = self.batch_get_chronik_tokens(token_ids).await?;
         let json_tokens = tokens_to_json(&tokens)?;
 
-        let encoded_tokens =
-            serde_json::to_string(&json_tokens)?.replace('\'', r"\'");
-        let encoded_balances =
-            serde_json::to_string(&json_balances)?.replace('\'', r"\'");
+        let encoded_tokens = serde_json::to_string(&json_tokens)?
+            .replace('\'', r"\'")
+            .replace("<", "\\x3c")
+            .replace(">", "\\x3e");
+        let encoded_balances = serde_json::to_string(&json_balances)?
+            .replace('\'', r"\'")
+            .replace("<", "\\x3c")
+            .replace(">", "\\x3e");
 
         // temporary assign token_address as same as sats_address
         let sats_address = address.as_str();
