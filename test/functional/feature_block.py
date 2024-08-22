@@ -9,6 +9,7 @@ import time
 
 from data import invalid_txs
 from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
     create_tx_with_script,
@@ -1247,7 +1248,7 @@ class FullBlockTest(BitcoinTestFramework):
         additional_coinbase_value=0,
         script=CScript([OP_TRUE]),
         *,
-        version=4,
+        version=VERSION_CHAIN_ID_BITS | 4,
     ):
         if self.tip is None:
             base_block_hash = self.genesis_hash

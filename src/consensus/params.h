@@ -85,6 +85,9 @@ struct Params {
      * SCRIPT_VERIFY_LEGACY_RULES). */
     bool enforceLegacyScriptRules;
 
+    /** Enforce a strict chain ID on the block's nVersion */
+    bool enforceStrictAuxPowChainId;
+
     /** Enable or disable the miner fund by default */
     bool enableMinerFund;
 

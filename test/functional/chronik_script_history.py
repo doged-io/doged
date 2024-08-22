@@ -12,6 +12,7 @@ from test_framework.address import (
 )
 from test_framework.blocktools import (
     GENESIS_CB_PK,
+    VERSION_CHAIN_ID_BITS,
     create_block,
     create_coinbase,
     make_conform_to_ctor,
@@ -253,7 +254,7 @@ class ChronikScriptHistoryTest(BitcoinTestFramework):
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
         coinbase_tx.rehash()
         block = create_block(int(blockhashes[-1], 16), coinbase_tx, mocktime + 1100)
-        block.nVersion = 5
+        block.nVersion = VERSION_CHAIN_ID_BITS | 5
         block.vtx += mine_txs
         make_conform_to_ctor(block)
         block.hashMerkleRoot = block.calc_merkle_root()

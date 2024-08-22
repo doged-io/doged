@@ -41,6 +41,7 @@
 #include <policy/settings.h>
 #include <pow/auxpow.h>
 #include <pow/pow.h>
+#include <primitives/auxpow.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
 #include <random.h>
@@ -4322,13 +4323,13 @@ static bool ContextualCheckBlockHeader(
     }
 
     // Reject blocks with outdated version
-    if ((block.nVersion < 2 &&
+    if ((VersionLowBits(block.nVersion) < 2 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_HEIGHTINCB)) ||
-        (block.nVersion < 3 &&
+        (VersionLowBits(block.nVersion) < 3 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_DERSIG)) ||
-        (block.nVersion < 4 &&
+        (VersionLowBits(block.nVersion) < 4 &&
          DeploymentActiveAfter(pindexPrev, chainman,
                                Consensus::DEPLOYMENT_CLTV))) {
         return state.Invalid(
