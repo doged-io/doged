@@ -114,13 +114,13 @@ import "components/output.html" as output %} {% import
                                     {{ block_meta.height|to_i128|render_integer|safe }}
                                 </a>
                                 ({{ confirmations|to_i128|render_integer|safe }}
-                                confirmation
-                                {% if confirmations|to_i128 > 1
-                                    %}
-                                    <span>s</span>
+                                {% if confirmations|to_i128 > 1 %}
+                                    confirmations)
+                                {% else %}
+                                    confirmation)
                                 {% endif %}
-                                ) {% when None %} Not mined
-                                yet
+                                {% when None %}
+                                Not mined yet
                             {% endmatch %}
                         </div>
                     </div>
