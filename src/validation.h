@@ -39,6 +39,7 @@
 #include <util/check.h>
 #include <util/fs.h>
 #include <util/result.h>
+#include <util/time.h>
 #include <util/translation.h>
 
 #include <atomic>
@@ -1092,8 +1093,8 @@ private:
     void UpdateTip(const CBlockIndex *pindexNew)
         EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
-    SteadyClock::time_point m_last_write{};
-    SteadyClock::time_point m_last_flush{};
+    NodeClock::time_point m_last_write{};
+    NodeClock::time_point m_last_flush{};
 
     /**
      * In case of an invalid snapshot, rename the coins leveldb directory so
