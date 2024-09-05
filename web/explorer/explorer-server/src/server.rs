@@ -42,6 +42,7 @@ pub struct Server {
     chronik: ChronikClient,
     base_dir: PathBuf,
     chain: Chain,
+    network_selector: bool,
 }
 
 impl Server {
@@ -49,11 +50,13 @@ impl Server {
         chronik: ChronikClient,
         base_dir: PathBuf,
         chain: Chain,
+        network_selector: bool,
     ) -> Result<Self> {
         Ok(Server {
             chronik,
             base_dir,
             chain,
+            network_selector,
         })
     }
 
@@ -88,6 +91,7 @@ impl Server {
 
         let blocks_template = BlocksTemplate {
             last_block_height: blockchain_info.tip_height as u32,
+            network_selector: self.network_selector,
         };
 
         Ok(blocks_template.render().unwrap())
@@ -252,6 +256,7 @@ impl Server {
             difficulty,
             coinbase_data,
             best_height,
+            network_selector: self.network_selector,
         };
 
         Ok(block_template.render().unwrap())
@@ -439,6 +444,7 @@ impl Server {
             action_str: &action_str,
             specification: &specification,
             token_type: &token_type_str,
+            network_selector: self.network_selector,
         };
 
         Ok(transaction_template.render().unwrap())
@@ -547,6 +553,7 @@ impl Server {
             json_balances,
             encoded_tokens,
             encoded_balances,
+            network_selector: self.network_selector,
         };
 
         Ok(address_template.render().unwrap())
