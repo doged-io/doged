@@ -27,6 +27,8 @@
 #include <validation.h>
 #include <validationinterface.h>
 
+#include <optional>
+
 using common::TransactionErrorString;
 using node::TransactionError;
 
@@ -375,8 +377,8 @@ void ChronikBridge::lookup_spent_coins(
         // Remember if coin was already cached
         const bool had_cached = coins_cache.HaveCoinInCache(outpoint);
 
-        ::Coin coin;
-        if (!coin_view.GetCoin(outpoint, coin)) {
+        std::optional<::Coin> coin{coin_view.GetCoin(outpoint)};
+        if (!coin) {
             not_found.push_back(input.prev_out);
             continue;
         }
@@ -388,7 +390,7 @@ void ChronikBridge::lookup_spent_coins(
             // so we save one extra cache lookup here.
             coins_to_uncache.push_back(input.prev_out);
         }
-        input.coin = BridgeCoin(coin);
+        input.coin = BridgeCoin(std::move(*coin));
     }
 }
 
