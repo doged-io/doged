@@ -6680,6 +6680,24 @@ void PeerManagerImpl::ProcessMessage(
                 }
             }
 
+            auto getBlockFromIndex = [this](const CBlockIndex *pindex) {
+                // First check if the block is cached before reading
+                // from disk.
+                std::shared_ptr<const CBlock> pblock = WITH_LOCK(
+                    m_most_recent_block_mutex, return m_most_recent_block);
+
+                if (!pblock || pblock->GetHash() != pindex->GetBlockHash()) {
+                    std::shared_ptr<CBlock> pblockRead =
+                        std::make_shared<CBlock>();
+                    if (!m_chainman.m_blockman.ReadBlockFromDisk(*pblockRead,
+                                                                 *pindex)) {
+                        assert(!"cannot load block from disk");
+                    }
+                    pblock = pblockRead;
+                }
+                return pblock;
+            };
+
             if (auto pitem = std::get_if<const CBlockIndex *>(&item)) {
                 CBlockIndex *pindex = const_cast<CBlockIndex *>(*pitem);
 
@@ -6688,7 +6706,6 @@ void PeerManagerImpl::ProcessMessage(
                 logVoteUpdate(u, "block", pindex->GetBlockHash());
 
                 switch (u.getStatus()) {
-                    case avalanche::VoteStatus::Invalid:
                     case avalanche::VoteStatus::Rejected: {
                         BlockValidationState state;
                         m_chainman.ActiveChainstate().ParkBlock(state, pindex);
@@ -6697,6 +6714,21 @@ void PeerManagerImpl::ProcessMessage(
                                       state.GetRejectReason());
                             return;
                         }
+                    } break;
+                    case avalanche::VoteStatus::Invalid: {
+                        BlockValidationState state;
+                        m_chainman.ActiveChainstate().ParkBlock(state, pindex);
+                        if (!state.IsValid()) {
+                            LogPrintf("ERROR: Database error: %s\n",
+                                      state.GetRejectReason());
+                            return;
+                        }
+
+                        auto pblock = getBlockFromIndex(pindex);
+                        assert(pblock);
+
+                        WITH_LOCK(cs_main, GetMainSignals().BlockInvalidated(
+                                               pindex, pblock));
                     } break;
                     case avalanche::VoteStatus::Accepted: {
                         LOCK(cs_main);
@@ -6709,21 +6741,7 @@ void PeerManagerImpl::ProcessMessage(
                         }
 
                         if (m_opts.avalanche_preconsensus) {
-                            // First check if the block is cached before reading
-                            // from disk.
-                            auto pblock = WITH_LOCK(m_most_recent_block_mutex,
-                                                    return m_most_recent_block);
-
-                            if (!pblock ||
-                                pblock->GetHash() != pindex->GetBlockHash()) {
-                                std::shared_ptr<CBlock> pblockRead =
-                                    std::make_shared<CBlock>();
-                                if (!m_chainman.m_blockman.ReadBlockFromDisk(
-                                        *pblockRead, *pindex)) {
-                                    assert(!"cannot load block from disk");
-                                }
-                                pblock = pblockRead;
-                            }
+                            auto pblock = getBlockFromIndex(pindex);
                             assert(pblock);
 
                             LOCK(m_mempool.cs);
