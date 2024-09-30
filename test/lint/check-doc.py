@@ -52,7 +52,6 @@ SET_FALSE_POSITIVE_UNDOCUMENTED = {
     "-dbcrashratio",
     "-legacyscriptrules",
     "-enableminerfund",
-    "-enablertt",
     "-forcecompactdb",
     "-maxaddrtosend",
     "-parkdeepreorg",

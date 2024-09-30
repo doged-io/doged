@@ -39,4 +39,7 @@ std::optional<uint32_t>
 GetNextRTTWorkRequired(const CBlockIndex *pprev, int64_t now,
                        const Consensus::Params &consensusParams);
 
+/** Whether the RTT feature is enabled */
+bool isRTTEnabled(const Consensus::Params &params, const CBlockIndex *pprev);
+
 #endif // BITCOIN_POLICY_BLOCK_RTT_H

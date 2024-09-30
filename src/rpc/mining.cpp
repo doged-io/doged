@@ -857,7 +857,6 @@ static RPCHelpMan getblocktemplate() {
             const JSONRPCRequest &request) -> UniValue {
             NodeContext &node = EnsureAnyNodeContext(request.context);
             ChainstateManager &chainman = EnsureChainman(node);
-            ArgsManager &argsman = EnsureArgsman(node);
             LOCK(cs_main);
 
             const CChainParams &chainparams = config.GetChainParams();
@@ -1170,7 +1169,7 @@ static RPCHelpMan getblocktemplate() {
             result.pushKV("bits", strprintf("%08x", pblock->nBits));
             result.pushKV("height", int64_t(pindexPrev->nHeight) + 1);
 
-            if (argsman.GetBoolArg("-enablertt", DEFAULT_ENABLE_RTT)) {
+            if (isRTTEnabled(consensusParams, pindexPrev)) {
                 // Compute the target for RTT
                 uint32_t nextTarget = pblock->nBits;
                 if (!consensusParams.DaaParamsAtHeight(pindexPrev->nHeight + 1)
