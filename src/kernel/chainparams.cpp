@@ -131,6 +131,7 @@ public:
         consensus.wellingtonHeight = 800000;    // keep alive for tests
         consensus.cowperthwaiteHeight = 900000; // keep alive for tests
         consensus.augustoActivationTime = 0x7ffffffe;
+        consensus.schumpeterActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
@@ -272,6 +273,7 @@ public:
         consensus.wellingtonHeight = 0x7ffffffe;
         consensus.cowperthwaiteHeight = 0x7ffffffe;
         consensus.augustoActivationTime = 0x7ffffffe;
+        consensus.schumpeterActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
@@ -410,6 +412,9 @@ public:
 
         // Nov 15, 2024 12:00:00 UTC protocol upgrade
         consensus.augustoActivationTime = 1731672000;
+
+        // May 15, 2025 12:00:00 UTC protocol upgrade
+        consensus.schumpeterActivationTime = 1747310400;
 
         // Digishield activation height
         consensus.digishieldHeight = 1450;
