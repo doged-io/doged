@@ -131,7 +131,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx, tx_noncleanstack],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Stack size must be exactly one after execution)",
         )
         check_mined_txs_success(nonlegacy_node, nonlegacy_peer, [tx])
 
@@ -165,7 +165,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             node,
             peer,
             [tx_sighash_bip143],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Script evaluated without error but finished with a false/empty top stack element)",
         )
 
         # Legacy sighash not allowed on XEC
@@ -179,7 +179,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_sighash_legacy],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Signature must use SIGHASH_FORKID)",
         )
 
         # Legacy sighash ok on Dogecoin
@@ -221,7 +221,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_sighash_bug],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Signature hash type missing or not understood)",
         )
 
         # SIGHASH_BUG for OP_CHECKMULTISIG
@@ -254,7 +254,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_multi_sighash_bug],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Signature hash type missing or not understood)",
         )
 
         # Test borked SIGHASH_FORKID with legacy signatures
@@ -290,7 +290,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_sighash_bork],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
         )
 
         # SIGHASH_FORKID for OP_CHECKMULTISIG with legacy signatures
@@ -320,7 +320,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_multi_sighash_bork],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
         )
 
         # Nulldummy enforced on Dogecoin, on XEC it's a bitfield
@@ -350,7 +350,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_nulldummy],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Bitfield's bit out of the expected range)",
         )
 
         # MINIMALIF enforced on Dogecoin, not on XEC
@@ -384,7 +384,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             nonlegacy_node,
             nonlegacy_peer,
             [tx_signonpush],
-            "blk-bad-inputs, parallel script check failed",
+            "mandatory-script-verify-flag-failed (Only push operators allowed in signatures)",
         )
 
 

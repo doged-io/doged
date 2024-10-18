@@ -149,7 +149,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
                 spend_tx.serialize().hex(),
             )
             peer = check_mined_tx_fails(
-                node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
+                node,
+                peer,
+                spend_tx,
+                "mandatory-script-verify-flag-failed (Attempted to use a disabled opcode)",
             )
             del spend_tx
 
@@ -169,7 +172,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
                 spend_if_tx.serialize().hex(),
             )
             peer = check_mined_tx_fails(
-                node, peer, spend_if_tx, "blk-bad-inputs, parallel script check failed"
+                node,
+                peer,
+                spend_if_tx,
+                "mandatory-script-verify-flag-failed (Attempted to use a disabled opcode)",
             )
             # Non-legacy nodes don't have these opcodes disabled
             nonlegacy_node.sendrawtransaction(spend_if_tx.serialize().hex())
@@ -195,7 +201,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
                 spend_tx.serialize().hex(),
             )
             peer = check_mined_tx_fails(
-                node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
+                node,
+                peer,
+                spend_tx,
+                "mandatory-script-verify-flag-failed (Opcode missing or not understood)",
             )
             del spend_tx
 
@@ -238,7 +247,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             spend_tx.serialize().hex(),
         )
         peer = check_mined_tx_fails(
-            node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
+            node,
+            peer,
+            spend_tx,
+            "mandatory-script-verify-flag-failed (Script evaluated without error but finished with a false/empty top stack element)",
         )
         # Schnorr sigs allowed on XEC with FORKID
         sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
@@ -263,7 +275,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             spend_tx.serialize().hex(),
         )
         peer = check_mined_tx_fails(
-            node, peer, spend_tx, "blk-bad-inputs, parallel script check failed"
+            node,
+            peer,
+            spend_tx,
+            "mandatory-script-verify-flag-failed (Script failed an OP_CHECKSIGVERIFY operation)",
         )
         sighash = SignatureHashForkId(script, spend_tx, 0, 0x41, 2000)
         txsig = private_key.sign_schnorr(sighash) + b"\x41"
