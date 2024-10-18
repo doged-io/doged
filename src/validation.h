@@ -593,7 +593,7 @@ public:
     CScriptCheck(CScriptCheck &&) = default;
     CScriptCheck &operator=(CScriptCheck &&) = default;
 
-    std::optional<ScriptError> operator()();
+    std::optional<std::pair<ScriptError, std::string>> operator()();
 
     ScriptExecutionMetrics GetScriptExecutionMetrics() const { return metrics; }
 };

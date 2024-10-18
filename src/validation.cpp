@@ -1777,15 +1777,19 @@ std::vector<Coin> GetSpentCoins(const CTransactionRef &ptx,
     return spent_coins;
 }
 
-std::optional<ScriptError> CScriptCheck::operator()() {
+std::optional<std::pair<ScriptError, std::string>> CScriptCheck::operator()() {
     const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
     ScriptError error{ScriptError::UNKNOWN};
+    auto debug_str = strprintf("input %i of %s, spending %s:%i", nIn,
+                               ptxTo->GetId().ToString(),
+                               ptxTo->vin[nIn].prevout.GetTxId().ToString(),
+                               ptxTo->vin[nIn].prevout.GetN());
     if (!VerifyScript(scriptSig, m_tx_out.scriptPubKey, nFlags,
                       CachingTransactionSignatureChecker(
                           ptxTo, nIn, m_tx_out.nValue, cacheStore,
                           *m_signature_cache, txdata),
                       metrics, &error)) {
-        return error;
+        return std::make_pair(error, std::move(debug_str));
     }
     if ((pTxLimitSigChecks &&
          !pTxLimitSigChecks->consume_and_check(metrics.nSigChecks)) ||
@@ -1794,7 +1798,8 @@ std::optional<ScriptError> CScriptCheck::operator()() {
         // we can't assign a meaningful script error (since the script
         // succeeded), but remove the ScriptError::OK which could be
         // misinterpreted.
-        return ScriptError::SIGCHECKS_LIMIT_EXCEEDED;
+        return std::make_pair(ScriptError::SIGCHECKS_LIMIT_EXCEEDED,
+                              std::move(debug_str));
     }
     return std::nullopt;
 }
@@ -1902,7 +1907,8 @@ bool CheckInputScripts(const CTransaction &tx, TxValidationState &state,
                     return state.Invalid(
                         TxValidationResult::TX_NOT_STANDARD,
                         strprintf("non-mandatory-script-verify-flag (%s)",
-                                  ScriptErrorString(*result)));
+                                  ScriptErrorString(result->first)),
+                        result->second);
                 }
                 // If the second check failed, it failed due to a mandatory
                 // script verification flag, but the first check might have
@@ -1924,7 +1930,8 @@ bool CheckInputScripts(const CTransaction &tx, TxValidationState &state,
             return state.Invalid(
                 TxValidationResult::TX_CONSENSUS,
                 strprintf("mandatory-script-verify-flag-failed (%s)",
-                          ScriptErrorString(*result)));
+                          ScriptErrorString(result->first)),
+                result->second);
         }
 
         nSigChecksTotal += check.GetScriptExecutionMetrics().nSigChecks;
@@ -2534,7 +2541,7 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
                           tx_state.GetRejectReason(),
                           tx_state.GetDebugMessage());
             return error("Script validation error in block: %s\n",
-                         tx_state.GetRejectReason());
+                         state.ToString());
         }
 
         control.Add(std::move(vChecks));
@@ -2581,7 +2588,8 @@ bool Chainstate::ConnectBlock(const CBlock &block, BlockValidationState &state,
         return state.Invalid(
             BlockValidationResult::BLOCK_CONSENSUS,
             strprintf("mandatory-script-verify-flag-failed (%s)",
-                      ScriptErrorString(*parallel_result)));
+                      ScriptErrorString(parallel_result->first)),
+            parallel_result->second);
     }
     const auto time_4{SteadyClock::now()};
     time_verify += time_4 - time_2;
