@@ -6,6 +6,8 @@
 #define BITCOIN_PRIMITIVES_AUXPOW_H
 
 #include <cstdint>
+#include <primitives/baseheader.h>
+#include <primitives/transaction.h>
 
 /** Bit that indicates a block has auxillary PoW. Bits below that are
  * interpreted as the "traditional" Bitcoin version. */
@@ -68,5 +70,36 @@ inline bool VersionIsLegacy(int32_t nVersion) {
            // legacy
            || nVersion == 2;
 }
+
+/**
+ * Data for the merge-mining auxpow. This is a merkle tx (the parent block's
+ * coinbase tx) that can be verified to be in the parent block, and this
+ * transaction's input (the coinbase script) contains the reference
+ * to the actual merge-mined block.
+ */
+class CAuxPow {
+public:
+    /** The coinbase tx of the parent block encoding the merge-mined block */
+    CTransactionRef coinbaseTx;
+    uint256 hashBlock;
+    std::vector<uint256> vMerkleBranch;
+    int32_t nIndex;
+
+    /** The merkle branch connecting the aux block to our coinbase. */
+    std::vector<uint256> vChainMerkleBranch;
+
+    /** Merkle tree index of the aux block header in the coinbase. */
+    int32_t nChainIndex;
+
+    /** Parent block header (on which the real PoW is done). */
+    CBaseBlockHeader parentBlock;
+
+    CAuxPow() {}
+
+    SERIALIZE_METHODS(CAuxPow, obj) {
+        READWRITE(obj.coinbaseTx, obj.hashBlock, obj.vMerkleBranch, obj.nIndex,
+                  obj.vChainMerkleBranch, obj.nChainIndex, obj.parentBlock);
+    }
+};
 
 #endif // BITCOIN_PRIMITIVES_AUXPOW_H
