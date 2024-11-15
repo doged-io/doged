@@ -90,6 +90,8 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         # - SCRIPT_ENABLE_SIGHASH_FORKID
         # - SCRIPT_ENABLE_SCHNORR_MULTISIG
         # - SCRIPT_ENFORCE_SIGCHECKS (not tested here)
+        # - All other flags except SCRIPT_VERIFY_P2SH
+        #   (which the only mandatory flag on Dogecoin)
         # Standard flags:
         # - SCRIPT_VERIFY_SIGPUSHONLY
 
@@ -105,10 +107,14 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         tx.vin = [CTxIn(COutPoint(int(cointxid, 16), 0), SCRIPTSIG_OP_TRUE)]
         tx.vout = [
             CTxOut(2000, p2sh([OP_CHECKSIG])),
+            CTxOut(2000, p2sh([OP_CHECKSIG])),
+            CTxOut(2000, p2sh([OP_CHECKMULTISIG])),
+            CTxOut(2000, p2sh([OP_CHECKSIG])),
+            CTxOut(2000, p2sh([OP_CHECKMULTISIG])),
             CTxOut(2000, p2sh([OP_CHECKMULTISIG])),
             CTxOut(2000, p2sh([OP_IF, OP_ENDIF])),
             CTxOut(2000, CScript([OP_TRUE])),
-            CTxOut(coinvalue - 20000, p2sh([OP_TRUE])),
+            CTxOut(coinvalue - 30000, p2sh([OP_TRUE])),
         ]
         tx.rehash()
         txid = tx.hash
@@ -116,7 +122,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         # Fork both nodes, CLEANSTACK not enforced on Dogecoin
         tx_noncleanstack = CTransaction()
         tx_noncleanstack.vin = [
-            CTxIn(COutPoint(int(txid, 16), 4), CScript([b"jonny", CScript([OP_TRUE])]))
+            CTxIn(COutPoint(int(txid, 16), 8), CScript([b"jonny", CScript([OP_TRUE])]))
         ]
         pad_tx(tx_noncleanstack)
 
@@ -149,10 +155,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         tx_sighash_legacy = CTransaction(tx_sighash)
         tx_sighash_legacy.vin[0].scriptSig = CScript([txsig, public_key, script])
 
-        # SIGHASH_FORKID not allowed on Dogecoin
+        # SIGHASH_FORKID doesn't work on Dogecoin, OP_CHECKSIG uses legacy sighash
         assert_raises_rpc_error(
             -26,
-            "mandatory-script-verify-flag-failed (Illegal use of SIGHASH_FORKID)",
+            "mandatory-script-verify-flag-failed (Script evaluated without error but finished with a false/empty top stack element)",
             node.sendrawtransaction,
             tx_sighash_bip143.serialize().hex(),
         )
@@ -185,24 +191,154 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         nonlegacy_node.sendrawtransaction(tx_sighash_bip143.serialize().hex())
         check_mined_txs_success(nonlegacy_node, nonlegacy_peer, [tx_sighash_bip143])
 
+        # Test SIGHASH_BUG (0x20)
+        script = CScript([OP_CHECKSIG])
+        tx_sighash_bug = CTransaction()
+        pad_tx(tx_sighash_bug)
+        tx_sighash_bug.vin = [CTxIn(COutPoint(int(txid, 16), 1))]
+
+        (sighash, _) = SignatureHash(script, tx_sighash_bug, 0, 0x21)
+        txsig = private_key.sign_ecdsa(sighash) + b"\x21"
+        tx_sighash_bug.vin[0].scriptSig = CScript([txsig, public_key, script])
+
+        # Not allowed in mempool
+        assert_raises_rpc_error(
+            -26,
+            "non-mandatory-script-verify-flag (Signature hash type missing or not understood)",
+            node.sendrawtransaction,
+            tx_sighash_bug.serialize().hex(),
+        )
+        # But: 0x20 is allowed in blocks
+        check_mined_txs_success(node, peer, [tx_sighash_bug])
+
+        # Non-legacy mode forces known sighash type
+        assert_raises_rpc_error(
+            -26,
+            "mandatory-script-verify-flag-failed (Signature hash type missing or not understood)",
+            nonlegacy_node.sendrawtransaction,
+            tx_sighash_bug.serialize().hex(),
+        )
+        nonlegacy_peer = check_mined_txs_fail(
+            nonlegacy_node,
+            nonlegacy_peer,
+            [tx_sighash_bug],
+            "blk-bad-inputs, parallel script check failed",
+        )
+
+        # SIGHASH_BUG for OP_CHECKMULTISIG
+        script = CScript([OP_CHECKMULTISIG])
+        tx_multi_sighash_bug = CTransaction()
+        pad_tx(tx_multi_sighash_bug)
+        tx_multi_sighash_bug.vin = [CTxIn(COutPoint(int(txid, 16), 2))]
+
+        # Not allowed in mempool
+        (sighash, _) = SignatureHash(script, tx_multi_sighash_bug, 0, 0x21)
+        txsig = private_key.sign_ecdsa(sighash) + b"\x21"
+        tx_multi_sighash_bug.vin[0].scriptSig = CScript([0, txsig, 1, public_key, 1, script])
+        assert_raises_rpc_error(
+            -26,
+            "non-mandatory-script-verify-flag (Signature hash type missing or not understood)",
+            node.sendrawtransaction,
+            tx_multi_sighash_bug.serialize().hex(),
+        )
+        # But: 0x20 allowed in blocks in OP_CHECKMULTISIG
+        check_mined_txs_success(node, peer, [tx_multi_sighash_bug])
+
+        # Non-legacy mode forces known sighash type
+        assert_raises_rpc_error(
+            -26,
+            "mandatory-script-verify-flag-failed (Signature hash type missing or not understood)",
+            nonlegacy_node.sendrawtransaction,
+            tx_multi_sighash_bug.serialize().hex(),
+        )
+        nonlegacy_peer = check_mined_txs_fail(
+            nonlegacy_node,
+            nonlegacy_peer,
+            [tx_multi_sighash_bug],
+            "blk-bad-inputs, parallel script check failed",
+        )
+
+        # Test SIGHASH_FORKID with legacy signatures
+        script = CScript([OP_CHECKSIG])
+        tx_sighash_bork = CTransaction()
+        pad_tx(tx_sighash_bork)
+        tx_sighash_bork.vin = [CTxIn(COutPoint(int(txid, 16), 3))]
+
+        (sighash, _) = SignatureHash(script, tx_sighash_bork, 0, 0x41)
+        txsig = private_key.sign_ecdsa(sighash) + b"\x41"
+        tx_sighash_bork.vin[0].scriptSig = CScript([txsig, public_key, script])
+
+        # SIGHASH_FORKID not allowed in mempool on Dogecoin
+        assert_raises_rpc_error(
+            -26,
+            "non-mandatory-script-verify-flag (Illegal use of SIGHASH_FORKID)",
+            node.sendrawtransaction,
+            tx_sighash_bork.serialize().hex(),
+        )
+        # But: allowed in blocks, as long as legacy signatures are used
+        check_mined_txs_success(node, peer, [tx_sighash_bork])
+
+        # Non-legacy doesn't support legacy signatures
+        assert_raises_rpc_error(
+            -26,
+            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
+            nonlegacy_node.sendrawtransaction,
+            tx_sighash_bork.serialize().hex(),
+        )
+        nonlegacy_peer = check_mined_txs_fail(
+            nonlegacy_node,
+            nonlegacy_peer,
+            [tx_sighash_bork],
+            "blk-bad-inputs, parallel script check failed",
+        )
+
+        # SIGHASH_FORKID for OP_CHECKMULTISIG with legacy signatures
+        script = CScript([OP_CHECKMULTISIG])
+        tx_multi_sighash_bork = CTransaction()
+        pad_tx(tx_multi_sighash_bork)
+        tx_multi_sighash_bork.vin = [CTxIn(COutPoint(int(txid, 16), 4))]
+
+        (sighash, _) = SignatureHash(script, tx_multi_sighash_bork, 0, 0x41)
+        txsig = private_key.sign_ecdsa(sighash) + b"\x41"
+        tx_multi_sighash_bork.vin[0].scriptSig = CScript([0, txsig, 1, public_key, 1, script])
+        assert_raises_rpc_error(
+            -26,
+            "non-mandatory-script-verify-flag (Illegal use of SIGHASH_FORKID)",
+            node.sendrawtransaction,
+            tx_multi_sighash_bork.serialize().hex(),
+        )
+        check_mined_txs_success(node, peer, [tx_multi_sighash_bork])
+
+        assert_raises_rpc_error(
+            -26,
+            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
+            nonlegacy_node.sendrawtransaction,
+            tx_multi_sighash_bork.serialize().hex(),
+        )
+        nonlegacy_peer = check_mined_txs_fail(
+            nonlegacy_node,
+            nonlegacy_peer,
+            [tx_multi_sighash_bork],
+            "blk-bad-inputs, parallel script check failed",
+        )
+
         # Nulldummy enforced on Dogecoin, on XEC it's a bitfield
         tx_nulldummy = CTransaction()
         tx_nulldummy.vin = [
             CTxIn(
-                COutPoint(int(txid, 16), 1),
-                CScript([20, b"sig", 1, public_key, 1, CScript([OP_CHECKMULTISIG])]),
+                COutPoint(int(txid, 16), 5),
+                CScript([20, 0, public_key, 1, CScript([OP_CHECKMULTISIG])]),
             )
         ]
         tx_nulldummy.vout = [CTxOut(0, CScript([OP_RETURN]))]
         assert_raises_rpc_error(
             -26,
-            "mandatory-script-verify-flag-failed (Dummy CHECKMULTISIG argument must be zero)",
+            "non-mandatory-script-verify-flag (Dummy CHECKMULTISIG argument must be zero)",
             node.sendrawtransaction,
             tx_nulldummy.serialize().hex(),
         )
-        peer = check_mined_txs_fail(
-            node, peer, [tx_nulldummy], "blk-bad-inputs, parallel script check failed"
-        )
+        check_mined_txs_success(node, peer, [tx_nulldummy])
+
         assert_raises_rpc_error(
             -26,
             "mandatory-script-verify-flag-failed (Bitfield's bit out of the expected range)",
@@ -220,14 +356,14 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         tx_minimalif = CTransaction()
         tx_minimalif.vin = [
             CTxIn(
-                COutPoint(int(txid, 16), 2),
+                COutPoint(int(txid, 16), 6),
                 CScript([OP_TRUE, 1337, CScript([OP_IF, OP_ENDIF])]),
             )
         ]
         pad_tx(tx_minimalif)
         assert_raises_rpc_error(
             -26,
-            "mandatory-script-verify-flag-failed (OP_IF/NOTIF argument must be minimal)",
+            "non-mandatory-script-verify-flag (OP_IF/NOTIF argument must be minimal)",
             node.sendrawtransaction,
             tx_minimalif.serialize().hex(),
         )
@@ -239,7 +375,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
 
         # Non-push opcodes allowed in scriptSigs on Dogecoin in blocks
         tx_signonpush = CTransaction()
-        tx_signonpush.vin = [CTxIn(COutPoint(int(txid, 16), 3), CScript([OP_NOP]))]
+        tx_signonpush.vin = [CTxIn(COutPoint(int(txid, 16), 7), CScript([OP_NOP]))]
         pad_tx(tx_signonpush)
         check_mined_txs_success(node, peer, [tx_signonpush])
         # Disallowed on XEC
