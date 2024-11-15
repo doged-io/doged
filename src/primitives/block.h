@@ -7,10 +7,12 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
+#include <primitives/auxpow.h>
 #include <primitives/baseheader.h>
 #include <primitives/blockhash.h>
 #include <primitives/transaction.h>
 #include <serialize.h>
+#include <tinyformat.h>
 #include <uint256.h>
 #include <util/time.h>
 
@@ -22,7 +24,35 @@
  * the block is a special one that creates a new coin owned by the creator of
  * the block.
  */
-class CBlockHeader : public CBaseBlockHeader {};
+class CBlockHeader : public CBaseBlockHeader {
+public:
+    std::shared_ptr<CAuxPow> auxpow;
+
+    template <typename Stream> inline void Serialize(Stream &s) const {
+        s << *(CBaseBlockHeader *)this;
+
+        if (VersionHasAuxPow(nVersion)) {
+            if (!auxpow) {
+                throw std::ios_base::failure(
+                    strprintf("Missing auxpow in header %s, version %08x that "
+                              "claims to have it",
+                              GetHash().ToString(), nVersion));
+            }
+            s << *auxpow;
+        }
+    }
+
+    template <typename Stream> inline void Unserialize(Stream &s) {
+        s >> *(CBaseBlockHeader *)this;
+
+        if (VersionHasAuxPow(nVersion)) {
+            auxpow.reset(new CAuxPow());
+            s >> *auxpow;
+        } else {
+            auxpow.reset();
+        }
+    }
+};
 
 class CBlock : public CBlockHeader {
 public:
