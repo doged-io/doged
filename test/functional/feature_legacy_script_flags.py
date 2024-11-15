@@ -258,7 +258,9 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             "blk-bad-inputs, parallel script check failed",
         )
 
-        # Test SIGHASH_FORKID with legacy signatures
+        # Test borked SIGHASH_FORKID with legacy signatures
+        # On Dogecoin, signatures with SIGHASH_FORKID are valid if found in
+        # blocks and if legacy signatures are used. Bork = fork + bug
         script = CScript([OP_CHECKSIG])
         tx_sighash_bork = CTransaction()
         pad_tx(tx_sighash_bork)
