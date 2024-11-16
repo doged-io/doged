@@ -172,6 +172,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		descriptor_tests.cpp
 		dnsseeds_tests.cpp
 		dogecoin_block_version_tests.cpp
+		dogecoin_auxpow_check_tests.cpp
 		dogecoin_auxpow_serialize_tests.cpp
 		dstencode_tests.cpp
 		feerate_tests.cpp

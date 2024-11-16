@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <primitives/baseheader.h>
 #include <primitives/transaction.h>
+#include <util/result.h>
 
 /** Bit that indicates a block has auxillary PoW. Bits below that are
  * interpreted as the "traditional" Bitcoin version. */
@@ -23,6 +24,9 @@ static constexpr uint32_t AUXPOW_CHAIN_ID = 0x62;
 /** Max allowed chain ID */
 static constexpr uint32_t MAX_ALLOWED_CHAIN_ID =
     (1 << (32 - VERSION_CHAIN_ID_BIT_POS)) - 1;
+
+/** 4-byte prefix for merge-mining data in the coinbase. */
+static const std::array<uint8_t, 4> MERGE_MINE_PREFIX{{0xfa, 0xbe, 'm', 'm'}};
 
 /**
  * Build version bits from the given parameters, with AuxPow disabled.
@@ -72,6 +76,42 @@ inline bool VersionIsLegacy(int32_t nVersion) {
 }
 
 /**
+ * Like ComputeMerkleRoot, but where we have the leaf hash, the merkle branch
+ * and the index of the leaf in the tree given.
+ * Can be used to verify a merkle proof, by comparing the result to the expected
+ * merkle root.
+ */
+uint256 ComputeMerkleRootForBranch(uint256 hash,
+                                   const std::vector<uint256> &vMerkleBranch,
+                                   uint32_t nIndex);
+
+/** Parsed data from a AuxPow coinbase */
+class ParsedAuxPowCoinbase {
+public:
+    uint32_t nTreeSize;
+    uint32_t nMergeMineNonce;
+
+    /**
+     * Parse a coinbase of another blockchain for AuxPow data, which searches
+     * for the root hash, with one of two kinds of encodings:
+     *
+     * - With prefix:
+     *   FABE6D6D<hashRoot:uint256><nTreeSize:uint32><nNonce:uint32>
+     * - Without prefix:
+     *   <hashRoot:uint256><nTreeSize:uint32><nNonce:uint32>
+     *
+     * Also, there's some additional rules:
+     * - The root hash is encoded in big-endian
+     * - The prefix can only occur at most once
+     * - If there's no prefix, the root hash can have at most 20 bytes preceding
+     *   it (Note: The Dogecoin source claims the root hash "must start in the
+     *   first 20 bytes", but this doesn't match the code).
+     */
+    static util::Result<ParsedAuxPowCoinbase>
+    Parse(const CScript &scriptCoinbase, uint256 hashRoot);
+};
+
+/**
  * Data for the merge-mining auxpow. This is a merkle tx (the parent block's
  * coinbase tx) that can be verified to be in the parent block, and this
  * transaction's input (the coinbase script) contains the reference
@@ -83,6 +123,7 @@ public:
     CTransactionRef coinbaseTx;
     uint256 hashBlock;
     std::vector<uint256> vMerkleBranch;
+    /** Index of the tx in the block, must always be 0 (i.e. coinbase). */
     uint32_t nIndex;
 
     /** The merkle branch connecting the aux block to our coinbase. */
