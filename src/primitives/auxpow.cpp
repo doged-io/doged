@@ -121,3 +121,28 @@ ParsedAuxPowCoinbase::Parse(const CScript &scriptCoinbase, uint256 hashRoot) {
         .nMergeMineNonce = nMergeMineNonce,
     }};
 }
+
+uint32_t CalcExpectedMerkleTreeIndex(uint32_t nNonce, uint32_t nChainId,
+                                     uint32_t merkleHeight) {
+    // Choose a pseudo-random slot in the chain merkle tree but have it be fixed
+    // for a size/nonce/chain combination.
+    // This prevents the same work from being used twice for the same chain
+    // while reducing the chance that two chains clash for the same slot.
+
+    // This computation can overflow the uint32 used. This is not an issue,
+    // though, since we take the mod against a power-of-two in the end anyway.
+    // This also ensures that the computation is, actually, consistent even
+    // if done in 64 bits as it was in the past on some systems.
+    // Note that h is always <= 30 (enforced by the maximum allowed chain merkle
+    // branch length), so that 32 bits are enough for the computation.
+
+    const uint32_t TWIST_FACTOR = 1103515245;
+    const uint32_t TWIST_OFFSET = 12345;
+
+    uint32_t rand = nNonce;
+    rand = rand * TWIST_FACTOR + TWIST_OFFSET;
+    rand += nChainId;
+    rand = rand * TWIST_FACTOR + TWIST_OFFSET;
+
+    return rand % (1 << merkleHeight);
+}
