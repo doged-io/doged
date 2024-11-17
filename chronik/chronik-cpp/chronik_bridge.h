@@ -81,6 +81,8 @@ public:
 
     rust::Vec<uint8_t> load_raw_tx(uint32_t file_num, uint32_t data_pos) const;
 
+    rust::Vec<uint8_t> get_block_header(const CBlockIndex &index) const;
+
     const CBlockIndex &find_fork(const CBlockIndex &index) const;
 
     void lookup_spent_coins(Tx &, rust::Vec<OutPoint> &not_found,
@@ -103,8 +105,6 @@ Block bridge_block(const CBlock &block, const CBlockUndo &block_undo,
                    const CBlockIndex &bindex);
 
 BlockInfo get_block_info(const CBlockIndex &index);
-
-std::array<uint8_t, 80> get_block_header(const CBlockIndex &index);
 
 const CBlockIndex &get_block_ancestor(const CBlockIndex &index, int32_t height);
 

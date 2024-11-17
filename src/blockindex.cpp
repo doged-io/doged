@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <blockindex.h>
+#include <node/blockstorage.h>
 #include <tinyformat.h>
 
 /**
@@ -29,6 +30,20 @@ std::string CBlockIndex::ToString() const {
     return strprintf(
         "CBlockIndex(pprev=%p, nHeight=%d, merkle=%s, hashBlock=%s)", pprev,
         nHeight, hashMerkleRoot.ToString(), GetBlockHash().ToString());
+}
+
+CBlockHeader
+CBlockIndex::GetBlockHeader(const node::BlockManager &blockman) const {
+    CBlockHeader block;
+    block.nVersion = nVersion;
+    if (pprev) {
+        block.hashPrevBlock = pprev->GetBlockHash();
+    }
+    block.hashMerkleRoot = hashMerkleRoot;
+    block.nTime = nTime;
+    block.nBits = nBits;
+    block.nNonce = nNonce;
+    return block;
 }
 
 bool CBlockIndex::UpdateChainStats() {

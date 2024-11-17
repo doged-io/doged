@@ -130,7 +130,7 @@ mod ffi_inner {
     #[derive(Clone, Debug, Eq, PartialEq)]
     pub struct RawBlockHeader {
         /// Raw block header
-        pub data: [u8; 80],
+        pub data: Vec<u8>,
     }
 
     #[allow(missing_debug_implementations)]
@@ -248,6 +248,12 @@ mod ffi_inner {
             data_pos: u32,
         ) -> Result<Vec<u8>>;
 
+        /// Get the serialized block header for this CBlockIndex.
+        fn get_block_header(
+            self: &ChronikBridge,
+            block_index: &CBlockIndex,
+        ) -> Result<Vec<u8>>;
+
         /// Find at which block the given block_index forks off from the node.
         fn find_fork(
             self: &ChronikBridge,
@@ -311,9 +317,6 @@ mod ffi_inner {
 
         /// Get a BlockInfo for this CBlockIndex.
         fn get_block_info(block_index: &CBlockIndex) -> BlockInfo;
-
-        /// Get the serialized block header for this CBlockIndex.
-        fn get_block_header(block_index: &CBlockIndex) -> [u8; 80];
 
         /// CBlockIndex::GetAncestor
         fn get_block_ancestor(

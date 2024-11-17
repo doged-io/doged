@@ -16,6 +16,10 @@
 
 struct BlockHash;
 
+namespace node {
+class BlockManager;
+}
+
 /**
  * The block chain is a tree shaped structure starting with the genesis block at
  * the root, with each block potentially having multiple candidates to be the
@@ -130,18 +134,7 @@ public:
         return ret;
     }
 
-    CBlockHeader GetBlockHeader() const {
-        CBlockHeader block;
-        block.nVersion = nVersion;
-        if (pprev) {
-            block.hashPrevBlock = pprev->GetBlockHash();
-        }
-        block.hashMerkleRoot = hashMerkleRoot;
-        block.nTime = nTime;
-        block.nBits = nBits;
-        block.nNonce = nNonce;
-        return block;
-    }
+    CBlockHeader GetBlockHeader(const node::BlockManager &) const;
 
     BlockHash GetBlockHash() const {
         assert(phashBlock != nullptr);

@@ -5,6 +5,7 @@
 #include <blockvalidity.h>
 #include <chain.h>
 #include <uint256.h>
+#include <validation.h>
 
 #include <test/util/setup_common.h>
 
@@ -30,7 +31,8 @@ BOOST_AUTO_TEST_CASE(get_block_header) {
 
     CBlockIndex index = CBlockIndex(header);
 
-    CBlockHeader checkHeader = index.GetBlockHeader();
+    CBlockHeader checkHeader =
+        index.GetBlockHeader(m_node.chainman->m_blockman);
     BOOST_CHECK(checkHeader.nVersion == expectedVersion);
     BOOST_CHECK(checkHeader.hashMerkleRoot == expectedMerkleRoot);
     BOOST_CHECK(checkHeader.nTime == expectedBlockTime);

@@ -9,7 +9,6 @@ use bitcoinsuite_core::{
     block::BlockHash,
     tx::{Tx, TxId},
 };
-use chronik_bridge::ffi;
 use chronik_db::{
     db::Db,
     io::{
@@ -320,7 +319,7 @@ impl<'a> QueryBlocks<'a> {
         let block_index =
             block_index.map_err(|_| BlockNotFound(hash_or_height))?;
         Ok(proto::BlockHeader {
-            raw_header: ffi::get_block_header(block_index).to_vec(),
+            raw_header: bridge.get_block_header(block_index)?.to_vec(),
         })
     }
 

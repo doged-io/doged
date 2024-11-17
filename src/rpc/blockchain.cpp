@@ -614,18 +614,18 @@ static RPCHelpMan getblockheader() {
                 LOCK(cs_main);
                 pblockindex = chainman.m_blockman.LookupBlockIndex(hash);
                 tip = chainman.ActiveTip();
-            }
 
-            if (!pblockindex) {
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   "Block not found");
-            }
+                if (!pblockindex) {
+                    throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
+                                       "Block not found");
+                }
 
-            if (!fVerbose) {
-                CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
-                ssBlock << pblockindex->GetBlockHeader();
-                std::string strHex = HexStr(ssBlock);
-                return strHex;
+                if (!fVerbose) {
+                    CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
+                    ssBlock << pblockindex->GetBlockHeader(chainman.m_blockman);
+                    std::string strHex = HexStr(ssBlock);
+                    return strHex;
+                }
             }
 
             return blockheaderToJSON(tip, pblockindex);
