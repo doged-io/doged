@@ -231,10 +231,10 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
         txsig = private_key.sign_schnorr(sighash) + b"\x01"
         spend_tx.vin[0].scriptSig = CScript([txsig, public_key, script])
 
-        # Regtest has SCRIPT_VERIFY_NULLFAIL, which comes in handy here
+        # We don't get a "Signature must be zero" error as it's not mandatory
         assert_raises_rpc_error(
             -26,
-            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
+            "mandatory-script-verify-flag-failed (Script evaluated without error but finished with a false/empty top stack element)",
             node.sendrawtransaction,
             spend_tx.serialize().hex(),
         )
@@ -259,7 +259,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
 
         assert_raises_rpc_error(
             -26,
-            "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation)",
+            "mandatory-script-verify-flag-failed (Script failed an OP_CHECKSIGVERIFY operation)",
             node.sendrawtransaction,
             spend_tx.serialize().hex(),
         )
