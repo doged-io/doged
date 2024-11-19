@@ -18,7 +18,7 @@ static constexpr int32_t VERSION_AUXPOW_BIT = 1 << VERSION_AUXPOW_BIT_POS;
 static constexpr int32_t VERSION_CHAIN_ID_BIT_POS = 16;
 
 /** Chain ID used by Dogecoin. */
-static constexpr int32_t AUXPOW_CHAIN_ID = 0x62;
+static constexpr uint32_t AUXPOW_CHAIN_ID = 0x62;
 
 /** Max allowed chain ID */
 static constexpr uint32_t MAX_ALLOWED_CHAIN_ID =
@@ -83,13 +83,13 @@ public:
     CTransactionRef coinbaseTx;
     uint256 hashBlock;
     std::vector<uint256> vMerkleBranch;
-    int32_t nIndex;
+    uint32_t nIndex;
 
     /** The merkle branch connecting the aux block to our coinbase. */
     std::vector<uint256> vChainMerkleBranch;
 
     /** Merkle tree index of the aux block header in the coinbase. */
-    int32_t nChainIndex;
+    uint32_t nChainIndex;
 
     /** Parent block header (on which the real PoW is done). */
     CBaseBlockHeader parentBlock;
