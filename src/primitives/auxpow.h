@@ -10,6 +10,10 @@
 #include <primitives/transaction.h>
 #include <util/result.h>
 
+namespace Consensus {
+struct Params;
+} // namespace Consensus
+
 /** Bit that indicates a block has auxillary PoW. Bits below that are
  * interpreted as the "traditional" Bitcoin version. */
 static constexpr int32_t VERSION_AUXPOW_BIT_POS = 8;
@@ -148,6 +152,19 @@ public:
         READWRITE(obj.coinbaseTx, obj.hashBlock, obj.vMerkleBranch, obj.nIndex,
                   obj.vChainMerkleBranch, obj.nChainIndex, obj.parentBlock);
     }
+
+    /**
+     * Perform all the required AuxPow checks.
+     *
+     * Verifies the `hashAuxBlock` is correctly commited in `coinbaseTx` via a
+     * merkle tree in the scriptSig. The leaf index is given by
+     * `CalcExpectedMerkleTreeIndex`.
+     *
+     * Returns std::monostate (unit type) on success, or an error otherwise.
+     */
+    util::Result<std::monostate>
+    CheckAuxBlockHash(const uint256 &hashAuxBlock, uint32_t nChainId,
+                      const Consensus::Params &params) const;
 };
 
 #endif // BITCOIN_PRIMITIVES_AUXPOW_H

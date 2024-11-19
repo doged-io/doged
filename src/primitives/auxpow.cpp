@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
+#include <consensus/params.h>
 #include <hash.h>
 #include <primitives/auxpow.h>
 #include <stdexcept>
@@ -145,4 +146,63 @@ uint32_t CalcExpectedMerkleTreeIndex(uint32_t nNonce, uint32_t nChainId,
     rand = rand * TWIST_FACTOR + TWIST_OFFSET;
 
     return rand % (1 << merkleHeight);
+}
+
+util::Result<std::monostate>
+CAuxPow::CheckAuxBlockHash(const uint256 &hashAuxBlock, uint32_t nChainId,
+                           const Consensus::Params &params) const {
+    // Coinbase txs are always the first in a block, so nIndex must always be 0
+    if (nIndex != 0) {
+        return {{_("AuxPow nIndex must be 0")}};
+    }
+
+    // We can't merge mine our own chain, it must be a different one.
+    if (params.enforceStrictAuxPowChainId &&
+        VersionChainId(parentBlock.nVersion) == nChainId) {
+        return {{_("AuxPow parent has our chain ID")}};
+    }
+
+    // Ensure sane bounds for the chain merkle tree
+    if (vChainMerkleBranch.size() >= 31) {
+        return {{_("AuxPow chain merkle branch too long")}};
+    }
+
+    // Check that we are in the parent block merkle tree
+    if (parentBlock.hashMerkleRoot !=
+        ComputeMerkleRootForBranch(coinbaseTx->GetHash(), vMerkleBranch,
+                                   nIndex)) {
+        return {{_("AuxPow merkle root incorrect")}};
+    }
+
+    // Check that the chain merkle root is in the coinbase
+    uint256 hashRoot = ComputeMerkleRootForBranch(
+        hashAuxBlock, vChainMerkleBranch, nChainIndex);
+
+    if (coinbaseTx->vin.empty()) {
+        return {{_("AuxPow coinbase transaction missing input")}};
+    }
+
+    const CScript coinbaseScript = coinbaseTx->vin[0].scriptSig;
+
+    util::Result<ParsedAuxPowCoinbase> parsedCoinbase =
+        ParsedAuxPowCoinbase::Parse(coinbaseScript, hashRoot);
+
+    // Couldn't parse the coinbase, or some other violation
+    if (!parsedCoinbase) {
+        return {{util::ErrorString(parsedCoinbase)}};
+    }
+
+    const uint32_t merkleHeight = vChainMerkleBranch.size();
+    if (parsedCoinbase->nTreeSize != (1U << merkleHeight)) {
+        return {
+            {_("AuxPow merkle branch size does not match parent coinbase")}};
+    }
+
+    const uint32_t expectedIndex = CalcExpectedMerkleTreeIndex(
+        parsedCoinbase->nMergeMineNonce, nChainId, merkleHeight);
+    if (nChainIndex != expectedIndex) {
+        return {{_("AuxPow wrong chain index")}};
+    }
+
+    return {std::monostate()};
 }

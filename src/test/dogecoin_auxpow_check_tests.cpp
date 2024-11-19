@@ -3,9 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <primitives/auxpow.h>
+#include <span.h>
 #include <streams.h>
 #include <util/strencodings.h>
 
+#include <test/lcg.h>
 #include <test/util/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
@@ -99,6 +101,10 @@ BOOST_AUTO_TEST_CASE(auxpow_block700000_test) {
                                     VersionChainId(header.nVersion),
                                     auxpow.vChainMerkleBranch.size()),
         56);
+
+    Consensus::Params params = CChainParams::Main({})->GetConsensus();
+    BOOST_CHECK(auxpow.CheckAuxBlockHash(
+        header.GetHash(), VersionChainId(header.nVersion), params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
@@ -120,6 +126,10 @@ BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
                                     VersionChainId(header.nVersion),
                                     auxpow.vChainMerkleBranch.size()),
         40);
+
+    Consensus::Params params = CChainParams::Main({})->GetConsensus();
+    BOOST_CHECK(auxpow.CheckAuxBlockHash(
+        header.GetHash(), VersionChainId(header.nVersion), params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
@@ -141,6 +151,10 @@ BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
                                     VersionChainId(header.nVersion),
                                     auxpow.vChainMerkleBranch.size()),
         8);
+
+    Consensus::Params params = CChainParams::Main({})->GetConsensus();
+    BOOST_CHECK(auxpow.CheckAuxBlockHash(
+        header.GetHash(), VersionChainId(header.nVersion), params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_parse_coinbase_test) {
@@ -336,6 +350,292 @@ BOOST_AUTO_TEST_CASE(CalcExpectedMerkleTreeIndex_test) {
     // Block 845783
     BOOST_CHECK_EQUAL(CalcExpectedMerkleTreeIndex(0, AUXPOW_CHAIN_ID, 11),
                       1080);
+}
+
+BOOST_AUTO_TEST_CASE(CheckAuxBlockHash_test) {
+    Consensus::Params mainParams = CChainParams::Main({})->GetConsensus();
+    Consensus::Params testParams = CChainParams::TestNet({})->GetConsensus();
+    Consensus::Params regParams = CChainParams::RegTest({})->GetConsensus();
+
+    const std::vector<Consensus::Params> allParams{mainParams, testParams,
+                                                   regParams};
+
+    // nIndex must be 0
+    for (uint32_t nIndex : {1u, 2u, 100u, 0xffffffffu, 0x7fffffffu}) {
+        CAuxPow auxpow{};
+        auxpow.nIndex = nIndex;
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 0, params))
+                    .original,
+                "AuxPow nIndex must be 0");
+        }
+    }
+
+    // vChainMerkleBranch can at most be 30
+    for (size_t branchLen = 31; branchLen <= 100; ++branchLen) {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.vChainMerkleBranch.resize(branchLen);
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
+                    .original,
+                "AuxPow chain merkle branch too long");
+        }
+    }
+
+    // If a strict chain ID is enforced, we don't allow the parent to have the
+    // same chain ID as our chain.
+    for (uint32_t nChainId : {0u, 1u, 2u, 0xffffu, uint32_t(AUXPOW_CHAIN_ID)}) {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.parentBlock.nVersion = MakeVersionWithChainId(nChainId, 0);
+        auxpow.vChainMerkleBranch.resize(31);
+        // Enforced on mainnet
+        BOOST_CHECK_EQUAL(ErrorString(auxpow.CheckAuxBlockHash(
+                                          uint256(), nChainId, mainParams))
+                              .original,
+                          "AuxPow parent has our chain ID");
+        // Enforced on regtest
+        BOOST_CHECK_EQUAL(ErrorString(auxpow.CheckAuxBlockHash(
+                                          uint256(), nChainId, regParams))
+                              .original,
+                          "AuxPow parent has our chain ID");
+        // Not enforced on testnet (so we fail on the merkle branch check)
+        BOOST_CHECK_EQUAL(ErrorString(auxpow.CheckAuxBlockHash(
+                                          uint256(), nChainId, testParams))
+                              .original,
+                          "AuxPow chain merkle branch too long");
+    }
+
+    // coinbaseTx is not in the parentBlock (or merkle proof incorrect)
+    for (size_t branchLen = 0; branchLen < 31; ++branchLen) {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.coinbaseTx = MakeTransactionRef();
+        auxpow.vMerkleBranch.resize(branchLen);
+        auxpow.parentBlock.hashMerkleRoot = uint256S(
+            "123456789012345678901234567890123456789012345678901234567890abcd");
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
+                    .original,
+                "AuxPow merkle root incorrect");
+        }
+    }
+
+    // coinbaseTx is not in the parentBlock (or merkle proof incorrect)
+    for (size_t branchLen = 0; branchLen < 31; ++branchLen) {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.coinbaseTx = MakeTransactionRef();
+        auxpow.vMerkleBranch.resize(branchLen);
+        auxpow.parentBlock.hashMerkleRoot = uint256S(
+            "123456789012345678901234567890123456789012345678901234567890abcd");
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
+                    .original,
+                "AuxPow merkle root incorrect");
+        }
+    }
+
+    // Coinbase can't have no inputs
+    {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.coinbaseTx = MakeTransactionRef();
+        auxpow.vMerkleBranch.resize(7);
+        auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+            auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
+                    .original,
+                "AuxPow coinbase transaction missing input");
+        }
+    }
+
+    // Coinbase must have the required auxpow data in the scriptSig
+    {
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        CMutableTransaction tx;
+        tx.vin.resize(1);
+        auxpow.coinbaseTx = MakeTransactionRef(tx);
+        auxpow.vMerkleBranch.resize(7);
+        auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+            auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
+                    .original,
+                "AuxPow missing chain merkle root in parent coinbase");
+        }
+    }
+
+    // Must set nTreeSize to 2^vChainMerkleBranch.size()
+    for (uint32_t nChainIndex = 0; nChainIndex < 128; ++nChainIndex) {
+        uint256 hashChildBlock = uint256S(
+            "123456789012345678901234567890123456789012345678901234567890abcd");
+
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.nChainIndex = nChainIndex;
+        auxpow.vChainMerkleBranch.resize(7);
+        uint256 hashChainRoot = ComputeMerkleRootForBranch(
+            hashChildBlock, auxpow.vChainMerkleBranch, nChainIndex);
+        std::reverse(hashChainRoot.begin(), hashChainRoot.end());
+
+        std::vector<uint8_t> coinbaseBytes = ToByteVector(MERGE_MINE_PREFIX);
+        coinbaseBytes.insert(coinbaseBytes.end(), hashChainRoot.begin(),
+                             hashChainRoot.end());
+        std::vector<uint8_t> data = {1, 2, 3, 4, 5, 6, 7, 8};
+        coinbaseBytes.insert(coinbaseBytes.end(), data.begin(), data.end());
+
+        CMutableTransaction tx;
+        tx.vin.resize(1);
+        tx.vin[0].scriptSig =
+            CScript(coinbaseBytes.begin(), coinbaseBytes.end());
+
+        auxpow.coinbaseTx = MakeTransactionRef(tx);
+        auxpow.vMerkleBranch.resize(5);
+        auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+            auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+
+        for (const Consensus::Params &params : allParams) {
+            BOOST_CHECK_EQUAL(
+                ErrorString(auxpow.CheckAuxBlockHash(hashChildBlock, 1, params))
+                    .original,
+                "AuxPow merkle branch size does not match parent coinbase");
+        }
+    }
+
+    // Test every chain index (for merkle height 7, this is 128).
+    // Merge-mining requries us to have nChainIndex to be a specific value based
+    // on the merge-mine nonce, chain ID and the merkle height, so for one of
+    // these values, the check will succeed, and for the others, it will error
+    // with "wrong chain index"
+    for (uint32_t nChainIndex = 0; nChainIndex < 128; ++nChainIndex) {
+        const uint32_t merkleHeight = 7;
+        uint256 hashChildBlock = uint256S(
+            "123456789012345678901234567890123456789012345678901234567890abcd");
+
+        CAuxPow auxpow{};
+        auxpow.nIndex = 0;
+        auxpow.nChainIndex = nChainIndex;
+        auxpow.vChainMerkleBranch.resize(7);
+
+        uint256 hashChainRoot = ComputeMerkleRootForBranch(
+            hashChildBlock, auxpow.vChainMerkleBranch, nChainIndex);
+        std::reverse(hashChainRoot.begin(), hashChainRoot.end());
+
+        std::vector<uint8_t> coinbaseBytes = ToByteVector(MERGE_MINE_PREFIX);
+        coinbaseBytes.insert(coinbaseBytes.end(), hashChainRoot.begin(),
+                             hashChainRoot.end());
+        std::vector<uint8_t> data = {1 << merkleHeight, 0, 0, 0, 5, 6, 7, 8};
+        coinbaseBytes.insert(coinbaseBytes.end(), data.begin(), data.end());
+
+        CMutableTransaction tx;
+        tx.vin.resize(1);
+        tx.vin[0].scriptSig =
+            CScript(coinbaseBytes.begin(), coinbaseBytes.end());
+
+        auxpow.coinbaseTx = MakeTransactionRef(tx);
+        auxpow.vMerkleBranch.resize(5);
+        auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+            auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+
+        for (const Consensus::Params &params : allParams) {
+            const uint32_t expectedChainIndex = CalcExpectedMerkleTreeIndex(
+                0x08070605, AUXPOW_CHAIN_ID, merkleHeight);
+            if (expectedChainIndex == nChainIndex) {
+                BOOST_CHECK(auxpow.CheckAuxBlockHash(hashChildBlock,
+                                                     AUXPOW_CHAIN_ID, params));
+            } else {
+                BOOST_CHECK_EQUAL(
+                    ErrorString(auxpow.CheckAuxBlockHash(
+                                    hashChildBlock, AUXPOW_CHAIN_ID, params))
+                        .original,
+                    "AuxPow wrong chain index");
+            }
+        }
+    }
+}
+
+uint256 GenHash(MMIXLinearCongruentialGenerator &lcg) {
+    uint256 hash;
+    for (uint8_t &byte : hash) {
+        byte = lcg.next();
+    }
+    return hash;
+}
+
+BOOST_AUTO_TEST_CASE(CheckAuxBlockHash_rng_test) {
+    const std::vector<Consensus::Params> allParams{
+        CChainParams::Main({})->GetConsensus(),
+        CChainParams::TestNet({})->GetConsensus(),
+        CChainParams::RegTest({})->GetConsensus()};
+
+    MMIXLinearCongruentialGenerator lcg;
+    CDataStream ss{0, 0};
+    // Randomly generate a lot of configurations and test for successes.
+    for (size_t testCase = 0; testCase < 2048; testCase++) {
+        // Generate random parameters
+        const uint32_t chainId = lcg.next() % 0x10000;
+        const uint32_t parentChainId = (chainId + 1) % 0x10000;
+        const uint32_t chainMerkleHeight = lcg.next() % 31;
+        const uint32_t chainTreeSize = 1 << chainMerkleHeight;
+        const uint32_t nMergeMineNonce = lcg.next();
+        const uint256 hashChildBlock = GenHash(lcg);
+        const uint32_t blockMerkleHeight = lcg.next() % 32;
+        const uint32_t versionLowBits = lcg.next() % 256;
+
+        CAuxPow auxpow{};
+        auxpow.vChainMerkleBranch.resize(chainMerkleHeight);
+        for (uint256 &hash : auxpow.vChainMerkleBranch) {
+            hash = GenHash(lcg);
+        }
+        auxpow.vMerkleBranch.resize(blockMerkleHeight);
+        for (uint256 &hash : auxpow.vMerkleBranch) {
+            hash = GenHash(lcg);
+        }
+
+        auxpow.nIndex = 0;
+        auxpow.nChainIndex = CalcExpectedMerkleTreeIndex(
+            nMergeMineNonce, chainId, chainMerkleHeight);
+
+        uint256 hashChainRoot = ComputeMerkleRootForBranch(
+            hashChildBlock, auxpow.vChainMerkleBranch, auxpow.nChainIndex);
+        std::reverse(hashChainRoot.begin(), hashChainRoot.end());
+
+        std::vector<uint8_t> coinbaseBytes = ToByteVector(MERGE_MINE_PREFIX);
+        coinbaseBytes.insert(coinbaseBytes.end(), hashChainRoot.begin(),
+                             hashChainRoot.end());
+        ss.clear();
+        ss << chainTreeSize;
+        ss << nMergeMineNonce;
+        Span<const uint8_t> span = MakeUCharSpan(ss);
+        coinbaseBytes.insert(coinbaseBytes.end(), span.begin(), span.end());
+
+        CMutableTransaction tx;
+        tx.vin.resize(1);
+        tx.vin[0].scriptSig =
+            CScript(coinbaseBytes.begin(), coinbaseBytes.end());
+
+        auxpow.coinbaseTx = MakeTransactionRef(tx);
+        auxpow.parentBlock.nVersion =
+            MakeVersionWithChainId(parentChainId, versionLowBits);
+        auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+            auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+
+        for (const Consensus::Params &params : allParams) {
+            util::Result<std::monostate> result =
+                auxpow.CheckAuxBlockHash(hashChildBlock, chainId, params);
+            BOOST_CHECK_MESSAGE(result, ErrorString(result).original);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
