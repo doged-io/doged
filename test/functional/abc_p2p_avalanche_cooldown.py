@@ -19,6 +19,7 @@ class AvalancheCooldownTest(BitcoinTestFramework):
         self.num_nodes = 1
         self.extra_args = [
             [
+                "-avalanche=1",
                 "-enableminerfund",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",

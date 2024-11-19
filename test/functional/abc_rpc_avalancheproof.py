@@ -59,6 +59,7 @@ class AvalancheProofTest(BitcoinTestFramework):
         self.num_nodes = 2
         self.extra_args = [
             [
+                "-avalanche=1",
                 f"-avaproofstakeutxodustthreshold={PROOF_DUST_THRESHOLD}",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avalancheconflictingproofcooldown=0",

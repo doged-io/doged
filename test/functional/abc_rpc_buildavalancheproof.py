@@ -14,7 +14,9 @@ from test_framework.wallet_util import bytes_to_wif
 class BuildAvalancheProofTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
-        self.extra_args = [["-avaproofstakeutxoconfirmations=1", "-avacooldown=0"]]
+        self.extra_args = [
+            ["-avalanche=1", "-avaproofstakeutxoconfirmations=1", "-avacooldown=0"]
+        ]
 
     def run_test(self):
         node = self.nodes[0]

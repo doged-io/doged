@@ -57,6 +57,7 @@ class ProofInventoryTest(BitcoinTestFramework):
         self.num_nodes = 5
         self.extra_args = [
             [
+                "-avalanche=1",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=2",
                 "-avacooldown=0",
@@ -156,7 +157,9 @@ class ProofInventoryTest(BitcoinTestFramework):
             ],
         )
 
-        self.restart_node(0, ["-avaproofstakeutxodustthreshold=1000000"])
+        self.restart_node(
+            0, ["-avalanche=1", "-avaproofstakeutxodustthreshold=1000000"]
+        )
 
         peer = node.add_p2p_connection(P2PInterface())
         msg = msg_avaproof()
@@ -203,7 +206,8 @@ class ProofInventoryTest(BitcoinTestFramework):
 
         chainwork = int(self.nodes[-1].getblockchaininfo()["chainwork"], 16)
         restart_nodes_with_proof(
-            self.nodes[-1:], extra_args=[f"-minimumchainwork={chainwork + 100:#x}"]
+            self.nodes[-1:],
+            extra_args=["-avalanche=1", f"-minimumchainwork={chainwork + 100:#x}"],
         )
 
         # Add an inbound so the node proof can be registered and advertised
