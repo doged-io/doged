@@ -33,12 +33,14 @@ BOOST_AUTO_TEST_CASE(auxpow_block_setnull_test) {
 
     BOOST_CHECK(VersionHasAuxPow(block.nVersion));
     BOOST_CHECK(block.auxpow);
+    BOOST_CHECK(block.GetBlockHeader().auxpow);
 
     // Test SetNull also resets the auxpow
     block.SetNull();
 
     BOOST_CHECK(!VersionHasAuxPow(block.nVersion));
     BOOST_CHECK(!block.auxpow);
+    BOOST_CHECK(!block.GetBlockHeader().auxpow);
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_blockheader_setnull_test) {
