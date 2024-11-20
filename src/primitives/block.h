@@ -52,6 +52,11 @@ public:
             auxpow.reset();
         }
     }
+
+    void SetNull() {
+        CBaseBlockHeader::SetNull();
+        auxpow.reset();
+    }
 };
 
 class CBlock : public CBlockHeader {
