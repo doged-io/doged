@@ -44,8 +44,8 @@ $ systemctl start bitcoin
 
 To communicate with bitcoin-abc as a normal user:
 
-$ mkdir -p ~/.bitcoin
-$ cat > ~/.bitcoin/bitcoin.conf <<'EOF'
+$ mkdir -p ~/.dogecash
+$ cat > ~/.dogecash/bitcoin.conf <<'EOF'
 rpcport=8332
 rpcuser=bitcoin
 rpcpassword=secret

@@ -9,14 +9,14 @@ trap "kill 0" SIGINT
 
 TOPLEVEL=$(git rev-parse --show-toplevel)
 DEFAULT_BITCOIND="${TOPLEVEL}/build/src/bitcoind"
-DEFAULT_LOG_FILE=~/".bitcoin/debug.log"
+DEFAULT_LOG_FILE=~/".dogecash/debug.log"
 
 help_message() {
   set +x
   echo "Run bitcoind until a given log message is encountered, then kill bitcoind."
   echo ""
   echo "Example usages:"
-  echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.bitcoin\" --callback mycallback"
+  echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.dogecash\" --callback mycallback"
   echo ""
   echo "Options:"
   echo "-h, --help            Display this help message."

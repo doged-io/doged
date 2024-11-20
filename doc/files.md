@@ -16,15 +16,15 @@
 
 ## Data directory location
 
-The data directory is the default location where the Bitcoin ABC files are stored.
+The data directory is the default location where the Dogecash files are stored.
 
 1. The default data directory paths for supported platforms are:
 
 Platform | Data directory path
 ---------|--------------------
-Linux    | `$HOME/.bitcoin/`
-macOS    | `$HOME/Library/Application Support/Bitcoin/`
-Windows  | `%APPDATA%\Bitcoin\` <sup>[\[1\]](#note1)</sup>
+Linux    | `$HOME/.dogecash/`
+macOS    | `$HOME/Library/Application Support/Dogecash/`
+Windows  | `%APPDATA%\Dogecash\` <sup>[\[1\]](#note1)</sup>
 
 2. The non-default data directory path can be specified by `-datadir` option.
 
