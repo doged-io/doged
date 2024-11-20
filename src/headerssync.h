@@ -25,6 +25,11 @@ struct CompressedHeader {
     uint32_t nTime{0};
     uint32_t nBits{0};
     uint32_t nNonce{0};
+    // AuxPow of the header.
+    // Note: this mostly voids the advantage of the compressed header (since
+    // AuxPow can be 100s of bytes), but there's no simple way of avoiding this
+    // loss in efficiency without a lot of re-engineering.
+    std::shared_ptr<CAuxPow> auxpow;
 
     CompressedHeader() { hashMerkleRoot.SetNull(); }
 
@@ -34,6 +39,7 @@ struct CompressedHeader {
         nTime = header.nTime;
         nBits = header.nBits;
         nNonce = header.nNonce;
+        auxpow = header.auxpow;
     }
 
     CBlockHeader GetFullHeader(const BlockHash &hash_prev_block) {
@@ -44,6 +50,7 @@ struct CompressedHeader {
         ret.nTime = nTime;
         ret.nBits = nBits;
         ret.nNonce = nNonce;
+        ret.auxpow = auxpow;
         return ret;
     };
 };

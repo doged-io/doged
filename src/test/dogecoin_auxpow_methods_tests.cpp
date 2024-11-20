@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <headerssync.h>
 #include <pow/auxpow.h>
 #include <pow/pow.h>
 #include <primitives/auxpow.h>
@@ -54,12 +55,22 @@ BOOST_AUTO_TEST_CASE(auxpow_blockheader_setnull_test) {
 
     BOOST_CHECK(VersionHasAuxPow(header.nVersion));
     BOOST_CHECK(header.auxpow);
+    {
+        CompressedHeader compressedHeader(header);
+        BOOST_CHECK(compressedHeader.auxpow);
+        BOOST_CHECK(compressedHeader.GetFullHeader(BlockHash()).auxpow);
+    }
 
     // Test SetNull also resets the auxpow
     header.SetNull();
 
     BOOST_CHECK(!VersionHasAuxPow(header.nVersion));
     BOOST_CHECK(!header.auxpow);
+    {
+        CompressedHeader compressedHeader(header);
+        BOOST_CHECK(!compressedHeader.auxpow);
+        BOOST_CHECK(!compressedHeader.GetFullHeader(BlockHash()).auxpow);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
