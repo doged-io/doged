@@ -14,7 +14,11 @@ class AvalancheOptionsTest(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1
-        self.extra_args = [[]]
+        self.extra_args = [
+            [
+                "-avalanche=1",
+            ]
+        ]
 
     def run_test(self):
         node = self.nodes[0]
@@ -29,6 +33,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
             self.restart_node(
                 0,
                 extra_args=[
+                    "-avalanche=1",
                     "-maxconnections=10",
                     "-maxavalancheoutbound=20",
                 ],
@@ -50,6 +55,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
 
         node.assert_start_raises_init_error(
             extra_args=[
+                "-avalanche=1",
                 f"-avaproof={proof.serialize().hex()}",
                 f"-avamasterkey={bytes_to_wif(privkey.get_bytes())}",
                 f"-conf={os.path.join(node.datadir, 'bitcoin_nobind.conf')}",
@@ -60,6 +66,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
 
         node.assert_start_raises_init_error(
             extra_args=[
+                "-avalanche=1",
                 f"-avaproof={proof.serialize().hex()}",
                 f"-avamasterkey={bytes_to_wif(privkey.get_bytes())}",
                 "-proxy=127.0.01:9050",
@@ -69,6 +76,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
 
         node.assert_start_raises_init_error(
             extra_args=[
+                "-avalanche=1",
                 f"-avaproof={proof.serialize().hex()}",
                 f"-avamasterkey={bytes_to_wif(privkey.get_bytes())}",
                 "-i2psam=127.0.01:7656",
@@ -78,6 +86,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
 
         node.assert_start_raises_init_error(
             extra_args=[
+                "-avalanche=1",
                 f"-avaproof={proof.serialize().hex()}",
                 f"-avamasterkey={bytes_to_wif(privkey.get_bytes())}",
                 "-onlynet=ipv6",

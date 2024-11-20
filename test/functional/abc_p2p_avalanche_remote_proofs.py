@@ -34,6 +34,7 @@ class AvalancheRemoteProofsTest(BitcoinTestFramework):
         self.num_nodes = 2
         self.extra_args = [
             [
+                "-avalanche=1",
                 "-avaproofstakeutxodustthreshold=10000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avaminquorumstake=1000000",

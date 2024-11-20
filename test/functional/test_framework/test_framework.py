@@ -34,6 +34,7 @@ from .util import (
     initialize_datadir,
     p2p_port,
     rpc_port,
+    try_rpc,
     uint256_hex,
     wait_until_helper,
 )
@@ -818,7 +819,18 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
     def sync_all(self, nodes=None):
         self.sync_blocks(nodes)
         self.sync_mempools(nodes)
-        self.sync_proofs(nodes)
+        # Temporary hack to check if avalanche is enabled. This assumes all nodes
+        # have avalanche either enabled or disabled.
+        if (
+            nodes
+            and len(nodes) > 0
+            and not try_rpc(
+                -32603,
+                "Avalanche processor missing or disabled",
+                nodes[0].getavalancheinfo,
+            )
+        ):
+            self.sync_proofs(nodes)
 
     def wait_until(self, test_function, timeout=60):
         return wait_until_helper(

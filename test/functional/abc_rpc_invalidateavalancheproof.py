@@ -27,6 +27,7 @@ class InvalidateAvalancheProofTest(BitcoinTestFramework):
         self.num_nodes = 1
         self.extra_args = [
             [
+                "-avalanche=1",
                 "-avalancheconflictingproofcooldown=0",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",

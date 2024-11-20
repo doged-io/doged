@@ -26,6 +26,7 @@ class MinerFundTest(BitcoinTestFramework):
         self.num_nodes = 2
         self.extra_args = [
             [
+                "-avalanche=1",
                 "-enableminerfund",
             ],
             [],
@@ -148,7 +149,7 @@ class MinerFundTest(BitcoinTestFramework):
 
     def test_without_avalanche(self):
         self.log.info("Test the behavior when avalanche is completely disabled")
-        self.restart_node(0, extra_args=["-enableminerfund"])
+        self.restart_node(0, extra_args=["-avalanche=1", "-enableminerfund"])
         self.restart_node(1, extra_args=["-avalanche=0"])
         self.connect_nodes(0, 1)
 

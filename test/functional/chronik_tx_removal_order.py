@@ -32,7 +32,7 @@ class ChronikTxRemovalOrder(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 1
-        self.extra_args = [["-chronik"]]
+        self.extra_args = [["-chronik", "-avalanche"]]
         self.rpc_timeout = 240
 
     def skip_test_if_missing_module(self):

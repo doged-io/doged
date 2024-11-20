@@ -30,6 +30,7 @@ class ChronikWsOrdering(BitcoinTestFramework):
         self.extra_args = [
             [
                 "-chronik",
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
