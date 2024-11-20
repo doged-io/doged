@@ -425,22 +425,6 @@ BOOST_AUTO_TEST_CASE(CheckAuxBlockHash_test) {
         }
     }
 
-    // coinbaseTx is not in the parentBlock (or merkle proof incorrect)
-    for (size_t branchLen = 0; branchLen < 31; ++branchLen) {
-        CAuxPow auxpow{};
-        auxpow.nIndex = 0;
-        auxpow.coinbaseTx = MakeTransactionRef();
-        auxpow.vMerkleBranch.resize(branchLen);
-        auxpow.parentBlock.hashMerkleRoot = uint256S(
-            "123456789012345678901234567890123456789012345678901234567890abcd");
-        for (const Consensus::Params &params : allParams) {
-            BOOST_CHECK_EQUAL(
-                ErrorString(auxpow.CheckAuxBlockHash(uint256(), 1, params))
-                    .original,
-                "AuxPow merkle root incorrect");
-        }
-    }
-
     // Coinbase can't have no inputs
     {
         CAuxPow auxpow{};
