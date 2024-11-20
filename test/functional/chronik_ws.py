@@ -16,6 +16,7 @@ class ChronikWsTest(BitcoinTestFramework):
         self.num_nodes = 1
         self.extra_args = [
             [
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
