@@ -85,6 +85,13 @@ uint256 ComputeMerkleRootForBranch(uint256 hash,
                                    const std::vector<uint256> &vMerkleBranch,
                                    uint32_t nIndex);
 
+/*
+ * Choose a pseudo-random slot in the chain merkle tree but have it be fixed for
+ * a size/nonce/chain combination.
+ */
+uint32_t CalcExpectedMerkleTreeIndex(uint32_t nNonce, uint32_t nChainId,
+                                     uint32_t merkleHeight);
+
 /** Parsed data from a AuxPow coinbase */
 class ParsedAuxPowCoinbase {
 public:

@@ -94,6 +94,11 @@ BOOST_AUTO_TEST_CASE(auxpow_block700000_test) {
 
     BOOST_CHECK_EQUAL(parsed.nTreeSize, 64);
     BOOST_CHECK_EQUAL(parsed.nMergeMineNonce, 0);
+    BOOST_CHECK_EQUAL(
+        CalcExpectedMerkleTreeIndex(parsed.nMergeMineNonce,
+                                    VersionChainId(header.nVersion),
+                                    auxpow.vChainMerkleBranch.size()),
+        56);
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
@@ -110,6 +115,11 @@ BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
 
     BOOST_CHECK_EQUAL(parsed.nTreeSize, 64);
     BOOST_CHECK_EQUAL(parsed.nMergeMineNonce, 2677055472);
+    BOOST_CHECK_EQUAL(
+        CalcExpectedMerkleTreeIndex(parsed.nMergeMineNonce,
+                                    VersionChainId(header.nVersion),
+                                    auxpow.vChainMerkleBranch.size()),
+        40);
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
@@ -126,6 +136,11 @@ BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
 
     BOOST_CHECK_EQUAL(parsed.nTreeSize, 16);
     BOOST_CHECK_EQUAL(parsed.nMergeMineNonce, 0);
+    BOOST_CHECK_EQUAL(
+        CalcExpectedMerkleTreeIndex(parsed.nMergeMineNonce,
+                                    VersionChainId(header.nVersion),
+                                    auxpow.vChainMerkleBranch.size()),
+        8);
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_parse_coinbase_test) {
@@ -307,6 +322,20 @@ BOOST_AUTO_TEST_CASE(auxpow_parse_coinbase_test) {
                               "preceding bytes of the parent coinbase");
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE(CalcExpectedMerkleTreeIndex_test) {
+    // Block 564415
+    BOOST_CHECK_EQUAL(CalcExpectedMerkleTreeIndex(0, AUXPOW_CHAIN_ID, 5), 24);
+    // Block 750100
+    BOOST_CHECK_EQUAL(
+        CalcExpectedMerkleTreeIndex(0x77654e2f, AUXPOW_CHAIN_ID, 6), 63);
+    // Block 805660
+    BOOST_CHECK_EQUAL(
+        CalcExpectedMerkleTreeIndex(0x9f909ff0, AUXPOW_CHAIN_ID, 6), 40);
+    // Block 845783
+    BOOST_CHECK_EQUAL(CalcExpectedMerkleTreeIndex(0, AUXPOW_CHAIN_ID, 11),
+                      1080);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
