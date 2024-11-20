@@ -20,9 +20,14 @@ constexpr size_t HEADER_COMMITMENT_PERIOD{610};
 // 14521/610 = ~23.8 commitments
 constexpr size_t REDOWNLOAD_BUFFER_SIZE{14521};
 
-// Our memory analysis assumes 48 bytes for a CompressedHeader (so we should
-// re-calculate parameters if we compress further)
-static_assert(sizeof(CompressedHeader) == 48);
+// On Bitcoin, this would be 48 bytes. There, the memory analysis assumes 48
+// bytes for a CompressedHeader (so we would have to re-calculate parameters if
+// we were to compress further).
+//
+// On Dogecoin, the compression is mostly void due to the auxpow. We have to add
+// it anyway here, which results in 16 extra bytes for the std::shared_ptr.
+// In the future, we can find a more efficient way of storing the auxpow.
+static_assert(sizeof(CompressedHeader) == 64);
 
 HeadersSyncState::HeadersSyncState(NodeId id,
                                    const Consensus::Params &consensus_params,
