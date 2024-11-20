@@ -2,8 +2,8 @@
 
 # backward compatibility for existing gentoo layout
 #
-if [ -d "/var/lib/bitcoin/.bitcoin" ]; then
-	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.bitcoin"
+if [ -d "/var/lib/bitcoin/.dogecash" ]; then
+	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.dogecash"
 else
 	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoind"
 fi
