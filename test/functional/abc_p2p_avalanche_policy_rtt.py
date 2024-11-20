@@ -21,6 +21,7 @@ class AvalancheRTTTest(BitcoinTestFramework):
         self.extra_args = [
             [
                 "-enablertt",
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
@@ -28,7 +29,9 @@ class AvalancheRTTTest(BitcoinTestFramework):
                 "-avaminavaproofsnodecount=0",
                 "-whitelist=noban@127.0.0.1",
             ],
-            [],
+            [
+                "-avalanche"
+            ],
         ]
 
     def run_test(self):

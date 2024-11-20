@@ -46,6 +46,7 @@ class AbcMiningHeartbeatTest(BitcoinTestFramework):
         self.extra_args = [
             [
                 "-enablertt",
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
