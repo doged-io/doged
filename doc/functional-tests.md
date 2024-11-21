@@ -11,7 +11,7 @@ There are currently two sets of tests in the [/test/](/test/) directory:
 dogecoind and bitcoin-qt by interacting with them through the RPC and P2P
 interfaces.
 - [util](/test/util) which tests the bitcoin utilities, currently only
-bitcoin-tx.
+dogecoin-tx.
 
 The util tests are run as part of `make check` target. The functional
 tests are run by the Teamcity continuous build process whenever a diff is

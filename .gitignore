@@ -7,7 +7,7 @@ src/bitcoin
 src/dogecoind
 src/dogecoin-cli
 src/bitcoin-seeder
-src/bitcoin-tx
+src/dogecoin-tx
 src/bitcoin-chainstate
 src/bitcoin-wallet
 src/test/test_bitcoin
