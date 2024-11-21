@@ -1,41 +1,37 @@
-[![Bitcoin ABC Logo](share/pixmaps/bitcoinabclogo.png "Bitcoin ABC")](https://www.bitcoinabc.org)
+[![Dogecash Logo](share/pixmaps/bitcoinabclogo.png "Dogecash")](https://www.dogecash.io)
 
-The goal of Bitcoin ABC is to create sound money that is usable by everyone in
+Dogecash is a high performacnce full node implementation for Dogecoin.
+
+Dogecash is not a new blockchain. It is an alternative node implementation that
+is 100% compatible with Dogecoin.
+
+The goal of Dogecash is to create sound money that is usable by everyone in
 the world. This is a civilization-changing technology which will dramatically
 increase human flourishing, freedom, and prosperity. The project aims to
 achieve this goal by implementing a series of optimizations and protocol
 upgrades that will enable peer-to-peer digital cash to succeed at mankind scale.
 
-What is eCash?
+What is Dogecoin?
 ---------------------
 
-[eCash](https://e.cash/) is a digital currency that enables instant payments to
+[Dogecoin](https://dogecoin.com/) is a digital currency that enables instant payments to
 anyone, anywhere in the world. It uses peer-to-peer technology to operate with
 no central authority: managing transactions and issuing money are carried out
-collectively by the network. eCash is a descendant of Bitcoin.
+collectively by the network.
 
 What is Bitcoin ABC?
 --------------------
 
 Bitcoin ABC is the name of open-source software which enables the use of
 eCash. It is a fork of the [Bitcoin Core](https://bitcoincore.org)
-software project.
+software project. Dogecash is a fork of Bitcoin ABC.
 
 License
 -------
 
-Bitcoin ABC is released under the terms of the MIT license. See
+Dogecash is released under the terms of the MIT license. See
 [COPYING](COPYING) for more information or see
 <https://opensource.org/licenses/MIT>.
-
-Development Process
--------------------
-
-This Github repository contains only source code of releases.
-
-Bitcoin ABC development takes place at [reviews.bitcoinabc.org](https://reviews.bitcoinabc.org/)
-
-If you would like to contribute, please read [CONTRIBUTING](CONTRIBUTING.md).
 
 Disclosure Policy
 -----------------
