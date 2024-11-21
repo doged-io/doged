@@ -42,7 +42,6 @@ sections:
         trailing: true
         size: sm
         class: ml-8
-  - title: The Doge-splosion
   - title: Innovations
     description:
       - An inexhaustive list of innovations Bitcoin ABC has spearheaded over the years
@@ -90,12 +89,6 @@ features:
       - title: Dedicated application toolkit
         description: asdf
         icon: i-heroicons-wrench-screwdriver
-      - title: WIP
-      - title: WIP
-pricing:
-  headline: Pricing
-  title: A plan for every need
-  description: Pariatur laborum dolor ea commodo sit aute aliquip qui et cillum excepteur.
 cta:
   headline: Dogecoin For The World
   title: Unleash the Doge with DogeCash
@@ -106,18 +99,10 @@ cta:
     - Dogecash recognizes this necessity and has crafted a Dogecoin-compatible node from the best open source software available. This tried and tested blockchain software will scale Dogecoin for the world... and beyond?
 faq:
   title: Frequently asked questions
-  description: Culpa consectetur dolor pariatur commodo aliqua amet tempor nisi enim deserunt elit cillum.
-  items:
-    - label: Is this a secure service?
-      content: Qui sunt nostrud aliquip reprehenderit enim proident veniam magna aliquip velit occaecat eiusmod nisi deserunt sunt.
-      defaultOpen: true
-    - label: How can I cancel my subscription?
-      content: Consectetur irure Lorem nostrud adipisicing aliqua mollit Lorem sit officia magna eiusmod cupidatat.
-    - label: How does the free trial work?
-      content: Quis officia commodo magna eu qui aliquip duis.
-    - label: Can I switch plans later?
-      content: Dolore irure ullamco dolore eu occaecat magna eiusmod dolor aliqua culpa labore.
-    - label: Do you offer refunds?
-      content: Duis mollit nostrud voluptate mollit Lorem dolore commodo veniam incididunt eiusmod.
-    - label: Do you offer support?
-      content: Aliqua sit nisi consequat pariatur Lorem minim irure qui.
+  description: Coming soon!
+#  items:
+#    - label: TBD
+#      content: Qui sunt nostrud aliquip reprehenderit enim proident veniam magna aliquip velit occaecat eiusmod nisi deserunt sunt.
+#      defaultOpen: true
+#    - label: Lorem ipsum
+#      content: Consectetur irure Lorem nostrud adipisicing aliqua mollit Lorem sit officia magna eiusmod cupidatat.
