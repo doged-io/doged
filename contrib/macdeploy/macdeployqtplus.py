@@ -182,8 +182,8 @@ class FrameworkInfo(object):
 class ApplicationBundleInfo(object):
     def __init__(self, path: str):
         self.path = path
-        # for backwards compatibility reasons, this must remain as BitcoinABC-Qt
-        self.binaryPath = os.path.join(path, "Contents", "MacOS", "BitcoinABC-Qt")
+        # for backwards compatibility reasons, this must remain as Dogecash-Qt
+        self.binaryPath = os.path.join(path, "Contents", "MacOS", "Dogecash-Qt")
         if not os.path.exists(self.binaryPath):
             raise RuntimeError(f"Could not find bundle binary for {path}")
         self.resourcesPath = os.path.join(path, "Contents", "Resources")
@@ -700,7 +700,7 @@ if os.path.exists(appname + ".dmg"):
 
 # ------------------------------------------------
 
-target = os.path.join("dist", "BitcoinABC-Qt.app")
+target = os.path.join("dist", "Dogecash-Qt.app")
 
 print("+ Copying source bundle +")
 if verbose:
@@ -826,7 +826,7 @@ ds["."]["icvp"] = icvp
 ds["."]["vSrn"] = ("long", 1)
 
 ds["Applications"]["Iloc"] = (370, 156)
-ds["BitcoinABC-Qt.app"]["Iloc"] = (128, 156)
+ds["Dogecash-Qt.app"]["Iloc"] = (128, 156)
 
 ds.flush()
 ds.close()

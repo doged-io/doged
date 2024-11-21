@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     // QApplication:: and QCoreApplication:: in the tests
     BitcoinApplication app;
     app.setNode(*node);
-    app.setApplicationName("BitcoinABC-Qt-test");
+    app.setApplicationName("Dogecash-Qt-test");
 
     // Make gArgs available in the NodeContext
     app.node().context()->args = &gArgs;
