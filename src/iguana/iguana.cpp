@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     CScript scriptPubKey(scriptPubKeyRaw.begin(), scriptPubKeyRaw.end());
     CTxOut txout(value, scriptPubKey);
 
-    const uint32_t flags = STANDARD_SCRIPT_VERIFY_FLAGS;
+    const uint32_t flags = STANDARD_SCRIPT_VERIFY_FLAGS_LEGACY;
 
     ECCVerifyHandle ecc_handle;
 
