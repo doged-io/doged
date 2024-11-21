@@ -56,6 +56,7 @@ function onSubmit() {
 <template>
   <UFooter>
     <template #top>
+      <!--
       <UFooterColumns :links="links">
         <template #right>
           <form @submit.prevent="onSubmit">
@@ -86,6 +87,7 @@ function onSubmit() {
           </form>
         </template>
       </UFooterColumns>
+      -->
     </template>
 
     <template #left>
@@ -98,7 +100,7 @@ function onSubmit() {
       <UColorModeButton size="sm" />
 
       <UButton
-        to="https://github.com/nuxt-ui-pro/landing"
+        to="https://github.com/dogecash.io/dogecash"
         target="_blank"
         icon="i-simple-icons-github"
         aria-label="GitHub"
