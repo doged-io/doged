@@ -2,9 +2,9 @@
 set(CPACK_PACKAGE_VENDOR "${COPYRIGHT_HOLDERS_FINAL}")
 set(CPACK_PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION}")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
-set(CPACK_PACKAGE_CONTACT "info@bitcoinabc.org")
+set(CPACK_PACKAGE_CONTACT "tobias.ruck@be.cash")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "Bitcoin-abc")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Dogecash")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/doc/README_windows.txt")
 
@@ -57,7 +57,7 @@ macro(add_start_menu_link LINK_NAME EXE PARAMETERS ICON_EXE ICON_INDEX)
 	)
 endmacro()
 
-set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Bitcoin ABC")
+set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Dogecash")
 add_start_menu_link("${PACKAGE_NAME} (testnet)"
 	"${_nsis_bitcoin_qt}"
 	"-testnet"
