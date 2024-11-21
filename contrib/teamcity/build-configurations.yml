@@ -35,7 +35,7 @@ templates:
 
   ibd:
     targets:
-      - - bitcoind
+      - - dogecoind
     post_build: |
       "${TOPLEVEL}/contrib/teamcity/ibd.sh" -disablewallet -debug=net
     timeout: 28800
@@ -44,7 +44,7 @@ templates:
 
   ibd-no-assumevalid-checkpoint:
     targets:
-      - - bitcoind
+      - - dogecoind
     post_build: |
       "${TOPLEVEL}/contrib/teamcity/ibd.sh" -disablewallet -assumevalid=0 -checkpoints=0 -debug=net
     timeout: 28800
@@ -694,7 +694,7 @@ builds:
 
   check-seeds:
     targets:
-      - - bitcoind
+      - - dogecoind
         - bitcoin-cli
     post_build: |
       # Run on different ports to avoid a race where the rpc port used in the first run

@@ -500,12 +500,12 @@ def run_tests(
         # pgrep exits with code zero when one or more matching processes found
         if (
             subprocess.run(
-                ["pgrep", "-x", "bitcoind"], stdout=subprocess.DEVNULL
+                ["pgrep", "-x", "dogecoind"], stdout=subprocess.DEVNULL
             ).returncode
             == 0
         ):
             print(
-                f"{bold('WARNING!')} There is already a bitcoind process running on "
+                f"{bold('WARNING!')} There is already a dogecoind process running on "
                 "this system. Tests may fail unexpectedly due to resource contention!"
             )
     except OSError:

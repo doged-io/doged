@@ -1,2 +1,2 @@
-bin/bitcoind usr/bin
+bin/dogecoind usr/bin
 bin/bitcoin-cli usr/bin

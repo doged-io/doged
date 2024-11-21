@@ -52,7 +52,7 @@ The following are some helpful notes on how to run Bitcoin ABC on your native pl
 Unpack the files into a directory and run:
 
 - `bin/bitcoin-qt` (GUI) or
-- `bin/bitcoind` (headless)
+- `bin/dogecoind` (headless)
 
 ### Windows
 

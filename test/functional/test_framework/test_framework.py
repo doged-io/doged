@@ -186,7 +186,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             dest="noshutdown",
             default=False,
             action="store_true",
-            help="Don't stop bitcoinds after the test execution",
+            help="Don't stop dogecoinds after the test execution",
         )
         parser.add_argument(
             "--cachedir",
@@ -322,7 +322,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         fname_bitcoind = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            f"bitcoind{config['environment']['EXEEXT']}",
+            f"dogecoind{config['environment']['EXEEXT']}",
         )
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
@@ -399,7 +399,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         else:
             for node in self.nodes:
                 node.cleanup_on_exit = False
-            self.log.info("Note: bitcoinds were not stopped and may still be running")
+            self.log.info("Note: dogecoinds were not stopped and may still be running")
 
         should_clean_up = (
             not self.options.nocleanup

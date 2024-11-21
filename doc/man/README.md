@@ -13,7 +13,7 @@ To generate a man page, use the `doc-manpage-<executable>` where `executable` is
 name of the executable you want to generate the man page for:
 
 ```shell
-ninja doc-manpage-bitcoind
+ninja doc-manpage-dogecoind
 ```
 
 An easiest solution to generate all the man pages at the same time is to use the

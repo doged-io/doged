@@ -30,12 +30,12 @@ information. For development there exist a [bpftrace Reference Guide], a
 
 ## Examples
 
-The bpftrace examples contain a relative path to the `bitcoind` binary. By
+The bpftrace examples contain a relative path to the `dogecoind` binary. By
 default, the scripts should be run from the repository-root and assume a
-self-compiled `bitcoind` binary. The paths in the examples can be changed, for
+self-compiled `dogecoind` binary. The paths in the examples can be changed, for
 example, to point to release builds if needed. See the
 [Bitcoin ABC USDT documentation] on how to list available tracepoints in your
-`bitcoind` binary.
+`dogecoind` binary.
 
 [Bitcoin ABC USDT documentation]: ../../doc/tracing.md#listing-available-tracepoints
 
@@ -82,7 +82,7 @@ about the connection. Peers can be selected individually to view recent P2P
 messages.
 
 ```
-$ python3 contrib/tracing/p2p_monitor.py ./src/bitcoind
+$ python3 contrib/tracing/p2p_monitor.py ./src/dogecoind
 ```
 
 Lists selectable peers and traffic and connection information.
@@ -150,7 +150,7 @@ lost. BCC prints: `Possibly lost 2 samples` on lost messages.
 
 
 ```
-$ python3 contrib/tracing/log_raw_p2p_msgs.py ./src/bitcoind
+$ python3 contrib/tracing/log_raw_p2p_msgs.py ./src/dogecoind
 ```
 
 ```
@@ -188,7 +188,7 @@ In a different terminal, starting Bitcoin ABC in Testnet mode and with
 re-indexing enabled.
 
 ```
-$ ./src/bitcoind -testnet -reindex
+$ ./src/dogecoind -testnet -reindex
 ```
 
 This produces the following output.
@@ -241,7 +241,7 @@ A BCC Python script to log the UTXO cache flushes. Based on the
 `utxocache:flush` tracepoint.
 
 ```bash
-$ python3 contrib/tracing/log_utxocache_flush.py ./src/bitcoind
+$ python3 contrib/tracing/log_utxocache_flush.py ./src/dogecoind
 ```
 
 ```

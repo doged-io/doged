@@ -8,12 +8,12 @@ set -euxo pipefail
 trap "kill 0" SIGINT
 
 TOPLEVEL=$(git rev-parse --show-toplevel)
-DEFAULT_BITCOIND="${TOPLEVEL}/build/src/bitcoind"
+DEFAULT_BITCOIND="${TOPLEVEL}/build/src/dogecoind"
 DEFAULT_LOG_FILE=~/".dogecash/debug.log"
 
 help_message() {
   set +x
-  echo "Run bitcoind until a given log message is encountered, then kill bitcoind."
+  echo "Run dogecoind until a given log message is encountered, then kill dogecoind."
   echo ""
   echo "Example usages:"
   echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.dogecash\" --callback mycallback"
@@ -23,8 +23,8 @@ help_message() {
   echo ""
   echo "-g, --grep            (required) The grep pattern to look for."
   echo ""
-  echo "-c, --callback        (optional) Bash command to execute as a callback. This is useful for interacting with bitcoind before it is killed (to run tests, for example)."
-  echo "-p, --params          (optional) Parameters to provide to bitcoind."
+  echo "-c, --callback        (optional) Bash command to execute as a callback. This is useful for interacting with dogecoind before it is killed (to run tests, for example)."
+  echo "-p, --params          (optional) Parameters to provide to dogecoind."
   echo ""
   echo "Environment Variables:"
   echo "BITCOIND              Default: ${DEFAULT_BITCOIND}"
@@ -100,7 +100,7 @@ PID_WAIT_COUNT=0
 while [ ! -e "${BITCOIND_PID_FILE}" ]; do
   ((PID_WAIT_COUNT+=1))
   if [ "${PID_WAIT_COUNT}" -gt 10 ]; then
-    echo "Timed out waiting for bitcoind PID file"
+    echo "Timed out waiting for dogecoind PID file"
     exit 10
   fi
   sleep 0.5
@@ -143,7 +143,7 @@ set -x
 
 # If the log subshell is still running, then GREP_PATTERN was not found
 if [ -e /proc/${LOG_PID} ]; then
-  echo "bitcoind exited unexpectedly. See '${LOG_FILE}' for details."
+  echo "dogecoind exited unexpectedly. See '${LOG_FILE}' for details."
   exit 20
 fi
 
