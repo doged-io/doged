@@ -17,8 +17,8 @@ source=(https://github.com/Bitcoin-ABC/bitcoin-abc/archive/v$pkgver.tar.gz
         bitcoin.install)
 backup=('etc/bitcoin/bitcoin.conf'
         'etc/logrotate.d/bitcoin')
-provides=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'bitcoin-wallet')
-conflicts=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'bitcoin-wallet')
+provides=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'dogecoin-wallet')
+conflicts=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'dogecoin-wallet')
 install=bitcoin.install
 
 build() {

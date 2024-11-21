@@ -16,7 +16,7 @@ option(BUILD_BITCOIN_TX "Build dogecoin-tx" ON)
 option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
 option(BUILD_BITCOIN_SEEDER "Build dogecoin-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
-option(BUILD_BITCOIN_CHAINSTATE "Build bitcoin-chainstate" OFF)
+option(BUILD_BITCOIN_CHAINSTATE "Build dogecoin-chainstate" OFF)
 option(BUILD_BITCOIN_IGUANA "Activate the Iguana debugger" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
@@ -778,19 +778,19 @@ if(BUILD_BITCOIN_WALLET)
 	add_subdirectory(wallet)
 	target_link_libraries(server wallet)
 
-	# bitcoin-wallet
-	add_executable(bitcoin-wallet bitcoin-wallet.cpp)
-	generate_windows_version_info(bitcoin-wallet
+	# dogecoin-wallet
+	add_executable(dogecoin-wallet bitcoin-wallet.cpp)
+	generate_windows_version_info(dogecoin-wallet
 		DESCRIPTION "CLI tool for ${PACKAGE_NAME} wallets"
 	)
 
-	target_link_libraries(bitcoin-wallet wallet-tool common util)
+	target_link_libraries(dogecoin-wallet wallet-tool common util)
 
-	add_to_symbols_check(bitcoin-wallet)
-	add_to_security_check(bitcoin-wallet)
+	add_to_symbols_check(dogecoin-wallet)
+	add_to_security_check(dogecoin-wallet)
 
-	install_target(bitcoin-wallet)
-	install_manpages(bitcoin-wallet)
+	install_target(dogecoin-wallet)
+	install_manpages(dogecoin-wallet)
 else()
 	target_sources(server PRIVATE dummywallet.cpp)
 endif()
@@ -851,7 +851,7 @@ if(BUILD_BITCOIN_TX)
 	install_manpages(dogecoin-tx)
 endif()
 
-# bitcoin-chainstate
+# dogecoin-chainstate
 if(BUILD_BITCOIN_CHAINSTATE)
 	# TODO: libbitcoinkernel is a work in progress consensus engine library, as more
 	#       and more modules are decoupled from the consensus engine, this list will
@@ -1004,16 +1004,16 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		link_windows_dependencies(bitcoinkernel)
 	endif()
 
-	add_executable(bitcoin-chainstate bitcoin-chainstate.cpp)
+	add_executable(dogecoin-chainstate bitcoin-chainstate.cpp)
 
-	target_link_libraries(bitcoin-chainstate bitcoinkernel)
+	target_link_libraries(dogecoin-chainstate bitcoinkernel)
 
-	generate_windows_version_info(bitcoin-chainstate
+	generate_windows_version_info(dogecoin-chainstate
 		DESCRIPTION "CLI Datadir information utility (experimental)"
 	)
 
-	add_to_symbols_check(bitcoin-chainstate)
-	add_to_security_check(bitcoin-chainstate)
+	add_to_symbols_check(dogecoin-chainstate)
+	add_to_security_check(dogecoin-chainstate)
 endif()
 
 # dogecoind

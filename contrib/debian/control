@@ -70,7 +70,7 @@ Description: peer-to-peer digital currency - standalone transaction tool
  tool which can be used without a bitcoin daemon.  Some means of
  exchanging minimal transaction data with peers is still required.
 
-Package: bitcoin-wallet
+Package: dogecoin-wallet
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - wallet tool
@@ -80,5 +80,5 @@ Description: peer-to-peer digital currency - wallet tool
  and issuing money are carried out collectively by the network. Bitcoin ABC
  is the name of the open source software which enables the use of this currency.
  .
- This package provides bitcoin-wallet, an offline tool for creating and
+ This package provides dogecoin-wallet, an offline tool for creating and
  interacting with Bitcoin ABC wallet files.
