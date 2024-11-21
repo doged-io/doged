@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BANTABLEMODEL_H
-#define BITCOIN_QT_BANTABLEMODEL_H
+#ifndef DOGECASH_QT_BANTABLEMODEL_H
+#define DOGECASH_QT_BANTABLEMODEL_H
 
 #include <addrdb.h>
 #include <net.h>
@@ -74,4 +74,4 @@ private:
     std::unique_ptr<BanTablePriv> priv;
 };
 
-#endif // BITCOIN_QT_BANTABLEMODEL_H
+#endif // DOGECASH_QT_BANTABLEMODEL_H

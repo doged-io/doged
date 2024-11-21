@@ -17,7 +17,7 @@ ninja
 ninja install # optional
 ```
 
-This will build bitcoin-qt as well.
+This will build dogecash-qt as well.
 
 Dependencies
 ---------------------
@@ -127,9 +127,9 @@ User-Space, Statically Defined Tracing (USDT) dependencies (provides the tracepo
 Dependencies for the GUI: Ubuntu & Debian
 -----------------------------------------
 
-If you want to build bitcoin-qt, make sure that the required packages for Qt development
+If you want to build dogecash-qt, make sure that the required packages for Qt development
 are installed. Qt 5 is necessary to build the GUI.
-To build without GUI pass `-DBUILD_BITCOIN_QT=OFF` on the cmake command line.
+To build without GUI pass `-DBUILD_DOGECASH_QT=OFF` on the cmake command line.
 
 To build with Qt 5 you need the following:
 
@@ -263,7 +263,7 @@ non-wallet distribution of the latest changes on Arch Linux:
     cd bitcoin-abc/
     mkdir build
     cd build
-    cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF -DENABLE_UPNP=OFF -DBUILD_BITCOIN_ZMQ=OFF -DUSE_JEMALLOC=OFF
+    cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_DOGECASH_QT=OFF -DENABLE_UPNP=OFF -DBUILD_BITCOIN_ZMQ=OFF -DUSE_JEMALLOC=OFF
     ninja
 
 AArch64 Cross-compilation

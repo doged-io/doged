@@ -32,7 +32,7 @@ set(CPACK_SOURCE_GENERATOR "TGZ")
 # CPack NSIS installer options
 Include(InstallationHelper)
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${CMAKE_INSTALL_BINDIR}")
-set(_nsis_bitcoin_qt "bitcoin-qt.exe")
+set(_nsis_dogecash_qt "dogecash-qt.exe")
 
 set(CPACK_NSIS_URL_INFO_ABOUT "${CPACK_PACKAGE_HOMEPAGE_URL}")
 set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
@@ -41,8 +41,8 @@ set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin-abc.ico")
 set(CPACK_NSIS_MUI_UNIICON "${CPACK_NSIS_MUI_ICON}")
 set(CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP "${CMAKE_SOURCE_DIR}/share/pixmaps/nsis-wizard.bmp")
 set(CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP "${CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP}")
-set(CPACK_NSIS_MUI_FINISHPAGE_RUN "${_nsis_bitcoin_qt}")
-set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}")
+set(CPACK_NSIS_MUI_FINISHPAGE_RUN "${_nsis_dogecash_qt}")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "${CMAKE_INSTALL_BINDIR}/${_nsis_dogecash_qt}")
 
 set(CPACK_NSIS_COMPRESSOR "/SOLID lzma")
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
@@ -57,11 +57,11 @@ macro(add_start_menu_link LINK_NAME EXE PARAMETERS ICON_EXE ICON_INDEX)
 	)
 endmacro()
 
-set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Bitcoin ABC")
+set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_dogecash_qt}" "Bitcoin ABC")
 add_start_menu_link("${PACKAGE_NAME} (testnet)"
-	"${_nsis_bitcoin_qt}"
+	"${_nsis_dogecash_qt}"
 	"-testnet"
-	"${_nsis_bitcoin_qt}"
+	"${_nsis_dogecash_qt}"
 	1
 )
 

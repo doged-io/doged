@@ -51,12 +51,12 @@ The following are some helpful notes on how to run Bitcoin ABC on your native pl
 
 Unpack the files into a directory and run:
 
-- `bin/bitcoin-qt` (GUI) or
+- `bin/dogecash-qt` (GUI) or
 - `bin/dogecashd` (headless)
 
 ### Windows
 
-Unpack the files into a directory, and then run bitcoin-qt.exe.
+Unpack the files into a directory, and then run dogecash-qt.exe.
 
 ### macOS
 

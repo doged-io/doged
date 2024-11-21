@@ -3,7 +3,7 @@
 pkgname=bitcoin-abc-qt
 pkgver=0.30.4
 pkgrel=0
-pkgdesc="Bitcoin ABC with dogecashd, dogecash-cli, bitcoin-tx, bitcoin-seeder and bitcoin-qt"
+pkgdesc="Bitcoin ABC with dogecashd, dogecash-cli, bitcoin-tx, bitcoin-seeder and dogecash-qt"
 arch=('i686' 'x86_64')
 url="https://bitcoinabc.org"
 depends=('boost-libs' 'libevent' 'desktop-file-utils' 'qt5-base' 'protobuf' 'openssl' 'miniupnpc' 'libnatpmp' 'zeromq' 'qrencode' 'jemalloc')
@@ -17,8 +17,8 @@ source=(https://github.com/Bitcoin-ABC/bitcoin-abc/archive/v$pkgver.tar.gz
         bitcoin.install)
 backup=('etc/bitcoin/bitcoin.conf'
         'etc/logrotate.d/bitcoin')
-provides=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-qt' 'bitcoin-seeder' 'bitcoin-wallet')
-conflicts=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-qt' 'bitcoin-seeder' 'bitcoin-wallet')
+provides=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'dogecash-qt' 'bitcoin-seeder' 'bitcoin-wallet')
+conflicts=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'dogecash-qt' 'bitcoin-seeder' 'bitcoin-wallet')
 install=bitcoin.install
 
 build() {
@@ -52,7 +52,7 @@ package() {
   cd "$srcdir/bitcoin-abc-$pkgver"
 
   msg2 'Installing desktop shortcut...'
-  install -Dm644 contrib/debian/bitcoin-qt.desktop \
+  install -Dm644 contrib/debian/dogecash-qt.desktop \
     "$pkgdir"/usr/share/applications/bitcoin.desktop
   install -Dm644 share/pixmaps/bitcoin-abc128.png \
     "$pkgdir"/usr/share/pixmaps/bitcoin-abc128.png

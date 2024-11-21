@@ -44,7 +44,7 @@ Description: peer-to-peer network based digital currency - daemon
  This package provides the daemon, dogecashd, and the CLI tool
  dogecash-cli to interact with the daemon.
 
-Package: bitcoin-qt
+Package: dogecash-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
@@ -54,7 +54,7 @@ Description: peer-to-peer network based digital currency - Qt GUI
  and issuing money are carried out collectively by the network. Bitcoin ABC
  is the name of the open source software which enables the use of this currency.
  .
- This package provides Bitcoin-Qt, a GUI for Bitcoin based on Qt.
+ This package provides Dogecash-Qt, a GUI for Bitcoin based on Qt.
 
 Package: bitcoin-tx
 Architecture: any

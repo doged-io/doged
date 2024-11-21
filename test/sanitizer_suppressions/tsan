@@ -9,7 +9,7 @@ race:WalletBatch::WriteHDChain
 race:CZMQAbstractPublishNotifier::SendMessage
 race:BerkeleyBatch
 race:BerkeleyDatabase
-race:bitcoin-qt
+race:dogecash-qt
 
 # deadlock (TODO fix)
 deadlock:Chainstate::ConnectTip

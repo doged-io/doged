@@ -25,7 +25,7 @@ ninja install-manpages
 
 ## Headless generation
 
-Generating the man page for `bitcoin-qt` will require a X server. If you are
+Generating the man page for `dogecash-qt` will require a X server. If you are
 running headlessly, you can use the `xfvb-run` utility included in the `xvfb`
 package:
 

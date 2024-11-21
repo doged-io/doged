@@ -44,7 +44,7 @@ Before you start building, please make sure that your compiler supports C++17.
 
     Configure and build the headless Bitcoin ABC binaries as well as the GUI.
 
-    You can disable the GUI build by passing `-DBUILD_BITCOIN_QT=OFF` to cmake.
+    You can disable the GUI build by passing `-DBUILD_DOGECASH_QT=OFF` to cmake.
 
     It is recommended to create a build directory to build out-of-tree.
 

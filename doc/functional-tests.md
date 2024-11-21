@@ -8,7 +8,7 @@ etc.
 There are currently two sets of tests in the [/test/](/test/) directory:
 
 - [functional](/test/functional) which test the functionality of
-dogecashd and bitcoin-qt by interacting with them through the RPC and P2P
+dogecashd and dogecash-qt by interacting with them through the RPC and P2P
 interfaces.
 - [util](/test/util) which tests the bitcoin utilities, currently only
 bitcoin-tx.

@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_SENDCOINSDIALOG_H
-#define BITCOIN_QT_SENDCOINSDIALOG_H
+#ifndef DOGECASH_QT_SENDCOINSDIALOG_H
+#define DOGECASH_QT_SENDCOINSDIALOG_H
 
 #include <qt/clientmodel.h>
 #include <qt/walletmodel.h>
@@ -141,4 +141,4 @@ private:
     QString confirmButtonText;
 };
 
-#endif // BITCOIN_QT_SENDCOINSDIALOG_H
+#endif // DOGECASH_QT_SENDCOINSDIALOG_H

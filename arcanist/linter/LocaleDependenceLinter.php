@@ -5,7 +5,7 @@
  * Unnecessary locale dependence can cause bugs that are very tricky to isolate
  * and fix.
  *
- * Be aware that dogecashd and bitcoin-qt differ in terms of localization: Qt
+ * Be aware that dogecashd and dogecash-qt differ in terms of localization: Qt
  * opts in to POSIX localization by running setlocale(LC_ALL, "") on startup,
  * whereas no such call is made in dogecashd.
  *
@@ -18,12 +18,12 @@
  * thus ignored.
  *
  * This results in situations where dogecashd is guaranteed to be running
- * with the classic locale ("C") whereas the locale of bitcoin-qt will vary
+ * with the classic locale ("C") whereas the locale of dogecash-qt will vary
  * depending on the user's environment variables.
  *
  * An example: Assuming the environment variable LC_ALL=de_DE then the
  * call std::to_string(1.23) will return "1.230000" in dogecashd but
- * "1,230000" in bitcoin-qt.
+ * "1,230000" in dogecash-qt.
  *
  * From the Qt documentation:
  * "On Unix/Linux Qt is configured to use the system locale settings by default.

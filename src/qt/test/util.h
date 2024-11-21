@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TEST_UTIL_H
-#define BITCOIN_QT_TEST_UTIL_H
+#ifndef DOGECASH_QT_TEST_UTIL_H
+#define DOGECASH_QT_TEST_UTIL_H
 
 class QString;
 
@@ -15,4 +15,4 @@ class QString;
  */
 void ConfirmMessage(QString *text = nullptr, int msec = 0);
 
-#endif // BITCOIN_QT_TEST_UTIL_H
+#endif // DOGECASH_QT_TEST_UTIL_H

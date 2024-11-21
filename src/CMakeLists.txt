@@ -13,7 +13,7 @@ option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
 option(BUILD_DOGECASH_CLI "Build dogecash-cli" ON)
 option(BUILD_BITCOIN_TX "Build bitcoin-tx" ON)
-option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
+option(BUILD_DOGECASH_QT "Build dogecash-qt" ON)
 option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(BUILD_BITCOIN_CHAINSTATE "Build bitcoin-chainstate" OFF)
@@ -79,7 +79,7 @@ include(NativeExecutable)
 native_add_cmake_flags(
 	"-DBUILD_BITCOIN_WALLET=OFF"
 	"-DBUILD_BITCOIN_CHRONIK=OFF"
-	"-DBUILD_BITCOIN_QT=OFF"
+	"-DBUILD_DOGECASH_QT=OFF"
 	"-DBUILD_BITCOIN_ZMQ=OFF"
 	"-DENABLE_QRCODE=OFF"
 	"-DENABLE_NATPMP=OFF"
@@ -1028,8 +1028,8 @@ add_to_security_check(dogecashd)
 install_target(dogecashd)
 install_manpages(dogecashd)
 
-# Bitcoin-qt
-if(BUILD_BITCOIN_QT)
+# Dogecash-qt
+if(BUILD_DOGECASH_QT)
 	add_subdirectory(qt)
 endif()
 
