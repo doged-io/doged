@@ -1,9 +1,11 @@
-# Copyright (c) 2023 The Bitcoin developers
+# Copyright (c) 2024 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
 Test whether Dogecoin auxpow blocks are accepted.
 """
+
+import time
 
 from test_framework.address import P2SH_OP_TRUE
 from test_framework.blocktools import (
@@ -36,7 +38,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
     def run_test(self):
         node = self.nodes[0]
 
-        mocktime = 1300000000
+        mocktime = int(time.time())
         node.setmocktime(mocktime)
 
         height = 1

@@ -582,6 +582,23 @@ class CAuxPow:
 
         return bytes(r)
 
+    def __repr__(self):
+        vMerkleBranch_strs = [
+            uint256_hex(merkle_hash) for merkle_hash in self.vMerkleBranch
+        ]
+        vChainMerkleBranch_strs = [
+            uint256_hex(merkle_hash) for merkle_hash in self.vChainMerkleBranch
+        ]
+        return (
+            f"CAuxPow(coinbaseTx={self.coinbaseTx} "
+            f"hashBlock={uint256_hex(self.hashBlock)} "
+            f"vMerkleBranch={vMerkleBranch_strs} "
+            f"nIndex={self.nIndex} "
+            f"vChainMerkleBranch={vChainMerkleBranch_strs} "
+            f"nChainIndex={self.nChainIndex} "
+            f"parentBlock={self.parentBlock})"
+        )
+
 
 class CBlockHeader:
     __slots__ = (
@@ -688,7 +705,8 @@ class CBlockHeader:
             f"CBlockHeader(nVersion={self.nVersion} "
             f"hashPrevBlock={uint256_hex(self.hashPrevBlock)} "
             f"hashMerkleRoot={uint256_hex(self.hashMerkleRoot)} nTime={self.nTime} "
-            f"nBits={self.nBits:08x} nNonce={self.nNonce:08x})"
+            f"nBits={self.nBits:08x} nNonce={self.nNonce:08x} "
+            f"auxpow={self.auxpow})"
         )
 
 
@@ -766,7 +784,7 @@ class CBlock(CBlockHeader):
             f"hashPrevBlock={uint256_hex(self.hashPrevBlock)} "
             f"hashMerkleRoot={uint256_hex(self.hashMerkleRoot)} "
             f"nTime={self.nTime} nBits={self.nBits:08x} "
-            f"nNonce={self.nNonce:08x} vtx={self.vtx!r})"
+            f"nNonce={self.nNonce:08x} auxpow{self.auxpow} vtx={self.vtx!r})"
         )
 
 

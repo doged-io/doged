@@ -221,7 +221,9 @@ class ChronikWsTest(BitcoinTestFramework):
         # And a second block that builds on top of the first one, which will
         # also be rejected
         cb2 = create_coinbase(height + 1)
-        block2 = create_block(int(block1.hash, 16), cb2, now, version=VERSION_CHAIN_ID_BITS | 4)
+        block2 = create_block(
+            int(block1.hash, 16), cb2, now, version=VERSION_CHAIN_ID_BITS | 4
+        )
         block2.solve()
 
         # Send the first block and invalidate it
