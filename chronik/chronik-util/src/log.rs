@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//! Macros for logging messages to bitcoind
+//! Macros for logging messages to dogecashd
 
 use std::sync::OnceLock;
 
@@ -10,9 +10,9 @@ use std::sync::OnceLock;
 /// [`log_chronik`].
 #[derive(Debug)]
 pub struct Loggers {
-    /// Logging function to log to bitcoind's logging system.
+    /// Logging function to log to dogecashd's logging system.
     pub log: fn(&str, &str, u32, &str),
-    /// Logging function to log to bitcoind's logging system under the
+    /// Logging function to log to dogecashd's logging system under the
     /// BCLog::Chronik category.
     pub log_chronik: fn(&str, &str, u32, &str),
 }
@@ -60,7 +60,7 @@ pub fn mount_loggers(loggers: Loggers) {
     let _ = MOUNTED_LOGGER.set(loggers);
 }
 
-/// Logs the message to bitcoind's logging system:
+/// Logs the message to dogecashd's logging system:
 ///
 /// ```ignore
 /// let world = "world";
@@ -81,7 +81,7 @@ macro_rules! log {
     };
 }
 
-/// Logs the message to bitcoind's logging system under the BCLog::Chronik
+/// Logs the message to dogecashd's logging system under the BCLog::Chronik
 /// category:
 ///
 /// ```ignore

@@ -1552,12 +1552,12 @@ export interface TxInput {
     prevOut: OutPoint;
     /**
      * Script unlocking the output, in hex encoding.
-     * Aka. `scriptSig` in bitcoind parlance.
+     * Aka. `scriptSig` in dogecashd parlance.
      */
     inputScript: string;
     /**
      * Script of the output, in hex encoding.
-     * Aka. `scriptPubKey` in bitcoind parlance.
+     * Aka. `scriptPubKey` in dogecashd parlance.
      * Not present for coinbase txs
      */
     outputScript?: string;
@@ -1577,7 +1577,7 @@ export interface TxOutput {
     value: number;
     /**
      * Script of this output, locking the coins.
-     * Aka. `scriptPubKey` in bitcoind parlance.
+     * Aka. `scriptPubKey` in dogecashd parlance.
      */
     outputScript: string;
     /**

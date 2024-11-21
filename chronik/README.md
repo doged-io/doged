@@ -5,14 +5,14 @@
 # Chronik
 Chronik is a fast and reliable indexer built directly into the Bitcoin ABC node.
 
-This README is about how to run a bitcoind instance with Chronik enabled.
+This README is about how to run a dogecashd instance with Chronik enabled.
 - **If you want to know how to use `chronik-client` in your eCash apps**, go to [../modules/chronik-client/README.md].
 
 ## Getting started
 To enable Chronik, simply pass `-chronik` as CLI argument:
 
 ```
-./bitcoind -chronik
+./dogecashd -chronik
 ```
 
 Alternatively, you can also set it in the bitcoin.conf file:
@@ -29,13 +29,13 @@ We're continuously working on optimizing Chronik to bring down initial sync time
 On mainnet, by default, Chronik is bound to port 8331 on `127.0.0.1` (IPv4) and `::1` (IPv6). If you want to change this, use the `-chronikbind` argument, here e.g. binding it to port 10000 on IPv4:
 
 ```
-./bitcoind -chronik -chronikbind=127.0.0.1:10000
+./dogecashd -chronik -chronikbind=127.0.0.1:10000
 ```
 
 You can specify `-chronikbind` multiple times to bind to multiple hosts, here e.g. binding to both IPv4 and IPv6 on port 10000:
 
 ```
-./bitcoind -chronik -chronikbind=127.0.0.1:10000 -chronikbind=[::1]:10000
+./dogecashd -chronik -chronikbind=127.0.0.1:10000 -chronikbind=[::1]:10000
 ```
 
 Note: Unlike the RPC interface, Chronik is designed to be openly available on the internet, so at this point in development, there's no username/password, no bearer token, cookie or whitelist available.

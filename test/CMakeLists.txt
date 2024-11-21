@@ -68,7 +68,7 @@ function(add_functional_test_check TARGET DESCRIPTION)
 		CUSTOM_TARGET_ARGS
 			COMMENT "Running ${DESCRIPTION}"
 			DEPENDS
-				bitcoind
+				dogecashd
 				${_TEST_TARGET_DEPENDS}
 				${CMAKE_CURRENT_BINARY_DIR}/functional/test_runner.py
 			USES_TERMINAL

@@ -182,7 +182,7 @@ pub struct Chronik {
 }
 
 impl Chronik {
-    /// Tx added to the bitcoind mempool
+    /// Tx added to the dogecashd mempool
     pub fn handle_tx_added_to_mempool(
         &self,
         ptx: &ffi::CTransaction,
@@ -196,7 +196,7 @@ impl Chronik {
         );
     }
 
-    /// Tx removed from the bitcoind mempool
+    /// Tx removed from the dogecashd mempool
     pub fn handle_tx_removed_from_mempool(&self, txid: [u8; 32]) {
         self.block_if_paused();
         let mut indexer = self.indexer.blocking_write();

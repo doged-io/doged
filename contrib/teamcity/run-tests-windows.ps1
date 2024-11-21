@@ -9,8 +9,8 @@ pushd artifacts/bin
 
 function check_help_version {
   try {
-    .\bitcoind.exe -version
-    .\bitcoind.exe -help
+    .\dogecashd.exe -version
+    .\dogecashd.exe -help
     .\bitcoin-qt.exe -version
     .\bitcoin-qt.exe -help
     .\bitcoin-cli.exe -version
@@ -33,16 +33,16 @@ function New-TemporaryDirectory {
   return $tempDir.FullName
 }
 
-function check_bitcoind {
+function check_dogecashd {
   trap {
-    Stop-Process -name bitcoind -Force 
+    Stop-Process -name dogecashd -Force 
   }
 
   $datadir = New-TemporaryDirectory
   $datadirArg = "-datadir=$datadir"
 
-  Write-Host "Launching bitcoind in the background"
-  Start-Process -NoNewWindow .\bitcoind.exe "-noprinttoconsole $datadirArg"
+  Write-Host "Launching dogecashd in the background"
+  Start-Process -NoNewWindow .\dogecashd.exe "-noprinttoconsole $datadirArg"
 
   for($i=60; $i -gt 0; $i--) {
     Start-Sleep -Seconds 1
@@ -51,28 +51,28 @@ function check_bitcoind {
     }
   }
   if($i -eq 0) {
-    throw "Failed to start bitcoind"
+    throw "Failed to start dogecashd"
   }
 
-  Write-Host "Stopping bitcoind"
+  Write-Host "Stopping dogecashd"
   .\bitcoin-cli.exe $datadirArg stop
 
   for($i=60; $i -gt 0; $i--) {
     Start-Sleep -Seconds 1
-    if(-Not (Get-Process -Name bitcoind -ErrorAction SilentlyContinue)) {
+    if(-Not (Get-Process -Name dogecashd -ErrorAction SilentlyContinue)) {
       break
     }
   }
   if($i -eq 0) {
-    throw "Failed to stop bitcoind"
+    throw "Failed to stop dogecashd"
   }
 }
 
 Write-Host "--- Checking helps and versions ---"
 check_help_version
 
-Write-Host "--- Checking bitcoind can run and communicate via bitcoin-cli ---"
-check_bitcoind
+Write-Host "--- Checking dogecashd can run and communicate via bitcoin-cli ---"
+check_dogecashd
 
 Write-Host "--- Running bitcoin unit tests ---"
 .\test_bitcoin.exe

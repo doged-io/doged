@@ -283,9 +283,9 @@ Defining `DEBUG_LOCKCONTENTION` adds a "lock" logging category that, when enable
 logs the location and duration of each lock contention to the `debug.log` file.
 
 To enable it, run cmake with `-DDEBUG_LOCKCONTENTION` added to your CPPFLAGS,
-e.g. `-DCMAKE_CXX_FLAGS="-DDEBUG_LOCKCONTENTION"`, then build and run bitcoind.
+e.g. `-DCMAKE_CXX_FLAGS="-DDEBUG_LOCKCONTENTION"`, then build and run dogecashd.
 
-You can then use the `-debug=lock` configuration option at bitcoind startup or
+You can then use the `-debug=lock` configuration option at dogecashd startup or
 `bitcoin-cli logging '["lock"]'` at runtime to turn on lock contention logging.
 It can be toggled off again with `bitcoin-cli logging [] '["lock"]'`.
 
@@ -328,7 +328,7 @@ in-tree. Example use:
 $ valgrind --suppressions=contrib/valgrind.supp src/test/test_bitcoin
 $ valgrind --suppressions=contrib/valgrind.supp --leak-check=full \
       --show-leak-kinds=all src/test/test_bitcoin --log_level=test_suite
-$ valgrind -v --leak-check=full src/bitcoind -printtoconsole
+$ valgrind -v --leak-check=full src/dogecashd -printtoconsole
 ```
 
 ### Compiling for test coverage
@@ -380,13 +380,13 @@ Make sure you [understand the security
 trade-offs](https://lwn.net/Articles/420403/) of setting these kernel
 parameters.
 
-To profile a running bitcoind process for 60 seconds, you could use an
+To profile a running dogecashd process for 60 seconds, you could use an
 invocation of `perf record` like this:
 
 ```sh
 $ perf record \
     -g --call-graph dwarf --per-thread -F 140 \
-    -p `pgrep bitcoind` -- sleep 60
+    -p `pgrep dogecashd` -- sleep 60
 ```
 
 You could then analyze the results by running
@@ -521,8 +521,8 @@ and its `cs_KeyStore` lock for example).
 Threads
 -------
 
-- [Main thread (`bitcoind`)](https://www.bitcoinabc.org/doc/dev/bitcoind_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
-  : Started from `main()` in `bitcoind.cpp`. Responsible for starting up and
+- [Main thread (`dogecashd`)](https://www.bitcoinabc.org/doc/dev/dogecashd_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97)
+  : Started from `main()` in `dogecashd.cpp`. Responsible for starting up and
   shutting down the application.
 
 - [ThreadImport (`b-loadblk`)](https://www.bitcoinabc.org/doc/dev/init_8cpp.html#ae9e290a0e829ec0198518de2eda579d1)
@@ -1004,7 +1004,7 @@ In addition to reviewing the upstream changes in `env_posix.cc`, you can use `ls
 check this. For example, on Linux this command will show open `.ldb` file counts:
 
 ```bash
-$ lsof -p $(pidof bitcoind) |\
+$ lsof -p $(pidof dogecashd) |\
     awk 'BEGIN { fd=0; mem=0; } /ldb$/ { if ($4 == "mem") mem++; else fd++ } END { printf "mem = %s, fd = %s\n", mem, fd}'
 mem = 119, fd = 0
 ```

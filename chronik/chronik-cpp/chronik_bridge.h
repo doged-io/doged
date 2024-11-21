@@ -56,7 +56,7 @@ void log_print_chronik(const rust::Str logging_function,
                        const rust::Str msg);
 
 /**
- * Bridge to bitcoind to access the node.
+ * Bridge to dogecashd to access the node.
  */
 class ChronikBridge {
     const node::NodeContext &m_node;

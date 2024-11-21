@@ -19,11 +19,11 @@ bool noui_ThreadSafeQuestion(
 /** Non-GUI handler, which only logs a message. */
 void noui_InitMessage(const std::string &message);
 
-/** Connect all bitcoind signal handlers */
+/** Connect all dogecashd signal handlers */
 void noui_connect();
 
 /**
- * Redirect all bitcoind signal handlers to LogPrintf. Used to check or suppress
+ * Redirect all dogecashd signal handlers to LogPrintf. Used to check or suppress
  * output during test runs that produce expected errors.
  */
 void noui_test_redirect();

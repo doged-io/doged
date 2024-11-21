@@ -366,9 +366,9 @@ def main():
     if args.junitoutput and not os.path.isabs(args.junitoutput):
         args.junitoutput = os.path.join(tmpdir, args.junitoutput)
 
-    enable_bitcoind = config["components"].getboolean("ENABLE_BITCOIND")
+    enable_dogecashd = config["components"].getboolean("ENABLE_DOGECASHD")
 
-    if not enable_bitcoind:
+    if not enable_dogecashd:
         print("No functional tests to run.")
         print("Rerun ./configure with --with-daemon and then make")
         sys.exit(0)
@@ -495,17 +495,17 @@ def run_tests(
 ):
     args = args or []
 
-    # Warn if bitcoind is already running
+    # Warn if dogecashd is already running
     try:
         # pgrep exits with code zero when one or more matching processes found
         if (
             subprocess.run(
-                ["pgrep", "-x", "bitcoind"], stdout=subprocess.DEVNULL
+                ["pgrep", "-x", "dogecashd"], stdout=subprocess.DEVNULL
             ).returncode
             == 0
         ):
             print(
-                f"{bold('WARNING!')} There is already a bitcoind process running on "
+                f"{bold('WARNING!')} There is already a dogecashd process running on "
                 "this system. Tests may fail unexpectedly due to resource contention!"
             )
     except OSError:

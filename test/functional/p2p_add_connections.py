@@ -21,7 +21,7 @@ MAX_AVALANCHE_OUTBOUND_CONNECTIONS = 12
 
 class P2PFeelerReceiver(P2PInterface):
     def on_version(self, message):
-        # The bitcoind node closes feeler connections as soon as a version
+        # The dogecashd node closes feeler connections as soon as a version
         # message is received from the test framework. Don't send any responses
         # to the node's version message since the connection will already be
         # closed.

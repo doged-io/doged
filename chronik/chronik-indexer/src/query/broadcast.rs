@@ -33,7 +33,7 @@ pub struct QueryBroadcast<'a> {
     pub avalanche: &'a Avalanche,
     /// Mempool
     pub mempool: &'a Mempool,
-    /// Access to bitcoind to actually broadcast txs
+    /// Access to dogecashd to actually broadcast txs
     pub node: &'a Node,
     /// Whether the SLP/ALP token index is enabled
     pub is_token_index_enabled: bool,

@@ -35,7 +35,7 @@ Note: This script will prompt you to sign with your PGP key.
 -p, --ppa <ppa-name>      PPA hostname. Defaults to: '${DEFAULT_PPA}'. If no config file exists at ${DPUT_CONFIG_FILE}
                             then one will be created using '${DEFAULT_PPA}'. Setting this option to a hostname other than
                             the default will require that you add the necessary settings to the config file.
--v, --version <version>   Set the package version. Defaults to the version returned by 'bitcoind --version'.
+-v, --version <version>   Set the package version. Defaults to the version returned by 'dogecashd --version'.
                             If set, version must be of the form: MAJOR.MINOR.REVISION[.OPTIONALPATCH]
                             OPTIONALPATCH may be necessary when source files have changed but the version revision has not,
                             as the PPA will reject source archives of the same name.
@@ -157,7 +157,7 @@ ninja package_source
 
 # Get package version if one wasn't explicitly set
 if [ -z "${PACKAGE_VERSION}" ]; then
-  PACKAGE_VERSION=$(./src/bitcoind --version | grep -Eo "[0-9]+\.[0-9]+\.[0-9]+")
+  PACKAGE_VERSION=$(./src/dogecashd --version | grep -Eo "[0-9]+\.[0-9]+\.[0-9]+")
 fi
 echo "Package version: ${PACKAGE_VERSION}"
 

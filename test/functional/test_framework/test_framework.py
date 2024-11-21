@@ -178,14 +178,14 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             dest="nocleanup",
             default=False,
             action="store_true",
-            help="Leave bitcoinds and test.* datadir on exit or error",
+            help="Leave dogecashds and test.* datadir on exit or error",
         )
         parser.add_argument(
             "--noshutdown",
             dest="noshutdown",
             default=False,
             action="store_true",
-            help="Don't stop bitcoinds after the test execution",
+            help="Don't stop dogecashds after the test execution",
         )
         parser.add_argument(
             "--cachedir",
@@ -318,17 +318,17 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         config = configparser.ConfigParser()
         config.read_file(open(self.options.configfile, encoding="utf-8"))
         self.config = config
-        fname_bitcoind = os.path.join(
+        fname_dogecashd = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            f"bitcoind{config['environment']['EXEEXT']}",
+            f"dogecashd{config['environment']['EXEEXT']}",
         )
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
             f"bitcoin-cli{config['environment']['EXEEXT']}",
         )
-        self.options.bitcoind = os.getenv("BITCOIND", default=fname_bitcoind)
+        self.options.dogecashd = os.getenv("DOGECASHD", default=fname_dogecashd)
         self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
         self.options.emulator = config["environment"]["EMULATOR"] or None
 
@@ -398,7 +398,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         else:
             for node in self.nodes:
                 node.cleanup_on_exit = False
-            self.log.info("Note: bitcoinds were not stopped and may still be running")
+            self.log.info("Note: dogecashds were not stopped and may still be running")
 
         should_clean_up = (
             not self.options.nocleanup
@@ -569,7 +569,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         if extra_args is None:
             extra_args = [[]] * num_nodes
         if binary is None:
-            binary = [self.options.bitcoind] * num_nodes
+            binary = [self.options.dogecashd] * num_nodes
         assert_equal(len(extra_confs), num_nodes)
         assert_equal(len(extra_args), num_nodes)
         assert_equal(len(binary), num_nodes)
@@ -585,7 +585,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                     chronik_port=chronik_port(i),
                     timewait=self.rpc_timeout,
                     timeout_factor=self.options.timeout_factor,
-                    bitcoind=binary[i],
+                    dogecashd=binary[i],
                     bitcoin_cli=self.options.bitcoincli,
                     coverage_dir=self.options.coveragedir,
                     cwd=self.options.tmpdir,
@@ -605,7 +605,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 )
 
     def start_node(self, i, *args, **kwargs):
-        """Start a bitcoind"""
+        """Start a dogecashd"""
 
         node = self.nodes[i]
 
@@ -616,7 +616,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
 
     def start_nodes(self, extra_args=None, *args, **kwargs):
-        """Start multiple bitcoinds"""
+        """Start multiple dogecashds"""
 
         if extra_args is None:
             extra_args = [None] * self.num_nodes
@@ -636,11 +636,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 coverage.write_all_rpc_commands(self.options.coveragedir, node.rpc)
 
     def stop_node(self, i, expected_stderr="", wait=0):
-        """Stop a bitcoind test node"""
+        """Stop a dogecashd test node"""
         self.nodes[i].stop_node(expected_stderr, wait=wait)
 
     def stop_nodes(self, wait=0):
-        """Stop multiple bitcoind test nodes"""
+        """Stop multiple dogecashd test nodes"""
         for node in self.nodes:
             # Issue RPC to stop nodes
             node.stop_node(wait=wait, wait_until_stopped=False)
@@ -860,7 +860,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             else self.options.loglevel.upper()
         )
         ch.setLevel(ll)
-        # Format logs the same as bitcoind's debug.log with microprecision (so
+        # Format logs the same as dogecashd's debug.log with microprecision (so
         # log files can be concatenated and sorted)
         formatter = logging.Formatter(
             fmt="%(asctime)s.%(msecs)03d000Z %(name)s (%(levelname)s): %(message)s",
@@ -913,7 +913,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                     chronik_port=chronik_port(CACHE_NODE_ID),
                     timewait=self.rpc_timeout,
                     timeout_factor=self.options.timeout_factor,
-                    bitcoind=self.options.bitcoind,
+                    dogecashd=self.options.dogecashd,
                     bitcoin_cli=self.options.bitcoincli,
                     coverage_dir=None,
                     cwd=self.options.tmpdir,
@@ -1011,10 +1011,10 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         except ImportError:
             raise SkipTest("bcc python module not available")
 
-    def skip_if_no_bitcoind_tracepoints(self):
-        """Skip the running test if bitcoind has not been compiled with USDT tracepoint support."""
+    def skip_if_no_dogecashd_tracepoints(self):
+        """Skip the running test if dogecashd has not been compiled with USDT tracepoint support."""
         if not self.is_usdt_compiled():
-            raise SkipTest("bitcoind has not been built with USDT tracepoints enabled.")
+            raise SkipTest("dogecashd has not been built with USDT tracepoints enabled.")
 
     def skip_if_no_bpf_permissions(self):
         """Skip the running test if we don't have permissions to do BPF syscalls and load BPF maps."""
@@ -1030,10 +1030,10 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         if platform.system() != "Linux":
             raise SkipTest("not on a Linux system")
 
-    def skip_if_no_bitcoind_zmq(self):
-        """Skip the running test if bitcoind has not been compiled with zmq support."""
+    def skip_if_no_dogecashd_zmq(self):
+        """Skip the running test if dogecashd has not been compiled with zmq support."""
         if not self.is_zmq_compiled():
-            raise SkipTest("bitcoind has not been built with zmq enabled.")
+            raise SkipTest("dogecashd has not been built with zmq enabled.")
 
     def skip_if_no_wallet(self):
         """Skip the running test if wallet has not been compiled."""

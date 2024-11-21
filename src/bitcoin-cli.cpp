@@ -159,7 +159,7 @@ static void SetupCliArgs(ArgsManager &argsman) {
     argsman.AddArg(
         "-rpcwallet=<walletname>",
         "Send RPC for non-default wallet on RPC server (needs to exactly match "
-        "corresponding -wallet option passed to bitcoind). This changes the "
+        "corresponding -wallet option passed to dogecashd). This changes the "
         "RPC endpoint used, e.g. http://127.0.0.1:8332/wallet/<walletname>",
         ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
@@ -516,7 +516,7 @@ public:
 
         const UniValue &networkinfo{batch[ID_NETWORKINFO]["result"]};
         if (networkinfo["version"].getInt<int>() < 230000) {
-            throw std::runtime_error("-netinfo requires bitcoind server to be "
+            throw std::runtime_error("-netinfo requires dogecashd server to be "
                                      "running v0.23.0 and up");
         }
 
@@ -820,7 +820,7 @@ static UniValue CallRPC(BaseRequestHandler *rh, const std::string &strMethod,
         }
         throw CConnectionFailed(
             strprintf("Could not connect to the server %s:%d%s\n\nMake sure "
-                      "the bitcoind server is running and that you are "
+                      "the dogecashd server is running and that you are "
                       "connecting to the correct RPC port.",
                       host, port, responseErrorMessage));
     } else if (response.status == HTTP_UNAUTHORIZED) {

@@ -111,7 +111,7 @@ class InitStressTest(BitcoinTestFramework):
             # tweaked_contents[50:250] = b'1' * 200
             # target_file.write_bytes(bytes(tweaked_contents))
             #
-            # At the moment I can't get this to work (bitcoind loads
+            # At the moment I can't get this to work (dogecashd loads
             # successfully?) so investigate doing this later.
 
             node.assert_start_raises_init_error(

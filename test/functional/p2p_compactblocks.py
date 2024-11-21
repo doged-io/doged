@@ -50,7 +50,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
 from test_framework.util import assert_equal, assert_greater_than_or_equal, uint256_hex
 
-# TestP2PConn: A peer we use to send messages to bitcoind, and store responses.
+# TestP2PConn: A peer we use to send messages to dogecashd, and store responses.
 
 
 class TestP2PConn(P2PInterface):
@@ -277,7 +277,7 @@ class CompactBlocksTest(BitcoinTestFramework):
             and "headers" in p.last_message,
         )
 
-    # This test actually causes bitcoind to (reasonably!) disconnect us, so do
+    # This test actually causes dogecashd to (reasonably!) disconnect us, so do
     # this last.
     def test_invalid_cmpctblock_message(self):
         self.generate(self.nodes[0], COINBASE_MATURITY + 1)
@@ -293,7 +293,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getbestblockhash(), uint256_hex(block.hashPrevBlock))
 
     # Compare the generated shortids to what we expect based on BIP 152, given
-    # bitcoind's choice of nonce.
+    # dogecashd's choice of nonce.
     def test_compactblock_construction(self, test_node):
         node = self.nodes[0]
         # Generate a bunch of transactions.
@@ -397,7 +397,7 @@ class CompactBlocksTest(BitcoinTestFramework):
                 header_and_shortids.shortids.pop(0)
             index += 1
 
-    # Test that bitcoind requests compact blocks when we announce new blocks
+    # Test that dogecashd requests compact blocks when we announce new blocks
     # via header or inv, and that responding to getblocktxn causes the block
     # to be successfully reconstructed.
     def test_compactblock_requests(self, test_node):
@@ -608,7 +608,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         assert_equal(absolute_indices, sorted(expected_indices))
 
         # Now give an incorrect response.
-        # Note that it's possible for bitcoind to be smart enough to know we're
+        # Note that it's possible for dogecashd to be smart enough to know we're
         # lying, since it could check to see if the shortid matches what we're
         # sending, and eg disconnect us for misbehavior.  If that behavior
         # change was made, we could just modify this test by having a
@@ -634,7 +634,7 @@ class CompactBlocksTest(BitcoinTestFramework):
 
     def test_getblocktxn_handler(self, test_node):
         node = self.nodes[0]
-        # bitcoind will not send blocktxn responses for blocks whose height is
+        # dogecashd will not send blocktxn responses for blocks whose height is
         # more than 10 blocks deep.
         MAX_GETBLOCKTXN_DEPTH = 10
         chain_height = node.getblockcount()

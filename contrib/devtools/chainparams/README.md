@@ -3,20 +3,20 @@
 Utilities to generate chainparams constants that are compiled into the client
 (see [src/chainparamsconstants.h](/src/chainparamsconstants.h).
 
-The chainparams constants are fetched from bitcoind, dumped to intermediate
+The chainparams constants are fetched from dogecashd, dumped to intermediate
 files, and then compiled into [src/chainparamsconstants.h](/src/chainparamsconstants.h).
-If you're running bitcoind locally, the following instructions will work
+If you're running dogecashd locally, the following instructions will work
 out-of-the-box:
 
 ## Mainnet
 ```
-bitcoind
+dogecashd
 make_chainparams > chainparams_main.txt
 ```
 
 ## Testnet
 ```
-bitcoind --testnet
+dogecashd --testnet
 make_chainparams -a 127.0.0.1:18332 > chainparams_test.txt
 ```
 

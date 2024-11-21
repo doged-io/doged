@@ -11,38 +11,38 @@ then
 fi
 
 GENERATOR_SCRIPT="$1"
-BITCOIND_COMMAND="$2"
+DOGECASHD_COMMAND="$2"
 BITCOIN_CLI_COMMAND="$3"
 
-BITCOIND_PID_FILE="_bitcoind.pid"
-"${BITCOIND_COMMAND}" -regtest -daemon -pid="${BITCOIND_PID_FILE}"
+DOGECASHD_PID_FILE="_dogecashd.pid"
+"${DOGECASHD_COMMAND}" -regtest -daemon -pid="${DOGECASHD_PID_FILE}"
 
-shutdown_bitcoind() {
+shutdown_dogecashd() {
   "${BITCOIN_CLI_COMMAND}" -regtest stop > /dev/null 2>&1
 
-  # Waiting for bitcoind shut down
+  # Waiting for dogecashd shut down
   PID_WAIT_COUNT=0
-  while [ -e "${BITCOIND_PID_FILE}" ]
+  while [ -e "${DOGECASHD_PID_FILE}" ]
   do
     : $((PID_WAIT_COUNT+=1))
     if [ "${PID_WAIT_COUNT}" -gt 20 ]
     then
-      echo "Timed out waiting for bitcoind to stop"
+      echo "Timed out waiting for dogecashd to stop"
       exit 3
     fi
     sleep 0.5
   done
 }
-trap "shutdown_bitcoind" EXIT
+trap "shutdown_dogecashd" EXIT
 
-# Waiting for bitcoind to spin up
+# Waiting for dogecashd to spin up
 RPC_HELP_WAIT_COUNT=0
 while ! "${BITCOIN_CLI_COMMAND}" -regtest help > /dev/null 2>&1
 do
   : $((RPC_HELP_WAIT_COUNT+=1))
   if [ "${RPC_HELP_WAIT_COUNT}" -gt 10 ]
   then
-    echo "Timed out waiting for bitcoind to start"
+    echo "Timed out waiting for dogecashd to start"
     exit 2
   fi
   sleep 0.5

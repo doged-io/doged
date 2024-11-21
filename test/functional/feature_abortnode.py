@@ -1,12 +1,12 @@
 # Copyright (c) 2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test bitcoind aborts if can't disconnect a block.
+"""Test dogecashd aborts if can't disconnect a block.
 
 - Start a single node and generate 3 blocks.
 - Delete the undo data.
 - Mine a fork that requires disconnecting the tip.
-- Verify that bitcoind AbortNode's.
+- Verify that dogecashd AbortNode's.
 """
 
 import os

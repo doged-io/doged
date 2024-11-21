@@ -33,7 +33,7 @@ use crate::{
 
 /// Ref-counted indexer with read or write access
 pub type ChronikIndexerRef = Arc<RwLock<ChronikIndexer>>;
-/// Ref-counted access to the bitcoind node
+/// Ref-counted access to the dogecashd node
 pub type NodeRef = Arc<Node>;
 /// Ref-counted pause notifier for Chronik indexing
 pub type PauseNotifyRef = Arc<PauseNotify>;
@@ -54,7 +54,7 @@ pub struct ChronikServerParams {
     pub hosts: Vec<SocketAddr>,
     /// Indexer to read data from
     pub indexer: ChronikIndexerRef,
-    /// Access to the bitcoind node
+    /// Access to the dogecashd node
     pub node: NodeRef,
     /// Handle for pausing/resuming indexing any updates from the node
     pub pause_notify: PauseNotifyRef,

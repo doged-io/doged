@@ -1,2 +1,2 @@
-contrib/bitcoind.bash-completion	bitcoind
+contrib/dogecashd.bash-completion	dogecashd
 contrib/bitcoin-cli.bash-completion	bitcoin-cli

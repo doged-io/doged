@@ -1,6 +1,6 @@
 # Copyright (c) 2017 The Bitcoin developers
 
-project(bitcoind)
+project(dogecashd)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -1016,17 +1016,17 @@ if(BUILD_BITCOIN_CHAINSTATE)
 	add_to_security_check(bitcoin-chainstate)
 endif()
 
-# bitcoind
-add_executable(bitcoind bitcoind.cpp)
-target_link_libraries(bitcoind server)
-generate_windows_version_info(bitcoind
+# dogecashd
+add_executable(dogecashd dogecashd.cpp)
+target_link_libraries(dogecashd server)
+generate_windows_version_info(dogecashd
 	DESCRIPTION "Bitcoin node with a JSON-RPC server"
 )
-add_to_symbols_check(bitcoind)
-add_to_security_check(bitcoind)
+add_to_symbols_check(dogecashd)
+add_to_security_check(dogecashd)
 
-install_target(bitcoind)
-install_manpages(bitcoind)
+install_target(dogecashd)
+install_manpages(dogecashd)
 
 # Bitcoin-qt
 if(BUILD_BITCOIN_QT)

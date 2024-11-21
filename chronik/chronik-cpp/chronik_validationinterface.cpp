@@ -13,7 +13,7 @@
 namespace chronik {
 
 /**
- * CValidationInterface connecting bitcoind events to Chronik
+ * CValidationInterface connecting dogecashd events to Chronik
  */
 class ChronikValidationInterface final : public CValidationInterface {
 public:

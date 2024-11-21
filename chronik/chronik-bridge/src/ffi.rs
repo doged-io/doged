@@ -19,7 +19,7 @@ mod ffi_inner {
         pub height: i32,
     }
 
-    /// Block coming from bitcoind to Chronik.
+    /// Block coming from dogecashd to Chronik.
     ///
     /// We don't index all fields (e.g. hashMerkleRoot), only those that are
     /// needed when querying a range of blocks.
@@ -179,10 +179,10 @@ mod ffi_inner {
         #[namespace = ""]
         type CTransaction;
 
-        /// Bridge to bitcoind to access the node
+        /// Bridge to dogecashd to access the node
         type ChronikBridge;
 
-        /// Print the message to bitcoind's logs.
+        /// Print the message to dogecashd's logs.
         fn log_print(
             logging_function: &str,
             source_file: &str,
@@ -190,7 +190,7 @@ mod ffi_inner {
             msg: &str,
         );
 
-        /// Print the message to bitcoind's logs under the BCLog::Chronik
+        /// Print the message to dogecashd's logs under the BCLog::Chronik
         /// category.
         fn log_print_chronik(
             logging_function: &str,
@@ -322,7 +322,7 @@ mod ffi_inner {
             spent_coins: &CxxVector<CCoin>,
         ) -> Result<Tx>;
 
-        /// Bridge bitcoind's classes to the shared struct [`Block`].
+        /// Bridge dogecashd's classes to the shared struct [`Block`].
         fn bridge_block(
             block: &CBlock,
             block_undo: &CBlockUndo,

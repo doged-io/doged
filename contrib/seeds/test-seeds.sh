@@ -49,10 +49,10 @@ case $1 in
 esac
 done
 
-BITCOIND="${BUILD_DIR}/src/bitcoind"
+DOGECASHD="${BUILD_DIR}/src/dogecashd"
 BITCOIN_CLI="${BUILD_DIR}/src/bitcoin-cli"
-if [ ! -x "${BITCOIND}" ]; then
-  echo "${BITCOIND} does not exist or has incorrect permissions."
+if [ ! -x "${DOGECASHD}" ]; then
+  echo "${DOGECASHD} does not exist or has incorrect permissions."
   exit 10
 fi
 if [ ! -x "${BITCOIN_CLI}" ]; then
@@ -62,12 +62,12 @@ fi
 
 TEMP_DATADIR=$(mktemp -d)
 : "${RPC_PORT:=${DEFAULT_RPC_PORT}}"
-BITCOIND="${BITCOIND} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT} -connect=0 -daemon"
+DOGECASHD="${DOGECASHD} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT} -connect=0 -daemon"
 BITCOIN_CLI="${BITCOIN_CLI} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT}"
 
->&2 echo "Spinning up bitcoind..."
-${BITCOIND} || {
-  echo "Error starting bitcoind. Stopping script."
+>&2 echo "Spinning up dogecashd..."
+${DOGECASHD} || {
+  echo "Error starting dogecashd. Stopping script."
   exit 12
 }
 cleanup() {
@@ -80,7 +80,7 @@ trap "cleanup" EXIT
 
 # Short sleep to make sure the RPC server is available
 sleep 0.1
-# Wait until bitcoind is fully spun up
+# Wait until dogecashd is fully spun up
 WARMUP_TIMEOUT=60
 for _ in $(seq 1 ${WARMUP_TIMEOUT}); do
   ${BITCOIN_CLI} getconnectioncount &> /dev/null

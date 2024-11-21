@@ -101,7 +101,7 @@ pub struct ChronikIndexer {
     block_merkle_tree: Mutex<BlockMerkleTree>,
 }
 
-/// Access to the bitcoind node.
+/// Access to the dogecashd node.
 #[derive(Debug)]
 pub struct Node {
     /// FFI bridge to the node.
@@ -128,7 +128,7 @@ pub enum ChronikIndexerError {
     #[error("Failed creating path {0}")]
     CreateDirFailed(PathBuf),
 
-    /// Cannot rewind blocks that bitcoind doesn't have
+    /// Cannot rewind blocks that dogecashd doesn't have
     #[error(
         "Cannot rewind Chronik, it contains block {0} that the node doesn't \
          have. You may need to use -reindex/-chronikreindex, or delete \

@@ -1,11 +1,11 @@
 Sample configuration files for:
 ```
-SystemD: bitcoind.service
-Upstart: bitcoind.conf
-OpenRC:  bitcoind.openrc
-         bitcoind.openrcconf
-CentOS:  bitcoind.init
-macOS:   org.bitcoin.bitcoind.plist
+SystemD: dogecashd.service
+Upstart: dogecashd.conf
+OpenRC:  dogecashd.openrc
+         dogecashd.openrcconf
+CentOS:  dogecashd.init
+macOS:   org.bitcoin.dogecashd.plist
 ```
 have been made available to assist packagers in creating node packages here.
 
