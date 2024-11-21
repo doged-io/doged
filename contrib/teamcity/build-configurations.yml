@@ -695,7 +695,7 @@ builds:
   check-seeds:
     targets:
       - - dogecoind
-        - bitcoin-cli
+        - dogecoin-cli
     post_build: |
       # Run on different ports to avoid a race where the rpc port used in the first run
       # may not be closed in time for the second to start.

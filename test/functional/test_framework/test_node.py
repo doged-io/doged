@@ -170,7 +170,7 @@ class TestNode:
         if use_cli and not os.path.isfile(bitcoin_cli):
             raise FileNotFoundError(
                 f"Binary '{bitcoin_cli}' could not be found.\nTry setting it"
-                f" manually:\n\tBITCOINCLI=<path/to/bitcoin-cli> {sys.argv[0]}"
+                f" manually:\n\tBITCOINCLI=<path/to/dogecoin-cli> {sys.argv[0]}"
             )
         self.cli = TestNodeCLI(bitcoin_cli, self.datadir, self.emulator)
         self.use_cli = use_cli
@@ -1087,7 +1087,7 @@ class TestNodeCLI:
         if command is not None:
             p_args += [command]
         p_args += pos_args + named_args
-        self.log.debug(f"Running bitcoin-cli {p_args[2:]}")
+        self.log.debug(f"Running dogecoin-cli {p_args[2:]}")
         if self.emulator is not None:
             p_args = [self.emulator] + p_args
         process = subprocess.Popen(

@@ -26,7 +26,7 @@ include(TestSuite)
 
 set(_TEST_TARGET_DEPENDS "")
 if(BUILD_BITCOIN_CLI)
-	list(APPEND _TEST_TARGET_DEPENDS bitcoin-cli)
+	list(APPEND _TEST_TARGET_DEPENDS dogecoin-cli)
 endif()
 if(BUILD_BITCOIN_WALLET)
 	list(APPEND _TEST_TARGET_DEPENDS bitcoin-wallet)

@@ -181,7 +181,7 @@ can be called after the TestShell is shut down.
 | `rpc_timeout` | `60` | Sets the RPC server timeout for the underlying dogecoind processes. |
 | `setup_clean_chain` | `False` | A 200-block-long chain is initialized from cache by default. Instead, `setup_clean_chain` initializes an empty blockchain if set to `True`. |
 | `randomseed` | Random Integer | `TestShell.options.randomseed` is a member of `TestShell` which can be accessed during a test to seed a random generator. User can override default with a constant value for reproducible test runs. |
-| `supports_cli` | `False` | Whether the bitcoin-cli utility is compiled and available for the test. |
+| `supports_cli` | `False` | Whether the dogecoin-cli utility is compiled and available for the test. |
 | `tmpdir` | `"/var/folders/.../"` | Sets directory for test logs. Will be deleted upon a successful test run unless `nocleanup` is set to `True` |
 | `trace_rpc` | `False` | Logs all RPC calls if set to `True`. |
-| `usecli` | `False` | Uses the bitcoin-cli interface for all dogecoind commands instead of directly calling the RPC server. Requires `supports_cli`. |
+| `usecli` | `False` | Uses the dogecoin-cli interface for all dogecoind commands instead of directly calling the RPC server. Requires `supports_cli`. |

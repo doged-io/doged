@@ -11,7 +11,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
-option(BUILD_BITCOIN_CLI "Build bitcoin-cli" ON)
+option(BUILD_BITCOIN_CLI "Build dogecoin-cli" ON)
 option(BUILD_BITCOIN_TX "Build bitcoin-tx" ON)
 option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
 option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
@@ -818,21 +818,21 @@ if(BUILD_BITCOIN_SEEDER)
 	add_subdirectory(seeder)
 endif()
 
-# bitcoin-cli
+# dogecoin-cli
 if(BUILD_BITCOIN_CLI)
-	add_executable(bitcoin-cli bitcoin-cli.cpp)
-	generate_windows_version_info(bitcoin-cli
+	add_executable(dogecoin-cli bitcoin-cli.cpp)
+	generate_windows_version_info(dogecoin-cli
 		DESCRIPTION "JSON-RPC client for ${PACKAGE_NAME}"
 	)
 
-	target_link_libraries(bitcoin-cli common rpcclient)
-	link_event(bitcoin-cli event)
+	target_link_libraries(dogecoin-cli common rpcclient)
+	link_event(dogecoin-cli event)
 
-	add_to_symbols_check(bitcoin-cli)
-	add_to_security_check(bitcoin-cli)
+	add_to_symbols_check(dogecoin-cli)
+	add_to_security_check(dogecoin-cli)
 
-	install_target(bitcoin-cli)
-	install_manpages(bitcoin-cli)
+	install_target(dogecoin-cli)
+	install_manpages(dogecoin-cli)
 endif()
 
 # bitcoin-tx

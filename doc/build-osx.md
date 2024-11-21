@@ -91,8 +91,8 @@ Other commands:
 -------
 
     ./src/dogecoind -daemon # Starts the bitcoin daemon.
-    ./src/bitcoin-cli --help # Outputs a list of command-line options.
-    ./src/bitcoin-cli help # Outputs a list of RPC commands when the daemon is running.
+    ./src/dogecoin-cli --help # Outputs a list of command-line options.
+    ./src/dogecoin-cli help # Outputs a list of RPC commands when the daemon is running.
 
 Notes
 -----

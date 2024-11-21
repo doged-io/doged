@@ -82,7 +82,7 @@ static void SetupCliArgs(ArgsManager &argsman) {
             "arguments are number of blocks to generate (default: %s) and "
             "maximum iterations to try (default: %s), equivalent to RPC "
             "generatetoaddress nblocks and maxtries arguments. Example: "
-            "bitcoin-cli -generate 4 1000",
+            "dogecoin-cli -generate 4 1000",
             DEFAULT_NBLOCKS, DEFAULT_MAX_TRIES),
         ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg(
@@ -214,14 +214,14 @@ static int AppInitRPC(int argc, char *argv[]) {
             strUsage += FormatParagraph(LicenseInfo());
         } else {
             strUsage += "\n"
-                        "Usage:  bitcoin-cli [options] <command> [params]  "
+                        "Usage:  dogecoin-cli [options] <command> [params]  "
                         "Send command to " PACKAGE_NAME "\n"
-                        "or:     bitcoin-cli [options] -named <command> "
+                        "or:     dogecoin-cli [options] -named <command> "
                         "[name=value]...  Send command to " PACKAGE_NAME
                         " (with named arguments)\n"
-                        "or:     bitcoin-cli [options] help                "
+                        "or:     dogecoin-cli [options] help                "
                         "List commands\n"
-                        "or:     bitcoin-cli [options] help <command>      Get "
+                        "or:     dogecoin-cli [options] help <command>      Get "
                         "help for a command\n";
 
             strUsage += "\n" + gArgs.GetHelpMessage();
@@ -926,7 +926,7 @@ static void ParseError(const UniValue &error, std::string &strPrint,
         if (err_code.isNum() &&
             err_code.getInt<int>() == RPC_WALLET_NOT_SPECIFIED) {
             strPrint += "\nTry adding \"-rpcwallet=<filename>\" option to "
-                        "bitcoin-cli command line.";
+                        "dogecoin-cli command line.";
         }
     } else {
         strPrint = "error: " + error.write();

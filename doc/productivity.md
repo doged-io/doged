@@ -67,14 +67,14 @@ You can also set up [upstream refspecs](#reference-prs-easily-with-refspecs) to 
 Bash completion does not work out of the box for locally built binaries, but
 you can make it work for your environment for any binary that has a
 `.bash-completion` file in `/contrib`. In this example, binaries are built
-out-of-tree and we setup bash completion for bitcoin-cli and dogecoind. The
+out-of-tree and we setup bash completion for dogecoin-cli and dogecoind. The
 completion function names can be determined by inspecting the
 `.bash-completion` file for each binary.
 ```
 source ./contrib/dogecoind.bash-completion
 complete -F _dogecoind ./dogecoind
-source ./contrib/bitcoin-cli.bash-completion
-complete -F _bitcoin_cli ./bitcoin-cli
+source ./contrib/dogecoin-cli.bash-completion
+complete -F _bitcoin_cli ./dogecoin-cli
 ```
 
 Rebasing/Merging code
