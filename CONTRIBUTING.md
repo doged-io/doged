@@ -1,14 +1,14 @@
-Contributing to Bitcoin ABC
-===========================
+Contributing to Dogecash
+========================
 
-The Bitcoin ABC project welcomes contributors!
+The Dogecash project welcomes contributors!
 
-This guide is intended to help developers contribute effectively to Bitcoin ABC.
+This guide is intended to help developers contribute effectively to Dogecash.
 
 Communicating with Developers
 -----------------------------
 
-To get in contact with Bitcoin ABC developers, you can join the
+To get in contact with Dogecash developers, you can join the
 [eCash Development Telegram group](https://t.me/eCashDevelopment).
 The intent of this group is to facilitate development of Bitcoin ABC and other
 eCash node implementations. We welcome people who wish to participate.
@@ -24,10 +24,10 @@ It is not for:
 * Market discussion
 * Non-constructive criticism
 
-Bitcoin ABC Development Philosophy
-----------------------------------
+Dogecash Development Philosophy
+-------------------------------
 
-Bitcoin ABC aims for fast iteration and continuous integration.
+Dogecash aims for fast iteration and continuous integration.
 
 This means that there should be quick turnaround for patches to be proposed,
 reviewed, and committed. Changes should not sit in a queue for long.
@@ -59,7 +59,7 @@ quickly, it should be reverted, and re-applied later when it no longer breaks th
 top priority, more important than completing other tasks.
 - Automate as much as possible, and spend time on things only humans can do.
 
-Here are some handy links for development practices aligned with Bitcoin ABC:
+Here are some handy links for development practices aligned with Dogecash:
 
 - [Developer Notes](doc/developer-notes.md)
 - [Statement of Bitcoin ABC Values and Visions](https://archive.md/ulgFI)
@@ -80,60 +80,11 @@ Here are some handy links for development practices aligned with Bitcoin ABC:
 - [Semantic Compression](https://caseymuratori.com/blog_0015)
 - [Elon Musk's 5-Step Process](https://youtu.be/t705r8ICkRw?t=806)
 
-Getting set up with the Bitcoin ABC Repository
-----------------------------------------------
-
-1. Create an account at [reviews.bitcoinabc.org](https://reviews.bitcoinabc.org/)
-
-2. Install Git and Arcanist on your machine
-
-To install these packages on Debian or Ubuntu, type: `sudo apt-get install git arcanist`
-
-Git documentation can be found at [git-scm.com](https://git-scm.com/).
-
-For Arcanist documentation, you can read
-[Arcanist Quick Start](https://secure.phabricator.com/book/phabricator/article/arcanist_quick_start/)
-and the [Arcanist User Guide](https://secure.phabricator.com/book/phabricator/article/arcanist/).
-
-The Phabricator version of Arcanist is unmaintained and does not work with PHP 8 or higher. This is an
-issue for Linux distributions such as Ubuntu 22.04. In this case, you can use the
-[Phorge version of Arcanist](https://we.phorge.it/book/phorge/article/arcanist_quick_start/) instead.
-
-3. If you do not already have an SSH key set up, follow these steps:
-
-Type: `ssh-keygen -t ed25519 -C "your_email@example.com"`
-
-Enter a file in which to save the key (/home/*username*/.ssh/id_ed25519): [Press enter]
-
-4. Upload your SSH public key to <https://reviews.bitcoinabc.org>
-
-  - Go to: `https://reviews.bitcoinabc.org/settings/user/*username*/page/ssh/`
-
-  - Under "SSH Key Actions", Select "Upload Public Key"
-
-Paste contents from: `/home/*username*/.ssh/id_ed25519.pub`
-
-5. Clone the repository and install Arcanist certificate:
-
-```
-git clone ssh://vcs@reviews.bitcoinabc.org:2221/source/bitcoin-abc.git
-
-cd bitcoin-abc
-
-arc install-certificate
-```
-
-Note: Arcanist tooling will tend to fail if your remote origin is set to something other
-than the above.  A common mistake is to clone from Github and then forget to update
-your remotes.
-
-Follow instructions provided by `arc install-certificate` to provide your API token.
-
 Contributing to the node software
 ---------------------------------
 
 During submission of patches, arcanist will automatically run `arc lint` to
-enforce Bitcoin ABC code formatting standards, and often suggests changes.
+enforce Dogecash code formatting standards, and often suggests changes.
 If code formatting tools do not install automatically on your system, you
 will have to install the following:
 
@@ -189,7 +140,7 @@ to install `nodejs` with node version manager.
 Then:
 
 ```
-cd bitcoin-abc
+cd dogecash
 [sudo] nvm install 20
 [sudo] npm install -g npm@latest
 [sudo] npm install -g prettier@2.6.0
@@ -200,7 +151,7 @@ Some repositories have a `.nvmrc` file which specifies the version of node expec
 For example, to work in Cashtab,
 
 ```
-cd bitcoin-abc/cashtab
+cd dogecash/cashtab
 nvm use
 ```
 
@@ -212,72 +163,10 @@ To work on the extension, you will need `browserify`
 [sudo] npm install -g browserify
 ```
 
-Contributing to Electrum ABC
-----------------------------
+Contributing to Electrum
+------------------------
 
 See the dedicated [CONTRIBUTING.md](electrum/CONTRIBUTING.md) document.
-
-Working with The Bitcoin ABC Repository
----------------------------------------
-
-A typical workflow would be:
-
-- Create a topic branch in Git for your changes
-
-    git checkout -b 'my-topic-branch'
-
-- Make your changes, and commit them
-
-    git commit -a -m 'my-commit'
-
-- Create a differential with Arcanist
-
-    arc diff
-
-You should add suggested reviewers and a test plan to the commit message.
-Note that Arcanist is set up to look only at the most-recent commit message,
-So all you changes for this Diff should be in one Git commit.
-
-- For large changes, break them into several Diffs, as described in this
-[guide](https://medium.com/@kurtisnusbaum/stacked-diffs-keeping-phabricator-diffs-small-d9964f4dcfa6).
-You must also include "Depends on Dxxx" in the Arcanist summary to indicate
-dependence on other Diffs. Note: the `arc land` procedure described in the
-guide above is obsolete. With the most recent version of arcanist, you may
-`arc land` the latest commit of your stacked diff after all parts are approved.
-
-- Log into Phabricator to see review and feedback.
-
-- Make changes as suggested by the reviewers. You can simply edit the files
-with my-topic-branch checked out, and then type `arc diff`. Arcanist will
-give you the option to add uncommited changes. Or, alternatively, you can
-commit the changes using `git commit -a --am` to add them to the last commit,
-or squash multiple commits by typing `git rebase -i master`. If you squash,
-make sure the commit message has the information needed for arcanist (such
-as the Diff number, reviewers, etc.).
-
-- Update your Diff by typing `arc diff` again.
-
-- When reviewers approve your Diff, it should be listed as "ready to Land"
-in Phabricator. When you want to commit your diff to the repository, check out
-type my-topic-branch in git, then type `arc land`. You have now successfully
-committed a change to the Bitcoin ABC repository.
-
-- When reviewing a Diff, apply the changeset on your local by using
-`arc patch D{NNNN}`
-
-- You will likely be re-writing git histories multiple times, which causes
-timestamp changes that require re-building a significant number of files. It's
-highly recommended to install `ccache` (re-run cmake if you install it
-later), as this will help cut your re-build times from several minutes to under
-a minute, in many cases.
-
-What to work on
----------------
-
-If you are looking for a useful task to contribute to the project, a good place
-to start is the list of tasks at <https://reviews.bitcoinabc.org/maniphest>.
-
-You could also try [backporting](doc/backporting.md) some code from Bitcoin Core.
 
 Copyright
 ---------
