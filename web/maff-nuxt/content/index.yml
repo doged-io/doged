@@ -76,7 +76,7 @@ features:
         linkinfo: Click to visit Dogecash Releases
         target: _blank
       - title: Dedicated application toolkit
-        description: asdf
+        description: Dogecash brings Dogecoin into the modern world by providing all of the tooling and RPCs that you expect of a mature blockchain. Dogecashes modern tooling gets out of your way so you can build the latest applications on Dogecoin.
         icon: i-heroicons-wrench-screwdriver
 cta:
   headline: Dogecoin For The World
