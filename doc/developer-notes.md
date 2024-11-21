@@ -286,8 +286,8 @@ To enable it, run cmake with `-DDEBUG_LOCKCONTENTION` added to your CPPFLAGS,
 e.g. `-DCMAKE_CXX_FLAGS="-DDEBUG_LOCKCONTENTION"`, then build and run dogecoind.
 
 You can then use the `-debug=lock` configuration option at dogecoind startup or
-`bitcoin-cli logging '["lock"]'` at runtime to turn on lock contention logging.
-It can be toggled off again with `bitcoin-cli logging [] '["lock"]'`.
+`dogecoin-cli logging '["lock"]'` at runtime to turn on lock contention logging.
+It can be toggled off again with `dogecoin-cli logging [] '["lock"]'`.
 
 ### Assertions and Checks
 
@@ -1095,7 +1095,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 - Try not to overload methods on argument type. E.g. don't make `getblock(true)` and `getblock("hash")`
   do different things.
 
-  - *Rationale*: This is impossible to use with `bitcoin-cli`, and can be surprising to users.
+  - *Rationale*: This is impossible to use with `dogecoin-cli`, and can be surprising to users.
 
   - *Exception*: Some RPC calls can take both an `int` and `bool`, most notably when a bool was switched
     to a multi-value, or due to other historical reasons. **Always** have false map to 0 and
@@ -1114,7 +1114,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 
 - Add every non-string RPC argument `(method, idx, name)` to the table `vRPCConvertParams` in `rpc/client.cpp`.
 
-  - *Rationale*: `bitcoin-cli` and the GUI debug console use this table to determine how to
+  - *Rationale*: `dogecoin-cli` and the GUI debug console use this table to determine how to
     convert a plaintext command line to JSON. If the types don't match, the method can be unusable
     from there.
 

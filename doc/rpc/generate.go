@@ -20,7 +20,7 @@ import (
 	"text/template"
 )
 
-const BITCOIN_COMMAND = "bitcoin-cli"
+const BITCOIN_COMMAND = "dogecoin-cli"
 
 type Command struct {
 	Name        string

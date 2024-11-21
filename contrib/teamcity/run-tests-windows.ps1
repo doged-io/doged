@@ -13,8 +13,8 @@ function check_help_version {
     .\dogecoind.exe -help
     .\bitcoin-qt.exe -version
     .\bitcoin-qt.exe -help
-    .\bitcoin-cli.exe -version
-    .\bitcoin-cli.exe -help
+    .\dogecoin-cli.exe -version
+    .\dogecoin-cli.exe -help
     .\bitcoin-tx.exe -help
     .\bitcoin-wallet -help
   }
@@ -46,7 +46,7 @@ function check_bitcoind {
 
   for($i=60; $i -gt 0; $i--) {
     Start-Sleep -Seconds 1
-    if(.\bitcoin-cli.exe $datadirArg help) {
+    if(.\dogecoin-cli.exe $datadirArg help) {
       break
     }
   }
@@ -55,7 +55,7 @@ function check_bitcoind {
   }
 
   Write-Host "Stopping dogecoind"
-  .\bitcoin-cli.exe $datadirArg stop
+  .\dogecoin-cli.exe $datadirArg stop
 
   for($i=60; $i -gt 0; $i--) {
     Start-Sleep -Seconds 1
@@ -71,7 +71,7 @@ function check_bitcoind {
 Write-Host "--- Checking helps and versions ---"
 check_help_version
 
-Write-Host "--- Checking dogecoind can run and communicate via bitcoin-cli ---"
+Write-Host "--- Checking dogecoind can run and communicate via dogecoin-cli ---"
 check_bitcoind
 
 Write-Host "--- Running bitcoin unit tests ---"

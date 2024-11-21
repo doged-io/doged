@@ -50,7 +50,7 @@ esac
 done
 
 BITCOIND="${BUILD_DIR}/src/dogecoind"
-BITCOIN_CLI="${BUILD_DIR}/src/bitcoin-cli"
+BITCOIN_CLI="${BUILD_DIR}/src/dogecoin-cli"
 if [ ! -x "${BITCOIND}" ]; then
   echo "${BITCOIND} does not exist or has incorrect permissions."
   exit 10
