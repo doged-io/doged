@@ -9,8 +9,8 @@ set -euxo pipefail
 
 usage() {
   cat << EOF
-Usage: $0 bitcoind binary manpage
-  bitcoind: path to bitcoind executable
+Usage: $0 dogecoind binary manpage
+  dogecoind: path to dogecoind executable
   binary: path to the binary to generate the man pages from
   manpage: output path for the man page
 EOF
@@ -49,7 +49,7 @@ mkdir -p "$(dirname ${MANPAGE})"
 read -r -a VERSION <<< "$(${BITCOIND} --version | awk -F'[ -]' 'NR == 1 { print $4, $5 }')"
 
 # Create a footer file with copyright content.
-# This gets autodetected fine for bitcoind if --version-string is not set,
+# This gets autodetected fine for dogecoind if --version-string is not set,
 # but has different outcomes for bitcoin-qt and bitcoin-cli.
 FOOTER="$(basename ${BIN})_footer.h2m"
 cleanup() {

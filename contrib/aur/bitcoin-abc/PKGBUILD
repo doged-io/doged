@@ -3,7 +3,7 @@
 pkgname=bitcoin-abc
 pkgver=0.30.5
 pkgrel=0
-pkgdesc="Bitcoin ABC with bitcoind, bitcoin-tx, bitcoin-seeder and bitcoin-cli"
+pkgdesc="Bitcoin ABC with dogecoind, bitcoin-tx, bitcoin-seeder and bitcoin-cli"
 arch=('i686' 'x86_64')
 url="https://bitcoinabc.org"
 depends=('boost-libs' 'libevent' 'openssl' 'zeromq' 'miniupnpc' 'libnatpmp' 'jemalloc')
@@ -94,7 +94,7 @@ package() {
   install -Dm 644 "$srcdir/bitcoin.logrotate" "$pkgdir/etc/logrotate.d/bitcoin"
 
   msg2 'Installing bash completion...'
-  for _compl in bitcoin-cli bitcoin-tx bitcoind; do
+  for _compl in bitcoin-cli bitcoin-tx dogecoind; do
     install -Dm 644 "contrib/${_compl}.bash-completion" \
       "$pkgdir/usr/share/bash-completion/completions/$_compl"
   done

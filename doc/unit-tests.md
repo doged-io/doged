@@ -4,14 +4,14 @@ Unit tests are not part of the default build but can be built on demand.
 
 All the unit tests can be built and run with a single command: `ninja check`.
 
-#### bitcoind unit tests
+#### dogecoind unit tests
 
-The `bitcoind` unit tests can be built with `ninja test_bitcoin`.
+The `dogecoind` unit tests can be built with `ninja test_bitcoin`.
 They can also be built and run in a single command with `ninja check-bitcoin`.
 
-To run the `bitcoind` tests manually, launch `src/test/test_bitcoin`.
+To run the `dogecoind` tests manually, launch `src/test/test_bitcoin`.
 
-To add more `bitcoind` tests, add `BOOST_AUTO_TEST_CASE` functions to the
+To add more `dogecoind` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/test/` directory or add new .cpp files that
 implement new `BOOST_AUTO_TEST_SUITE` sections.
 
@@ -73,7 +73,7 @@ To write to logs from unit tests you need to use specific message methods
 provided by Boost. The simplest is `BOOST_TEST_MESSAGE`.
 
 For debugging you can launch the test_bitcoin executable with `gdb`or `lldb` and
-start debugging, just like you would with bitcoind.
+start debugging, just like you would with dogecoind.
 
 This is a simple example of debugging unit tests with GDB on Linux:
 ```

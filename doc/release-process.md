@@ -18,7 +18,7 @@ Bitcoin ABC Release Process
 
 3. Verify tests passed
     - Run `arc lint --everything` and check there is no linter error
-    - Ensure that bitcoind and bitcoin-qt run with no issue on all supported platforms.
+    - Ensure that dogecoind and bitcoin-qt run with no issue on all supported platforms.
       Manually test bitcoin-qt by sending some transactions and navigating through the menus.
 
 4. Add git tag for release

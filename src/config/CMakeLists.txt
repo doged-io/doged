@@ -129,7 +129,7 @@ check_symbol_exists(malloc_info "malloc.h" HAVE_MALLOC_INFO)
 
 # Various system libraries
 check_symbol_exists(strnlen "string.h" HAVE_DECL_STRNLEN)
-# These are used for daemonization in bitcoind
+# These are used for daemonization in dogecoind
 check_symbol_exists(fork "unistd.h" HAVE_DECL_FORK)
 check_symbol_exists(setsid "unistd.h" HAVE_DECL_SETSID)
 

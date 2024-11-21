@@ -33,7 +33,7 @@ Bitcoin ABC options:
 In a typical situation, this suffices:
 
 ```
-bitcoind -i2psam=127.0.0.1:7656
+dogecoind -i2psam=127.0.0.1:7656
 ```
 
 The first time Bitcoin ABC connects to the I2P router, its I2P address (and

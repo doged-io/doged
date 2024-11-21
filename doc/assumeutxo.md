@@ -1,6 +1,6 @@
 # assumeutxo
 
-Assumeutxo is a feature that allows fast bootstrapping of a validating bitcoind
+Assumeutxo is a feature that allows fast bootstrapping of a validating dogecoind
 instance with a very similar security model to assumevalid.
 
 The RPC commands `dumptxoutset` and `loadtxoutset` (yet to be merged) are used to
@@ -51,7 +51,7 @@ data.
 
 `ChainstateManager` manages a single CChainState object, for which
 `m_snapshot_blockhash` is null. This chainstate is (maybe obviously)
-considered active. This is the "traditional" mode of operation for bitcoind.
+considered active. This is the "traditional" mode of operation for dogecoind.
 
 |    |    |
 | ---------- | ----------- |

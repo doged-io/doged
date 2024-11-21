@@ -4,7 +4,7 @@ abc-ci-builds
 
 *.exe
 src/bitcoin
-src/bitcoind
+src/dogecoind
 src/bitcoin-cli
 src/bitcoin-seeder
 src/bitcoin-tx

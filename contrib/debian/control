@@ -31,7 +31,7 @@ Homepage: https://bitcoinabc.org/
 Vcs-Git: ssh://vcs@reviews.bitcoinabc.org:2221/source/bitcoin-abc.git
 Vcs-Browser: https://reviews.bitcoinabc.org/source/bitcoin-abc/
 
-Package: bitcoind
+Package: dogecoind
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
@@ -41,7 +41,7 @@ Description: peer-to-peer network based digital currency - daemon
  and issuing money are carried out collectively by the network. Bitcoin ABC
  is the name of the open source software which enables the use of this currency.
  .
- This package provides the daemon, bitcoind, and the CLI tool
+ This package provides the daemon, dogecoind, and the CLI tool
  bitcoin-cli to interact with the daemon.
 
 Package: bitcoin-qt
