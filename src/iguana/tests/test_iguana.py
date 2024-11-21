@@ -23,11 +23,7 @@ from test_framework.script import (
     OP_TOALTSTACK,
     CScript,
 )
-from test_framework.signature_hash import (
-    SIGHASH_ALL,
-    SIGHASH_FORKID,
-    SignatureHashForkId,
-)
+from test_framework.signature_hash import SIGHASH_ALL, SignatureHash
 
 
 def iguana(*args, expected_stderr="", expected_returncode=None):
@@ -85,14 +81,16 @@ def test_invalid_inputindex():
 
 
 def test_sig_push_only():
+    redeem_script = CScript([OP_CHECKSIG])
     tx = CTransaction()
-    tx.vin = [CTxIn(COutPoint(), CScript([b"\x31", OP_DUP]))]
+    tx.vin = [CTxIn(COutPoint(), CScript([b"\x31", OP_DUP, bytes(redeem_script)]))]
+    script_pub_key = CScript([OP_HASH160, hash160(redeem_script), OP_EQUAL])
 
     def run(fmt, expected_stderr):
         return iguana(
             "-tx=" + tx.serialize().hex(),
             "-inputindex=0",
-            "-scriptpubkey=",
+            f"-scriptpubkey={script_pub_key.hex()}",
             "-value=0",
             f"-format={fmt}",
             expected_stderr=expected_stderr,
@@ -102,7 +100,7 @@ def test_sig_push_only():
     assert (
         run(
             "human",
-            expected_stderr="scriptSig failed execution: Only push operators allowed in signatures\n",
+            expected_stderr="redeemScript failed execution: Only push operators allowed in signatures\n",
         )
         == """\
 ======= scriptSig =======
@@ -111,15 +109,46 @@ OP  0: 0x01 31
        Stack (1 item):
          0: 31
 OP  1: OP_DUP
+       Stack (2 items):
+         0: 31
+         1: 31
+OP  2: 0x01 ac
+======= scriptPubKey =======
+       Stack (3 items):
+         0: 31
+         1: 31
+         2: ac
+OP  0: OP_HASH160
+       Stack (3 items):
+         0: 31
+         1: 31
+         2: 17be79cf51aa88feebb0a25e9d6a153ead585e59
+OP  1: 0x14 17be79cf51aa88feebb0a25e9d6a153ead585e59
+       Stack (4 items):
+         0: 31
+         1: 31
+         2: 17be79cf51aa88feebb0a25e9d6a153ead585e59
+         3: 17be79cf51aa88feebb0a25e9d6a153ead585e59
+OP  2: OP_EQUAL
+       Stack (3 items):
+         0: 31
+         1: 31
+         2: 01
+======= redeemScript =======
+       Stack (0 items): (empty stack)
 """
     )
     assert (
         run("csv", "")
         == """\
-scriptName,index,opcode,stack 0,
+scriptName,index,opcode,stack 0,stack 1,stack 2,stack 3,
 scriptSig,0,0x31,"31",
-scriptSig,1,OP_DUP,
-scriptSig failed execution: Only push operators allowed in signatures
+scriptSig,1,OP_DUP,"31","31",
+scriptSig,2,0xac,"31","31","ac",
+scriptPubKey,0,OP_HASH160,"31","31","17be79cf51aa88feebb0a25e9d6a153ead585e59",
+scriptPubKey,1,0x17be79cf51aa88feebb0a25e9d6a153ead585e59,"31","31","17be79cf51aa88feebb0a25e9d6a153ead585e59","17be79cf51aa88feebb0a25e9d6a153ead585e59",
+scriptPubKey,2,OP_EQUAL,"31","31","01",
+redeemScript failed execution: Only push operators allowed in signatures
 """
     )
 
@@ -683,11 +712,8 @@ def test_redeem_script_input_sigchecks():
     script_pub_key = CScript([OP_HASH160, script_hash, OP_EQUAL])
     tx = CTransaction()
     tx.vin = [CTxIn(COutPoint())]
-    amount = 1999
-    sighash = SignatureHashForkId(
-        redeem_script, tx, 0, SIGHASH_ALL | SIGHASH_FORKID, amount
-    )
-    sig = key.sign_schnorr(sighash) + b"\x41"
+    (sighash, _) = SignatureHash(redeem_script, tx, 0, SIGHASH_ALL)
+    sig = key.sign_ecdsa(sighash) + b"\x01"
     pubkey = key.get_pubkey().get_bytes()
     tx.vin[0].scriptSig = CScript([sig, pubkey, bytes(redeem_script)])
     stdout = iguana(
@@ -695,14 +721,13 @@ def test_redeem_script_input_sigchecks():
         "-inputindex=0",
         "-scriptpubkey=" + script_pub_key.hex(),
         "-value=1999",
-        expected_stderr="redeemScript failed execution: Input SigChecks limit exceeded\n",
     )
     assert (
         stdout
         == f"""\
 ======= scriptSig =======
        Stack (0 items): (empty stack)
-OP  0: 0x41 {sig.hex()}
+OP  0: {hex(len(sig))} {sig.hex()}
        Stack (1 item):
          0: {sig.hex()}
 OP  1: 0x21 {pubkey.hex()}
@@ -768,6 +793,6 @@ OP  5: OP_CHECKSIGVERIFY
 OP  6: OP_CHECKSIG
        Stack (1 item):
          0: 01
-Number of sigChecks: 4
+Script executed without errors
 """
     )
