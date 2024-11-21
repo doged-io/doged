@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <pow/auxpow.h>
 #include <primitives/auxpow.h>
 #include <span.h>
 #include <streams.h>
@@ -105,6 +106,8 @@ BOOST_AUTO_TEST_CASE(auxpow_block700000_test) {
     Consensus::Params params = CChainParams::Main({})->GetConsensus();
     BOOST_CHECK(auxpow.CheckAuxBlockHash(
         header.GetHash(), VersionChainId(header.nVersion), params));
+
+    BOOST_CHECK(CheckAuxProofOfWork(header, params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
@@ -130,6 +133,8 @@ BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
     Consensus::Params params = CChainParams::Main({})->GetConsensus();
     BOOST_CHECK(auxpow.CheckAuxBlockHash(
         header.GetHash(), VersionChainId(header.nVersion), params));
+
+    BOOST_CHECK(CheckAuxProofOfWork(header, params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
@@ -155,6 +160,8 @@ BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
     Consensus::Params params = CChainParams::Main({})->GetConsensus();
     BOOST_CHECK(auxpow.CheckAuxBlockHash(
         header.GetHash(), VersionChainId(header.nVersion), params));
+
+    BOOST_CHECK(CheckAuxProofOfWork(header, params));
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_parse_coinbase_test) {

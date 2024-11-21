@@ -68,6 +68,9 @@ MSG_TYPE_MASK = 0xFFFFFFFF >> 2
 
 FILTER_TYPE_BASIC = 0
 
+MERGE_MINE_PREFIX = b"\xfa\xbemm"
+VERSION_AUXPOW_BIT = 1 << 8
+
 # Serialization/deserialization tools
 
 
@@ -496,6 +499,90 @@ class CTransaction:
         )
 
 
+def calc_expected_merkle_tree_index(nNonce, nChainId, merkleHeight):
+    TWIST_FACTOR = 1103515245
+    TWIST_OFFSET = 12345
+
+    rand = nNonce
+    rand = rand * TWIST_FACTOR + TWIST_OFFSET
+    rand += nChainId
+    rand = rand * TWIST_FACTOR + TWIST_OFFSET
+
+    return rand % (1 << merkleHeight)
+
+
+class CAuxPow:
+    __slots__ = (
+        "coinbaseTx",
+        "hashBlock",
+        "vMerkleBranch",
+        "nIndex",
+        "vChainMerkleBranch",
+        "nChainIndex",
+        "parentBlock",
+    )
+
+    def __init__(self, auxpow=None):
+        if auxpow is None:
+            self.set_null()
+        else:
+            self.coinbaseTx = CTransaction(auxpow.coinbaseTx)
+            self.hashBlock = auxpow.hashBlock
+            self.vMerkleBranch = list(auxpow.vMerkleBranch)
+            self.nIndex = auxpow.nIndex
+            self.vChainMerkleBranch = list(auxpow.vChainMerkleBranch)
+            self.nChainIndex = auxpow.nChainIndex
+            self.parentBlock = CBlockHeader(auxpow.parentBlock)
+
+    def set_null(self):
+        self.coinbaseTx = CTransaction()
+        self.hashBlock = 0
+        self.vMerkleBranch = []
+        self.nIndex = 0
+        self.vChainMerkleBranch = []
+        self.nChainIndex = 0
+        self.parentBlock = CBlockHeader()
+
+    def deserialize(self, f):
+        self.coinbaseTx.deserialize(f)
+        self.hashBlock = deser_uint256(f)
+
+        coinbase_merkle_height = deser_compact_size(f)
+        self.vMerkleBranch = []
+        for i in range(coinbase_merkle_height):
+            self.vMerkleBranch.append(deser_uint256(f))
+
+        self.nIndex = struct.unpack("<I", f.read(4))[0]
+
+        chain_merkle_height = deser_compact_size(f)
+        self.vChainMerkleBranch = []
+        for i in range(chain_merkle_height):
+            self.vChainMerkleBranch.append(deser_uint256(f))
+
+        self.nChainIndex = struct.unpack("<I", f.read(4))[0]
+        self.parentBlock.deserialize(f)
+
+    def serialize(self):
+        r = bytearray()
+        r += self.coinbaseTx.serialize()
+        r += ser_uint256(self.hashBlock)
+
+        r += ser_compact_size(len(self.vMerkleBranch))
+        for merkle_hash in self.vMerkleBranch:
+            r += ser_uint256(merkle_hash)
+
+        r += struct.pack("<I", self.nIndex)
+
+        r += ser_compact_size(len(self.vChainMerkleBranch))
+        for merkle_hash in self.vChainMerkleBranch:
+            r += ser_uint256(merkle_hash)
+
+        r += struct.pack("<I", self.nChainIndex)
+        r += self.parentBlock.serialize()
+
+        return bytes(r)
+
+
 class CBlockHeader:
     __slots__ = (
         "hash",
@@ -505,6 +592,7 @@ class CBlockHeader:
         "nNonce",
         "nTime",
         "nVersion",
+        "auxpow",
         "sha256",
         "powHash",
         "powHashHex",
@@ -520,6 +608,7 @@ class CBlockHeader:
             self.nTime = header.nTime
             self.nBits = header.nBits
             self.nNonce = header.nNonce
+            self.auxpow = header.auxpow
             self.sha256 = header.sha256
             self.hash = header.hash
             self.powHash = header.powHash
@@ -533,6 +622,7 @@ class CBlockHeader:
         self.nTime = 0
         self.nBits = 0
         self.nNonce = 0
+        self.auxpow = None
         self.sha256 = None
         self.hash = None
         self.powHash = None
@@ -545,6 +635,9 @@ class CBlockHeader:
         self.nTime = struct.unpack("<I", f.read(4))[0]
         self.nBits = struct.unpack("<I", f.read(4))[0]
         self.nNonce = struct.unpack("<I", f.read(4))[0]
+        if self.nVersion & VERSION_AUXPOW_BIT:
+            self.auxpow = CAuxPow()
+            self.auxpow.deserialize(f)
         self.sha256 = None
         self.hash = None
         self.powHash = None
@@ -561,7 +654,11 @@ class CBlockHeader:
         return r
 
     def serialize(self):
-        return self._serheader()
+        r = self._serheader()
+        if self.nVersion & VERSION_AUXPOW_BIT:
+            assert self.auxpow is not None
+            r += self.auxpow.serialize()
+        return r
 
     def calc_sha256(self):
         if self.sha256 is None:
@@ -646,8 +743,18 @@ class CBlock(CBlockHeader):
         return True
 
     def solve(self):
-        self.rehashPow()
         target = uint256_from_compact(self.nBits)
+        if self.auxpow is not None:
+            # If we have auxpow, mine the parent header
+            self.auxpow.parentBlock.rehashPow()
+            while self.auxpow.parentBlock.powHash > target:
+                self.auxpow.parentBlock.nNonce += 1
+                self.auxpow.parentBlock.rehashPow()
+            self.auxpow.parentBlock.rehash()
+            return
+
+        # Otherwise, we mine normally
+        self.rehashPow()
         while self.powHash > target:
             self.nNonce += 1
             self.rehashPow()
