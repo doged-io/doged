@@ -10,7 +10,7 @@ Unicode true
 !define VERSION @CPACK_PACKAGE_VERSION@
 !define COMPANY "@CPACK_PACKAGE_VENDOR@"
 !define URL "@CPACK_NSIS_URL_INFO_ABOUT@"
-!define BITCOIN_GUI_NAME "bitcoin-qt.exe"
+!define BITCOIN_GUI_NAME "dogecoin-qt.exe"
 
 # MUI Symbol Definitions
 !define MUI_ICON "@CPACK_NSIS_MUI_ICON@"

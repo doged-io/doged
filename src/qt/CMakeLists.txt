@@ -1,6 +1,6 @@
 # Copyright (c) 2018 The Bitcoin developers
 
-project(bitcoin-qt)
+project(dogecoin-qt)
 
 include(BrewHelper)
 find_brew_prefix(QT5_PREFIX qt5)
@@ -357,23 +357,23 @@ if(BUILD_BITCOIN_WALLET)
 endif()
 
 # The executable
-add_executable(bitcoin-qt WIN32 main.cpp)
+add_executable(dogecoin-qt WIN32 main.cpp)
 include(WindowsVersionInfo)
-generate_windows_version_info(bitcoin-qt
-	DESCRIPTION "GUI node for Bitcoin"
+generate_windows_version_info(dogecoin-qt
+	DESCRIPTION "GUI node for Dogecoin"
 	ICONS
 		"res/icons/bitcoin.ico"
 		"res/icons/bitcoin_testnet.ico"
 )
-target_link_libraries(bitcoin-qt bitcoin-qt-base)
+target_link_libraries(dogecoin-qt bitcoin-qt-base)
 
 include(BinaryTest)
-add_to_symbols_check(bitcoin-qt)
-add_to_security_check(bitcoin-qt)
+add_to_symbols_check(dogecoin-qt)
+add_to_security_check(dogecoin-qt)
 
 include(InstallationHelper)
-install_target(bitcoin-qt)
-install_manpages(bitcoin-qt)
+install_target(dogecoin-qt)
+install_manpages(dogecoin-qt)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(BITCOINQT_BUNDLE_ICON "res/icons/bitcoin.icns")
@@ -392,7 +392,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(EMPTY_LPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/empty.lproj")
 	file(TOUCH "${EMPTY_LPROJ_FILE}")
 
-	target_sources(bitcoin-qt PRIVATE
+	target_sources(dogecoin-qt PRIVATE
 		"${BITCOINQT_BUNDLE_ICON}"
 		"${INFO_PLIST_STRINGS_PATH}"
 		"${EMPTY_LPROJ_FILE}"
@@ -403,8 +403,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		"${EMPTY_LPROJ_FILE}"
 	)
 
-	set(BITCOIN_QT_OSX_BUNDLE_NAME "BitcoinABC-Qt")
-	set_target_properties(bitcoin-qt PROPERTIES
+	set(BITCOIN_QT_OSX_BUNDLE_NAME "Dogecoin-Qt")
+	set_target_properties(dogecoin-qt PROPERTIES
 		MACOSX_BUNDLE ON
 		OUTPUT_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
@@ -443,11 +443,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		OUTPUT
 			"${STRIPPED_BUNDLE}"
 		COMMAND
-			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:bitcoin-qt>" "${STRIPPED_BUNDLE}"
+			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:dogecoin-qt>" "${STRIPPED_BUNDLE}"
 		COMMAND
 			${CMAKE_STRIP} -u -r "${STRIPPED_BUNDLE}/Contents/MacOS/${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		DEPENDS
-			bitcoin-qt
+			dogecoin-qt
 	)
 
 	include(DoOrFail)

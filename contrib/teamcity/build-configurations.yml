@@ -619,7 +619,7 @@ builds:
         # them on the native platform.
         #- install-tests
         - install-test-suite-bitcoin
-        - install-test-suite-bitcoin-qt
+        - install-test-suite-dogecoin-qt
         - install-test-suite-avalanche
         - install-test-suite-pow
       - - package

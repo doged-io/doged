@@ -11,8 +11,8 @@ function check_help_version {
   try {
     .\dogecoind.exe -version
     .\dogecoind.exe -help
-    .\bitcoin-qt.exe -version
-    .\bitcoin-qt.exe -help
+    .\dogecoin-qt.exe -version
+    .\dogecoin-qt.exe -help
     .\dogecoin-cli.exe -version
     .\dogecoin-cli.exe -help
     .\dogecoin-tx.exe -help
@@ -22,7 +22,7 @@ function check_help_version {
     Write-Error $_
   }
   finally {
-    Stop-Process -name bitcoin-qt -Force -ErrorAction SilentlyContinue
+    Stop-Process -name dogecoin-qt -Force -ErrorAction SilentlyContinue
   }
 }
 
@@ -76,8 +76,8 @@ check_bitcoind
 
 Write-Host "--- Running bitcoin unit tests ---"
 .\test_bitcoin.exe
-Write-Host "--- Running bitcoin-qt unit tests ---"
-.\test_bitcoin-qt.exe -platform windows
+Write-Host "--- Running dogecoin-qt unit tests ---"
+.\test_dogecoin-qt.exe -platform windows
 Write-Host "--- Running pow unit tests ---"
 .\test-pow.exe
 Write-Host "--- Running avalanche unit tests ---"
