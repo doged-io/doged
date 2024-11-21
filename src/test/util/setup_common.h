@@ -124,6 +124,29 @@ struct TestChain100Setup : public TestingSetup {
     CBlock CreateBlock(const std::vector<CMutableTransaction> &txns,
                        const CScript &scriptPubKey, Chainstate &chainstate);
 
+    /**
+     * Like CreateAndProcessBlock, but uses a merge-mined block that uses PoW
+     * from another (here, nonexistent) chain.
+     */
+    CBlock
+    CreateAndProcessAuxPowBlock(const std::vector<CMutableTransaction> &txns,
+                                const CScript &scriptPubKey,
+                                uint32_t parentChainId, uint32_t mergeMineNonce,
+                                const std::vector<uint256> chainMerkleBranch,
+                                const std::vector<uint256> coinbaseMerkleBranch,
+                                Chainstate *chainstate = nullptr);
+
+    /**
+     * Like CreateBlock, but uses a merge-mined block that uses PoW from another
+     * (here, nonexistent) chain.
+     */
+    CBlock CreateAuxPowBlock(const std::vector<CMutableTransaction> &txns,
+                             const CScript &scriptPubKey,
+                             uint32_t parentChainId, uint32_t mergeMineNonce,
+                             const std::vector<uint256> chainMerkleBranch,
+                             const std::vector<uint256> coinbaseMerkleBranch,
+                             Chainstate &chainstate);
+
     //! Mine a series of new blocks on the active chain.
     void mineBlocks(int num_blocks);
 

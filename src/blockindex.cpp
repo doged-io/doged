@@ -35,6 +35,13 @@ std::string CBlockIndex::ToString() const {
 CBlockHeader
 CBlockIndex::GetBlockHeader(const node::BlockManager &blockman) const {
     CBlockHeader block;
+    if (VersionHasAuxPow(nVersion)) {
+        if (!blockman.ReadBlockHeaderFromDisk(block, *this)) {
+            throw std::ios_base::failure(
+                "Failed reading AuxPow CBlockIndex header from disk");
+        }
+        return block;
+    }
     block.nVersion = nVersion;
     if (pprev) {
         block.hashPrevBlock = pprev->GetBlockHash();

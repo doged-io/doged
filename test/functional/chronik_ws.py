@@ -5,7 +5,11 @@
 import time
 
 from test_framework.avatools import can_find_inv_in_poll, get_ava_p2p_interface
-from test_framework.blocktools import create_block, create_coinbase
+from test_framework.blocktools import (
+    VERSION_CHAIN_ID_BITS,
+    create_block,
+    create_coinbase,
+)
 from test_framework.messages import XEC, AvalancheVoteError, msg_block
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, chronik_sub_to_blocks
@@ -211,13 +215,15 @@ class ChronikWsTest(BitcoinTestFramework):
         # This coinbase is missing the miner fund output
         height = node.getblockcount() + 1
         cb1 = create_coinbase(height)
-        block1 = create_block(int(tip, 16), cb1, now, version=4)
+        block1 = create_block(int(tip, 16), cb1, now, version=VERSION_CHAIN_ID_BITS | 4)
         block1.solve()
 
         # And a second block that builds on top of the first one, which will
         # also be rejected
         cb2 = create_coinbase(height + 1)
-        block2 = create_block(int(block1.hash, 16), cb2, now, version=4)
+        block2 = create_block(
+            int(block1.hash, 16), cb2, now, version=VERSION_CHAIN_ID_BITS | 4
+        )
         block2.solve()
 
         # Send the first block and invalidate it
