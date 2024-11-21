@@ -6,7 +6,7 @@ abc-ci-builds
 src/bitcoin
 src/dogecoind
 src/dogecoin-cli
-src/bitcoin-seeder
+src/dogecoin-seeder
 src/dogecoin-tx
 src/bitcoin-chainstate
 src/bitcoin-wallet

@@ -65,4 +65,4 @@ situations but should be discussed in public in advance.
 
 See also
 ----------
-- [bitcoin-seeder](../src/seeder/README.md) is a reference implementation of a DNS seeder.
+- [dogecoin-seeder](../src/seeder/README.md) is a reference implementation of a DNS seeder.

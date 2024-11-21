@@ -14,7 +14,7 @@ option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
 option(BUILD_BITCOIN_CLI "Build dogecoin-cli" ON)
 option(BUILD_BITCOIN_TX "Build dogecoin-tx" ON)
 option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
-option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
+option(BUILD_BITCOIN_SEEDER "Build dogecoin-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(BUILD_BITCOIN_CHAINSTATE "Build bitcoin-chainstate" OFF)
 option(BUILD_BITCOIN_IGUANA "Activate the Iguana debugger" ON)
@@ -813,7 +813,7 @@ add_library(rpcclient
 
 target_link_libraries(rpcclient univalue util)
 
-# bitcoin-seeder
+# dogecoin-seeder
 if(BUILD_BITCOIN_SEEDER)
 	add_subdirectory(seeder)
 endif()
