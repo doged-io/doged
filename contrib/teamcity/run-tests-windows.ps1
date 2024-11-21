@@ -15,7 +15,7 @@ function check_help_version {
     .\bitcoin-qt.exe -help
     .\dogecoin-cli.exe -version
     .\dogecoin-cli.exe -help
-    .\bitcoin-tx.exe -help
+    .\dogecoin-tx.exe -help
     .\bitcoin-wallet -help
   }
   catch {

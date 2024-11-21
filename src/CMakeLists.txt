@@ -12,7 +12,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
 option(BUILD_BITCOIN_CLI "Build dogecoin-cli" ON)
-option(BUILD_BITCOIN_TX "Build bitcoin-tx" ON)
+option(BUILD_BITCOIN_TX "Build dogecoin-tx" ON)
 option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
 option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
@@ -835,20 +835,20 @@ if(BUILD_BITCOIN_CLI)
 	install_manpages(dogecoin-cli)
 endif()
 
-# bitcoin-tx
+# dogecoin-tx
 if(BUILD_BITCOIN_TX)
-	add_executable(bitcoin-tx bitcoin-tx.cpp)
-	generate_windows_version_info(bitcoin-tx
+	add_executable(dogecoin-tx bitcoin-tx.cpp)
+	generate_windows_version_info(dogecoin-tx
 		DESCRIPTION "CLI Bitcoin transaction editor utility"
 	)
 
-	target_link_libraries(bitcoin-tx bitcoinconsensus)
+	target_link_libraries(dogecoin-tx bitcoinconsensus)
 
-	add_to_symbols_check(bitcoin-tx)
-	add_to_security_check(bitcoin-tx)
+	add_to_symbols_check(dogecoin-tx)
+	add_to_security_check(dogecoin-tx)
 
-	install_target(bitcoin-tx)
-	install_manpages(bitcoin-tx)
+	install_target(dogecoin-tx)
+	install_manpages(dogecoin-tx)
 endif()
 
 # bitcoin-chainstate

@@ -110,7 +110,7 @@ if(BUILD_BITCOIN_TX)
 		CUSTOM_TARGET_ARGS
 			COMMENT "Test Bitcoin utilities..."
 			DEPENDS
-				bitcoin-tx
+				dogecoin-tx
 				${CMAKE_CURRENT_BINARY_DIR}/util/bitcoin-util-test.py
 	)
 

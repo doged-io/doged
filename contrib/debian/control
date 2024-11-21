@@ -56,7 +56,7 @@ Description: peer-to-peer network based digital currency - Qt GUI
  .
  This package provides Bitcoin-Qt, a GUI for Bitcoin based on Qt.
 
-Package: bitcoin-tx
+Package: dogecoin-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
@@ -66,7 +66,7 @@ Description: peer-to-peer digital currency - standalone transaction tool
  and issuing money are carried out collectively by the network. Bitcoin ABC
  is the name of the open source software which enables the use of this currency.
  .
- This package provides bitcoin-tx, a command-line transaction creation
+ This package provides dogecoin-tx, a command-line transaction creation
  tool which can be used without a bitcoin daemon.  Some means of
  exchanging minimal transaction data with peers is still required.
 
