@@ -35,7 +35,7 @@ _rmuser() {
 
 read -d '' bitcoin <<'EOI'
 
-Bitcoin ABC
+Dogecash
 ___________
 
 To start bitcoin-abc:

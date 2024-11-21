@@ -6,10 +6,10 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 	"${CMAKE_SOURCE_DIR}/cmake/modules/OverrideInitFlags.cmake"
 )
 
-project(bitcoin-abc
+project(dogecash
 	VERSION 0.30.5
-	DESCRIPTION "Bitcoin ABC is a full node implementation of the eCash protocol."
-	HOMEPAGE_URL "https://www.bitcoinabc.org"
+	DESCRIPTION "Dogecash is a full node implementation of the Dogecoin protocol."
+	HOMEPAGE_URL "https://www.dogecash.io"
 )
 
 add_custom_target(print-version
@@ -23,8 +23,8 @@ add_custom_target(print-project-name
 )
 
 # Package information
-set(PACKAGE_NAME "Bitcoin ABC")
-set(PACKAGE_BUGREPORT "https://github.com/Bitcoin-ABC/bitcoin-abc/issues")
+set(PACKAGE_NAME "Dogecash")
+set(PACKAGE_BUGREPORT "https://github.com/dogecash-io/dogecash/issues")
 
 # Copyright
 set(COPYRIGHT_YEAR 2024)

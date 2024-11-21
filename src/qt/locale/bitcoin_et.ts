@@ -1758,7 +1758,7 @@
         <translation>Tööta taustal ning aktsepteeri käsklusi</translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
+        <source>Dogecash</source>
         <translation>Bitcoini ABC</translation>
     </message>
     <message>

@@ -1,7 +1,7 @@
-Bitcoin ABC BCH-relevant DNS seed information
+Dogecash BCH-relevant DNS seed information
 =============================================
 
-Bitcoin ABC uses special seeds under the control of Bitcoin Cash (BCH)
+Dogecash uses special seeds under the control of Bitcoin Cash (BCH)
 network supporting operators to increase the chance of a node
 to find suitable peers on the BCH network.
 

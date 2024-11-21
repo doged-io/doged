@@ -3024,8 +3024,8 @@
         <translation>无法启动HTTP服务，查看日志获取更多信息</translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
-        <translation>Bitcoin ABC</translation>
+        <source>Dogecash</source>
+        <translation>Dogecash</translation>
     </message>
     <message>
         <source>The %s developers</source>

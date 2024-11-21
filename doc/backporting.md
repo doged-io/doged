@@ -1,9 +1,9 @@
 BACKPORTING
 ===========
 
-The official Bitcoin ABC guide to backporting code from Bitcoin Core. When searching
+The official Dogecash guide to backporting code from Bitcoin Core. When searching
 for items to backport, especially be on the lookout for bug fixes, code cleanup, and
-important refactors, as these help improve Bitcoin ABC despite consensus-level differences
+important refactors, as these help improve Dogecash despite consensus-level differences
 between eCash and Bitcoin Core.
 
 Identifying commits
@@ -11,7 +11,7 @@ Identifying commits
 
 1. Check out a copy of a Satoshi Bitcoin client somewhere on your machine.
 2. Identify the subsystem you'd like to work on.
-3. Tag the fork commit as `fork-commit`. Bitcoin ABC was forked from Bitcoin Core
+3. Tag the fork commit as `fork-commit`. Dogecash was forked from Bitcoin Core
    at commit `964a185cc83af34587194a6ecda3ed9cf6b49263`.
    `> git tag -a fork-commit 964a185 -m 'Where the fun started'`
 4. `git log --topo-order --graph fork-commit..HEAD -- <file or folder of interest>`
@@ -46,7 +46,7 @@ easier.  Backports are easiest done in topological order of commits.
 Backporting
 -----------
 
-Before you begin backporting commits, you will need to add an additional remote to your Bitcoin ABC repo.
+Before you begin backporting commits, you will need to add an additional remote to your Dogecash repo.
 For Bitcoin Core, this repository would be added as:
 
 ```
@@ -97,7 +97,7 @@ Squash the commits together for backporting
 Backporting from secp256k1, Electrum and Electron Cash
 ------------------------------------------------------
 
-The Bitcoin ABC monorepo includes subprojects that are stored in subdirectories of the main repository.
+The Dogecash monorepo includes subprojects that are stored in subdirectories of the main repository.
 To backport commits for these subprojects, you can add the corresponding additional remotes and use the
 `-Xsubtree` option for `git cherry-pick`.
 
