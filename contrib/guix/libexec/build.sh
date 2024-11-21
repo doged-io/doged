@@ -261,7 +261,7 @@ cmake -GNinja .. \
     -DENABLE_CLANG_TIDY=OFF \
     -DENABLE_BIP70=OFF \
     -DUSE_LINKER=
-PROJECT_NAME=$(ninja print-project-name)
+PROJECT_NAME=$(ninja print-project-name | sed '$!d')
 
 # Produce the source package if it does not already exist
 if ! ls "${OUTDIR_BASE}"/src/${PROJECT_NAME}-*.tar.gz 1> /dev/null 2>&1; then
