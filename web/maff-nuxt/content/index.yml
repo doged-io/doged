@@ -113,13 +113,13 @@ features:
       description: 
     items:
       - title: Extensive track record
-        description: Bitcoin ABC was the team responsible for launching the Bitcoin Cash blockchain in August 2017. DogeCash is the culmination of nearly seven years of enterprise production experience in the blockchain space. 
+        description: Bitcoin ABC was the team responsible for launching the Bitcoin Cash blockchain in August 2017 and the eCash blockchain in 2020. DogeCash is the culmination of nearly seven years of enterprise production experience in the blockchain space by building on the learnings from Bitcoin ABC.
         icon: i-heroicons-clipboard-document-check
       - title: Regular software updates
-        description: Maintenance of any software is of utmost importance, and a cryptocurrency network of Dogecoin stature is certainly no exception. Bitcoin ABC releases a hotfix of their software on a bi-weekly basis and regularly squashes bugs and quells security concerns.
+        description: Maintenance of any software is of utmost importance, and a cryptocurrency network of Dogecoin stature is certainly no exception. Dogecash is dedicated to releasing regular software updates to squash bugs and ensure your node is stable and secure.
         icon: i-heroicons-cog
-        to: https://github.com/Bitcoin-ABC/bitcoin-abc/releases
-        linkinfo: Click to visit Bitcoin ABC GitHub
+        to: https://github.com/dogecash.io/dogecash/releases
+        linkinfo: Click to visit Dogecash Releases
         target: _blank
       - title: Dedicated application toolkit
         description: asdf
