@@ -9,17 +9,10 @@ hero:
   headline:
     label: Introducing...
   links:
-    - label: BitcoinABC.org
-      size: xl
-      color: gray
-      to: https://bitcoinabc.org
-      target: _blank
-      icon: i-heroicons-arrow-top-right-on-square
-      trailing: true
     - label: Get Started
       size: xl
       color: gray
-      to: https://dogecash.io
+      to: https://github.com/dogecash-io/dogecash/
       target: _blank
       icon: i-simple-icons-dogecoin
       trailing: true
@@ -40,8 +33,12 @@ sections:
         color: gray
         icon: i-heroicons-arrow-top-right-on-square
         trailing: true
-        size: sm
-        class: ml-8
+      - label: BitcoinABC.org
+        color: gray
+        to: https://bitcoinabc.org
+        target: _blank
+        icon: i-heroicons-arrow-top-right-on-square
+        trailing: true
   - title: Standard Of Excellence
     description:
       - Building a strong technical foundation is impossible without a strong culture of professional development. The difficult things must be done in order to achieve the best results.
