@@ -20,7 +20,7 @@ hero:
     - label: Get Started
       size: xl
       color: gray
-      to: https://dog.e.cash
+      to: https://dogecash.io
       target: _blank
       icon: i-simple-icons-dogecoin
       trailing: true
@@ -73,7 +73,7 @@ sections:
       - name: Thorough documentation and how-tos for all runtime configurations
     links:
       - label: Development Philosophy
-        to: https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/CONTRIBUTING.md#bitcoin-abc-development-philosophy
+        to: https://github.com/dogecash-io/dogecash/blob/master/CONTRIBUTING.md#bitcoin-abc-development-philosophy
         target: _blank
         color: gray
         icon: i-heroicons-arrow-top-right-on-square
