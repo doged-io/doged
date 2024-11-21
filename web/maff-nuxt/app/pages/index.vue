@@ -39,6 +39,30 @@ useSeoMeta({
     </ULandingHero>
 
     <ULandingSection
+      class="bg-primary-50 dark:bg-primary-400 dark:bg-opacity-10"
+      :headline="page.cta.headline"
+      :title="page.cta.title"
+      :card="false"
+      align="left"
+    >
+      <template #description>
+        <p class="font-medium py-2 max-w-xl text-left"
+          v-for="paragraph in page.cta.description"
+        >
+          {{ paragraph }}
+        </p>
+      </template>
+      <NuxtImg
+        :src="page.cta.image"
+        fit="inside"
+        style="
+          border-radius: 50%; border: 4px solid #cbccbc;
+          width: 100%;
+        "
+      />
+    </ULandingSection>
+
+    <ULandingSection
       v-for="section in page.sections"
       v-bind="section"
     >
@@ -97,30 +121,6 @@ useSeoMeta({
         </UContainer>
 
       </template>
-    </ULandingSection>
-
-    <ULandingSection
-      class="bg-primary-50 dark:bg-primary-400 dark:bg-opacity-10"
-      :headline="page.cta.headline"
-      :title="page.cta.title"
-      :card="false"
-      align="left"
-    >
-      <template #description>
-        <p class="font-medium py-2 max-w-xl text-left"
-          v-for="paragraph in page.cta.description"
-        >
-          {{ paragraph }}
-        </p>
-      </template>
-      <NuxtImg
-        :src="page.cta.image"
-        fit="inside"
-        style="
-          border-radius: 50%; border: 4px solid #cbccbc;
-          width: 100%;
-        "
-      />
     </ULandingSection>
 
     <ULandingSection
