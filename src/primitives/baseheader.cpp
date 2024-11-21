@@ -14,6 +14,7 @@ BlockHash CBaseBlockHeader::GetHash() const {
 }
 
 BlockHash CBaseBlockHeader::GetPowHash() const {
+    // TODO: Dedup serialization, e.g. using a SpanWriter
     uint8_t bytes[80];
     size_t idx = 0;
     uint32_t version = this->nVersion;
