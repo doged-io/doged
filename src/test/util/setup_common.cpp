@@ -397,6 +397,81 @@ CBlock TestChain100Setup::CreateAndProcessBlock(
     return block;
 }
 
+CBlock TestChain100Setup::CreateAuxPowBlock(
+    const std::vector<CMutableTransaction> &txns, const CScript &scriptPubKey,
+    uint32_t parentChainId, uint32_t mergeMineNonce,
+    const std::vector<uint256> chainMerkleBranch,
+    const std::vector<uint256> coinbaseMerkleBranch, Chainstate &chainstate) {
+    const Config &config = GetConfig();
+    CBlock block = this->CreateBlock(txns, scriptPubKey, chainstate);
+
+    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    block.nNonce = 0;
+    // Ensure merge-mined block's nonce DOESNT mine the block
+    while (CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
+        ++block.nNonce;
+    }
+
+    block.nVersion = VersionWithAuxPow(block.nVersion, true);
+    block.auxpow.reset(new CAuxPow());
+
+    CAuxPow &auxpow = *block.auxpow;
+    auxpow.vChainMerkleBranch = chainMerkleBranch;
+    auxpow.vMerkleBranch = coinbaseMerkleBranch;
+    auxpow.nIndex = 0;
+    auxpow.nChainIndex =
+        CalcExpectedMerkleTreeIndex(mergeMineNonce, AUXPOW_CHAIN_ID, 0);
+
+    uint256 hashChainRoot = ComputeMerkleRootForBranch(
+        block.GetHash(), auxpow.vChainMerkleBranch, auxpow.nChainIndex);
+    std::reverse(hashChainRoot.begin(), hashChainRoot.end());
+
+    std::vector<uint8_t> coinbaseBytes = ToByteVector(MERGE_MINE_PREFIX);
+    coinbaseBytes.insert(coinbaseBytes.end(), hashChainRoot.begin(),
+                         hashChainRoot.end());
+    CDataStream ss{0, 0};
+    ss << uint32_t(1 << chainMerkleBranch.size());
+    ss << mergeMineNonce;
+    Span<const uint8_t> span = MakeUCharSpan(ss);
+    coinbaseBytes.insert(coinbaseBytes.end(), span.begin(), span.end());
+
+    CMutableTransaction tx;
+    tx.vin.resize(1);
+    tx.vin[0].scriptSig = CScript(coinbaseBytes.begin(), coinbaseBytes.end());
+
+    auxpow.coinbaseTx = MakeTransactionRef(tx);
+    auxpow.parentBlock.nVersion = MakeVersionWithChainId(parentChainId, 0);
+    auxpow.parentBlock.hashMerkleRoot = ComputeMerkleRootForBranch(
+        auxpow.coinbaseTx->GetHash(), auxpow.vMerkleBranch, 0);
+    // Ensure parent block's nonce DOES mine the block
+    while (!CheckProofOfWork(auxpow.parentBlock.GetPowHash(), block.nBits,
+                             params)) {
+        ++auxpow.parentBlock.nNonce;
+    }
+
+    return block;
+}
+
+CBlock TestChain100Setup::CreateAndProcessAuxPowBlock(
+    const std::vector<CMutableTransaction> &txns, const CScript &scriptPubKey,
+    uint32_t parentChainId, uint32_t mergeMineNonce,
+    const std::vector<uint256> chainMerkleBranch,
+    const std::vector<uint256> coinbaseMerkleBranch, Chainstate *chainstate) {
+    if (!chainstate) {
+        chainstate = &Assert(m_node.chainman)->ActiveChainstate();
+    }
+
+    const CBlock block = this->CreateAuxPowBlock(
+        txns, scriptPubKey, parentChainId, mergeMineNonce, chainMerkleBranch,
+        coinbaseMerkleBranch, *chainstate);
+    std::shared_ptr<const CBlock> shared_pblock =
+        std::make_shared<const CBlock>(block);
+    Assert(m_node.chainman)
+        ->ProcessNewBlock(shared_pblock, true, true, nullptr);
+
+    return block;
+}
+
 CMutableTransaction TestChain100Setup::CreateValidMempoolTransaction(
     CTransactionRef input_transaction, int input_vout, int input_height,
     CKey input_signing_key, CScript output_destination, Amount output_amount,

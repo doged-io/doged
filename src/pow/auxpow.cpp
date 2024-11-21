@@ -21,8 +21,35 @@ bool CheckAuxProofOfWork(const CBlockHeader &block,
                      block.nVersion);
     }
 
-    if (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
-        return error("%s: non-AUX proof of work failed", __func__);
+    // If there is no auxpow, just check the block hash.
+    if (!block.auxpow) {
+        if (VersionHasAuxPow(block.nVersion)) {
+            return error("%s: no auxpow on block %s with auxpow version %08x",
+                         __func__, block.GetHash().ToString(), block.nVersion);
+        }
+
+        if (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
+            return error("%s: non-AUX proof of work failed", __func__);
+        }
+
+        return true;
+    }
+
+    if (!VersionHasAuxPow(block.nVersion)) {
+        // Header encodes auxpow, but version doesn't reflect it
+        return error("%s: AuxPow on block with non-auxpow version", __func__);
+    }
+
+    util::Result<std::monostate> auxResult = block.auxpow->CheckAuxBlockHash(
+        block.GetHash(), VersionChainId(block.nVersion), params);
+    if (!auxResult) {
+        return error("%s: AuxPow validity check failed: %s", __func__,
+                     ErrorString(auxResult).original);
+    }
+
+    if (!CheckProofOfWork(BlockHash(block.auxpow->parentBlock.GetPowHash()),
+                          block.nBits, params)) {
+        return error("%s: Auxillary header proof of work failed", __func__);
     }
 
     return true;
