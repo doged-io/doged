@@ -221,6 +221,7 @@ ChainTestingSetup::ChainTestingSetup(
 
     constexpr int script_check_threads = 2;
     StartScriptCheckWorkerThreads(script_check_threads);
+    StartPowCheckWorkerThreads(script_check_threads);
 }
 
 ChainTestingSetup::~ChainTestingSetup() {
@@ -228,6 +229,7 @@ ChainTestingSetup::~ChainTestingSetup() {
         m_node.scheduler->stop();
     }
     StopScriptCheckWorkerThreads();
+    StopPowCheckWorkerThreads();
     GetMainSignals().FlushBackgroundCallbacks();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     m_node.connman.reset();
