@@ -279,6 +279,7 @@ void Shutdown(NodeContext &node) {
         node.chainman->m_load_block.join();
     }
     StopScriptCheckWorkerThreads();
+    StopPowCheckWorkerThreads();
 
     // After the threads that potentially access these pointers have been
     // stopped, destruct and reset all to nullptr.
@@ -2140,6 +2141,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
               script_threads);
     if (script_threads >= 1) {
         StartScriptCheckWorkerThreads(script_threads);
+        StartPowCheckWorkerThreads(script_threads);
     }
 
     assert(!node.scheduler);
