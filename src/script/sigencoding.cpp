@@ -8,6 +8,7 @@
 
 #include <pubkey.h>
 #include <script/script_flags.h>
+#include <logging.h>
 
 #include <boost/range/adaptor/sliced.hpp>
 

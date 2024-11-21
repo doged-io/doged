@@ -8,8 +8,8 @@ src/dogecoind
 src/dogecoin-cli
 src/dogecoin-seeder
 src/dogecoin-tx
-src/bitcoin-chainstate
-src/bitcoin-wallet
+src/dogecoin-chainstate
+src/dogecoin-wallet
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
 src/qt/test/test_bitcoin-qt

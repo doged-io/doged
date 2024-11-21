@@ -60,7 +60,7 @@ static bool WalletAppInit(int argc, char *argv[]) {
     }
     if (argc < 2 || HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
         std::string usage =
-            strprintf("%s bitcoin-wallet version", PACKAGE_NAME) + " " +
+            strprintf("%s dogecoin-wallet version", PACKAGE_NAME) + " " +
             FormatFullVersion() + "\n";
 
         if (gArgs.IsArgSet("-version")) {
@@ -68,14 +68,14 @@ static bool WalletAppInit(int argc, char *argv[]) {
         } else {
             usage +=
                 "\n"
-                "bitcoin-wallet is an offline tool for creating and "
+                "dogecoin-wallet is an offline tool for creating and "
                 "interacting with " PACKAGE_NAME " wallet files.\n"
-                "By default bitcoin-wallet will act on wallets in the default "
+                "By default dogecoin-wallet will act on wallets in the default "
                 "mainnet wallet directory in the datadir.\n"
                 "To change the target wallet, use the -datadir, -wallet and "
                 "-testnet/-regtest arguments.\n\n"
                 "Usage:\n"
-                "  bitcoin-wallet [options] <command>\n";
+                "  dogecoin-wallet [options] <command>\n";
             usage += "\n" + gArgs.GetHelpMessage();
         }
         tfm::format(std::cout, "%s", usage);

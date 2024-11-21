@@ -16,7 +16,7 @@ function check_help_version {
     .\dogecoin-cli.exe -version
     .\dogecoin-cli.exe -help
     .\dogecoin-tx.exe -help
-    .\bitcoin-wallet -help
+    .\dogecoin-wallet -help
   }
   catch {
     Write-Error $_

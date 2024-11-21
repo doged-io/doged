@@ -1047,9 +1047,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             raise SkipTest("wallet has not been compiled.")
 
     def skip_if_no_wallet_tool(self):
-        """Skip the running test if bitcoin-wallet has not been compiled."""
+        """Skip the running test if dogecoin-wallet has not been compiled."""
         if not self.is_wallet_tool_compiled():
-            raise SkipTest("bitcoin-wallet has not been compiled")
+            raise SkipTest("dogecoin-wallet has not been compiled")
 
     def skip_if_no_cli(self):
         """Skip the running test if dogecoin-cli has not been compiled."""
@@ -1075,7 +1075,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         return self.config["components"].getboolean("ENABLE_WALLET")
 
     def is_wallet_tool_compiled(self):
-        """Checks whether bitcoin-wallet was compiled."""
+        """Checks whether dogecoin-wallet was compiled."""
         return self.config["components"].getboolean("ENABLE_WALLET_TOOL")
 
     def is_chronik_compiled(self):
