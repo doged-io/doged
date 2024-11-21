@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "../../lotus-bot"
+		},
+		{
+			"path": "../../lotus-website"
+		},
+		{
+			"path": "../../lotus-explorer"
+		},
+		{
+			"path": "../../lotus-vase"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../lotus-reputation"
+		},
+		{
+			"path": "../../stamp"
+		}
+	],
+	"settings": {}
+}
