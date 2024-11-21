@@ -29,8 +29,7 @@ sections:
     description:
       - Every development team that aims to achieve "veteran" status in their craft must establish an extensive track record and standard of excellence.
       - Bitcoin ABC is one such team. Their historical and ongoing ability to consistently produce enterprise-ready Bitcoin software firmly cements their "veteran" status.
-      - DogeCash is the culmination of their greatest work, unbounded skill, and radical commitment to innovate blockchain for real-world application and scale.
-      - The future is full of opportunity. Bitcoin ABC is dilligent in their mission to connect Bitcoin to every human worldwide.
+      - DogeCash builds on Bitcoin ABC's battle-tested technology to bring scale and fresh innovation to the Dogecoin blockchain.
     image:
       light: /img/abc-blockchain-experience.png
       dark: /img/abc-blockchain-experience-dark.png
