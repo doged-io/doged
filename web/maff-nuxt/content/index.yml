@@ -42,21 +42,10 @@ sections:
         trailing: true
         size: sm
         class: ml-8
-  - title: Innovations
-    description:
-      - An inexhaustive list of innovations Bitcoin ABC has spearheaded over the years
-    align: left
-    features:
-      - name: Canonical Transaction Ordering (CTOR)
-        description:
-        icon:
   - title: Standard Of Excellence
     description:
       - Building a strong technical foundation is impossible without a strong culture of professional development. The difficult things must be done in order to achieve the best results.
     align: right
-    image: 
-      light: /img/amaury-sechet-video-placeholder.jpg
-      dark: /img/amaury-sechet-video-placeholder.jpg
     features:
       - name: Strict prioritization of business continuity
       - name: Stringent coordination of regular network upgrades
