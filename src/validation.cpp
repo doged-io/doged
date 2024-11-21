@@ -2016,6 +2016,20 @@ DisconnectResult ApplyBlockUndo(CBlockUndo &&blockUndo, const CBlock &block,
     return fClean ? DisconnectResult::OK : DisconnectResult::UNCLEAN;
 }
 
+class CPowCheck {
+private:
+    CBlockHeader m_header;
+    Consensus::Params m_consensusParams;
+
+public:
+    CPowCheck(CBlockHeader header, Consensus::Params consensusParams)
+        : m_header(header), m_consensusParams(consensusParams) {}
+
+    bool operator()() {
+        return CheckAuxProofOfWork(m_header, m_consensusParams);
+    }
+};
+
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void StartScriptCheckWorkerThreads(int threads_num) {
@@ -2024,6 +2038,16 @@ void StartScriptCheckWorkerThreads(int threads_num) {
 
 void StopScriptCheckWorkerThreads() {
     scriptcheckqueue.StopWorkerThreads();
+}
+
+static CCheckQueue<CPowCheck> powcheckqueue(128);
+
+void StartPowCheckWorkerThreads(int threads_num) {
+    powcheckqueue.StartWorkerThreads(threads_num);
+}
+
+void StopPowCheckWorkerThreads() {
+    powcheckqueue.StopWorkerThreads();
 }
 
 // Returns the script flags which should be checked for the block after
@@ -4264,10 +4288,14 @@ bool CheckBlock(const CBlock &block, BlockValidationState &state,
 
 bool HasValidProofOfWork(const std::vector<CBlockHeader> &headers,
                          const Consensus::Params &consensusParams) {
-    return std::all_of(headers.cbegin(), headers.cend(),
-                       [&](const auto &header) {
-                           return CheckAuxProofOfWork(header, consensusParams);
-                       });
+    // Validate PoW in parallel. On Dogecoin, the PoW is very expensive.
+    CCheckQueueControl<CPowCheck> control(&powcheckqueue);
+    std::vector<CPowCheck> vChecks;
+    for (const CBlockHeader &header : headers) {
+        vChecks.emplace_back(header, consensusParams);
+    }
+    control.Add(std::move(vChecks));
+    return control.Wait();
 }
 
 arith_uint256 CalculateHeadersWork(const std::vector<CBlockHeader> &headers) {

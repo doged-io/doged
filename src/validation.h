@@ -157,11 +157,13 @@ public:
  * Run instances of script checking worker threads
  */
 void StartScriptCheckWorkerThreads(int threads_num);
+void StartPowCheckWorkerThreads(int threads_num);
 
 /**
  * Stop all of the script checking worker threads
  */
 void StopScriptCheckWorkerThreads();
+void StopPowCheckWorkerThreads();
 
 Amount GetBlockSubsidy(int nHeight, const Consensus::Params &consensusParams,
                        uint256 prevHash);

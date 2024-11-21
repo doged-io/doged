@@ -315,6 +315,7 @@ epilogue:
         chainman.m_load_block.join();
     }
     StopScriptCheckWorkerThreads();
+    StopPowCheckWorkerThreads();
 
     GetMainSignals().FlushBackgroundCallbacks();
     {
