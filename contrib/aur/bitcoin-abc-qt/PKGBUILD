@@ -3,7 +3,7 @@
 pkgname=bitcoin-abc-qt
 pkgver=0.30.5
 pkgrel=0
-pkgdesc="Bitcoin ABC with dogecoind, dogecoin-cli, dogecoin-tx, bitcoin-seeder and bitcoin-qt"
+pkgdesc="Bitcoin ABC with dogecoind, dogecoin-cli, dogecoin-tx, dogecoin-seeder and bitcoin-qt"
 arch=('i686' 'x86_64')
 url="https://bitcoinabc.org"
 depends=('boost-libs' 'libevent' 'desktop-file-utils' 'qt5-base' 'protobuf' 'openssl' 'miniupnpc' 'libnatpmp' 'zeromq' 'qrencode' 'jemalloc')
@@ -17,8 +17,8 @@ source=(https://github.com/Bitcoin-ABC/bitcoin-abc/archive/v$pkgver.tar.gz
         bitcoin.install)
 backup=('etc/bitcoin/bitcoin.conf'
         'etc/logrotate.d/bitcoin')
-provides=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'bitcoin-seeder' 'bitcoin-wallet')
-conflicts=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'bitcoin-seeder' 'bitcoin-wallet')
+provides=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'bitcoin-wallet')
+conflicts=('dogecoin-cli' 'bitcoin-daemon' 'dogecoin-tx' 'bitcoin-qt' 'dogecoin-seeder' 'bitcoin-wallet')
 install=bitcoin.install
 
 build() {

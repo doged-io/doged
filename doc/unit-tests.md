@@ -25,15 +25,15 @@ To run the `bitcoin-qt` tests manually, launch `src/qt/test/test_bitcoin-qt`.
 To add more `bitcoin-qt` tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.
 
-#### bitcoin-seeder unit tests
+#### dogecoin-seeder unit tests
 
-The `bitcoin-seeder` unit tests can be built with `ninja test-seeder` or
+The `dogecoin-seeder` unit tests can be built with `ninja test-seeder` or
 built and run in a single command with `ninja check-seeder`.
 
-To run the `bitcoin-seeder` tests manually, launch
+To run the `dogecoin-seeder` tests manually, launch
 `src/seeder/test/test-seeder`.
 
-To add more `bitcoin-seeder` tests, add `BOOST_AUTO_TEST_CASE` functions to the
+To add more `dogecoin-seeder` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/seeder/test/` directory or add new .cpp files
 that implement new `BOOST_AUTO_TEST_SUITE` sections.
 
