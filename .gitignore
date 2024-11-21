@@ -12,7 +12,7 @@ src/dogecoin-chainstate
 src/dogecoin-wallet
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
-src/qt/test/test_bitcoin-qt
+src/qt/test/test_dogecoin-qt
 
 src/obj
 
@@ -22,11 +22,11 @@ src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
 
-src/qt/bitcoin-qt.config
-src/qt/bitcoin-qt.creator
-src/qt/bitcoin-qt.creator.user
-src/qt/bitcoin-qt.files
-src/qt/bitcoin-qt.includes
+src/qt/dogecoin-qt.config
+src/qt/dogecoin-qt.creator
+src/qt/dogecoin-qt.creator.user
+src/qt/dogecoin-qt.files
+src/qt/dogecoin-qt.includes
 
 .deps
 .libs
@@ -57,8 +57,8 @@ src/qt/bitcoin-qt.includes
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-bitcoin-qt
-Bitcoin-Qt.app
+dogecoin-qt
+Dogecoin-Qt.app
 
 # Resources cpp
 qrc_*.cpp

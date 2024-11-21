@@ -5,7 +5,7 @@
  * Unnecessary locale dependence can cause bugs that are very tricky to isolate
  * and fix.
  *
- * Be aware that bitcoind and bitcoin-qt differ in terms of localization: Qt
+ * Be aware that bitcoind and dogecoin-qt differ in terms of localization: Qt
  * opts in to POSIX localization by running setlocale(LC_ALL, "") on startup,
  * whereas no such call is made in bitcoind.
  *
@@ -18,12 +18,12 @@
  * thus ignored.
  *
  * This results in situations where bitcoind is guaranteed to be running
- * with the classic locale ("C") whereas the locale of bitcoin-qt will vary
+ * with the classic locale ("C") whereas the locale of dogecoin-qt will vary
  * depending on the user's environment variables.
  *
  * An example: Assuming the environment variable LC_ALL=de_DE then the
  * call std::to_string(1.23) will return "1.230000" in bitcoind but
- * "1,230000" in bitcoin-qt.
+ * "1,230000" in dogecoin-qt.
  *
  * From the Qt documentation:
  * "On Unix/Linux Qt is configured to use the system locale settings by default.

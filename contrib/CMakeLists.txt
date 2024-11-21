@@ -20,7 +20,7 @@ exclude_from_source_package(
 	"zmq/"
 
 	# Files
-	"bitcoin-qt.pro"
+	"dogecoin-qt.pro"
 	"README.md"
 	"valgrind.supp"
 )
