@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_MODALOVERLAY_H
-#define BITCOIN_QT_MODALOVERLAY_H
+#ifndef DOGECASH_QT_MODALOVERLAY_H
+#define DOGECASH_QT_MODALOVERLAY_H
 
 #include <QDateTime>
 #include <QPropertyAnimation>
@@ -57,4 +57,4 @@ private:
     void UpdateHeaderPresyncLabel(int height, const QDateTime &blockDate);
 };
 
-#endif // BITCOIN_QT_MODALOVERLAY_H
+#endif // DOGECASH_QT_MODALOVERLAY_H

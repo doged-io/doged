@@ -1,7 +1,7 @@
 # Copyright (c) 2018 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Check that it's not possible to start a second bitcoind instance using the same datadir or wallet."""
+"""Check that it's not possible to start a second dogecashd instance using the same datadir or wallet."""
 import os
 
 from test_framework.test_framework import BitcoinTestFramework
@@ -23,7 +23,7 @@ class FilelockTest(BitcoinTestFramework):
         self.log.info(f"Using datadir {datadir}")
 
         self.log.info(
-            "Check that we can't start a second bitcoind instance using the same"
+            "Check that we can't start a second dogecashd instance using the same"
             " datadir"
         )
         expected_msg = (
@@ -39,7 +39,7 @@ class FilelockTest(BitcoinTestFramework):
             self.nodes[0].createwallet(self.default_wallet_name)
             wallet_dir = os.path.join(datadir, "wallets")
             self.log.info(
-                "Check that we can't start a second bitcoind instance using the same"
+                "Check that we can't start a second dogecashd instance using the same"
                 " wallet"
             )
             expected_msg = "Error: Error initializing wallet database environment"

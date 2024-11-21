@@ -192,7 +192,7 @@ class NotificationsTest(BitcoinTestFramework):
         # Invalidate a large branch, which should trigger an alert.
         self.nodes[0].invalidateblock(invalid_block)
 
-        # Give bitcoind 10 seconds to write the alert notification
+        # Give dogecashd 10 seconds to write the alert notification
         self.wait_until(lambda: len(os.listdir(self.alertnotify_dir)), timeout=10)
 
         # The notification command is unable to properly handle the spaces on

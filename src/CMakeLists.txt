@@ -1,6 +1,6 @@
 # Copyright (c) 2017 The Bitcoin developers
 
-project(bitcoind)
+project(dogecashd)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,9 +11,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
-option(BUILD_BITCOIN_CLI "Build bitcoin-cli" ON)
+option(BUILD_DOGECASH_CLI "Build dogecash-cli" ON)
 option(BUILD_BITCOIN_TX "Build bitcoin-tx" ON)
-option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
+option(BUILD_DOGECASH_QT "Build dogecash-qt" ON)
 option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(BUILD_BITCOIN_CHAINSTATE "Build bitcoin-chainstate" OFF)
@@ -79,7 +79,7 @@ include(NativeExecutable)
 native_add_cmake_flags(
 	"-DBUILD_BITCOIN_WALLET=OFF"
 	"-DBUILD_BITCOIN_CHRONIK=OFF"
-	"-DBUILD_BITCOIN_QT=OFF"
+	"-DBUILD_DOGECASH_QT=OFF"
 	"-DBUILD_BITCOIN_ZMQ=OFF"
 	"-DENABLE_QRCODE=OFF"
 	"-DENABLE_NATPMP=OFF"
@@ -818,21 +818,21 @@ if(BUILD_BITCOIN_SEEDER)
 	add_subdirectory(seeder)
 endif()
 
-# bitcoin-cli
-if(BUILD_BITCOIN_CLI)
-	add_executable(bitcoin-cli bitcoin-cli.cpp)
-	generate_windows_version_info(bitcoin-cli
+# dogecash-cli
+if(BUILD_DOGECASH_CLI)
+	add_executable(dogecash-cli dogecash-cli.cpp)
+	generate_windows_version_info(dogecash-cli
 		DESCRIPTION "JSON-RPC client for ${PACKAGE_NAME}"
 	)
 
-	target_link_libraries(bitcoin-cli common rpcclient)
-	link_event(bitcoin-cli event)
+	target_link_libraries(dogecash-cli common rpcclient)
+	link_event(dogecash-cli event)
 
-	add_to_symbols_check(bitcoin-cli)
-	add_to_security_check(bitcoin-cli)
+	add_to_symbols_check(dogecash-cli)
+	add_to_security_check(dogecash-cli)
 
-	install_target(bitcoin-cli)
-	install_manpages(bitcoin-cli)
+	install_target(dogecash-cli)
+	install_manpages(dogecash-cli)
 endif()
 
 # bitcoin-tx
@@ -1016,20 +1016,20 @@ if(BUILD_BITCOIN_CHAINSTATE)
 	add_to_security_check(bitcoin-chainstate)
 endif()
 
-# bitcoind
-add_executable(bitcoind bitcoind.cpp)
-target_link_libraries(bitcoind server)
-generate_windows_version_info(bitcoind
+# dogecashd
+add_executable(dogecashd dogecashd.cpp)
+target_link_libraries(dogecashd server)
+generate_windows_version_info(dogecashd
 	DESCRIPTION "Bitcoin node with a JSON-RPC server"
 )
-add_to_symbols_check(bitcoind)
-add_to_security_check(bitcoind)
+add_to_symbols_check(dogecashd)
+add_to_security_check(dogecashd)
 
-install_target(bitcoind)
-install_manpages(bitcoind)
+install_target(dogecashd)
+install_manpages(dogecashd)
 
-# Bitcoin-qt
-if(BUILD_BITCOIN_QT)
+# Dogecash-qt
+if(BUILD_DOGECASH_QT)
 	add_subdirectory(qt)
 endif()
 

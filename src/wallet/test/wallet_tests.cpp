@@ -269,7 +269,7 @@ BOOST_FIXTURE_TEST_CASE(importmulti_rescan, TestChain100Setup) {
                       "could contain transactions pertaining to the key. As a "
                       "result, transactions and coins using this key may not "
                       "appear in the wallet. This error could be caused by "
-                      "pruning or data corruption (see bitcoind log for "
+                      "pruning or data corruption (see dogecashd log for "
                       "details) and could be dealt with by downloading and "
                       "rescanning the relevant blocks (see -reindex and "
                       "-rescan options).\"}},{\"success\":true}]",

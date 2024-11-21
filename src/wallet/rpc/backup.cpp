@@ -1672,7 +1672,7 @@ static std::string GetRescanErrorMessage(const std::string &object,
         "key creation, and could contain transactions pertaining to the %s. As "
         "a result, transactions and coins using this %s may not appear in "
         "the wallet. This error could be caused by pruning or data corruption "
-        "(see bitcoind log for details) and could be dealt with by downloading "
+        "(see dogecashd log for details) and could be dealt with by downloading "
         "and rescanning the relevant blocks (see -reindex and -rescan "
         "options).",
         object, objectTimestamp, blockTimestamp, TIMESTAMP_WINDOW, object,

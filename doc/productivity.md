@@ -37,7 +37,7 @@ You can disable features to save on compilation time. A few common flags:
 -DENABLE_UPNP=OFF
 -DENABLE_NATPMP=OFF
 -DBUILD_BITCOIN_WALLET=OFF
--DBUILD_BITCOIN_QT=OFF
+-DBUILD_DOGECASH_QT=OFF
 ```
 
 See [Options passed to cmake](dependencies.md#options-passed-to-cmake)
@@ -67,14 +67,14 @@ You can also set up [upstream refspecs](#reference-prs-easily-with-refspecs) to 
 Bash completion does not work out of the box for locally built binaries, but
 you can make it work for your environment for any binary that has a
 `.bash-completion` file in `/contrib`. In this example, binaries are built
-out-of-tree and we setup bash completion for bitcoin-cli and bitcoind. The
+out-of-tree and we setup bash completion for dogecash-cli and dogecashd. The
 completion function names can be determined by inspecting the
 `.bash-completion` file for each binary.
 ```
-source ./contrib/bitcoind.bash-completion
-complete -F _bitcoind ./bitcoind
-source ./contrib/bitcoin-cli.bash-completion
-complete -F _bitcoin_cli ./bitcoin-cli
+source ./contrib/dogecashd.bash-completion
+complete -F _dogecashd ./dogecashd
+source ./contrib/dogecash-cli.bash-completion
+complete -F _dogecash_cli ./dogecash-cli
 ```
 
 Rebasing/Merging code

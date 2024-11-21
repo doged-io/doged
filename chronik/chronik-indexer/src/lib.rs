@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//! Chronik indexer, sorts all the data coming from bitcoind into Chronik's db.
+//! Chronik indexer, sorts all the data coming from dogecashd into Chronik's db.
 
 abc_rust_lint::lint! {
     pub mod avalanche;

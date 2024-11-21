@@ -35,7 +35,7 @@ templates:
 
   ibd:
     targets:
-      - - bitcoind
+      - - dogecashd
     post_build: |
       "${TOPLEVEL}/contrib/teamcity/ibd.sh" -disablewallet -debug=net
     timeout: 28800
@@ -44,7 +44,7 @@ templates:
 
   ibd-no-assumevalid-checkpoint:
     targets:
-      - - bitcoind
+      - - dogecashd
     post_build: |
       "${TOPLEVEL}/contrib/teamcity/ibd.sh" -disablewallet -assumevalid=0 -checkpoints=0 -debug=net
     timeout: 28800
@@ -619,7 +619,7 @@ builds:
         # them on the native platform.
         #- install-tests
         - install-test-suite-bitcoin
-        - install-test-suite-bitcoin-qt
+        - install-test-suite-dogecash-qt
         - install-test-suite-avalanche
         - install-test-suite-pow
       - - package
@@ -643,7 +643,7 @@ builds:
   build-without-cli:
     Werror: true
     cmake_flags:
-      - '-DBUILD_BITCOIN_CLI=OFF'
+      - '-DBUILD_DOGECASH_CLI=OFF'
     targets:
       - - all
         - install
@@ -653,7 +653,7 @@ builds:
   build-without-qt:
     Werror: true
     cmake_flags:
-      - '-DBUILD_BITCOIN_QT=OFF'
+      - '-DBUILD_DOGECASH_QT=OFF'
     targets:
       - - all
         - install
@@ -694,8 +694,8 @@ builds:
 
   check-seeds:
     targets:
-      - - bitcoind
-        - bitcoin-cli
+      - - dogecashd
+        - dogecash-cli
     post_build: |
       # Run on different ports to avoid a race where the rpc port used in the first run
       # may not be closed in time for the second to start.

@@ -1,17 +1,17 @@
 # Copyright (c) 2020 The Bitcoin developers
 
-if(BUILD_BITCOIN_CLI)
+if(BUILD_DOGECASH_CLI)
 	add_custom_target(doc-rpc
 		COMMENT "Generating RPC documentation"
 		COMMAND
 			"${CMAKE_CURRENT_SOURCE_DIR}/gen-rpc-docs.sh"
 			"${CMAKE_CURRENT_SOURCE_DIR}/generate.go"
-			"$<TARGET_FILE:bitcoind>"
-			"$<TARGET_FILE:bitcoin-cli>"
+			"$<TARGET_FILE:dogecashd>"
+			"$<TARGET_FILE:dogecash-cli>"
 		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 		DEPENDS
-			bitcoind
-			bitcoin-cli
+			dogecashd
+			dogecash-cli
 	)
 endif()
 

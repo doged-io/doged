@@ -1,7 +1,7 @@
 # Copyright (c) 2017-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test bitcoin-cli"""
+"""Test dogecash-cli"""
 
 from decimal import Decimal
 
@@ -43,7 +43,7 @@ class TestBitcoinCli(BitcoinTestFramework):
         self.generate(self.nodes[0], BLOCKS)
 
         self.log.info(
-            "Compare responses from getblockchaininfo RPC and `bitcoin-cli"
+            "Compare responses from getblockchaininfo RPC and `dogecash-cli"
             " getblockchaininfo`"
         )
         cli_response = self.nodes[0].cli.getblockchaininfo()
@@ -175,7 +175,7 @@ class TestBitcoinCli(BitcoinTestFramework):
 
         if self.is_wallet_compiled():
             self.log.info(
-                "Test -getinfo and bitcoin-cli getwalletinfo return expected wallet"
+                "Test -getinfo and dogecash-cli getwalletinfo return expected wallet"
                 " info"
             )
             assert_equal(cli_get_info["balance"], BALANCE)
@@ -279,7 +279,7 @@ class TestBitcoinCli(BitcoinTestFramework):
             assert "balance" not in cli_get_info_keys
             assert "balances" not in cli_get_info_keys
 
-            # Test bitcoin-cli -generate.
+            # Test dogecash-cli -generate.
             n1 = 3
             n2 = 4
             w2.walletpassphrase(password, self.rpc_timeout)
@@ -340,7 +340,7 @@ class TestBitcoinCli(BitcoinTestFramework):
                 self.nodes[0].cli(rpcwallet3, "-generate", 1, 2, 3).echo,
             )
 
-            # Test bitcoin-cli -generate with -rpcwallet in multiwallet mode.
+            # Test dogecash-cli -generate with -rpcwallet in multiwallet mode.
             self.nodes[0].loadwallet(wallets[2])
             n3 = 4
             n4 = 10

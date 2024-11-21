@@ -7,8 +7,8 @@ set -euxo pipefail
 ###
 # Initial Block Download script.
 #
-# Runs a bitcoind process until initial block download is complete.
-# Forwards the exit code from bitcoind onward.
+# Runs a dogecashd process until initial block download is complete.
+# Forwards the exit code from dogecashd onward.
 ###
 
 MYPID=$$
@@ -16,7 +16,7 @@ MYPID=$$
 # Setup
 : "${TOPLEVEL:=$(git rev-parse --show-toplevel)}"
 : "${BUILD_DIR:=${TOPLEVEL}/build}"
-: "${BITCOIND:=${BUILD_DIR}/src/bitcoind}"
+: "${DOGECASHD:=${BUILD_DIR}/src/dogecashd}"
 
 DATA_DIR="${BUILD_DIR}/ibd"
 mkdir -p "${DATA_DIR}"
@@ -41,9 +41,9 @@ callback() {
 }
 export -f callback
 
-BITCOIND="${BITCOIND}" \
+DOGECASHD="${DOGECASHD}" \
 LOG_FILE="${DEBUG_LOG}" \
-"${TOPLEVEL}/contrib/devtools/bitcoind-exit-on-log.sh" \
+"${TOPLEVEL}/contrib/devtools/dogecashd-exit-on-log.sh" \
   --grep 'Leaving InitialBlockDownload (latching to false)' \
   --params "-datadir=${DATA_DIR} $*" \
   --callback callback

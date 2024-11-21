@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//! Foreign-function interface to bitcoind. Bridges Rust to C++.
+//! Foreign-function interface to dogecashd. Bridges Rust to C++.
 //!
 //! The bridge is split into two crates, `chronik-bridge` and `chronik-lib`.
 //!

@@ -216,7 +216,7 @@ void SQLiteDatabase::Open() {
     if (ret != SQLITE_OK) {
         throw std::runtime_error(
             "SQLiteDatabase: Unable to obtain an exclusive lock on the "
-            "database, is it being used by another bitcoind?\n");
+            "database, is it being used by another dogecashd?\n");
     }
     ret = sqlite3_exec(m_db, "COMMIT", nullptr, nullptr, nullptr);
     if (ret != SQLITE_OK) {

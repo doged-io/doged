@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_CLIENTMODEL_H
-#define BITCOIN_QT_CLIENTMODEL_H
+#ifndef DOGECASH_QT_CLIENTMODEL_H
+#define DOGECASH_QT_CLIENTMODEL_H
 
 #include <QDateTime>
 #include <QObject>
@@ -130,4 +130,4 @@ Q_SIGNALS:
     void showProgress(const QString &title, int nProgress);
 };
 
-#endif // BITCOIN_QT_CLIENTMODEL_H
+#endif // DOGECASH_QT_CLIENTMODEL_H

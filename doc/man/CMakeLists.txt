@@ -18,11 +18,11 @@ function(generate_manpages)
 				"${CMAKE_SOURCE_DIR}/cmake/utils/log-and-print-on-failure.sh"
 				"${CMAKE_BINARY_DIR}/doc/man/gen-manpage-${TARGET}.log"
 				"${CMAKE_SOURCE_DIR}/doc/man/gen-manpages.sh"
-				"$<TARGET_FILE:bitcoind>"
+				"$<TARGET_FILE:dogecashd>"
 				"$<TARGET_FILE:${TARGET}>"
 				"${MAN_PAGE}"
 			DEPENDS
-				bitcoind
+				dogecashd
 				"${TARGET}"
 		)
 		add_custom_target(doc-manpage-${TARGET}

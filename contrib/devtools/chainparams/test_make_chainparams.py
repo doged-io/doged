@@ -291,7 +291,7 @@ class GenerateChainParamsTests(unittest.TestCase):
             " 0000000000000000003ef673ae12bc6017481830d37b9c52ce1e79c080e812b8'",
         )
 
-    def test_bitcoin_cli_failures_testnet(self):
+    def test_dogecash_cli_failures_testnet(self):
         for chain in ["main", "test"]:
             expectedBlock = 133990
             if chain == "test":

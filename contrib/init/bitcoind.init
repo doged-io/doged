@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
 #
-#  bitcoind The bitcoin core server.
+#  dogecashd The bitcoin core server.
 #
 #
 # chkconfig: 345 80 20
-# description: bitcoind
-# processname: bitcoind
+# description: dogecashd
+# processname: dogecashd
 #
 
 # Source function library.
 . /etc/init.d/functions
 
-# you can override defaults in /etc/sysconfig/bitcoind, see below
-if [ -f /etc/sysconfig/bitcoind ]; then
-        . /etc/sysconfig/bitcoind
+# you can override defaults in /etc/sysconfig/dogecashd, see below
+if [ -f /etc/sysconfig/dogecashd ]; then
+        . /etc/sysconfig/dogecashd
 fi
 
 RETVAL=0
 
-prog=bitcoind
-# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/bitcoind
-lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/bitcoind}
+prog=dogecashd
+# you can override the lockfile via DOGECASHD_LOCKFILE in /etc/sysconfig/dogecashd
+lockfile=${DOGECASHD_LOCKFILE-/var/lock/subsys/dogecashd}
 
-# bitcoind defaults to /usr/bin/bitcoind, override with BITCOIND_BIN
-bitcoind=${BITCOIND_BIN-/usr/bin/bitcoind}
+# dogecashd defaults to /usr/bin/dogecashd, override with DOGECASHD_BIN
+dogecashd=${DOGECASHD_BIN-/usr/bin/dogecashd}
 
-# bitcoind opts default to -disablewallet, override with BITCOIND_OPTS
-bitcoind_opts=${BITCOIND_OPTS--disablewallet}
+# dogecashd opts default to -disablewallet, override with DOGECASHD_OPTS
+dogecashd_opts=${DOGECASHD_OPTS--disablewallet}
 
 start() {
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $bitcoind $bitcoind_opts
+    daemon $DAEMONOPTS $dogecashd $dogecashd_opts
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile

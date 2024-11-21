@@ -32,7 +32,7 @@ add_dependencies(check-all check-devtools)
 include(PackageHelper)
 exclude_from_source_package(
 	# Files
-	"bitcoind-exit-on-log.sh"
+	"dogecashd-exit-on-log.sh"
 	"circular-dependencies.py"
 	"copyright_header.py"
 	"extract_strings_qt.py"

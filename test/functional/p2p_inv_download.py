@@ -527,7 +527,7 @@ class InventoryDownloadTest(BitcoinTestFramework):
             self.test_large_inv_batch(context)
             self.test_spurious_notfound(context)
 
-            # Run each test against new bitcoind instances, as setting mocktimes has long-term effects on when
+            # Run each test against new dogecashd instances, as setting mocktimes has long-term effects on when
             # the next trickle relay event happens.
             for test in [
                 self.test_in_flight_max,

@@ -124,7 +124,7 @@ mod ffi_inner {
         #[namespace = "node"]
         type NodeContext = chronik_bridge::ffi::NodeContext;
 
-        /// Bridge to bitcoind to access the node
+        /// Bridge to dogecashd to access the node
         type ChronikBridge = chronik_bridge::ffi::ChronikBridge;
 
         /// Register the Chronik instance as CValidationInterface to receive

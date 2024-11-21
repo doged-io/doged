@@ -1,6 +1,6 @@
 # Copyright (c) 2018 The Bitcoin developers
 
-project(bitcoin-qt)
+project(dogecash-qt)
 
 include(BrewHelper)
 find_brew_prefix(QT5_PREFIX qt5)
@@ -78,7 +78,7 @@ set(CMAKE_AUTOMOC ON)
 # Handle qrc resources
 qt5_add_resources(QRC_BITCOIN_CPP bitcoin.qrc)
 
-add_library(bitcoin-qt-base
+add_library(dogecash-qt-base
 	bantablemodel.cpp
 	bitcoin.cpp
 	bitcoinaddressvalidator.cpp
@@ -130,7 +130,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	list(APPEND QT_PLUGIN_COMPONENTS QWindowsIntegrationPlugin)
 	list(APPEND QT_PLUGIN_PLATFORM_DEFINITIONS -DQT_QPA_PLATFORM_WINDOWS=1)
 
-	target_sources(bitcoin-qt-base PRIVATE winshutdownmonitor.cpp)
+	target_sources(dogecash-qt-base PRIVATE winshutdownmonitor.cpp)
 endif()
 
 # OSX support
@@ -139,15 +139,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	list(APPEND QT_PLUGIN_COMPONENTS QMacStylePlugin)
 	list(APPEND QT_PLUGIN_PLATFORM_DEFINITIONS -DQT_QPA_PLATFORM_COCOA=1)
 
-	target_sources(bitcoin-qt-base PRIVATE
+	target_sources(dogecash-qt-base PRIVATE
 		macdockiconhandler.mm
 		macnotificationhandler.mm
 		macos_appnap.mm
 	)
 
-	set_property(TARGET bitcoin-qt-base PROPERTY AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
+	set_property(TARGET dogecash-qt-base PROPERTY AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
 
-	target_link_libraries(bitcoin-qt-base
+	target_link_libraries(dogecash-qt-base
 		"-framework Foundation"
 		"-framework AppKit"
 	)
@@ -208,28 +208,28 @@ if(QT_STATIC_BUILD)
 	# including Qt's predefined plugins."
 	# So if the Qt build is static, the plugins should also be static and we
 	# need to define QT_STATICPLUGIN to tell the code to import <QTPlugin>.
-	target_compile_definitions(bitcoin-qt-base PUBLIC -DQT_STATICPLUGIN=1)
+	target_compile_definitions(dogecash-qt-base PUBLIC -DQT_STATICPLUGIN=1)
 
 	# Add the platform plugin definition if required
 	# Setting this definition tells the code what is the target for Q_IMPORT_PLUGIN().
 	foreach(qt_platform_definition ${QT_PLUGIN_PLATFORM_DEFINITIONS})
-		target_compile_definitions(bitcoin-qt-base PUBLIC "${qt_platform_definition}")
+		target_compile_definitions(dogecash-qt-base PUBLIC "${qt_platform_definition}")
 	endforeach()
 
 	# Link the required plugins
 	foreach(qt_plugin ${QT_PLUGIN_COMPONENTS})
-		target_link_libraries(bitcoin-qt-base Qt5::${qt_plugin})
+		target_link_libraries(dogecash-qt-base Qt5::${qt_plugin})
 	endforeach()
 endif()
 
-target_link_libraries(bitcoin-qt-base
+target_link_libraries(dogecash-qt-base
 	server
 	rpcclient
 	Qt5::Widgets
 	Qt5::Network
 )
 if(ENABLE_DBUS_NOTIFICATIONS)
-	target_link_libraries(bitcoin-qt-base Qt5::DBus)
+	target_link_libraries(dogecash-qt-base Qt5::DBus)
 endif()
 
 if(ENABLE_BIP70)
@@ -248,10 +248,10 @@ if(ENABLE_BIP70)
 	endif()
 
 	add_library(
-		bitcoin-qt-protobuf OBJECT
+		dogecash-qt-protobuf OBJECT
 		paymentrequest.proto
 	)
-	target_link_libraries(bitcoin-qt-protobuf PUBLIC protobuf::libprotobuf)
+	target_link_libraries(dogecash-qt-protobuf PUBLIC protobuf::libprotobuf)
 
 	# Where protoc will put the generated files
 	set(PROTOC_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -260,13 +260,13 @@ if(ENABLE_BIP70)
 
 	# Include the generated headers path
 	target_include_directories(
-		bitcoin-qt-protobuf
+		dogecash-qt-protobuf
 		PUBLIC "$<BUILD_INTERFACE:${PROTOC_OUTPUT_DIRECTORY}>"
 	)
 
 	protobuf_generate(
 		LANGUAGE cpp
-		TARGET bitcoin-qt-protobuf
+		TARGET dogecash-qt-protobuf
 		IMPORT_DIRS "${PROTO_IMPORT_DIRECTORY}"
 		PROTOC_OUT_DIR "${PROTOC_OUTPUT_DIRECTORY}"
 	)
@@ -274,13 +274,13 @@ if(ENABLE_BIP70)
 	# Don't run clang-tidy on generated files
 	if(ENABLE_CLANG_TIDY)
 		include(ClangTidy)
-		target_disable_clang_tidy(bitcoin-qt-protobuf)
+		target_disable_clang_tidy(dogecash-qt-protobuf)
 	endif()
 
 	# Message::ByteSize() is deprecated and replaced by ByteSizeLong() since
 	# protobuf 3.1.
 	if(Protobuf_VERSION GREATER_EQUAL "3.1.0")
-		target_compile_definitions(bitcoin-qt-base PRIVATE USE_PROTOBUF_MESSAGE_BYTESIZELONG)
+		target_compile_definitions(dogecash-qt-base PRIVATE USE_PROTOBUF_MESSAGE_BYTESIZELONG)
 	endif()
 
 	# OpenSSL functionality
@@ -293,12 +293,12 @@ if(ENABLE_BIP70)
 	set(CMAKE_REQUIRED_LIBRARIES OpenSSL::SSL)
 	check_symbol_exists(EVP_MD_CTX_new "openssl/evp.h" HAVE_DECL_EVP_MD_CTX_NEW)
 	if(HAVE_DECL_EVP_MD_CTX_NEW)
-		target_compile_definitions(bitcoin-qt-base PRIVATE HAVE_DECL_EVP_MD_CTX_NEW=1)
+		target_compile_definitions(dogecash-qt-base PRIVATE HAVE_DECL_EVP_MD_CTX_NEW=1)
 	endif()
 
-	target_link_libraries(bitcoin-qt-base
+	target_link_libraries(dogecash-qt-base
 		OpenSSL::SSL
-		bitcoin-qt-protobuf
+		dogecash-qt-protobuf
 	)
 endif()
 
@@ -307,8 +307,8 @@ if(BUILD_BITCOIN_WALLET)
 	# Automoc option.
 	set(AUTOMOC_MOC_OPTIONS -DENABLE_WALLET=1)
 
-	# Add wallet functionality to bitcoin-qt
-	target_sources(bitcoin-qt-base
+	# Add wallet functionality to dogecash-qt
+	target_sources(dogecash-qt-base
 		PRIVATE
 			addressbookpage.cpp
 			addresstablemodel.cpp
@@ -340,40 +340,40 @@ if(BUILD_BITCOIN_WALLET)
 			walletview.cpp
 	)
 
-	# Add BIP70 functionality to bitcoin-qt
+	# Add BIP70 functionality to dogecash-qt
 	if(ENABLE_BIP70)
-		target_sources(bitcoin-qt-base
+		target_sources(dogecash-qt-base
 			PRIVATE
 				paymentrequestplus.cpp
 		)
 	endif()
 
-	target_link_libraries(bitcoin-qt-base wallet)
+	target_link_libraries(dogecash-qt-base wallet)
 
 	if(ENABLE_QRCODE)
 		find_package(QREncode REQUIRED)
-		target_link_libraries(bitcoin-qt-base QREncode::qrencode)
+		target_link_libraries(dogecash-qt-base QREncode::qrencode)
 	endif()
 endif()
 
 # The executable
-add_executable(bitcoin-qt WIN32 main.cpp)
+add_executable(dogecash-qt WIN32 main.cpp)
 include(WindowsVersionInfo)
-generate_windows_version_info(bitcoin-qt
+generate_windows_version_info(dogecash-qt
 	DESCRIPTION "GUI node for Bitcoin"
 	ICONS
 		"res/icons/bitcoin.ico"
 		"res/icons/bitcoin_testnet.ico"
 )
-target_link_libraries(bitcoin-qt bitcoin-qt-base)
+target_link_libraries(dogecash-qt dogecash-qt-base)
 
 include(BinaryTest)
-add_to_symbols_check(bitcoin-qt)
-add_to_security_check(bitcoin-qt)
+add_to_symbols_check(dogecash-qt)
+add_to_security_check(dogecash-qt)
 
 include(InstallationHelper)
-install_target(bitcoin-qt)
-install_manpages(bitcoin-qt)
+install_target(dogecash-qt)
+install_manpages(dogecash-qt)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(BITCOINQT_BUNDLE_ICON "res/icons/bitcoin.icns")
@@ -392,7 +392,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(EMPTY_LPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/empty.lproj")
 	file(TOUCH "${EMPTY_LPROJ_FILE}")
 
-	target_sources(bitcoin-qt PRIVATE
+	target_sources(dogecash-qt PRIVATE
 		"${BITCOINQT_BUNDLE_ICON}"
 		"${INFO_PLIST_STRINGS_PATH}"
 		"${EMPTY_LPROJ_FILE}"
@@ -403,14 +403,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		"${EMPTY_LPROJ_FILE}"
 	)
 
-	set(BITCOIN_QT_OSX_BUNDLE_NAME "BitcoinABC-Qt")
-	set_target_properties(bitcoin-qt PROPERTIES
+	set(DOGECASH_QT_OSX_BUNDLE_NAME "BitcoinABC-Qt")
+	set_target_properties(dogecash-qt PROPERTIES
 		MACOSX_BUNDLE ON
-		OUTPUT_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
+		OUTPUT_NAME "${DOGECASH_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
-		MACOSX_BUNDLE_BUNDLE_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
+		MACOSX_BUNDLE_BUNDLE_NAME "${DOGECASH_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_BUNDLE_VERSION "${bitcoin-abc_VERSION}"
-		MACOSX_BUNDLE_GUI_IDENTIFIER "org.bitcoinabc.${BITCOIN_QT_OSX_BUNDLE_NAME}"
+		MACOSX_BUNDLE_GUI_IDENTIFIER "org.bitcoinabc.${DOGECASH_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_ICON_FILE "${BITCOINQT_BUNDLE_ICON_NAME}"
 		MACOSX_BUNDLE_INFO_STRING "${bitcoin-abc_VERSION}, Copyright © 2009-${COPYRIGHT_YEAR} ${COPYRIGHT_HOLDERS_FINAL}"
 		MACOSX_BUNDLE_LONG_VERSION_STRING "${bitcoin-abc_VERSION}"
@@ -438,16 +438,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	# an application bundle is well-known and specified by Apple. Note that this
 	# will only work for building MacOS application bundle as the IOS structure
 	# is slightly different.
-	set(STRIPPED_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/stripped/${BITCOIN_QT_OSX_BUNDLE_NAME}.app")
+	set(STRIPPED_BUNDLE "${CMAKE_CURRENT_BINARY_DIR}/stripped/${DOGECASH_QT_OSX_BUNDLE_NAME}.app")
 	add_custom_command(
 		OUTPUT
 			"${STRIPPED_BUNDLE}"
 		COMMAND
-			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:bitcoin-qt>" "${STRIPPED_BUNDLE}"
+			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:dogecash-qt>" "${STRIPPED_BUNDLE}"
 		COMMAND
-			${CMAKE_STRIP} -u -r "${STRIPPED_BUNDLE}/Contents/MacOS/${BITCOIN_QT_OSX_BUNDLE_NAME}"
+			${CMAKE_STRIP} -u -r "${STRIPPED_BUNDLE}/Contents/MacOS/${DOGECASH_QT_OSX_BUNDLE_NAME}"
 		DEPENDS
-			bitcoin-qt
+			dogecash-qt
 	)
 
 	include(DoOrFail)

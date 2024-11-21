@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TEST_PAYMENTREQUESTDATA_H
-#define BITCOIN_QT_TEST_PAYMENTREQUESTDATA_H
+#ifndef DOGECASH_QT_TEST_PAYMENTREQUESTDATA_H
+#define DOGECASH_QT_TEST_PAYMENTREQUESTDATA_H
 
 //
 // Data for paymentservertests.cpp
@@ -520,4 +520,4 @@ Fl0dk9xsti80b4VQNuUIBqqc9P47ktgbZjW7GT5DfYDDMCopoM3Pj7gs5hCsDyvX\
 EGE=\
 ";
 
-#endif // BITCOIN_QT_TEST_PAYMENTREQUESTDATA_H
+#endif // DOGECASH_QT_TEST_PAYMENTREQUESTDATA_H

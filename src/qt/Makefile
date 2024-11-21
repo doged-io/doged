@@ -1,9 +1,9 @@
 .PHONY: FORCE
 all: FORCE
-	$(MAKE) -C .. bitcoin_qt test_bitcoin_qt
+	$(MAKE) -C .. dogecash_qt test_dogecash_qt
 clean: FORCE
-	$(MAKE) -C .. bitcoin_qt_clean test_bitcoin_qt_clean
+	$(MAKE) -C .. dogecash_qt_clean test_dogecash_qt_clean
 check: FORCE
-	$(MAKE) -C .. test_bitcoin_qt_check
-bitcoin-qt bitcoin-qt.exe: FORCE
-	 $(MAKE) -C .. bitcoin_qt
+	$(MAKE) -C .. test_dogecash_qt_check
+dogecash-qt dogecash-qt.exe: FORCE
+	 $(MAKE) -C .. dogecash_qt

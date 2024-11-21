@@ -50,7 +50,7 @@ pub struct QueryBlocks<'a> {
     pub avalanche: &'a Avalanche,
     /// Mempool
     pub mempool: &'a Mempool,
-    /// Access to bitcoind to read txs
+    /// Access to dogecashd to read txs
     pub node: &'a Node,
     /// Whether the SLP/ALP token index is enabled
     pub is_token_index_enabled: bool,

@@ -25,8 +25,8 @@ include(Coverage)
 include(TestSuite)
 
 set(_TEST_TARGET_DEPENDS "")
-if(BUILD_BITCOIN_CLI)
-	list(APPEND _TEST_TARGET_DEPENDS bitcoin-cli)
+if(BUILD_DOGECASH_CLI)
+	list(APPEND _TEST_TARGET_DEPENDS dogecash-cli)
 endif()
 if(BUILD_BITCOIN_WALLET)
 	list(APPEND _TEST_TARGET_DEPENDS bitcoin-wallet)
@@ -68,7 +68,7 @@ function(add_functional_test_check TARGET DESCRIPTION)
 		CUSTOM_TARGET_ARGS
 			COMMENT "Running ${DESCRIPTION}"
 			DEPENDS
-				bitcoind
+				dogecashd
 				${_TEST_TARGET_DEPENDS}
 				${CMAKE_CURRENT_BINARY_DIR}/functional/test_runner.py
 			USES_TERMINAL

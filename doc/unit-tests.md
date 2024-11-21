@@ -4,25 +4,25 @@ Unit tests are not part of the default build but can be built on demand.
 
 All the unit tests can be built and run with a single command: `ninja check`.
 
-#### bitcoind unit tests
+#### dogecashd unit tests
 
-The `bitcoind` unit tests can be built with `ninja test_bitcoin`.
+The `dogecashd` unit tests can be built with `ninja test_bitcoin`.
 They can also be built and run in a single command with `ninja check-bitcoin`.
 
-To run the `bitcoind` tests manually, launch `src/test/test_bitcoin`.
+To run the `dogecashd` tests manually, launch `src/test/test_bitcoin`.
 
-To add more `bitcoind` tests, add `BOOST_AUTO_TEST_CASE` functions to the
+To add more `dogecashd` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/test/` directory or add new .cpp files that
 implement new `BOOST_AUTO_TEST_SUITE` sections.
 
-#### bitcoin-qt unit tests
+#### dogecash-qt unit tests
 
-The `bitcoin-qt` tests can be built with `ninja test_bitcoin-qt` or
-built and run in a single command with `ninja check-bitcoin-qt`.
+The `dogecash-qt` tests can be built with `ninja test_dogecash-qt` or
+built and run in a single command with `ninja check-dogecash-qt`.
 
-To run the `bitcoin-qt` tests manually, launch `src/qt/test/test_bitcoin-qt`.
+To run the `dogecash-qt` tests manually, launch `src/qt/test/test_dogecash-qt`.
 
-To add more `bitcoin-qt` tests, add them to the `src/qt/test/` directory and
+To add more `dogecash-qt` tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.
 
 #### bitcoin-seeder unit tests
@@ -73,7 +73,7 @@ To write to logs from unit tests you need to use specific message methods
 provided by Boost. The simplest is `BOOST_TEST_MESSAGE`.
 
 For debugging you can launch the test_bitcoin executable with `gdb`or `lldb` and
-start debugging, just like you would with bitcoind.
+start debugging, just like you would with dogecashd.
 
 This is a simple example of debugging unit tests with GDB on Linux:
 ```

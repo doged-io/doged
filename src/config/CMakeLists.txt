@@ -129,7 +129,7 @@ check_symbol_exists(malloc_info "malloc.h" HAVE_MALLOC_INFO)
 
 # Various system libraries
 check_symbol_exists(strnlen "string.h" HAVE_DECL_STRNLEN)
-# These are used for daemonization in bitcoind
+# These are used for daemonization in dogecashd
 check_symbol_exists(fork "unistd.h" HAVE_DECL_FORK)
 check_symbol_exists(setsid "unistd.h" HAVE_DECL_SETSID)
 
@@ -240,7 +240,7 @@ set(ENABLE_ZMQ ${BUILD_BITCOIN_ZMQ})
 
 # Try to find libqrencode
 # Only used in the wallet GUI
-if(ENABLE_QRCODE AND BUILD_BITCOIN_WALLET AND BUILD_BITCOIN_QT)
+if(ENABLE_QRCODE AND BUILD_BITCOIN_WALLET AND BUILD_DOGECASH_QT)
 	set(USE_QRCODE 1 CACHE INTERNAL "QR code is enabled")
 endif()
 

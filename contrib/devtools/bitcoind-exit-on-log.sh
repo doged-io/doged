@@ -8,12 +8,12 @@ set -euxo pipefail
 trap "kill 0" SIGINT
 
 TOPLEVEL=$(git rev-parse --show-toplevel)
-DEFAULT_BITCOIND="${TOPLEVEL}/build/src/bitcoind"
+DEFAULT_DOGECASHD="${TOPLEVEL}/build/src/dogecashd"
 DEFAULT_LOG_FILE=~/".dogecash/debug.log"
 
 help_message() {
   set +x
-  echo "Run bitcoind until a given log message is encountered, then kill bitcoind."
+  echo "Run dogecashd until a given log message is encountered, then kill dogecashd."
   echo ""
   echo "Example usages:"
   echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.dogecash\" --callback mycallback"
@@ -23,20 +23,20 @@ help_message() {
   echo ""
   echo "-g, --grep            (required) The grep pattern to look for."
   echo ""
-  echo "-c, --callback        (optional) Bash command to execute as a callback. This is useful for interacting with bitcoind before it is killed (to run tests, for example)."
-  echo "-p, --params          (optional) Parameters to provide to bitcoind."
+  echo "-c, --callback        (optional) Bash command to execute as a callback. This is useful for interacting with dogecashd before it is killed (to run tests, for example)."
+  echo "-p, --params          (optional) Parameters to provide to dogecashd."
   echo ""
   echo "Environment Variables:"
-  echo "BITCOIND              Default: ${DEFAULT_BITCOIND}"
+  echo "DOGECASHD              Default: ${DEFAULT_DOGECASHD}"
   echo "LOG_FILE              Default: ${DEFAULT_LOG_FILE}"
   set -x
 }
 
-: "${BITCOIND:=${DEFAULT_BITCOIND}}"
+: "${DOGECASHD:=${DEFAULT_DOGECASHD}}"
 : "${LOG_FILE:=${DEFAULT_LOG_FILE}}"
 GREP_PATTERN=""
 CALLBACK=""
-BITCOIND_PARAMS=""
+DOGECASHD_PARAMS=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -60,7 +60,7 @@ case $1 in
     shift # shift past value
     ;;
   -p|--params)
-    BITCOIND_PARAMS="$2"
+    DOGECASHD_PARAMS="$2"
     shift # shift past argument
     shift # shift past value
     ;;
@@ -83,37 +83,37 @@ fi
 # Make sure the debug log exists so that tail does not fail
 touch "${LOG_FILE}"
 
-# Launch bitcoind using custom parameters
-read -a BITCOIND_PARAMS <<< "${BITCOIND_PARAMS}"
+# Launch dogecashd using custom parameters
+read -a DOGECASHD_PARAMS <<< "${DOGECASHD_PARAMS}"
 
-BITCOIND_PID_FILE=/tmp/bitcoind-exit-on-log.pid
+DOGECASHD_PID_FILE=/tmp/dogecashd-exit-on-log.pid
 # Make sure the PID file doesn't already exist for some reason
-rm -f "${BITCOIND_PID_FILE}"
-BITCOIND_PARAMS+=("-pid=${BITCOIND_PID_FILE}")
-BITCOIND_PARAMS+=("-daemon")
+rm -f "${DOGECASHD_PID_FILE}"
+DOGECASHD_PARAMS+=("-pid=${DOGECASHD_PID_FILE}")
+DOGECASHD_PARAMS+=("-daemon")
 
 START_TIME=$(date +%s)
-"${BITCOIND}" "${BITCOIND_PARAMS[@]}"
+"${DOGECASHD}" "${DOGECASHD_PARAMS[@]}"
 
 # The PID file will not exist immediately, so wait for it
 PID_WAIT_COUNT=0
-while [ ! -e "${BITCOIND_PID_FILE}" ]; do
+while [ ! -e "${DOGECASHD_PID_FILE}" ]; do
   ((PID_WAIT_COUNT+=1))
   if [ "${PID_WAIT_COUNT}" -gt 10 ]; then
-    echo "Timed out waiting for bitcoind PID file"
+    echo "Timed out waiting for dogecashd PID file"
     exit 10
   fi
   sleep 0.5
 done
-BITCOIND_PID=$(cat "${BITCOIND_PID_FILE}")
+DOGECASHD_PID=$(cat "${DOGECASHD_PID_FILE}")
 
 # Wait for log checking to finish and kill the daemon
 (
-  # When this subshell finishes, kill bitcoind
+  # When this subshell finishes, kill dogecashd
   # shellcheck disable=SC2317
   log_subshell_cleanup() {
-    echo "Cleaning up bitcoin daemon (PID: ${BITCOIND_PID})."
-    kill ${BITCOIND_PID}
+    echo "Cleaning up bitcoin daemon (PID: ${DOGECASHD_PID})."
+    kill ${DOGECASHD_PID}
   }
   trap "log_subshell_cleanup" EXIT
 
@@ -129,21 +129,21 @@ BITCOIND_PID=$(cat "${BITCOIND_PID_FILE}")
 
   echo "Grep pattern '${GREP_PATTERN}' found after ${HUMAN_RUNTIME}."
 
-  # Optional callback for interacting with bitcoind before it's killed
+  # Optional callback for interacting with dogecashd before it's killed
   if [ -n "${CALLBACK}" ]; then
     "${CALLBACK}"
   fi
 ) &
 LOG_PID=$!
 
-# Wait for bitcoind to exit, whether it exited on its own or the log subshell finished
+# Wait for dogecashd to exit, whether it exited on its own or the log subshell finished
 set +x
-while [ -e "${BITCOIND_PID_FILE}" ]; do sleep 0.5; done
+while [ -e "${DOGECASHD_PID_FILE}" ]; do sleep 0.5; done
 set -x
 
 # If the log subshell is still running, then GREP_PATTERN was not found
 if [ -e /proc/${LOG_PID} ]; then
-  echo "bitcoind exited unexpectedly. See '${LOG_FILE}' for details."
+  echo "dogecashd exited unexpectedly. See '${LOG_FILE}' for details."
   exit 20
 fi
 

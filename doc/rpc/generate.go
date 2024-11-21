@@ -3,7 +3,7 @@
 // What is necessary to run this:
 // (1) install golang
 // (2) install bitcoin ABC
-// (3) run bitcoind (possibly on regtest to reduce system load)
+// (3) run dogecashd (possibly on regtest to reduce system load)
 // (4) run this script with `go run generate.go` while being in the build directory
 // (5) add the generated files to git
 package main
@@ -20,7 +20,7 @@ import (
 	"text/template"
 )
 
-const BITCOIN_COMMAND = "bitcoin-cli"
+const BITCOIN_COMMAND = "dogecash-cli"
 
 type Command struct {
 	Name        string
@@ -43,7 +43,7 @@ type CommandData struct {
 
 var srcdir string = ""
 var builddir string = ""
-var bitcoin_cli_path string = BITCOIN_COMMAND
+var dogecash_cli_path string = BITCOIN_COMMAND
 
 func setupEnv() error {
 	srcdir = strings.TrimSpace(runCommand("git", "rev-parse", "--show-toplevel"))
@@ -54,7 +54,7 @@ func setupEnv() error {
 	}
 	builddir = cwd
 
-	bitcoin_cli_path = path.Join(builddir, "src", BITCOIN_COMMAND)
+	dogecash_cli_path = path.Join(builddir, "src", BITCOIN_COMMAND)
 	return nil
 }
 
@@ -154,7 +154,7 @@ func open(path string) io.Writer {
 func runCommand(command string, args ...string) string {
 	out, err := exec.Command(command, args...).CombinedOutput()
 	if err != nil {
-		log.Fatalf("Cannot run %s: %s, is bitcoind running?", command, err.Error())
+		log.Fatalf("Cannot run %s: %s, is dogecashd running?", command, err.Error())
 	}
 
 	return string(out)
@@ -163,5 +163,5 @@ func runCommand(command string, args ...string) string {
 func run(args ...string) string {
 	additionalArgs := os.Args[1:]
 	args = append(additionalArgs, args...)
-	return runCommand(bitcoin_cli_path, args...)
+	return runCommand(dogecash_cli_path, args...)
 }

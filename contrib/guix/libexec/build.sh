@@ -253,7 +253,7 @@ if ! ls "${OUTDIR_BASE}"/src/bitcoin-abc-*.tar.gz 1> /dev/null 2>&1; then
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
         -DBUILD_BITCOIN_WALLET=OFF \
         -DBUILD_BITCOIN_CHRONIK=OFF \
-        -DBUILD_BITCOIN_QT=OFF \
+        -DBUILD_DOGECASH_QT=OFF \
         -DBUILD_BITCOIN_ZMQ=OFF \
         -DENABLE_QRCODE=OFF \
         -DENABLE_NATPMP=OFF \
@@ -435,7 +435,7 @@ EOF
             mv "${OSX_VOLNAME}.dmg" ${OUTDIR}/${DISTNAME}-osx-unsigned.dmg
 
             pushd installed
-            find . -path "*.app*" -type f -executable -exec mv {} ${DISTNAME}/bin/bitcoin-qt \;
+            find . -path "*.app*" -type f -executable -exec mv {} ${DISTNAME}/bin/dogecash-qt \;
             find ${DISTNAME} -not -path "*.app*" -print0 | sort --zero-terminated | tar --create --no-recursion --mode='u+rw,go+r-w,a+X' --null --files-from=- | gzip -9n > ${OUTDIR}/${DISTNAME}-${HOST}.tar.gz
             popd
             ;;

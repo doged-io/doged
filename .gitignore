@@ -4,15 +4,15 @@ abc-ci-builds
 
 *.exe
 src/bitcoin
-src/bitcoind
-src/bitcoin-cli
-src/bitcoin-seeder
-src/bitcoin-tx
-src/bitcoin-chainstate
-src/bitcoin-wallet
+src/dogecashd
+src/dogecash-cli
+src/dogecash-seeder
+src/dogecash-tx
+src/dogecash-chainstate
+src/dogecash-wallet
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
-src/qt/test/test_bitcoin-qt
+src/qt/test/test_dogecash-qt
 
 src/obj
 
@@ -22,11 +22,11 @@ src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
 
-src/qt/bitcoin-qt.config
-src/qt/bitcoin-qt.creator
-src/qt/bitcoin-qt.creator.user
-src/qt/bitcoin-qt.files
-src/qt/bitcoin-qt.includes
+src/qt/dogecash-qt.config
+src/qt/dogecash-qt.creator
+src/qt/dogecash-qt.creator.user
+src/qt/dogecash-qt.files
+src/qt/dogecash-qt.includes
 
 .deps
 .libs
@@ -57,8 +57,8 @@ src/qt/bitcoin-qt.includes
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-bitcoin-qt
-Bitcoin-Qt.app
+dogecash-qt
+Dogecash-Qt.app
 
 # Resources cpp
 qrc_*.cpp
