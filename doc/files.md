@@ -1,4 +1,4 @@
-# Bitcoin ABC file system
+# Dogecash file system
 
 **Contents**
 
@@ -92,7 +92,7 @@ Subdirectory | File(s)           | Description
 
 ## Legacy subdirectories and files
 
-These subdirectories and files are no longer used by the Bitcoin ABC:
+These subdirectories and files are no longer used by the Dogecash:
 
 Path           | Description | Repository notes
 ---------------|-------------|-----------------

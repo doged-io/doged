@@ -1,4 +1,4 @@
-Bitcoin ABC Release Process
+Dogecash Release Process
 ===========================
 
 

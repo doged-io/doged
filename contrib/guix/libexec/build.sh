@@ -389,7 +389,7 @@ EOF
         exit 1
     fi
 
-    # Build Bitcoin ABC
+    # Build Dogecash
     ninja
     ninja security-check
     ninja symbol-check

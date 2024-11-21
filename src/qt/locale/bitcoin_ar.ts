@@ -1932,7 +1932,7 @@
         <translation>حدد مجلد المعلومات</translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
+        <source>Dogecash</source>
         <translation>جوهر البيت كوين</translation>
     </message>
     <message>

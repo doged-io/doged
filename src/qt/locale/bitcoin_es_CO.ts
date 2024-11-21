@@ -296,8 +296,8 @@
 <context>
     <name>bitcoin-abc</name>
     <message>
-        <source>Bitcoin ABC</source>
-        <translation>Bitcoin ABC</translation>
+        <source>Dogecash</source>
+        <translation>Dogecash</translation>
     </message>
     <message>
         <source>Insufficient funds</source>
