@@ -244,31 +244,30 @@ case "$HOST" in
         ;;
 esac
 
+# Prepare for making the source_package
+# Also gather useful data from cmake: project name
+mkdir -p source_package
+pushd source_package
+cmake -GNinja .. \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
+    -DBUILD_BITCOIN_WALLET=OFF \
+    -DBUILD_BITCOIN_CHRONIK=OFF \
+    -DBUILD_DOGECASH_QT=OFF \
+    -DBUILD_BITCOIN_ZMQ=OFF \
+    -DENABLE_QRCODE=OFF \
+    -DENABLE_NATPMP=OFF \
+    -DENABLE_UPNP=OFF \
+    -DUSE_JEMALLOC=OFF \
+    -DENABLE_CLANG_TIDY=OFF \
+    -DENABLE_BIP70=OFF \
+    -DUSE_LINKER=
+PROJECT_NAME=$(ninja print-project-name)
+
 # Produce the source package if it does not already exist
-if ! ls "${OUTDIR_BASE}"/src/bitcoin-abc-*.tar.gz 1> /dev/null 2>&1; then
-    mkdir -p source_package
-    pushd source_package
-
-    cmake -GNinja .. \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
-        -DBUILD_BITCOIN_WALLET=OFF \
-        -DBUILD_BITCOIN_CHRONIK=OFF \
-        -DBUILD_DOGECASH_QT=OFF \
-        -DBUILD_BITCOIN_ZMQ=OFF \
-        -DENABLE_QRCODE=OFF \
-        -DENABLE_NATPMP=OFF \
-        -DENABLE_UPNP=OFF \
-        -DUSE_JEMALLOC=OFF \
-        -DENABLE_CLANG_TIDY=OFF \
-        -DENABLE_BIP70=OFF \
-        -DUSE_LINKER=
-
+if ! ls "${OUTDIR_BASE}"/src/${PROJECT_NAME}-*.tar.gz 1> /dev/null 2>&1; then
     ninja package_source
-    SOURCEDIST=$(echo bitcoin-abc-*.tar.gz)
+    SOURCEDIST=$(echo ${PROJECT_NAME}-*.tar.gz)
     mv ${SOURCEDIST} ..
-
-    popd
-    rm -rf source_package
 
     DISTNAME=${SOURCEDIST//.tar.*/}
 
@@ -280,8 +279,12 @@ if ! ls "${OUTDIR_BASE}"/src/bitcoin-abc-*.tar.gz 1> /dev/null 2>&1; then
     rm -rf ${DISTNAME}
 else
     echo Skipping source package generation because it already exists.
-    DISTNAME=$(basename -s .tar.gz "${OUTDIR_BASE}"/src/bitcoin-abc-*.tar.gz)
+    DISTNAME=$(basename -s .tar.gz "${OUTDIR_BASE}"/src/${PROJECT_NAME}-*.tar.gz)
 fi
+
+# Remove temporary build dir
+popd
+rm -rf source_package
 
 mkdir -p "$OUTDIR"
 OUTDIR=$(realpath "${OUTDIR}")
