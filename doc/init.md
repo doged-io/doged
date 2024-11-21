@@ -61,7 +61,7 @@ Lock file:           `/var/lock/subsys/dogecashd` (CentOS)
 The configuration file, PID directory (if applicable) and data directory
 should all be owned by the bitcoin user and group.  It is advised for security
 reasons to make the configuration file and data directory only readable by the
-bitcoin user and group.  Access to bitcoin-cli and other dogecashd rpc clients
+bitcoin user and group.  Access to dogecash-cli and other dogecashd rpc clients
 can then be controlled by group membership.
 
 ### Mac OS X

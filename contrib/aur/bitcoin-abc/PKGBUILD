@@ -3,7 +3,7 @@
 pkgname=bitcoin-abc
 pkgver=0.30.4
 pkgrel=0
-pkgdesc="Bitcoin ABC with dogecashd, bitcoin-tx, bitcoin-seeder and bitcoin-cli"
+pkgdesc="Bitcoin ABC with dogecashd, bitcoin-tx, bitcoin-seeder and dogecash-cli"
 arch=('i686' 'x86_64')
 url="https://bitcoinabc.org"
 depends=('boost-libs' 'libevent' 'openssl' 'zeromq' 'miniupnpc' 'libnatpmp' 'jemalloc')
@@ -17,8 +17,8 @@ source=(https://github.com/Bitcoin-ABC/bitcoin-abc/archive/v$pkgver.tar.gz
         bitcoin.install)
 backup=('etc/bitcoin/bitcoin.conf'
         'etc/logrotate.d/bitcoin')
-provides=('bitcoin-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-seeder')
-conflicts=('bitcoin-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-seeder')
+provides=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-seeder')
+conflicts=('dogecash-cli' 'bitcoin-daemon' 'bitcoin-tx' 'bitcoin-seeder')
 install=bitcoin.install
 
 build() {
@@ -94,7 +94,7 @@ package() {
   install -Dm 644 "$srcdir/bitcoin.logrotate" "$pkgdir/etc/logrotate.d/bitcoin"
 
   msg2 'Installing bash completion...'
-  for _compl in bitcoin-cli bitcoin-tx dogecashd; do
+  for _compl in dogecash-cli bitcoin-tx dogecashd; do
     install -Dm 644 "contrib/${_compl}.bash-completion" \
       "$pkgdir/usr/share/bash-completion/completions/$_compl"
   done

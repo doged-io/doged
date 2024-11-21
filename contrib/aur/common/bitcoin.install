@@ -51,7 +51,7 @@ rpcuser=bitcoin
 rpcpassword=secret
 EOF
 
-$ bitcoin-cli getmininginfo
+$ dogecash-cli getmininginfo
 
 Config:        /etc/bitcoin/bitcoin.conf
 Blockchain:    /srv/bitcoin

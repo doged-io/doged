@@ -12,7 +12,7 @@ class ArgsManager;
 
 /**
  * CBaseChainParams defines the base parameters
- * (shared between bitcoin-cli and dogecashd)
+ * (shared between dogecash-cli and dogecashd)
  * of a given instance of the Bitcoin system.
  */
 class CBaseChainParams {

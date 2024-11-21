@@ -50,20 +50,20 @@ esac
 done
 
 DOGECASHD="${BUILD_DIR}/src/dogecashd"
-BITCOIN_CLI="${BUILD_DIR}/src/bitcoin-cli"
+DOGECASH_CLI="${BUILD_DIR}/src/dogecash-cli"
 if [ ! -x "${DOGECASHD}" ]; then
   echo "${DOGECASHD} does not exist or has incorrect permissions."
   exit 10
 fi
-if [ ! -x "${BITCOIN_CLI}" ]; then
-  echo "${BITCOIN_CLI} does not exist or has incorrect permissions."
+if [ ! -x "${DOGECASH_CLI}" ]; then
+  echo "${DOGECASH_CLI} does not exist or has incorrect permissions."
   exit 11
 fi
 
 TEMP_DATADIR=$(mktemp -d)
 : "${RPC_PORT:=${DEFAULT_RPC_PORT}}"
 DOGECASHD="${DOGECASHD} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT} -connect=0 -daemon"
-BITCOIN_CLI="${BITCOIN_CLI} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT}"
+DOGECASH_CLI="${DOGECASH_CLI} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT}"
 
 >&2 echo "Spinning up dogecashd..."
 ${DOGECASHD} || {
@@ -73,7 +73,7 @@ ${DOGECASHD} || {
 cleanup() {
   # Cleanup background processes spawned by this script.
   >&2 echo "Cleaning up bitcoin daemon..."
-  >&2 ${BITCOIN_CLI} stop
+  >&2 ${DOGECASH_CLI} stop
   rm -rf "${TEMP_DATADIR}"
 }
 trap "cleanup" EXIT
@@ -83,7 +83,7 @@ sleep 0.1
 # Wait until dogecashd is fully spun up
 WARMUP_TIMEOUT=60
 for _ in $(seq 1 ${WARMUP_TIMEOUT}); do
-  ${BITCOIN_CLI} getconnectioncount &> /dev/null
+  ${DOGECASH_CLI} getconnectioncount &> /dev/null
   RPC_READY=$?
   if [ "${RPC_READY}" -ne 0 ]; then
     >&2 printf "."
@@ -103,18 +103,18 @@ while read -r SEED; do
   >&2 echo "Testing seed '${SEED}'..."
 
   # Immediately connect to the seed peer
-  ${BITCOIN_CLI} addnode "${SEED}" onetry
+  ${DOGECASH_CLI} addnode "${SEED}" onetry
 
   # Fetch peer's connection status
-  CONNECTION_COUNT=$(${BITCOIN_CLI} getconnectioncount)
+  CONNECTION_COUNT=$(${DOGECASH_CLI} getconnectioncount)
   if [ "${CONNECTION_COUNT}" -eq 1 ]; then
     # Cleanup peer connection
-    ${BITCOIN_CLI} disconnectnode "${SEED}"
+    ${DOGECASH_CLI} disconnectnode "${SEED}"
 
     # Wait for peer to be disconnected
     CONNECTED_TIMEOUT=5
     for _ in $(seq 1 ${CONNECTED_TIMEOUT}); do
-      CONNECTION_COUNT=$(${BITCOIN_CLI} getconnectioncount)
+      CONNECTION_COUNT=$(${DOGECASH_CLI} getconnectioncount)
       if [ "${CONNECTION_COUNT}" -eq 0 ]; then
         break
       fi

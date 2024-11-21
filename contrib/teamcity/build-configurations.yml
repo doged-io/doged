@@ -643,7 +643,7 @@ builds:
   build-without-cli:
     Werror: true
     cmake_flags:
-      - '-DBUILD_BITCOIN_CLI=OFF'
+      - '-DBUILD_DOGECASH_CLI=OFF'
     targets:
       - - all
         - install
@@ -695,7 +695,7 @@ builds:
   check-seeds:
     targets:
       - - dogecashd
-        - bitcoin-cli
+        - dogecash-cli
     post_build: |
       # Run on different ports to avoid a race where the rpc port used in the first run
       # may not be closed in time for the second to start.

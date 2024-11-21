@@ -742,7 +742,7 @@ static RPCHelpMan echo(const std::string &name) {
         "arg9='trigger_internal_bug' is passed.\n"
         "\nThe difference between echo and echojson is that echojson has "
         "argument conversion enabled in the client-side table in "
-        "bitcoin-cli and the GUI. There is no server-side difference.",
+        "dogecash-cli and the GUI. There is no server-side difference.",
         {
             {"arg0", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "",
              RPCArgOptions{.skip_type_check = true}},

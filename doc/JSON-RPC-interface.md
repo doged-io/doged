@@ -18,13 +18,13 @@ Examples:
 
 ```sh
 # "params": ["mywallet", false, false, "", false, false, true]
-bitcoin-cli createwallet mywallet false false "" false false true
+dogecash-cli createwallet mywallet false false "" false false true
 
 # "params": {"wallet_name": "mywallet", "load_on_startup": true}
-bitcoin-cli -named createwallet wallet_name=mywallet load_on_startup=true
+dogecash-cli -named createwallet wallet_name=mywallet load_on_startup=true
 
 # "params": {"args": ["mywallet"], "load_on_startup": true}
-bitcoin-cli -named createwallet mywallet load_on_startup=true
+dogecash-cli -named createwallet mywallet load_on_startup=true
 ```
 
 ## Versioning

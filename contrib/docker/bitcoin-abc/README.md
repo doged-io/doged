@@ -28,7 +28,7 @@ docker run bitcoin-abc:0.22.3 dogecashd -version
 You can also run another tool by specifying it as an argument to the container:
 
 ```shell
-docker run bitcoin-abc:0.22.3 bitcoin-cli -version
+docker run bitcoin-abc:0.22.3 dogecash-cli -version
 ```
 
 ## Persistent data directory
@@ -44,15 +44,15 @@ docker run -v ~/bitcoin-abc-data:/data bitcoin-abc:0.22.3
 
 **Note: Make sure the container has write access to you local folder.**
 
-## Communication between bitcoin-cli and dogecashd
+## Communication between dogecash-cli and dogecashd
 
-In order to make `bitcoin-cli` and `dogecashd` communicate together, they need to
+In order to make `dogecash-cli` and `dogecashd` communicate together, they need to
 use the same network. By using the same data directory, they also share the
 authentication cookie:
 
 ```shell
 # Run the dogecashd container in the background
 docker run --name dogecashd -v ~/bitcoin-abc-data:/data --rm -d bitcoin-abc:0.22.3
-docker run --network container:dogecashd -v ~/bitcoin-abc-data:/data --rm bitcoin-abc:0.22.3 bitcoin-cli getnetworkinfo
+docker run --network container:dogecashd -v ~/bitcoin-abc-data:/data --rm bitcoin-abc:0.22.3 dogecash-cli getnetworkinfo
 docker stop dogecashd
 ```

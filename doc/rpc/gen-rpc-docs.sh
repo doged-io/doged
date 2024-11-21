@@ -12,13 +12,13 @@ fi
 
 GENERATOR_SCRIPT="$1"
 DOGECASHD_COMMAND="$2"
-BITCOIN_CLI_COMMAND="$3"
+DOGECASH_CLI_COMMAND="$3"
 
 DOGECASHD_PID_FILE="_dogecashd.pid"
 "${DOGECASHD_COMMAND}" -regtest -daemon -pid="${DOGECASHD_PID_FILE}"
 
 shutdown_dogecashd() {
-  "${BITCOIN_CLI_COMMAND}" -regtest stop > /dev/null 2>&1
+  "${DOGECASH_CLI_COMMAND}" -regtest stop > /dev/null 2>&1
 
   # Waiting for dogecashd shut down
   PID_WAIT_COUNT=0
@@ -37,7 +37,7 @@ trap "shutdown_dogecashd" EXIT
 
 # Waiting for dogecashd to spin up
 RPC_HELP_WAIT_COUNT=0
-while ! "${BITCOIN_CLI_COMMAND}" -regtest help > /dev/null 2>&1
+while ! "${DOGECASH_CLI_COMMAND}" -regtest help > /dev/null 2>&1
 do
   : $((RPC_HELP_WAIT_COUNT+=1))
   if [ "${RPC_HELP_WAIT_COUNT}" -gt 10 ]

@@ -253,7 +253,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             dest="usecli",
             default=False,
             action="store_true",
-            help="use bitcoin-cli instead of RPC for all commands",
+            help="use dogecash-cli instead of RPC for all commands",
         )
         parser.add_argument(
             "--perf",
@@ -326,7 +326,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            f"bitcoin-cli{config['environment']['EXEEXT']}",
+            f"dogecash-cli{config['environment']['EXEEXT']}",
         )
         self.options.dogecashd = os.getenv("DOGECASHD", default=fname_dogecashd)
         self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
@@ -586,7 +586,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                     timewait=self.rpc_timeout,
                     timeout_factor=self.options.timeout_factor,
                     dogecashd=binary[i],
-                    bitcoin_cli=self.options.bitcoincli,
+                    dogecash_cli=self.options.bitcoincli,
                     coverage_dir=self.options.coveragedir,
                     cwd=self.options.tmpdir,
                     extra_conf=extra_confs[i],
@@ -914,7 +914,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                     timewait=self.rpc_timeout,
                     timeout_factor=self.options.timeout_factor,
                     dogecashd=self.options.dogecashd,
-                    bitcoin_cli=self.options.bitcoincli,
+                    dogecash_cli=self.options.bitcoincli,
                     coverage_dir=None,
                     cwd=self.options.tmpdir,
                     descriptors=self.options.descriptors,
@@ -1046,9 +1046,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             raise SkipTest("bitcoin-wallet has not been compiled")
 
     def skip_if_no_cli(self):
-        """Skip the running test if bitcoin-cli has not been compiled."""
+        """Skip the running test if dogecash-cli has not been compiled."""
         if not self.is_cli_compiled():
-            raise SkipTest("bitcoin-cli has not been compiled.")
+            raise SkipTest("dogecash-cli has not been compiled.")
 
     def skip_if_no_chronik(self):
         """Skip the running test if Chronik indexer has not been compiled."""
@@ -1061,7 +1061,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             raise SkipTest("Chronik indexer plugins have not been compiled.")
 
     def is_cli_compiled(self):
-        """Checks whether bitcoin-cli was compiled."""
+        """Checks whether dogecash-cli was compiled."""
         return self.config["components"].getboolean("ENABLE_CLI")
 
     def is_wallet_compiled(self):

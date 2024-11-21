@@ -44,24 +44,24 @@ named `i2p_private_key` in the Bitcoin ABC data directory.
 
 You may set the `debug=i2p` config logging option to have additional
 information in the debug log about your I2P configuration and connections. Run
-`bitcoin-cli help logging` for more information.
+`dogecash-cli help logging` for more information.
 
 It is possible to restrict outgoing connections in the usual way with
 `onlynet=i2p`. I2P support was added to Bitcoin ABC in version 22.0 (mid 2021)
 and there may be fewer I2P peers than Tor or IP ones. Therefore, using
 `onlynet=i2p` alone (without other `onlynet=`) may make a node more susceptible
 to [Sybil attacks](https://en.bitcoin.it/wiki/Weaknesses#Sybil_attack). Use
-`bitcoin-cli -addrinfo` to see the number of I2P addresses known to your node.
+`dogecash-cli -addrinfo` to see the number of I2P addresses known to your node.
 
 ## I2P related information in Bitcoin ABC
 
 There are several ways to see your I2P address in Bitcoin ABC:
 - in the debug log (grep for `AddLocal`, the I2P address ends in `.b32.i2p`)
 - in the output of the `getnetworkinfo` RPC in the "localaddresses" section
-- in the output of `bitcoin-cli -netinfo` peer connections dashboard
+- in the output of `dogecash-cli -netinfo` peer connections dashboard
 
-To see which I2P peers your node is connected to, use `bitcoin-cli -netinfo 4`
-or the `getpeerinfo` RPC (e.g. `bitcoin-cli getpeerinfo`).
+To see which I2P peers your node is connected to, use `dogecash-cli -netinfo 4`
+or the `getpeerinfo` RPC (e.g. `dogecash-cli getpeerinfo`).
 
 To see which I2P addresses your node knows, use the `getnodeaddresses 0 i2p`
 RPC.

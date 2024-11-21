@@ -702,7 +702,7 @@ def uint256_hex(hash_int: int) -> str:
 
 
 def get_cli_version(framework, node):
-    """Use bitcoin-cli to get the version"""
+    """Use dogecash-cli to get the version"""
     version = node.cli().send_cli("-version")
     version = version.splitlines()[0]
     preamble = f"{framework.config['environment']['PACKAGE_NAME']} RPC client version "

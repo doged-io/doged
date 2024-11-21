@@ -50,7 +50,7 @@ read -r -a VERSION <<< "$(${DOGECASHD} --version | awk -F'[ -]' 'NR == 1 { print
 
 # Create a footer file with copyright content.
 # This gets autodetected fine for dogecashd if --version-string is not set,
-# but has different outcomes for bitcoin-qt and bitcoin-cli.
+# but has different outcomes for bitcoin-qt and dogecash-cli.
 FOOTER="$(basename ${BIN})_footer.h2m"
 cleanup() {
   rm -f "${FOOTER}"

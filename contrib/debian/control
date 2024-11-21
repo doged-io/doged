@@ -42,7 +42,7 @@ Description: peer-to-peer network based digital currency - daemon
  is the name of the open source software which enables the use of this currency.
  .
  This package provides the daemon, dogecashd, and the CLI tool
- bitcoin-cli to interact with the daemon.
+ dogecash-cli to interact with the daemon.
 
 Package: bitcoin-qt
 Architecture: any

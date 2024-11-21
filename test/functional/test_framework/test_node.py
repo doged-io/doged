@@ -78,7 +78,7 @@ class TestNode:
         timewait,
         timeout_factor,
         dogecashd,
-        bitcoin_cli,
+        dogecash_cli,
         coverage_dir,
         cwd,
         extra_conf=None,
@@ -167,12 +167,12 @@ class TestNode:
                 raise FileNotFoundError(f"Emulator '{emulator}' could not be found.")
         self.emulator = emulator
 
-        if use_cli and not os.path.isfile(bitcoin_cli):
+        if use_cli and not os.path.isfile(dogecash_cli):
             raise FileNotFoundError(
-                f"Binary '{bitcoin_cli}' could not be found.\nTry setting it"
-                f" manually:\n\tBITCOINCLI=<path/to/bitcoin-cli> {sys.argv[0]}"
+                f"Binary '{dogecash_cli}' could not be found.\nTry setting it"
+                f" manually:\n\tBITCOINCLI=<path/to/dogecash-cli> {sys.argv[0]}"
             )
-        self.cli = TestNodeCLI(bitcoin_cli, self.datadir, self.emulator)
+        self.cli = TestNodeCLI(dogecash_cli, self.datadir, self.emulator)
         self.use_cli = use_cli
         self.start_perf = start_perf
 
@@ -1046,7 +1046,7 @@ def arg_to_cli(arg):
 
 
 class TestNodeCLI:
-    """Interface to bitcoin-cli for an individual node"""
+    """Interface to dogecash-cli for an individual node"""
 
     def __init__(self, binary, datadir, emulator=None):
         self.options = []
@@ -1057,7 +1057,7 @@ class TestNodeCLI:
         self.emulator = emulator
 
     def __call__(self, *options, cli_input=None):
-        # TestNodeCLI is callable with bitcoin-cli command-line options
+        # TestNodeCLI is callable with dogecash-cli command-line options
         cli = TestNodeCLI(self.binary, self.datadir, self.emulator)
         cli.options = [str(o) for o in options]
         cli.input = cli_input
@@ -1076,7 +1076,7 @@ class TestNodeCLI:
         return results
 
     def send_cli(self, command=None, *args, **kwargs):
-        """Run bitcoin-cli command. Deserializes returned string as python object."""
+        """Run dogecash-cli command. Deserializes returned string as python object."""
         pos_args = [arg_to_cli(arg) for arg in args]
         named_args = [
             str(key) + "=" + arg_to_cli(value) for (key, value) in kwargs.items()
@@ -1087,7 +1087,7 @@ class TestNodeCLI:
         if command is not None:
             p_args += [command]
         p_args += pos_args + named_args
-        self.log.debug(f"Running bitcoin-cli {p_args[2:]}")
+        self.log.debug(f"Running dogecash-cli {p_args[2:]}")
         if self.emulator is not None:
             p_args = [self.emulator] + p_args
         process = subprocess.Popen(

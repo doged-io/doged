@@ -1,2 +1,2 @@
 bin/dogecashd usr/bin
-bin/bitcoin-cli usr/bin
+bin/dogecash-cli usr/bin
