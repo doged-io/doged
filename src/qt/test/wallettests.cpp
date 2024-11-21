@@ -241,7 +241,7 @@ void TestGUI(interfaces::Node &node) {
                          ->text(),
                      QString("Address:"));
 
-            QCOMPARE(uri.count("amount=0.01"), 2);
+            QCOMPARE(uri.count("amount=0.00000001"), 2);
             QCOMPARE(
                 receiveRequestDialog->QObject::findChild<QLabel *>("amount_tag")
                     ->text(),
@@ -249,7 +249,7 @@ void TestGUI(interfaces::Node &node) {
             QCOMPARE(receiveRequestDialog
                          ->QObject::findChild<QLabel *>("amount_content")
                          ->text(),
-                     QString("0.01 ") +
+                     QString("0.00000001 ") +
                          QString::fromStdString(Currency::get().ticker));
 
             QCOMPARE(uri.count("label=TEST_LABEL_1"), 2);
