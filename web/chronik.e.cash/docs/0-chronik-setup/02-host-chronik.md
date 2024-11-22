@@ -22,14 +22,14 @@ server {
     server_name chronik.yourapp.com;
 
     location /xec/ {
-        proxy_pass http://127.0.0.1:8331/;
+        proxy_pass http://127.0.0.1:22554/;
         proxy_set_header Host $http_host;
         add_header "Access-Control-Allow-Origin"  *;
         add_header "Access-Control-Allow-Methods" "GET, POST, OPTIONS, HEAD";
     }
 
     location /xec/ws {
-        proxy_pass http://127.0.0.1:8331/ws;
+        proxy_pass http://127.0.0.1:22554/ws;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header Upgrade $http_upgrade;

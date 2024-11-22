@@ -17,7 +17,7 @@ make_chainparams > chainparams_main.txt
 ## Testnet
 ```
 dogecoind --testnet
-make_chainparams -a 127.0.0.1:18332 > chainparams_test.txt
+make_chainparams -a 127.0.0.1:44555 > chainparams_test.txt
 ```
 
 ## Build C++ Header File

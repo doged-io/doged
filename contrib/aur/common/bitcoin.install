@@ -46,7 +46,7 @@ To communicate with bitcoin-abc as a normal user:
 
 $ mkdir -p ~/.dogecash
 $ cat > ~/.dogecash/dogecoin.conf <<'EOF'
-rpcport=8332
+rpcport=22555
 rpcuser=bitcoin
 rpcpassword=secret
 EOF

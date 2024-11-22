@@ -39,20 +39,20 @@ const CBaseChainParams &BaseParams() {
 }
 
 /**
- * Port numbers for incoming Tor connections (8334, 18334, 38334, 18445) have
+ * Port numbers for incoming Tor connections (22557, 44557, 38334, 18445) have
  * been chosen arbitrarily to keep ranges of used ports tight.
  */
 std::unique_ptr<CBaseChainParams>
 CreateBaseChainParams(const std::string &chain) {
     if (chain == CBaseChainParams::MAIN) {
-        return std::make_unique<CBaseChainParams>("", /*rpc_port=*/8332, 8334,
-                                                  /*chronik_port=*/8331);
+        return std::make_unique<CBaseChainParams>("", /*rpc_port=*/22555, 22557,
+                                                  /*chronik_port=*/22554);
     }
 
     if (chain == CBaseChainParams::TESTNET) {
         return std::make_unique<CBaseChainParams>("testnet3",
-                                                  /*rpc_port=*/18332, 18334,
-                                                  /*chronik_port=*/18331);
+                                                  /*rpc_port=*/44555, 44557,
+                                                  /*chronik_port=*/44554);
     }
 
     if (chain == CBaseChainParams::REGTEST) {

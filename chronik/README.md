@@ -26,7 +26,7 @@ Note: If you have a previously synced but un-indexed node, this will first re-sy
 We're continuously working on optimizing Chronik to bring down initial sync time.
 
 ### `-chronikbind`
-On mainnet, by default, Chronik is bound to port 8331 on `127.0.0.1` (IPv4) and `::1` (IPv6). If you want to change this, use the `-chronikbind` argument, here e.g. binding it to port 10000 on IPv4:
+On mainnet, by default, Chronik is bound to port 22554 on `127.0.0.1` (IPv4) and `::1` (IPv6). If you want to change this, use the `-chronikbind` argument, here e.g. binding it to port 10000 on IPv4:
 
 ```
 ./dogecoind -chronik -chronikbind=127.0.0.1:10000
@@ -61,12 +61,12 @@ Since Chronik uses WebSocket, and if you're using a reverse proxy like Nginx, yo
 #### Nginx
 ```
 location /xec/ {
-    proxy_pass http://127.0.0.1:8331/;
+    proxy_pass http://127.0.0.1:22554/;
     proxy_set_header Host $http_host;
 }
 
 location /xec/ws {
-    proxy_pass http://127.0.0.1:8331/ws;
+    proxy_pass http://127.0.0.1:22554/ws;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header Upgrade $http_upgrade;
