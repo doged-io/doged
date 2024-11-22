@@ -686,7 +686,7 @@ int GuiMain(int argc, char *argv[]) {
     }
 
     /// 6. Determine availability of data directory and parse
-    /// bitcoin.conf
+    /// dogecoin.conf
     /// - Do not call gArgs.GetDataDirNet() before this step finishes.
     if (!CheckDataDirOption(gArgs)) {
         InitError(strprintf(

@@ -20,7 +20,7 @@ Configuration
 ---------------------------------
 
 Running dogecoind as a daemon does not require any manual configuration. You may
-set the `rpcauth` setting in the `bitcoin.conf` configuration file to override
+set the `rpcauth` setting in the `dogecoin.conf` configuration file to override
 the default behaviour of using a special cookie for authentication.
 
 This password does not have to be remembered or typed as it is mostly used
@@ -43,7 +43,7 @@ This allows for running dogecoind without having to do any manual configuration.
 relative to the data directory. `wallet` *only* supports relative paths.
 
 For an example configuration file that describes the configuration settings,
-see `contrib/debian/examples/bitcoin.conf`.
+see `contrib/debian/examples/dogecoin.conf`.
 
 Paths
 ---------------------------------
@@ -53,7 +53,7 @@ Paths
 All three configurations assume several paths that might need to be adjusted.
 
 Binary:              `/usr/bin/dogecoind`\
-Configuration file:  `/etc/bitcoin/bitcoin.conf`\
+Configuration file:  `/etc/bitcoin/dogecoin.conf`\
 Data directory:      `/var/lib/dogecoind`\
 PID file:            `/var/run/dogecoind/dogecoind.pid` (OpenRC) or `/var/lib/dogecoind/dogecoind.pid` (systemd)\
 Lock file:           `/var/lock/subsys/dogecoind` (CentOS)
@@ -67,7 +67,7 @@ can then be controlled by group membership.
 ### Mac OS X
 
 Binary:              `/usr/local/bin/dogecoind`\
-Configuration file:  `~/Library/Application Support/Bitcoin/bitcoin.conf`\
+Configuration file:  `~/Library/Application Support/Bitcoin/dogecoin.conf`\
 Data directory:      `~/Library/Application Support/Bitcoin`\
 Lock file:           `~/Library/Application Support/Bitcoin/.lock`
 

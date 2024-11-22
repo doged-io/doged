@@ -1,7 +1,7 @@
 # /etc/conf.d/dogecoind: config file for /etc/init.d/dogecoind
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/bitcoin/bitcoin.conf"
+#BITCOIND_CONFIGFILE="/etc/bitcoin/dogecoin.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/dogecoind"

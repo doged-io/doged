@@ -94,7 +94,7 @@ class RPCWhitelistTest(BitcoinTestFramework):
         # These commands shouldn't be allowed for any user to test failures
         self.never_allowed = ["getnetworkinfo"]
         with open(
-            os.path.join(get_datadir_path(self.options.tmpdir, 0), "bitcoin.conf"),
+            os.path.join(get_datadir_path(self.options.tmpdir, 0), "dogecoin.conf"),
             "a",
             encoding="utf8",
         ) as f:

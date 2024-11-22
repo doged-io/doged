@@ -15,7 +15,7 @@ To enable Chronik, simply pass `-chronik` as CLI argument:
 ./dogecoind -chronik
 ```
 
-Alternatively, you can also set it in the bitcoin.conf file:
+Alternatively, you can also set it in the dogecoin.conf file:
 
 ```
 chronik=1

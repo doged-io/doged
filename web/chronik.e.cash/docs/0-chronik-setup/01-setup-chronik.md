@@ -25,9 +25,9 @@ To enable Chronik, simply pass `-chronik` as CLI argument:
 ./bitcoind -chronik
 ```
 
-Alternatively, you can also set it in the bitcoin.conf file:
+Alternatively, you can also set it in the dogecoin.conf file:
 
-```conf title="bitcoin.conf"
+```conf title="dogecoin.conf"
 chronik=1
 ```
 
@@ -47,7 +47,7 @@ It may be useful to display some extra info so you can ensure everything in Chro
 ./bitcoind -chronik -debug=chronik
 ```
 
-```conf title="bitcoin.conf"
+```conf title="dogecoin.conf"
 chronik=1
 debug=chronik
 ```
@@ -60,7 +60,7 @@ On mainnet, by default, Chronik is bound to port 8331 on `127.0.0.1` (IPv4) and 
 ./bitcoind -chronik -chronikbind=127.0.0.1:10000
 ```
 
-```conf title="bitcoin.conf"
+```conf title="dogecoin.conf"
 chronik=1
 chronikbind=127.0.0.1:10000
 ```
@@ -71,7 +71,7 @@ You can specify `-chronikbind` multiple times to bind to multiple hosts, here e.
 ./bitcoind -chronik -chronikbind=127.0.0.1:10000 -chronikbind=[::1]:10000
 ```
 
-```conf title="bitcoin.conf"
+```conf title="dogecoin.conf"
 chronik=1
 chronikbind=127.0.0.1:10000
 chronikbind=[::1]:10000
@@ -113,7 +113,7 @@ Since the official release of Chronik, database upgrades for newer versions will
 
 If you want to help Bitcoin ABC optimizing Chronik, you can provide this flag when resyncing the node. It collects some performance statistics in the `<datadir>/perf` folder, which will help us with development.
 
-```conf title="bitcoin.conf"
+```conf title="dogecoin.conf"
 chronik=1
 chronikperfstats=1
 ```

@@ -43,7 +43,7 @@ class AvalancheOptionsTest(BitcoinTestFramework):
 
         # Remove -bind from the datadir so it doesn't conflict with -listen=0
         with open(
-            os.path.join(node.datadir, "bitcoin.conf"), "r", encoding="utf8"
+            os.path.join(node.datadir, "dogecoin.conf"), "r", encoding="utf8"
         ) as f:
             config_lines = f.readlines()
         with open(

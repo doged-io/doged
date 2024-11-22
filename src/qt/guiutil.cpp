@@ -431,7 +431,7 @@ bool openBitcoinConf() {
 
     configFile.close();
 
-    /* Open bitcoin.conf with the associated application */
+    /* Open dogecoin.conf with the associated application */
     bool res = QDesktopServices::openUrl(
         QUrl::fromLocalFile(boostPathToQString(pathConfig)));
 #ifdef Q_OS_MAC
