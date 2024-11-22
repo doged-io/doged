@@ -45,20 +45,25 @@ const CBaseChainParams &BaseParams() {
 std::unique_ptr<CBaseChainParams>
 CreateBaseChainParams(const std::string &chain) {
     if (chain == CBaseChainParams::MAIN) {
-        return std::make_unique<CBaseChainParams>("", /*rpc_port=*/22555, 22557,
-                                                  /*chronik_port=*/22554);
+        return std::make_unique<CBaseChainParams>(
+            "", /*rpc_port=*/22555, 22557,
+            /*chronik_port=*/22554,
+            /*chronik_electrum_port=*/52002);
     }
 
     if (chain == CBaseChainParams::TESTNET) {
-        return std::make_unique<CBaseChainParams>("testnet3",
-                                                  /*rpc_port=*/44555, 44557,
-                                                  /*chronik_port=*/44554);
+        return std::make_unique<CBaseChainParams>(
+            "testnet3",
+            /*rpc_port=*/44555, 44557,
+            /*chronik_port=*/44554,
+            /*chronik_electrum_port=*/64002);
     }
 
     if (chain == CBaseChainParams::REGTEST) {
-        return std::make_unique<CBaseChainParams>("regtest", /*rpc_port=*/18443,
-                                                  18445,
-                                                  /*chronik_port=*/18442);
+        return std::make_unique<CBaseChainParams>(
+            "regtest", /*rpc_port=*/18443, 18445,
+            /*chronik_port=*/18442,
+            /*chronik_electrum_port=*/60103);
     }
 
     throw std::runtime_error(
