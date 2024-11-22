@@ -31,7 +31,7 @@ public:
     enum ColumnIndex {
         /** User specified label */
         Label = 0,
-        /** Bitcoin address */
+        /** Dogecoin address */
         Address = 1
     };
 

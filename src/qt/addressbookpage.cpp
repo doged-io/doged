@@ -105,7 +105,7 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
     switch (tab) {
         case SendingTab:
             ui->labelExplanation->setText(
-                tr("These are your Bitcoin addresses for sending payments. "
+                tr("These are your Dogecoin addresses for sending payments. "
                    "Always check the amount and the receiving address before "
                    "sending coins."));
             ui->deleteAddress->setVisible(true);
@@ -113,7 +113,7 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
             break;
         case ReceivingTab:
             ui->labelExplanation->setText(
-                tr("These are your Bitcoin addresses for receiving payments. "
+                tr("These are your Dogecoin addresses for receiving payments. "
                    "Use the 'Create new receiving address' button in the "
                    "receive tab to create new addresses."));
             ui->deleteAddress->setVisible(false);

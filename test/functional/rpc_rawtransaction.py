@@ -185,7 +185,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         )
         assert_raises_rpc_error(
             -5,
-            "Invalid Bitcoin address",
+            "Invalid Dogecoin address",
             self.nodes[0].createrawtransaction,
             [],
             {"foo": 0},
