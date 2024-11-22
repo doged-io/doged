@@ -47,7 +47,7 @@ CTxDestination DecodeLegacyDestination(const std::string &str,
     if (!DecodeBase58Check(str, data, 21)) {
         return CNoDestination();
     }
-    // base58-encoded Bitcoin addresses.
+    // base58-encoded Dogecoin addresses.
     // Public-key-hash-addresses have version 0 (or 111 testnet).
     // The data vector contains RIPEMD160(SHA256(pubkey)), where pubkey is
     // the serialized public key.

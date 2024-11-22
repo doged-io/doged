@@ -150,7 +150,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
             CTxDestination destination = DecodeDestination(name_, params);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Bitcoin address: ") +
+                                   std::string("Invalid Dogecoin address: ") +
                                        name_);
             }
 

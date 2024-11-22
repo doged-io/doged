@@ -98,7 +98,7 @@ void SendCoinsEntry::setModel(WalletModel *_model) {
         ui->messageTextLabel->setToolTip(
             tr("A message that was attached to the %1 URI which will be stored "
                "with the transaction for your reference. Note: This message "
-               "will not be sent over the Bitcoin network.")
+               "will not be sent over the Dogecoin network.")
                 .arg(QString::fromStdString(
                     _model->getChainParams().CashAddrPrefix())));
     }

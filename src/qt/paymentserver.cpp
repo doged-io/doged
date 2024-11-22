@@ -367,7 +367,7 @@ bool PaymentServer::handleURI(const CChainParams &params, const QString &s) {
         Q_EMIT message(
             tr("URI handling"),
             tr("URI cannot be parsed! This can be caused by an invalid "
-               "Bitcoin address or malformed URI parameters."),
+               "Dogecoin address or malformed URI parameters."),
             CClientUIInterface::ICON_WARNING);
     }
 
