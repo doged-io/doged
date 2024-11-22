@@ -1,6 +1,6 @@
 [![Dogecash Logo](share/pixmaps/bitcoinabclogo.png "Dogecash")](https://www.dogecash.io)
 
-Dogecash is a high performacnce full node implementation for Dogecoin.
+Dogecash is a high performance full node implementation for Dogecoin.
 
 Dogecash is not a new blockchain. It is an alternative node implementation that
 is 100% compatible with Dogecoin.
