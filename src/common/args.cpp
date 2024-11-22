@@ -32,7 +32,7 @@
 #include <stdexcept>
 #include <string>
 
-const char *const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+const char *const BITCOIN_CONF_FILENAME = "dogecoin.conf";
 const char *const BITCOIN_SETTINGS_FILENAME = "settings.json";
 
 ArgsManager gArgs;

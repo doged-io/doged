@@ -45,7 +45,7 @@ $ systemctl start bitcoin
 To communicate with bitcoin-abc as a normal user:
 
 $ mkdir -p ~/.dogecash
-$ cat > ~/.dogecash/bitcoin.conf <<'EOF'
+$ cat > ~/.dogecash/dogecoin.conf <<'EOF'
 rpcport=8332
 rpcuser=bitcoin
 rpcpassword=secret
@@ -53,7 +53,7 @@ EOF
 
 $ dogecoin-cli getmininginfo
 
-Config:        /etc/bitcoin/bitcoin.conf
+Config:        /etc/bitcoin/dogecoin.conf
 Blockchain:    /srv/bitcoin
 Documentation: /usr/share/doc/bitcoin
 EOI

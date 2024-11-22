@@ -91,7 +91,7 @@ public:
     //! would be ignored because it is also specified in the command line.
     virtual bool isPersistentSettingIgnored(const std::string &name) = 0;
 
-    //! Return setting value from <datadir>/settings.json or bitcoin.conf.
+    //! Return setting value from <datadir>/settings.json or dogecoin.conf.
     virtual util::SettingsValue
     getPersistentSetting(const std::string &name) = 0;
 

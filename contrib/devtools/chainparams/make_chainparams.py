@@ -99,10 +99,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         "-c",
-        default="~/.dogecash/bitcoin.conf",
+        default="~/.dogecash/dogecoin.conf",
         help=(
-            "Path to bitcoin.conf for RPC authentication arguments (rpcuser &"
-            " rpcpassword).\nDefault: ~/.dogecash/bitcoin.conf"
+            "Path to dogecoin.conf for RPC authentication arguments (rpcuser &"
+            " rpcpassword).\nDefault: ~/.dogecash/dogecoin.conf"
         ),
     )
     args = parser.parse_args()
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                     assert password is None
                     password = line.split("=")[1].strip("\n")
     else:
-        raise FileNotFoundError("Missing bitcoin.conf")
+        raise FileNotFoundError("Missing dogecoin.conf")
     if user is None:
         raise ValueError("Config is missing rpcuser")
     if password is None:

@@ -7,7 +7,7 @@ After=network.target
 User=bitcoin
 Group=bitcoin
 ExecStart=/usr/bin/dogecoind -daemon=0                       \
-                            -conf=/etc/bitcoin/bitcoin.conf \
+                            -conf=/etc/bitcoin/dogecoin.conf \
                             -datadir=/srv/bitcoin           \
                             -reindex                        \
                             -pid=/run/bitcoin/dogecoind.pid

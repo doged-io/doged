@@ -33,7 +33,7 @@ class ChronikServeTest(BitcoinTestFramework):
         test_host("127.0.0.1", self.nodes[0].chronik_port)
 
         datadir = get_datadir_path(self.options.tmpdir, 0)
-        config_path = os.path.join(datadir, "bitcoin.conf")
+        config_path = os.path.join(datadir, "dogecoin.conf")
         config_content = []
         with open(config_path, "r", encoding="utf8") as f:
             config_content = f.readlines()

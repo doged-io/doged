@@ -100,7 +100,7 @@ is structured as the following based on the type of message:
 
 Where the 8-byte uints correspond to the mempool sequence number.
 
-These options can also be provided in bitcoin.conf.
+These options can also be provided in dogecoin.conf.
 
 ZeroMQ endpoint specifiers for TCP (and others) are documented in the
 [ZeroMQ API](http://api.zeromq.org/4-0:_start).

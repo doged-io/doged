@@ -35,7 +35,7 @@ class HTTPBasicsTest(BitcoinTestFramework):
 
     def setup_chain(self):
         super().setup_chain()
-        # Append rpcauth to bitcoin.conf before initialization
+        # Append rpcauth to dogecoin.conf before initialization
         self.rtpassword = "cA773lm788buwYe4g4WT+05pKyNruVKjQ25x3n0DQcM="
         rpcauth = "rpcauth=rt:93648e835a54c573682c2eb19f882535$7681e9c5b74bdd85e78166031d2058e1069b3ed7ed967c93fc63abba06f31144"
 
@@ -71,7 +71,7 @@ class HTTPBasicsTest(BitcoinTestFramework):
         self.password = lines[3]
 
         with open(
-            os.path.join(get_datadir_path(self.options.tmpdir, 0), "bitcoin.conf"),
+            os.path.join(get_datadir_path(self.options.tmpdir, 0), "dogecoin.conf"),
             "a",
             encoding="utf8",
         ) as f:
@@ -79,7 +79,7 @@ class HTTPBasicsTest(BitcoinTestFramework):
             f.write(f"{rpcauth2}\n")
             f.write(f"{rpcauth3}\n")
         with open(
-            os.path.join(get_datadir_path(self.options.tmpdir, 1), "bitcoin.conf"),
+            os.path.join(get_datadir_path(self.options.tmpdir, 1), "dogecoin.conf"),
             "a",
             encoding="utf8",
         ) as f:

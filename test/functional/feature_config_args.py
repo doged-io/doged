@@ -22,7 +22,7 @@ class ConfArgsTest(BitcoinTestFramework):
 
         inc_conf_file_path = os.path.join(self.nodes[0].datadir, "include.conf")
         with open(
-            os.path.join(self.nodes[0].datadir, "bitcoin.conf"), "a", encoding="utf-8"
+            os.path.join(self.nodes[0].datadir, "dogecoin.conf"), "a", encoding="utf-8"
         ) as conf:
             conf.write(f"includeconf={inc_conf_file_path}\n")
 
@@ -115,7 +115,7 @@ class ConfArgsTest(BitcoinTestFramework):
 
         inc_conf_file2_path = os.path.join(self.nodes[0].datadir, "include2.conf")
         with open(
-            os.path.join(self.nodes[0].datadir, "bitcoin.conf"), "a", encoding="utf-8"
+            os.path.join(self.nodes[0].datadir, "dogecoin.conf"), "a", encoding="utf-8"
         ) as conf:
             conf.write(f"includeconf={inc_conf_file2_path}\n")
 
@@ -341,7 +341,7 @@ class ConfArgsTest(BitcoinTestFramework):
         )
 
         # Check that using non-existent datadir in conf file fails
-        conf_file = os.path.join(default_data_dir, "bitcoin.conf")
+        conf_file = os.path.join(default_data_dir, "dogecoin.conf")
 
         # datadir needs to be set before [chain] section
         conf_file_contents = open(conf_file, encoding="utf8").read()

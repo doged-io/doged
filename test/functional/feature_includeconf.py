@@ -40,7 +40,7 @@ class IncludeConfTest(BitcoinTestFramework):
         ) as f:
             f.write("uacomment=relative2\n")
         with open(
-            os.path.join(self.options.tmpdir, "node0", "bitcoin.conf"),
+            os.path.join(self.options.tmpdir, "node0", "dogecoin.conf"),
             "a",
             encoding="utf8",
         ) as f:
@@ -118,7 +118,7 @@ class IncludeConfTest(BitcoinTestFramework):
             f.write("uacomment=relative\n")
 
         with open(
-            os.path.join(self.options.tmpdir, "node0", "bitcoin.conf"),
+            os.path.join(self.options.tmpdir, "node0", "dogecoin.conf"),
             "a",
             encoding="utf8",
         ) as f:
