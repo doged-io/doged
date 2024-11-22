@@ -127,7 +127,7 @@ class ChronikScriptHashTest(BitcoinTestFramework):
                         ),
                         block_height=0,
                         is_coinbase=True,
-                        value=50_000_000 * XEC,
+                        value=88_000_000 * XEC,
                         is_final=False,
                     )
                 ],
