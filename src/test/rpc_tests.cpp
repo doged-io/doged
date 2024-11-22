@@ -495,7 +495,7 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     UniValue r;
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0 add")));
     // portnumber for setban not allowed
-    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.0:8334")),
+    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.0:22557")),
                       std::runtime_error);
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     UniValue ar = r.get_array();
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE(help_example) {
                       "> curl --user myusername --data-binary '{\"jsonrpc\": "
                       "\"1.0\", \"id\": \"curltest\", \"method\": \"test\", "
                       "\"params\": {\"foo\":\"bar\",\"b\":true,\"n\":1}}' -H "
-                      "'content-type: text/plain;' http://127.0.0.1:8332/\n");
+                      "'content-type: text/plain;' http://127.0.0.1:22555/\n");
 
     // test shell escape
     BOOST_CHECK_EQUAL(HelpExampleCliNamed("test", {{"foo", "b'ar"}}),
@@ -723,7 +723,7 @@ BOOST_AUTO_TEST_CASE(help_example) {
         "> curl --user myusername --data-binary '{\"jsonrpc\": \"1.0\", "
         "\"id\": \"curltest\", \"method\": \"test\", \"params\": "
         "{\"name\":{\"foo\":\"bar\",\"b\":false,\"n\":1}}}' -H 'content-type: "
-        "text/plain;' http://127.0.0.1:8332/\n");
+        "text/plain;' http://127.0.0.1:22555/\n");
 
     // test array params
     UniValue arr_value(UniValue::VARR);
@@ -736,7 +736,7 @@ BOOST_AUTO_TEST_CASE(help_example) {
                       "> curl --user myusername --data-binary '{\"jsonrpc\": "
                       "\"1.0\", \"id\": \"curltest\", \"method\": \"test\", "
                       "\"params\": {\"name\":[\"bar\",false,1]}}' -H "
-                      "'content-type: text/plain;' http://127.0.0.1:8332/\n");
+                      "'content-type: text/plain;' http://127.0.0.1:22555/\n");
 
     // test types don't matter for shell
     BOOST_CHECK_EQUAL(HelpExampleCliNamed("foo", {{"arg", true}}),

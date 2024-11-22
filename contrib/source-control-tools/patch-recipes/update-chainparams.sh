@@ -10,7 +10,7 @@ CHAINPARAMS_SCRIPTS_DIR="${TOPLEVEL}"/contrib/devtools/chainparams
 # ARGS should be triplets of network, mainnet port, testnet port, ...
 ARGS=("$@")
 if [ "$#" == 0 ]; then
-  ARGS=("abc" 8332 18332)
+  ARGS=("abc" 22555 44555)
 fi
 
 # Assumes dogecoind instances are already running on mainnet and testnet

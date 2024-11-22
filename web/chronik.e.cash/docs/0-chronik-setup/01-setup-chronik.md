@@ -54,7 +54,7 @@ debug=chronik
 
 ### `-chronikbind`
 
-On mainnet, by default, Chronik is bound to port 8331 on `127.0.0.1` (IPv4) and `::1` (IPv6). If you want to change this, use the `-chronikbind` argument, here e.g. binding it to port 10000 on IPv4:
+On mainnet, by default, Chronik is bound to port 22554 on `127.0.0.1` (IPv4) and `::1` (IPv6). If you want to change this, use the `-chronikbind` argument, here e.g. binding it to port 10000 on IPv4:
 
 ```bash
 ./bitcoind -chronik -chronikbind=127.0.0.1:10000
