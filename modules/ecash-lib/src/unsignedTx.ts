@@ -100,7 +100,7 @@ function writeLegacyPreimage(
     sigHashType: SigHashType,
 ) {
     const hasAnyoneCanPay =
-        sigHashType.inputType == SigHashTypeInputs.ANYONECANPAY;
+        sigHashType.inputType === SigHashTypeInputs.ANYONECANPAY;
 
     const writeLegacyScriptCode = () => {
         const ops = scriptCode.ops();
@@ -134,8 +134,8 @@ function writeLegacyPreimage(
         // Serialize the nSequence
         if (
             idx != inputIdx &&
-            (sigHashType.outputType == SigHashTypeOutputs.SINGLE ||
-                sigHashType.outputType == SigHashTypeOutputs.NONE)
+            (sigHashType.outputType === SigHashTypeOutputs.SINGLE ||
+                sigHashType.outputType === SigHashTypeOutputs.NONE)
         ) {
             // let the others update at will
             writer.putU32(0);
@@ -146,7 +146,7 @@ function writeLegacyPreimage(
 
     const writeLegacyOutput = (idx: number) => {
         if (
-            sigHashType.outputType == SigHashTypeOutputs.SINGLE &&
+            sigHashType.outputType === SigHashTypeOutputs.SINGLE &&
             idx != inputIdx
         ) {
             // Do not lock-in the txout payee at other indices as txin
@@ -220,7 +220,7 @@ export class UnsignedTxInput {
                 : redeemScript.cutOutCodesep(nCodesep);
 
         // Sign LEGACY signatures that don't use SIGHASH_FORKID
-        if (sigHashType.variant == SigHashTypeVariant.LEGACY) {
+        if (sigHashType.variant === SigHashTypeVariant.LEGACY) {
             const writePreimage = (writer: Writer) => {
                 writeLegacyPreimage(
                     writer,
