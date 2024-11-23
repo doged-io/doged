@@ -7,7 +7,7 @@ import { sha256d } from './hash.js';
 import { WriterBytes } from './io/writerbytes.js';
 import { pushBytesOp } from './op.js';
 import { Script } from './script.js';
-import { SigHashType } from './sigHashType.js';
+import { SigHashType, SigHashTypeVariant } from './sigHashType.js';
 import {
     DEFAULT_TX_VERSION,
     Tx,
@@ -217,6 +217,20 @@ export function flagSignature(
     return writer.data;
 }
 
+/** Sign the sighash using Schnorr for BIP143 signatures and ECDSA for Legacy signatures */
+export function signSigHash(
+    ecc: Ecc,
+    sk: Uint8Array,
+    sighash: Uint8Array,
+    sigHashType: SigHashType,
+): Uint8Array {
+    if (sigHashType.variant == SigHashTypeVariant.LEGACY) {
+        return ecc.ecdsaSign(sk, sighash);
+    } else {
+        return ecc.schnorrSign(sk, sighash);
+    }
+}
+
 /** Signatory for a P2PKH input. Always uses Schnorr signatures */
 export const P2PKHSignatory = (
     sk: Uint8Array,
@@ -226,8 +240,11 @@ export const P2PKHSignatory = (
     return (ecc: Ecc, input: UnsignedTxInput): Script => {
         const preimage = input.sigHashPreimage(sigHashType);
         const sighash = sha256d(preimage.bytes);
-        const sig = flagSignature(ecc.schnorrSign(sk, sighash), sigHashType);
-        return Script.p2pkhSpend(pk, sig);
+        const sigFlagged = flagSignature(
+            signSigHash(ecc, sk, sighash, sigHashType),
+            sigHashType,
+        );
+        return Script.p2pkhSpend(pk, sigFlagged);
     };
 };
 
@@ -236,7 +253,10 @@ export const P2PKSignatory = (sk: Uint8Array, sigHashType: SigHashType) => {
     return (ecc: Ecc, input: UnsignedTxInput): Script => {
         const preimage = input.sigHashPreimage(sigHashType);
         const sighash = sha256d(preimage.bytes);
-        const sig = flagSignature(ecc.schnorrSign(sk, sighash), sigHashType);
-        return Script.fromOps([pushBytesOp(sig)]);
+        const sigFlagged = flagSignature(
+            signSigHash(ecc, sk, sighash, sigHashType),
+            sigHashType,
+        );
+        return Script.fromOps([pushBytesOp(sigFlagged)]);
     };
 };
