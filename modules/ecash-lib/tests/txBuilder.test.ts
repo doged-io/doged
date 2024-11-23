@@ -523,7 +523,7 @@ describe('TxBuilder', () => {
             BigInt(40000 - 100 * estimatedSize),
         );
 
-        // 119ksats/kB, deletes leftover output
+        // 117.6ksats/kB, deletes leftover output
         txBuild.inputs[0].input.prevOut.txid = await runner.sendToScript(
             90000,
             p2sh,
