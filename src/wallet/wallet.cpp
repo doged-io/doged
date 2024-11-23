@@ -2017,7 +2017,11 @@ bool CWallet::SignTransaction(CMutableTransaction &tx) const {
                  wtx.IsCoinBase());
     }
     std::map<int, std::string> input_errors;
-    return SignTransaction(tx, coins, SigHashType().withForkId(), input_errors);
+    return SignTransaction(tx, coins,
+                           GetSignScriptFlags() & SCRIPT_ENABLE_SIGHASH_FORKID
+                               ? SigHashType()
+                               : SigHashType().withForkId(),
+                           input_errors);
 }
 
 bool CWallet::SignTransaction(CMutableTransaction &tx,

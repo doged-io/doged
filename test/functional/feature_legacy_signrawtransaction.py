@@ -4,6 +4,7 @@
 """Test we sign valid Dogecoin legacy signatures for transactions."""
 
 from test_framework.address import ADDRESS_ECREG_UNSPENDABLE
+from test_framework.hash import hash160
 from test_framework.key import ECKey
 from test_framework.messages import COutPoint, CTransaction, CTxIn, CTxOut
 from test_framework.script import (
@@ -13,9 +14,8 @@ from test_framework.script import (
     OP_HASH160,
     CScript,
 )
-from test_framework.hash import hash160
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_raises_rpc_error
+from test_framework.util import assert_equal, assert_raises_rpc_error
 from test_framework.wallet_util import bytes_to_wif
 
 
@@ -31,6 +31,11 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
     def run_test(self):
         node = self.nodes[0]
         nonlegacy_node = self.nodes[1]
+
+        def check_signed_result(node, result):
+            assert result["complete"], f"Signing failed: {result}"
+            accept_result = node.testmempoolaccept([result["hex"]])[0]
+            assert_equal(accept_result["allowed"], True)
 
         coinblockhash1 = self.generate(node, 1)[0]
         cointxid1 = node.getblock(coinblockhash1)["tx"][0]
@@ -67,7 +72,7 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
         ]
         for sighash in legacy_sighashes:
             result = node.signrawtransactionwithwallet(tx.serialize().hex(), [], sighash)
-            assert result["complete"]
+            check_signed_result(node, result)
             assert_raises_rpc_error(
                 -8,
                 "Signature must use SIGHASH_FORKID",
@@ -97,11 +102,11 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
             result = nonlegacy_node.signrawtransactionwithwallet(
                 nonlegacy_tx.serialize().hex(), [], sighash
             )
-            assert result["complete"]
+            check_signed_result(nonlegacy_node, result)
 
         # Legacy tx works
         signed_tx = node.signrawtransactionwithwallet(tx.serialize().hex(), [], "ALL")
-        assert signed_tx["complete"]
+        check_signed_result(node, signed_tx)
         txid = node.sendrawtransaction(signed_tx["hex"])
         assert_raises_rpc_error(
             -26,
@@ -113,7 +118,7 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
         signed_tx = nonlegacy_node.signrawtransactionwithwallet(
             nonlegacy_tx.serialize().hex(), [], "ALL|FORKID"
         )
-        assert signed_tx["complete"]
+        check_signed_result(nonlegacy_node, signed_tx)
         nonlegacy_txid = nonlegacy_node.sendrawtransaction(signed_tx["hex"])
         # Note: NULLFAIL is not mandatory on legacy, so we just get a FALSE from OP_CHECKSIG
         assert_raises_rpc_error(
@@ -131,7 +136,8 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
         nonlegacy_tx2.vin = [CTxIn(COutPoint(int(nonlegacy_txid, 16), 0))]
         nonlegacy_tx2.vout = [CTxOut(coinvalue - 2000, p2pkh)]
 
-        tx2_keys = [bytes_to_wif(key.get_bytes())]
+        tx2_key = bytes_to_wif(key.get_bytes())
+        tx2_keys = [tx2_key]
         tx2_outpoints = [
             {
                 "txid": txid,
@@ -148,11 +154,45 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
                 "amount": tx.vout[0].nValue / 100,
             }
         ]
+
+        # Import keys to wallet
+        node.importprivkey(tx2_key)
+        nonlegacy_node.importprivkey(tx2_key)
+
+        # Test sigs without args (defaults to ALL)
+        result = node.signrawtransactionwithkey(
+            tx2.serialize().hex(), tx2_keys, tx2_outpoints
+        )
+        check_signed_result(node, result)
+
+        result = node.signrawtransactionwithwallet(
+            tx2.serialize().hex(), tx2_outpoints
+        )
+        check_signed_result(node, result)
+
+        result = nonlegacy_node.signrawtransactionwithkey(
+            nonlegacy_tx2.serialize().hex(), tx2_keys, nonlegacy_tx2_outpoints
+        )
+        check_signed_result(nonlegacy_node, result)
+
+        result = nonlegacy_node.signrawtransactionwithwallet(
+            nonlegacy_tx2.serialize().hex(), nonlegacy_tx2_outpoints
+        )
+        check_signed_result(nonlegacy_node, result)
+
         for sighash in legacy_sighashes:
+            # Test signing with key
             result = node.signrawtransactionwithkey(
                 tx2.serialize().hex(), tx2_keys, tx2_outpoints, sighash
             )
-            assert result["complete"]
+            check_signed_result(node, result)
+
+            # Test signing with wallet
+            result = node.signrawtransactionwithwallet(
+                tx2.serialize().hex(), tx2_outpoints, sighash
+            )
+            check_signed_result(node, result)
+
             assert_raises_rpc_error(
                 -8,
                 "Signature must use SIGHASH_FORKID",
@@ -162,6 +202,16 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
                 nonlegacy_tx2_outpoints,
                 sighash,
             )
+
+            assert_raises_rpc_error(
+                -8,
+                "Signature must use SIGHASH_FORKID",
+                nonlegacy_node.signrawtransactionwithwallet,
+                nonlegacy_tx2.serialize().hex(),
+                nonlegacy_tx2_outpoints,
+                sighash,
+            )
+
         for sighash in bip143_sighashes:
             assert_raises_rpc_error(
                 -8,
@@ -172,13 +222,30 @@ class LegacyScriptSignrawtransactionTest(BitcoinTestFramework):
                 tx2_outpoints,
                 sighash,
             )
+
+            assert_raises_rpc_error(
+                -8,
+                "Illegal use of SIGHASH_FORKID",
+                node.signrawtransactionwithwallet,
+                tx2.serialize().hex(),
+                tx2_outpoints,
+                sighash,
+            )
+
             result = nonlegacy_node.signrawtransactionwithkey(
                 nonlegacy_tx2.serialize().hex(),
                 tx2_keys,
                 nonlegacy_tx2_outpoints,
                 sighash,
             )
-            assert result["complete"]
+            check_signed_result(nonlegacy_node, result)
+
+            result = nonlegacy_node.signrawtransactionwithwallet(
+                nonlegacy_tx2.serialize().hex(),
+                nonlegacy_tx2_outpoints,
+                sighash,
+            )
+            check_signed_result(nonlegacy_node, result)
 
 
 if __name__ == "__main__":
