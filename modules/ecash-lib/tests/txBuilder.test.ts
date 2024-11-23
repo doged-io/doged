@@ -20,11 +20,17 @@ import {
 import { Script } from '../src/script.js';
 import {
     ALL_ANYONECANPAY_BIP143,
+    ALL_ANYONECANPAY_LEGACY,
     ALL_BIP143,
+    ALL_LEGACY,
     NONE_ANYONECANPAY_BIP143,
+    NONE_ANYONECANPAY_LEGACY,
     NONE_BIP143,
+    NONE_LEGACY,
     SINGLE_ANYONECANPAY_BIP143,
+    SINGLE_ANYONECANPAY_LEGACY,
     SINGLE_BIP143,
+    SINGLE_LEGACY,
 } from '../src/sigHashType.js';
 import { TestRunner } from '../src/test/testRunner.js';
 import {
@@ -32,6 +38,7 @@ import {
     P2PKSignatory,
     TxBuilder,
     flagSignature,
+    signSigHash,
 } from '../src/txBuilder.js';
 import { UnsignedTxInput } from '../src/unsignedTx.js';
 import * as cashaddr from 'ecashaddrjs';
@@ -39,7 +46,7 @@ import * as cashaddr from 'ecashaddrjs';
 const NUM_COINS = 500;
 const COIN_VALUE = 100000;
 
-const SIG_HASH_TYPES = [
+const SIG_HASH_TYPES_BIP143 = [
     ALL_BIP143,
     ALL_ANYONECANPAY_BIP143,
     NONE_BIP143,
@@ -47,6 +54,22 @@ const SIG_HASH_TYPES = [
     SINGLE_BIP143,
     SINGLE_ANYONECANPAY_BIP143,
 ];
+const SIG_HASH_TYPES_LEGACY = [
+    ALL_LEGACY,
+    ALL_ANYONECANPAY_LEGACY,
+    NONE_LEGACY,
+    NONE_ANYONECANPAY_LEGACY,
+    SINGLE_LEGACY,
+    SINGLE_ANYONECANPAY_LEGACY,
+];
+
+// Whether to enable legacy signatures (i.e. pre-UAHF) for this test.
+const IS_LEGACY_MODE = true;
+
+// SIGHASH type to use
+const SIG_HASH_TYPES = IS_LEGACY_MODE
+    ? SIG_HASH_TYPES_LEGACY
+    : SIG_HASH_TYPES_BIP143;
 
 describe('TxBuilder', () => {
     let runner: TestRunner;
@@ -55,7 +78,9 @@ describe('TxBuilder', () => {
 
     before(async () => {
         await initWasm();
-        runner = await TestRunner.setup();
+        runner = await TestRunner.setup(
+            IS_LEGACY_MODE ? 'setup_scripts/ecash-lib_legacy' : undefined,
+        );
         chronik = runner.chronik;
         ecc = runner.ecc;
         await runner.setupCoins(NUM_COINS, COIN_VALUE);
@@ -111,7 +136,11 @@ describe('TxBuilder', () => {
                         outputScript: p2pkh,
                     },
                 },
-                signatory: P2PKHSignatory(sk, pk, ALL_BIP143),
+                signatory: P2PKHSignatory(
+                    sk,
+                    pk,
+                    IS_LEGACY_MODE ? ALL_LEGACY : ALL_BIP143,
+                ),
             })),
             outputs: [
                 // Recipient using a TxOutput
@@ -131,6 +160,7 @@ describe('TxBuilder', () => {
             ],
         });
         const spendTx = txBuild.sign(ecc, 1000, 546);
+        const estimatedSize = txBuild.sign(new EccDummy(), 1000, 546).serSize();
         const txid = (await chronik.broadcastTx(spendTx.ser())).txid;
 
         // Now have 1 UTXO change in the wallet
@@ -143,7 +173,7 @@ describe('TxBuilder', () => {
                 },
                 blockHeight: -1,
                 isCoinbase: false,
-                value: 90000 * 2 - 120000 - 10000 - 10000 - spendTx.serSize(),
+                value: 90000 * 2 - 120000 - 10000 - 10000 - estimatedSize,
                 isFinal: false,
             },
         ]);
@@ -178,7 +208,12 @@ describe('TxBuilder', () => {
                 outputs: [p2pkh],
             });
             const spendTx = txBuild.sign(ecc, 1000, 546);
-            await chronik.broadcastTx(spendTx.ser());
+            try {
+                await chronik.broadcastTx(spendTx.ser());
+            } catch (ex) {
+                console.log('sig hash type failed:', sigHashType);
+                throw ex;
+            }
         }
     });
 
@@ -258,57 +293,61 @@ describe('TxBuilder', () => {
         }
     });
 
-    it('TxBuilder P2SH with reversed signature OP_CHECKSIG', async () => {
-        const sk = fromHex(
-            '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        );
-        const pk = ecc.derivePubkey(sk);
-        const redeemScript = Script.fromOps([
-            OP_REVERSEBYTES,
-            pushBytesOp(pk),
-            OP_CHECKSIG,
-        ]);
-        const p2sh = Script.p2sh(shaRmd160(redeemScript.bytecode));
+    (IS_LEGACY_MODE ? it.skip : it)(
+        'TxBuilder P2SH with reversed signature OP_CHECKSIG',
+        async () => {
+            const sk = fromHex(
+                '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+            );
+            const pk = ecc.derivePubkey(sk);
+            const redeemScript = Script.fromOps([
+                OP_REVERSEBYTES,
+                pushBytesOp(pk),
+                OP_CHECKSIG,
+            ]);
+            const p2sh = Script.p2sh(shaRmd160(redeemScript.bytecode));
 
-        for (const sigHashType of SIG_HASH_TYPES) {
-            const txid = await runner.sendToScript(90000, p2sh);
-            const txBuild = new TxBuilder({
-                inputs: [
-                    {
-                        input: {
-                            prevOut: {
-                                txid,
-                                outIdx: 0,
+            for (const sigHashType of SIG_HASH_TYPES) {
+                const txid = await runner.sendToScript(90000, p2sh);
+                const txBuild = new TxBuilder({
+                    inputs: [
+                        {
+                            input: {
+                                prevOut: {
+                                    txid,
+                                    outIdx: 0,
+                                },
+                                signData: {
+                                    value: 90000,
+                                    redeemScript,
+                                },
                             },
-                            signData: {
-                                value: 90000,
-                                redeemScript,
+                            signatory: (
+                                ecc: Ecc,
+                                input: UnsignedTxInput,
+                            ): Script => {
+                                const preimage =
+                                    input.sigHashPreimage(sigHashType);
+                                const sighash = sha256d(preimage.bytes);
+                                const sig = flagSignature(
+                                    ecc.schnorrSign(sk, sighash),
+                                    sigHashType,
+                                );
+                                sig.reverse();
+                                return Script.fromOps([
+                                    pushBytesOp(sig),
+                                    pushBytesOp(preimage.redeemScript.bytecode),
+                                ]);
                             },
                         },
-                        signatory: (
-                            ecc: Ecc,
-                            input: UnsignedTxInput,
-                        ): Script => {
-                            const preimage = input.sigHashPreimage(sigHashType);
-                            const sighash = sha256d(preimage.bytes);
-                            const sig = flagSignature(
-                                ecc.schnorrSign(sk, sighash),
-                                sigHashType,
-                            );
-                            sig.reverse();
-                            return Script.fromOps([
-                                pushBytesOp(sig),
-                                pushBytesOp(preimage.redeemScript.bytecode),
-                            ]);
-                        },
-                    },
-                ],
-                outputs: [p2sh],
-            });
-            const spendTx = txBuild.sign(ecc, 1000, 546);
-            await chronik.broadcastTx(spendTx.ser());
-        }
-    });
+                    ],
+                    outputs: [p2sh],
+                });
+                const spendTx = txBuild.sign(ecc, 1000, 546);
+                await chronik.broadcastTx(spendTx.ser());
+            }
+        },
+    );
 
     it('TxBuilder OP_CODESEPERATOR', async () => {
         const sk1 = fromHex('11'.repeat(32));
@@ -360,9 +399,11 @@ describe('TxBuilder', () => {
                                     i + 1,
                                 );
                                 return flagSignature(
-                                    ecc.schnorrSign(
+                                    signSigHash(
+                                        ecc,
                                         sks[i],
                                         sha256d(preimage.bytes),
+                                        sigHashType,
                                     ),
                                     sigHashType,
                                 );
@@ -396,6 +437,7 @@ describe('TxBuilder', () => {
         ]);
         const p2sh = Script.p2sh(shaRmd160(redeemScript.bytecode));
         const txid = await runner.sendToScript(90000, p2sh);
+        const sigHashFlags = IS_LEGACY_MODE ? ALL_LEGACY : ALL_BIP143;
         const txBuild = new TxBuilder({
             inputs: [
                 {
@@ -412,13 +454,16 @@ describe('TxBuilder', () => {
                     signatory: (ecc: Ecc, input: UnsignedTxInput): Script => {
                         const sks = [sk1, sk2];
                         const sigs = [...Array(2).keys()].map(i => {
-                            const preimage = input.sigHashPreimage(ALL_BIP143);
+                            const preimage =
+                                input.sigHashPreimage(sigHashFlags);
                             return flagSignature(
-                                ecc.schnorrSign(
+                                signSigHash(
+                                    ecc,
                                     sks[i],
                                     sha256d(preimage.bytes),
+                                    sigHashFlags,
                                 ),
-                                ALL_BIP143,
+                                sigHashFlags,
                             );
                         });
                         return Script.fromOps([
@@ -449,8 +494,9 @@ describe('TxBuilder', () => {
         // 1ksats/kB
         spendTx = txBuild.sign(ecc, 1000, 546);
         await chronik.broadcastTx(spendTx.ser());
+        let estimatedSize = txBuild.sign(new EccDummy(), 1000, 546).serSize();
         expect(spendTx.outputs[1].value).to.equal(
-            BigInt(40000 - spendTx.serSize()),
+            BigInt(40000 - estimatedSize),
         );
 
         // 10ksats/kB
@@ -460,8 +506,9 @@ describe('TxBuilder', () => {
         );
         spendTx = txBuild.sign(ecc, 10000, 546);
         await chronik.broadcastTx(spendTx.ser());
+        estimatedSize = txBuild.sign(new EccDummy(), 10000, 546).serSize();
         expect(spendTx.outputs[1].value).to.equal(
-            BigInt(40000 - 10 * spendTx.serSize()),
+            BigInt(40000 - 10 * estimatedSize),
         );
 
         // 100ksats/kB
@@ -471,16 +518,20 @@ describe('TxBuilder', () => {
         );
         spendTx = txBuild.sign(ecc, 100000, 546);
         await chronik.broadcastTx(spendTx.ser());
+        estimatedSize = txBuild.sign(new EccDummy(), 100000, 546).serSize();
         expect(spendTx.outputs[1].value).to.equal(
-            BigInt(40000 - 100 * spendTx.serSize()),
+            BigInt(40000 - 100 * estimatedSize),
         );
 
-        // 120ksats/kB, deletes leftover output
+        // 117.6ksats/kB, deletes leftover output
         txBuild.inputs[0].input.prevOut.txid = await runner.sendToScript(
             90000,
             p2sh,
         );
-        spendTx = txBuild.sign(ecc, 120000, 546);
+        spendTx = txBuild.sign(ecc, 117600, 546);
+        const estimatedSizeNoLeftover = txBuild
+            .sign(new EccDummy(), 117600, 546)
+            .serSize();
         await chronik.broadcastTx(spendTx.ser());
         expect(spendTx.outputs.length).to.equal(2);
 
@@ -500,7 +551,7 @@ describe('TxBuilder', () => {
         );
         expect(() => txBuild.sign(ecc, 1000000, 546)).to.throw(
             `Insufficient input value (90000): Can only pay for 40000 fees, ` +
-                `but ${spendTx.serSize() * 1000} required`,
+                `but ${estimatedSizeNoLeftover * 1000} required`,
         );
     });
 
@@ -522,6 +573,7 @@ describe('TxBuilder', () => {
         ]);
         const p2sh = Script.p2sh(shaRmd160(redeemScript.bytecode));
         const txid = await runner.sendToScript(90000, p2sh);
+        const sigHashFlags = IS_LEGACY_MODE ? ALL_LEGACY : ALL_BIP143;
         const txBuild = new TxBuilder({
             inputs: [
                 {
@@ -538,13 +590,16 @@ describe('TxBuilder', () => {
                     signatory: (ecc: Ecc, input: UnsignedTxInput): Script => {
                         const sks = [sk1, sk2];
                         const sigs = [...Array(2).keys()].map(i => {
-                            const preimage = input.sigHashPreimage(ALL_BIP143);
+                            const preimage =
+                                input.sigHashPreimage(sigHashFlags);
                             return flagSignature(
-                                ecc.schnorrSign(
+                                signSigHash(
+                                    ecc,
                                     sks[i],
                                     sha256d(preimage.bytes),
+                                    sigHashFlags,
                                 ),
-                                ALL_BIP143,
+                                sigHashFlags,
                             );
                         });
                         return Script.fromOps([
@@ -576,8 +631,9 @@ describe('TxBuilder', () => {
         // 1ksats/kB
         spendTx = txBuild.sign(ecc, 1000, 546);
         await chronik.broadcastTx(spendTx.ser());
+        const estimatedSize = txBuild.sign(new EccDummy(), 1000, 546).serSize();
         expect(spendTx.outputs[2].value).to.equal(
-            BigInt(40000 - spendTx.serSize()),
+            BigInt(40000 - estimatedSize),
         );
     });
 

@@ -11,11 +11,11 @@ from test_framework.address import ADDRESS_ECREG_P2SH_OP_TRUE, ADDRESS_ECREG_UNS
 from test_framework.blocktools import COINBASE_MATURITY
 
 
-class EcashLibSetup(SetupFramework):
+class EcashLibLegacySetup(SetupFramework):
     def set_test_params(self):
         self.num_nodes = 1
         self.setup_clean_chain = True
-        self.extra_args = [["-chronik", "-datacarriersize=223"]]
+        self.extra_args = [["-chronik", "-legacyscriptrules"]]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_chronik()
@@ -32,4 +32,4 @@ class EcashLibSetup(SetupFramework):
 
 
 if __name__ == "__main__":
-    EcashLibSetup().main()
+    EcashLibLegacySetup().main()
