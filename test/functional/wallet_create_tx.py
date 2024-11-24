@@ -4,7 +4,7 @@
 
 from test_framework.blocktools import TIME_GENESIS_BLOCK
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.util import append_config, assert_equal, assert_raises_rpc_error
 
 
 class CreateTxWalletTest(BitcoinTestFramework):
@@ -20,6 +20,8 @@ class CreateTxWalletTest(BitcoinTestFramework):
         self.nodes[0].setmocktime(TIME_GENESIS_BLOCK)
         self.generate(self.nodes[0], 200)
         self.nodes[0].setmocktime(0)
+
+        append_config(self.nodes[0].datadir, ["maxtxfee=100000"])
 
         self.test_anti_fee_sniping_disabled()
         self.test_tx_size_too_large()

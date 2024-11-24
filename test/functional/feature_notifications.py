@@ -46,6 +46,7 @@ class NotificationsTest(BitcoinTestFramework):
             [
                 f"-alertnotify=echo > {os.path.join(self.alertnotify_dir, '%s')}",
                 f"-blocknotify=echo > {os.path.join(self.blocknotify_dir, '%s')}",
+                "-paytxfee=10",
             ],
             [
                 "-rescan",
@@ -53,6 +54,7 @@ class NotificationsTest(BitcoinTestFramework):
                     "-walletnotify=echo >"
                     f" {os.path.join(self.walletnotify_dir, notify_outputname('%w', '%s'))}"
                 ),
+                "-paytxfee=10",
             ],
         ]
         self.wallet_names = [self.default_wallet_name, self.wallet]

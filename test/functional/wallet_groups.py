@@ -15,15 +15,15 @@ class WalletGroupTest(BitcoinTestFramework):
         self.num_nodes = 5
         self.noban_tx_relay = True
         self.extra_args = [
-            [],
-            [],
-            ["-avoidpartialspends"],
+            ["-paytxfee=10"],
+            ["-paytxfee=10"],
+            ["-avoidpartialspends", "-paytxfee=10"],
             # 2.93 XEC is the threshold that causes a node to prefer a
             # non-grouped tx (3 inputs, 2 outputs) to a grouped tx (5 inputs,
             # 2 outputs). The fee for the grouped tx is 294 sats higher than
             # the fee for the non-grouped tx. See tx5 below.
-            ["-maxapsfee=2.93"],
-            ["-maxapsfee=2.94"],
+            ["-maxapsfee=2.93", "-paytxfee=10"],
+            ["-maxapsfee=2.94", "-paytxfee=10"],
         ]
 
         self.rpc_timeout = 480

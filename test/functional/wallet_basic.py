@@ -23,7 +23,7 @@ class WalletTest(BitcoinTestFramework):
         self.noban_tx_relay = True
         self.setup_clean_chain = True
         self.extra_args = [
-            ["-acceptnonstdtxn=1"],
+            ["-acceptnonstdtxn=1", "-paytxfee=10"],
         ] * self.num_nodes
         self.supports_cli = False
 

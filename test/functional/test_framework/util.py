@@ -481,6 +481,8 @@ def write_config(config_path, *, n, chain, extra_config="", disable_autoconnect=
         f.write("natpmp=0\n")
         f.write("usecashaddr=1\n")
         f.write("usedogeunit=0\n")
+        f.write("minrelaytxfee=10\n")
+        f.write("blockmintxfee=10\n")
         # Increase peertimeout to avoid disconnects while using mocktime.
         # peertimeout is measured in mock time, so setting it large enough to
         # cover any duration in mock time is sufficient. It can be overridden
@@ -496,10 +498,24 @@ def get_datadir_path(dirname, n):
     return os.path.join(dirname, f"node{str(n)}")
 
 
+def config_path(datadir):
+    return os.path.join(datadir, "dogecoin.conf")
+
+
 def append_config(datadir, options):
-    with open(os.path.join(datadir, "dogecoin.conf"), "a", encoding="utf8") as f:
+    with open(config_path(datadir), "a", encoding="utf8") as f:
         for option in options:
             f.write(f"{option}\n")
+
+
+def remove_from_config(datadir, options):
+    with open(config_path(datadir), "r", encoding="utf8") as f:
+        config = f.read()
+        for option in options:
+            config = config.replace(option + "\n", "")
+
+    with open(config_path(datadir), "w", encoding="utf8") as f:
+        f.write(config)
 
 
 def get_auth_cookie(datadir, chain):
