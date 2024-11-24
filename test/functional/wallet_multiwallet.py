@@ -358,11 +358,13 @@ class MultiWalletTest(BitcoinTestFramework):
         assert_equal(batch[0]["result"]["chain"], self.chain)
         assert_equal(batch[1]["result"]["walletname"], "w1")
 
-        self.log.info("Check for per-wallet settxfee call")
-        assert_equal(w1.getwalletinfo()["paytxfee"], 0)
-        assert_equal(w2.getwalletinfo()["paytxfee"], 0)
+        self.log.info(
+            "Check for per-wallet settxfee call (paytxfee defaults to 10000 on Dogecoin)"
+        )
+        assert_equal(w1.getwalletinfo()["paytxfee"], 10000)
+        assert_equal(w2.getwalletinfo()["paytxfee"], 10000)
         w2.settxfee(1000)
-        assert_equal(w1.getwalletinfo()["paytxfee"], 0)
+        assert_equal(w1.getwalletinfo()["paytxfee"], 10000)
         assert_equal(w2.getwalletinfo()["paytxfee"], Decimal("1000.00"))
 
         self.log.info("Test dynamic wallet loading")

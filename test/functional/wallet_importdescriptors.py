@@ -30,7 +30,7 @@ class ImportDescriptorsTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.noban_tx_relay = True
-        self.extra_args = [[], ["-keypool=5"]]
+        self.extra_args = [["-paytxfee=10"], ["-keypool=5", "-paytxfee=10"]]
         self.setup_clean_chain = True
 
     def skip_test_if_missing_module(self):

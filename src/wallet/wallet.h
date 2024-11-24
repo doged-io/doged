@@ -80,7 +80,7 @@ MakeWalletDatabase(const std::string &name, const DatabaseOptions &options,
                    DatabaseStatus &status, bilingual_str &error);
 
 //! -paytxfee default
-constexpr Amount DEFAULT_PAY_TX_FEE = Amount::zero();
+constexpr Amount DEFAULT_PAY_TX_FEE = COIN / 100;
 //! -fallbackfee default
 static const Amount DEFAULT_FALLBACK_FEE = Amount::zero();
 //! -mintxfee default
@@ -105,9 +105,9 @@ static const bool DEFAULT_SPEND_ZEROCONF_CHANGE = true;
 static const bool DEFAULT_WALLETBROADCAST = true;
 static const bool DEFAULT_DISABLE_WALLET = false;
 //! -maxtxfee default
-constexpr Amount DEFAULT_TRANSACTION_MAXFEE{COIN / 10};
+constexpr Amount DEFAULT_TRANSACTION_MAXFEE{100 * COIN};
 //! Discourage users to set fees higher than this amount (in satoshis) per kB
-constexpr Amount HIGH_TX_FEE_PER_KB{COIN / 100};
+constexpr Amount HIGH_TX_FEE_PER_KB{10 * COIN};
 //! -maxtxfee will warn if called with a higher fee than this amount (in
 //! satoshis)
 constexpr Amount HIGH_MAX_TX_FEE{100 * HIGH_TX_FEE_PER_KB};
