@@ -7,7 +7,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 )
 
 project(dogecash
-	VERSION 0.1.0
+	VERSION 0.3.0
 	DESCRIPTION "Dogecash is a full node implementation of the Dogecoin protocol."
 	HOMEPAGE_URL "https://www.dogecash.io"
 )
