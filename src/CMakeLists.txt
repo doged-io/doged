@@ -1,6 +1,6 @@
 # Copyright (c) 2017 The Bitcoin developers
 
-project(dogecoind)
+project(doged)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,12 +11,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
-option(BUILD_BITCOIN_CLI "Build dogecoin-cli" ON)
-option(BUILD_BITCOIN_TX "Build dogecoin-tx" ON)
-option(BUILD_BITCOIN_QT "Build dogecoin-qt" ON)
-option(BUILD_BITCOIN_SEEDER "Build dogecoin-seeder" ON)
+option(BUILD_BITCOIN_CLI "Build doge-cli" ON)
+option(BUILD_BITCOIN_TX "Build doge-tx" ON)
+option(BUILD_BITCOIN_QT "Build doge-qt" ON)
+option(BUILD_BITCOIN_SEEDER "Build doge-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
-option(BUILD_BITCOIN_CHAINSTATE "Build dogecoin-chainstate" OFF)
+option(BUILD_BITCOIN_CHAINSTATE "Build doge-chainstate" OFF)
 option(BUILD_BITCOIN_IGUANA "Activate the Iguana debugger" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
@@ -778,19 +778,19 @@ if(BUILD_BITCOIN_WALLET)
 	add_subdirectory(wallet)
 	target_link_libraries(server wallet)
 
-	# dogecoin-wallet
-	add_executable(dogecoin-wallet bitcoin-wallet.cpp)
-	generate_windows_version_info(dogecoin-wallet
+	# doge-wallet
+	add_executable(doge-wallet bitcoin-wallet.cpp)
+	generate_windows_version_info(doge-wallet
 		DESCRIPTION "CLI tool for ${PACKAGE_NAME} wallets"
 	)
 
-	target_link_libraries(dogecoin-wallet wallet-tool common util)
+	target_link_libraries(doge-wallet wallet-tool common util)
 
-	add_to_symbols_check(dogecoin-wallet)
-	add_to_security_check(dogecoin-wallet)
+	add_to_symbols_check(doge-wallet)
+	add_to_security_check(doge-wallet)
 
-	install_target(dogecoin-wallet)
-	install_manpages(dogecoin-wallet)
+	install_target(doge-wallet)
+	install_manpages(doge-wallet)
 else()
 	target_sources(server PRIVATE dummywallet.cpp)
 endif()
@@ -813,45 +813,45 @@ add_library(rpcclient
 
 target_link_libraries(rpcclient univalue util)
 
-# dogecoin-seeder
+# doge-seeder
 if(BUILD_BITCOIN_SEEDER)
 	add_subdirectory(seeder)
 endif()
 
-# dogecoin-cli
+# doge-cli
 if(BUILD_BITCOIN_CLI)
-	add_executable(dogecoin-cli bitcoin-cli.cpp)
-	generate_windows_version_info(dogecoin-cli
+	add_executable(doge-cli bitcoin-cli.cpp)
+	generate_windows_version_info(doge-cli
 		DESCRIPTION "JSON-RPC client for ${PACKAGE_NAME}"
 	)
 
-	target_link_libraries(dogecoin-cli common rpcclient)
-	link_event(dogecoin-cli event)
+	target_link_libraries(doge-cli common rpcclient)
+	link_event(doge-cli event)
 
-	add_to_symbols_check(dogecoin-cli)
-	add_to_security_check(dogecoin-cli)
+	add_to_symbols_check(doge-cli)
+	add_to_security_check(doge-cli)
 
-	install_target(dogecoin-cli)
-	install_manpages(dogecoin-cli)
+	install_target(doge-cli)
+	install_manpages(doge-cli)
 endif()
 
-# dogecoin-tx
+# doge-tx
 if(BUILD_BITCOIN_TX)
-	add_executable(dogecoin-tx bitcoin-tx.cpp)
-	generate_windows_version_info(dogecoin-tx
+	add_executable(doge-tx bitcoin-tx.cpp)
+	generate_windows_version_info(doge-tx
 		DESCRIPTION "CLI Bitcoin transaction editor utility"
 	)
 
-	target_link_libraries(dogecoin-tx bitcoinconsensus)
+	target_link_libraries(doge-tx bitcoinconsensus)
 
-	add_to_symbols_check(dogecoin-tx)
-	add_to_security_check(dogecoin-tx)
+	add_to_symbols_check(doge-tx)
+	add_to_security_check(doge-tx)
 
-	install_target(dogecoin-tx)
-	install_manpages(dogecoin-tx)
+	install_target(doge-tx)
+	install_manpages(doge-tx)
 endif()
 
-# dogecoin-chainstate
+# doge-chainstate
 if(BUILD_BITCOIN_CHAINSTATE)
 	# TODO: libbitcoinkernel is a work in progress consensus engine library, as more
 	#       and more modules are decoupled from the consensus engine, this list will
@@ -1004,29 +1004,29 @@ if(BUILD_BITCOIN_CHAINSTATE)
 		link_windows_dependencies(bitcoinkernel)
 	endif()
 
-	add_executable(dogecoin-chainstate bitcoin-chainstate.cpp)
+	add_executable(doge-chainstate bitcoin-chainstate.cpp)
 
-	target_link_libraries(dogecoin-chainstate bitcoinkernel)
+	target_link_libraries(doge-chainstate bitcoinkernel)
 
-	generate_windows_version_info(dogecoin-chainstate
+	generate_windows_version_info(doge-chainstate
 		DESCRIPTION "CLI Datadir information utility (experimental)"
 	)
 
-	add_to_symbols_check(dogecoin-chainstate)
-	add_to_security_check(dogecoin-chainstate)
+	add_to_symbols_check(doge-chainstate)
+	add_to_security_check(doge-chainstate)
 endif()
 
-# dogecoind
-add_executable(dogecoind bitcoind.cpp)
-target_link_libraries(dogecoind server)
-generate_windows_version_info(dogecoind
+# doged
+add_executable(doged bitcoind.cpp)
+target_link_libraries(doged server)
+generate_windows_version_info(doged
 	DESCRIPTION "Bitcoin node with a JSON-RPC server"
 )
-add_to_symbols_check(dogecoind)
-add_to_security_check(dogecoind)
+add_to_symbols_check(doged)
+add_to_security_check(doged)
 
-install_target(dogecoind)
-install_manpages(dogecoind)
+install_target(doged)
+install_manpages(doged)
 
 # Bitcoin-qt
 if(BUILD_BITCOIN_QT)

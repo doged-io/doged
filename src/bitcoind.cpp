@@ -162,7 +162,7 @@ static bool AppInit(int argc, char *argv[]) {
         if (args.IsArgSet("-version")) {
             strUsage += FormatParagraph(LicenseInfo()) + "\n";
         } else {
-            strUsage += "\nUsage:  dogecoind [options]                     "
+            strUsage += "\nUsage:  doged [options]                     "
                         "Start " PACKAGE_NAME "\n";
             strUsage += "\n" + args.GetHelpMessage();
         }
@@ -214,7 +214,7 @@ static bool AppInit(int argc, char *argv[]) {
             if (!IsSwitchChar(argv[i][0])) {
                 return InitError(Untranslated(
                     strprintf("Command line contains unexpected token '%s', "
-                              "see dogecoind -h for a list of options.\n",
+                              "see doged -h for a list of options.\n",
                               argv[i])));
             }
         }
@@ -224,7 +224,7 @@ static bool AppInit(int argc, char *argv[]) {
             return false;
         }
 
-        // -server defaults to true for dogecoind but not for the GUI so do this
+        // -server defaults to true for doged but not for the GUI so do this
         // here
         args.SoftSetBoolArg("-server", true);
         // Set this early so that parameter interactions go to console
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
 #endif
     SetupEnvironment();
 
-    // Connect dogecoind signal handlers
+    // Connect doged signal handlers
     noui_connect();
 
     return (AppInit(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE);

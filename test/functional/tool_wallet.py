@@ -1,7 +1,7 @@
 # Copyright (c) 2018-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test dogecoin-wallet."""
+"""Test doge-wallet."""
 
 import hashlib
 import os
@@ -28,7 +28,7 @@ class ToolWalletTest(BitcoinTestFramework):
     def bitcoin_wallet_process(self, *args):
         binary = (
             self.config["environment"]["BUILDDIR"]
-            + "/src/dogecoin-wallet"
+            + "/src/doge-wallet"
             + self.config["environment"]["EXEEXT"]
         )
         args = [f"-datadir={self.nodes[0].datadir}", f"-chain={self.chain}"] + list(
@@ -84,7 +84,7 @@ class ToolWalletTest(BitcoinTestFramework):
             "Testing that various invalid commands raise with specific error messages"
         )
         self.assert_raises_tool_error("Invalid command: foo", "foo")
-        # `dogecoin-wallet help` raises an error. Use `bitcoin-wallet -help`.
+        # `doge-wallet help` raises an error. Use `bitcoin-wallet -help`.
         self.assert_raises_tool_error("Invalid command: help", "help")
         self.assert_raises_tool_error(
             "Error: two methods provided (info and create). Only one method should"

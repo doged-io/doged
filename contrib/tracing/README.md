@@ -30,12 +30,12 @@ information. For development there exist a [bpftrace Reference Guide], a
 
 ## Examples
 
-The bpftrace examples contain a relative path to the `dogecoind` binary. By
+The bpftrace examples contain a relative path to the `doged` binary. By
 default, the scripts should be run from the repository-root and assume a
-self-compiled `dogecoind` binary. The paths in the examples can be changed, for
+self-compiled `doged` binary. The paths in the examples can be changed, for
 example, to point to release builds if needed. See the
 [Dogecash USDT documentation] on how to list available tracepoints in your
-`dogecoind` binary.
+`doged` binary.
 
 [Dogecash USDT documentation]: ../../doc/tracing.md#listing-available-tracepoints
 
@@ -82,7 +82,7 @@ about the connection. Peers can be selected individually to view recent P2P
 messages.
 
 ```
-$ python3 contrib/tracing/p2p_monitor.py ./src/dogecoind
+$ python3 contrib/tracing/p2p_monitor.py ./src/doged
 ```
 
 Lists selectable peers and traffic and connection information.
@@ -150,7 +150,7 @@ lost. BCC prints: `Possibly lost 2 samples` on lost messages.
 
 
 ```
-$ python3 contrib/tracing/log_raw_p2p_msgs.py ./src/dogecoind
+$ python3 contrib/tracing/log_raw_p2p_msgs.py ./src/doged
 ```
 
 ```
@@ -188,7 +188,7 @@ In a different terminal, starting Dogecash in Testnet mode and with
 re-indexing enabled.
 
 ```
-$ ./src/dogecoind -testnet -reindex
+$ ./src/doged -testnet -reindex
 ```
 
 This produces the following output.
@@ -241,7 +241,7 @@ A BCC Python script to log the UTXO cache flushes. Based on the
 `utxocache:flush` tracepoint.
 
 ```bash
-$ python3 contrib/tracing/log_utxocache_flush.py ./src/dogecoind
+$ python3 contrib/tracing/log_utxocache_flush.py ./src/doged
 ```
 
 ```

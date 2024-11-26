@@ -217,7 +217,7 @@ bool ArgsManager::ParseParameters(int argc, const char *const argv[],
 #endif
 
         if (key == "-") {
-            // dogecoin-tx using stdin
+            // doge-tx using stdin
             break;
         }
         std::string val;

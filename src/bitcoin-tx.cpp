@@ -133,7 +133,7 @@ static int AppInitRawTx(int argc, char *argv[]) {
 
     if (argc < 2 || HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
         // First part of help message is specific to this utility
-        std::string strUsage = PACKAGE_NAME " dogecoin-tx utility version " +
+        std::string strUsage = PACKAGE_NAME " doge-tx utility version " +
                                FormatFullVersion() + "\n";
 
         if (gArgs.IsArgSet("-version")) {
@@ -141,9 +141,9 @@ static int AppInitRawTx(int argc, char *argv[]) {
         } else {
             strUsage +=
                 "\n"
-                "Usage:  dogecoin-tx [options] <hex-tx> [commands]  Update "
+                "Usage:  doge-tx [options] <hex-tx> [commands]  Update "
                 "hex-encoded bitcoin transaction\n"
-                "or:     dogecoin-tx [options] -create [commands]   Create "
+                "or:     doge-tx [options] -create [commands]   Create "
                 "hex-encoded bitcoin transaction\n"
                 "\n";
             strUsage += gArgs.GetHelpMessage();

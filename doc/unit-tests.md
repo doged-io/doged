@@ -4,36 +4,36 @@ Unit tests are not part of the default build but can be built on demand.
 
 All the unit tests can be built and run with a single command: `ninja check`.
 
-#### dogecoind unit tests
+#### doged unit tests
 
-The `dogecoind` unit tests can be built with `ninja test_bitcoin`.
+The `doged` unit tests can be built with `ninja test_bitcoin`.
 They can also be built and run in a single command with `ninja check-bitcoin`.
 
-To run the `dogecoind` tests manually, launch `src/test/test_bitcoin`.
+To run the `doged` tests manually, launch `src/test/test_bitcoin`.
 
-To add more `dogecoind` tests, add `BOOST_AUTO_TEST_CASE` functions to the
+To add more `doged` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/test/` directory or add new .cpp files that
 implement new `BOOST_AUTO_TEST_SUITE` sections.
 
-#### dogecoin-qt unit tests
+#### doge-qt unit tests
 
-The `dogecoin-qt` tests can be built with `ninja test_dogecoin-qt` or
-built and run in a single command with `ninja check-dogecoin-qt`.
+The `doge-qt` tests can be built with `ninja test_doge-qt` or
+built and run in a single command with `ninja check-doge-qt`.
 
-To run the `dogecoin-qt` tests manually, launch `src/qt/test/test_dogecoin-qt`.
+To run the `doge-qt` tests manually, launch `src/qt/test/test_doge-qt`.
 
-To add more `dogecoin-qt` tests, add them to the `src/qt/test/` directory and
+To add more `doge-qt` tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.
 
-#### dogecoin-seeder unit tests
+#### doge-seeder unit tests
 
-The `dogecoin-seeder` unit tests can be built with `ninja test-seeder` or
+The `doge-seeder` unit tests can be built with `ninja test-seeder` or
 built and run in a single command with `ninja check-seeder`.
 
-To run the `dogecoin-seeder` tests manually, launch
+To run the `doge-seeder` tests manually, launch
 `src/seeder/test/test-seeder`.
 
-To add more `dogecoin-seeder` tests, add `BOOST_AUTO_TEST_CASE` functions to the
+To add more `doge-seeder` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/seeder/test/` directory or add new .cpp files
 that implement new `BOOST_AUTO_TEST_SUITE` sections.
 
@@ -73,7 +73,7 @@ To write to logs from unit tests you need to use specific message methods
 provided by Boost. The simplest is `BOOST_TEST_MESSAGE`.
 
 For debugging you can launch the test_bitcoin executable with `gdb`or `lldb` and
-start debugging, just like you would with dogecoind.
+start debugging, just like you would with doged.
 
 This is a simple example of debugging unit tests with GDB on Linux:
 ```

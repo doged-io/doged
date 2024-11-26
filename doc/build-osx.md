@@ -73,7 +73,7 @@ Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC 
 Running
 -------
 
-Dogecash is now available at `./src/dogecoind`
+Dogecash is now available at `./src/doged`
 
 Before running, it's recommended that you create an RPC configuration file:
 
@@ -81,7 +81,7 @@ Before running, it's recommended that you create an RPC configuration file:
 
     chmod 600 "/Users/${USER}/Library/Application Support/Bitcoin/dogecoin.conf"
 
-The first time you run dogecoind, it will start downloading the blockchain. This process could take many hours, or even days on slower than average systems.
+The first time you run doged, it will start downloading the blockchain. This process could take many hours, or even days on slower than average systems.
 
 You can monitor the download process by looking at the debug.log file:
 
@@ -90,9 +90,9 @@ You can monitor the download process by looking at the debug.log file:
 Other commands:
 -------
 
-    ./src/dogecoind -daemon # Starts the bitcoin daemon.
-    ./src/dogecoin-cli --help # Outputs a list of command-line options.
-    ./src/dogecoin-cli help # Outputs a list of RPC commands when the daemon is running.
+    ./src/doged -daemon # Starts the bitcoin daemon.
+    ./src/doge-cli --help # Outputs a list of command-line options.
+    ./src/doge-cli help # Outputs a list of RPC commands when the daemon is running.
 
 Notes
 -----

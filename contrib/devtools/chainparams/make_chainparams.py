@@ -73,7 +73,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=(
-            "Make chainparams file.\nPrerequisites: RPC access to a dogecoind node.\n\n"
+            "Make chainparams file.\nPrerequisites: RPC access to a doged node.\n\n"
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )

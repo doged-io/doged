@@ -51,12 +51,12 @@ The following are some helpful notes on how to run Dogecash on your native platf
 
 Unpack the files into a directory and run:
 
-- `bin/dogecoin-qt` (GUI) or
-- `bin/dogecoind` (headless)
+- `bin/doge-qt` (GUI) or
+- `bin/doged` (headless)
 
 ### Windows
 
-Unpack the files into a directory, and then run dogecoin-qt.exe.
+Unpack the files into a directory, and then run doge-qt.exe.
 
 ### macOS
 

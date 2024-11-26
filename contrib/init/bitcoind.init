@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
 #
-#  dogecoind The bitcoin core server.
+#  doged The bitcoin core server.
 #
 #
 # chkconfig: 345 80 20
-# description: dogecoind
-# processname: dogecoind
+# description: doged
+# processname: doged
 #
 
 # Source function library.
 . /etc/init.d/functions
 
-# you can override defaults in /etc/sysconfig/dogecoind, see below
-if [ -f /etc/sysconfig/dogecoind ]; then
-        . /etc/sysconfig/dogecoind
+# you can override defaults in /etc/sysconfig/doged, see below
+if [ -f /etc/sysconfig/doged ]; then
+        . /etc/sysconfig/doged
 fi
 
 RETVAL=0
 
-prog=dogecoind
-# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/dogecoind
-lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/dogecoind}
+prog=doged
+# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/doged
+lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/doged}
 
-# dogecoind defaults to /usr/bin/dogecoind, override with BITCOIND_BIN
-dogecoind=${BITCOIND_BIN-/usr/bin/dogecoind}
+# doged defaults to /usr/bin/doged, override with BITCOIND_BIN
+doged=${BITCOIND_BIN-/usr/bin/doged}
 
-# dogecoind opts default to -disablewallet, override with BITCOIND_OPTS
-dogecoind_opts=${BITCOIND_OPTS--disablewallet}
+# doged opts default to -disablewallet, override with BITCOIND_OPTS
+doged_opts=${BITCOIND_OPTS--disablewallet}
 
 start() {
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $dogecoind $dogecoind_opts
+    daemon $DAEMONOPTS $doged $doged_opts
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile

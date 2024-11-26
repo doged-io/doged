@@ -32,7 +32,7 @@ set(CPACK_SOURCE_GENERATOR "TGZ")
 # CPack NSIS installer options
 Include(InstallationHelper)
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${CMAKE_INSTALL_BINDIR}")
-set(_nsis_bitcoin_qt "dogecoin-qt.exe")
+set(_nsis_bitcoin_qt "doge-qt.exe")
 
 set(CPACK_NSIS_URL_INFO_ABOUT "${CPACK_PACKAGE_HOMEPAGE_URL}")
 set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")

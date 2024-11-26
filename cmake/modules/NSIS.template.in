@@ -10,7 +10,7 @@ Unicode true
 !define VERSION @CPACK_PACKAGE_VERSION@
 !define COMPANY "@CPACK_PACKAGE_VENDOR@"
 !define URL "@CPACK_NSIS_URL_INFO_ABOUT@"
-!define BITCOIN_GUI_NAME "dogecoin-qt.exe"
+!define BITCOIN_GUI_NAME "doge-qt.exe"
 
 # MUI Symbol Definitions
 !define MUI_ICON "@CPACK_NSIS_MUI_ICON@"
@@ -80,8 +80,8 @@ Section -Main SEC0000
     File /oname=COPYING.txt "@CPACK_RESOURCE_FILE_LICENSE@"
     File /oname=readme.txt "@CPACK_PACKAGE_DESCRIPTION_FILE@"
     SetOutPath $INSTDIR\daemon
-    File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/dogecoind.exe"
-    File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/dogecoin-cli.exe"
+    File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/doged.exe"
+    File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/doge-cli.exe"
     SetOutPath $INSTDIR\doc
     File /r "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.md"
     File /r /x /nonfatal bitcoin_logo_doxygen.png "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.png"

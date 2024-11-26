@@ -82,7 +82,7 @@ static void SetupCliArgs(ArgsManager &argsman) {
             "arguments are number of blocks to generate (default: %s) and "
             "maximum iterations to try (default: %s), equivalent to RPC "
             "generatetoaddress nblocks and maxtries arguments. Example: "
-            "dogecoin-cli -generate 4 1000",
+            "doge-cli -generate 4 1000",
             DEFAULT_NBLOCKS, DEFAULT_MAX_TRIES),
         ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg(
@@ -159,7 +159,7 @@ static void SetupCliArgs(ArgsManager &argsman) {
     argsman.AddArg(
         "-rpcwallet=<walletname>",
         "Send RPC for non-default wallet on RPC server (needs to exactly match "
-        "corresponding -wallet option passed to dogecoind). This changes the "
+        "corresponding -wallet option passed to doged). This changes the "
         "RPC endpoint used, e.g. http://127.0.0.1:22555/wallet/<walletname>",
         ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
@@ -214,14 +214,14 @@ static int AppInitRPC(int argc, char *argv[]) {
             strUsage += FormatParagraph(LicenseInfo());
         } else {
             strUsage += "\n"
-                        "Usage:  dogecoin-cli [options] <command> [params]  "
+                        "Usage:  doge-cli [options] <command> [params]  "
                         "Send command to " PACKAGE_NAME "\n"
-                        "or:     dogecoin-cli [options] -named <command> "
+                        "or:     doge-cli [options] -named <command> "
                         "[name=value]...  Send command to " PACKAGE_NAME
                         " (with named arguments)\n"
-                        "or:     dogecoin-cli [options] help                "
+                        "or:     doge-cli [options] help                "
                         "List commands\n"
-                        "or:     dogecoin-cli [options] help <command>      Get "
+                        "or:     doge-cli [options] help <command>      Get "
                         "help for a command\n";
 
             strUsage += "\n" + gArgs.GetHelpMessage();
@@ -516,7 +516,7 @@ public:
 
         const UniValue &networkinfo{batch[ID_NETWORKINFO]["result"]};
         if (networkinfo["version"].getInt<int>() < 230000) {
-            throw std::runtime_error("-netinfo requires dogecoind server to be "
+            throw std::runtime_error("-netinfo requires doged server to be "
                                      "running v0.23.0 and up");
         }
 
@@ -820,7 +820,7 @@ static UniValue CallRPC(BaseRequestHandler *rh, const std::string &strMethod,
         }
         throw CConnectionFailed(
             strprintf("Could not connect to the server %s:%d%s\n\nMake sure "
-                      "the dogecoind server is running and that you are "
+                      "the doged server is running and that you are "
                       "connecting to the correct RPC port.",
                       host, port, responseErrorMessage));
     } else if (response.status == HTTP_UNAUTHORIZED) {
@@ -926,7 +926,7 @@ static void ParseError(const UniValue &error, std::string &strPrint,
         if (err_code.isNum() &&
             err_code.getInt<int>() == RPC_WALLET_NOT_SPECIFIED) {
             strPrint += "\nTry adding \"-rpcwallet=<filename>\" option to "
-                        "dogecoin-cli command line.";
+                        "doge-cli command line.";
         }
     } else {
         strPrint = "error: " + error.write();

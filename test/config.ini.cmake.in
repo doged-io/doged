@@ -16,7 +16,7 @@ RPCAUTH=${CMAKE_SOURCE_DIR}/share/rpcauth/rpcauth.py
 EMULATOR=${CMAKE_CROSSCOMPILING_EMULATOR}
 
 [components]
-# Which components are enabled. Note that dogecoind cannot be disabled by cmake
+# Which components are enabled. Note that doged cannot be disabled by cmake
 # and so is always ON.
 ENABLE_WALLET=${BUILD_BITCOIN_WALLET}
 ENABLE_WALLET_TOOL=${BUILD_BITCOIN_WALLET}

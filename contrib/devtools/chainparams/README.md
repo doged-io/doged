@@ -3,20 +3,20 @@
 Utilities to generate chainparams constants that are compiled into the client
 (see [src/chainparamsconstants.h](/src/chainparamsconstants.h).
 
-The chainparams constants are fetched from dogecoind, dumped to intermediate
+The chainparams constants are fetched from doged, dumped to intermediate
 files, and then compiled into [src/chainparamsconstants.h](/src/chainparamsconstants.h).
-If you're running dogecoind locally, the following instructions will work
+If you're running doged locally, the following instructions will work
 out-of-the-box:
 
 ## Mainnet
 ```
-dogecoind
+doged
 make_chainparams > chainparams_main.txt
 ```
 
 ## Testnet
 ```
-dogecoind --testnet
+doged --testnet
 make_chainparams -a 127.0.0.1:44555 > chainparams_test.txt
 ```
 

@@ -26,7 +26,7 @@ int CDnsSeedOpts::ParseCommandLine(int argc, const char **argv) {
             PACKAGE_NAME " Seeder " + FormatFullVersion() + "\n";
         if (HelpRequested(*argsManager)) {
             strUsage +=
-                "\nUsage: dogecoin-seeder -host=<host> -ns=<ns> "
+                "\nUsage: doge-seeder -host=<host> -ns=<ns> "
                 "[-mbox=<mbox>] [-threads=<threads>] [-port=<port>]\n\n" +
                 argsManager->GetHelpMessage();
         }

@@ -42,9 +42,9 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 
 #define QAPP_ORG_NAME "BitcoinABC"
 #define QAPP_ORG_DOMAIN "bitcoinabc.org"
-#define QAPP_APP_NAME_DEFAULT "Dogecoin-Qt"
-#define QAPP_APP_NAME_TESTNET "Dogecoin-Qt-testnet"
-#define QAPP_APP_NAME_REGTEST "Dogecoin-Qt-regtest"
+#define QAPP_APP_NAME_DEFAULT "Doge-Qt"
+#define QAPP_APP_NAME_TESTNET "Doge-Qt-testnet"
+#define QAPP_APP_NAME_REGTEST "Doge-Qt-regtest"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1'000'000'000};

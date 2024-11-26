@@ -1,2 +1,2 @@
-bin/dogecoind usr/bin
-bin/dogecoin-cli usr/bin
+bin/doged usr/bin
+bin/doge-cli usr/bin

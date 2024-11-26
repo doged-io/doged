@@ -3,7 +3,7 @@
 // What is necessary to run this:
 // (1) install golang
 // (2) install bitcoin ABC
-// (3) run dogecoind (possibly on regtest to reduce system load)
+// (3) run doged (possibly on regtest to reduce system load)
 // (4) run this script with `go run generate.go` while being in the build directory
 // (5) add the generated files to git
 package main
@@ -20,7 +20,7 @@ import (
 	"text/template"
 )
 
-const BITCOIN_COMMAND = "dogecoin-cli"
+const BITCOIN_COMMAND = "doge-cli"
 
 type Command struct {
 	Name        string
@@ -154,7 +154,7 @@ func open(path string) io.Writer {
 func runCommand(command string, args ...string) string {
 	out, err := exec.Command(command, args...).CombinedOutput()
 	if err != nil {
-		log.Fatalf("Cannot run %s: %s, is dogecoind running?", command, err.Error())
+		log.Fatalf("Cannot run %s: %s, is doged running?", command, err.Error())
 	}
 
 	return string(out)
