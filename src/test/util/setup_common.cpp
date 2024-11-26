@@ -109,6 +109,8 @@ BasicTestingSetup::BasicTestingSetup(
             "-debug",
             "-debugexclude=libevent",
             "-debugexclude=leveldb",
+            // Dogecoin: Lower the fee so tests don't break
+            "-minrelaytxfee=0.00001000",
         },
         extra_args);
     // clang-format on
