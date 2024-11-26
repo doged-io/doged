@@ -23,7 +23,7 @@
 BOOST_AUTO_TEST_SUITE(txpackage_tests)
 // A fee amount that is above 1sat/B but below 5sat/B for most transactions
 // created within these unit tests.
-static const Amount low_fee_amt{200 * SATOSHI};
+static const Amount low_fee_amt{20000 * SATOSHI};
 
 // Create placeholder transactions that have no meaning.
 inline CTransactionRef create_placeholder_tx(size_t num_inputs,
@@ -597,7 +597,7 @@ BOOST_FIXTURE_TEST_CASE(package_submission_tests, TestChain100Setup) {
 BOOST_FIXTURE_TEST_CASE(package_mix, TestChain100Setup) {
     // Mine blocks to mature coinbases.
     mineBlocks(5);
-    MockMempoolMinFee(CFeeRate(5000 * SATOSHI));
+    MockMempoolMinFee(CFeeRate(5 * COIN / 1000));
     LOCK(::cs_main);
 
     // A package Package{parent1, parent2, child} where the parents are a
@@ -697,7 +697,7 @@ BOOST_FIXTURE_TEST_CASE(package_mix, TestChain100Setup) {
 
 BOOST_FIXTURE_TEST_CASE(package_cpfp_tests, TestChain100Setup) {
     mineBlocks(5);
-    MockMempoolMinFee(CFeeRate(5000 * SATOSHI));
+    MockMempoolMinFee(CFeeRate(5 * COIN / 1000));
     LOCK(::cs_main);
     size_t expected_pool_size = m_node.mempool->size();
     CKey child_key;
@@ -816,8 +816,8 @@ BOOST_FIXTURE_TEST_CASE(package_cpfp_tests, TestChain100Setup) {
     // pays 1400 satoshis total. The child fees would be able to pay for itself,
     // but isn't enough for the entire package.
     Package package_still_too_low;
-    const Amount parent_fee{200 * SATOSHI};
-    const Amount child_fee{1200 * SATOSHI};
+    const Amount parent_fee{20000 * SATOSHI};
+    const Amount child_fee{120000 * SATOSHI};
     auto mtx_parent_cheap = CreateValidMempoolTransaction(
         /*input_transaction=*/m_coinbase_txns[1], /*input_vout=*/0,
         /*input_height=*/0, /*input_signing_key=*/coinbaseKey,
