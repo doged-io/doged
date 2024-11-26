@@ -16,6 +16,20 @@ hero:
       target: _blank
       icon: i-simple-icons-dogecoin
       trailing: true
+    - label: Download
+      size: xl
+      color: gray
+      to: https://download.dogecash.io/
+      target: _blank
+      icon: i-heroicons-arrow-down-tray
+      trailing: true
+    - label: Explorer
+      size: xl
+      color: gray
+      to: https://doge-explorer.be.cash/
+      target: _blank
+      icon: i-heroicons-globe-alt
+      trailing: true
 sections:
   - title: Bitcoin Veterans on a Mission
     description:
