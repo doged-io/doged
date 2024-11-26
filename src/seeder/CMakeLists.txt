@@ -2,7 +2,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-project(dogecoin-seeder)
+project(doge-seeder)
 
 add_library(seeder-base
 	bitcoin.cpp
@@ -12,16 +12,16 @@ add_library(seeder-base
 )
 target_link_libraries(seeder-base server)
 
-add_executable(dogecoin-seeder
+add_executable(doge-seeder
 	main.cpp
 )
-target_link_libraries(dogecoin-seeder seeder-base)
+target_link_libraries(doge-seeder seeder-base)
 
 include(BinaryTest)
-add_to_symbols_check(dogecoin-seeder)
-add_to_security_check(dogecoin-seeder)
+add_to_symbols_check(doge-seeder)
+add_to_security_check(doge-seeder)
 
 include(InstallationHelper)
-install_target(dogecoin-seeder)
+install_target(doge-seeder)
 
 add_subdirectory(test)

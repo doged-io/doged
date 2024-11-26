@@ -439,7 +439,7 @@ EOF
             mv "${OSX_VOLNAME}.dmg" ${OUTDIR}/${DISTNAME}-osx-unsigned.dmg
 
             pushd installed
-            find . -path "*.app*" -type f -executable -exec mv {} ${DISTNAME}/bin/dogecoin-qt \;
+            find . -path "*.app*" -type f -executable -exec mv {} ${DISTNAME}/bin/doge-qt \;
             find ${DISTNAME} -not -path "*.app*" -print0 | sort --zero-terminated | tar --create --no-recursion --mode='u+rw,go+r-w,a+X' --null --files-from=- | gzip -9n > ${OUTDIR}/${DISTNAME}-${HOST}.tar.gz
             popd
             ;;

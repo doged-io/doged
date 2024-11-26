@@ -1,31 +1,31 @@
-# /etc/conf.d/dogecoind: config file for /etc/init.d/dogecoind
+# /etc/conf.d/doged: config file for /etc/init.d/doged
 
 # Config file location
 #BITCOIND_CONFIGFILE="/etc/bitcoin/dogecoin.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
-#BITCOIND_PIDDIR="/var/run/dogecoind"
+#BITCOIND_PIDDIR="/var/run/doged"
 
 # What filename to give the pidfile
-#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/dogecoind.pid"
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/doged.pid"
 
-# Where to write dogecoind data (be mindful that the blockchain is large)
-#BITCOIND_DATADIR="/var/lib/dogecoind"
+# Where to write doged data (be mindful that the blockchain is large)
+#BITCOIND_DATADIR="/var/lib/doged"
 
-# User and group to own dogecoind process
+# User and group to own doged process
 #BITCOIND_USER="bitcoin"
 #BITCOIND_GROUP="bitcoin"
 
-# Path to dogecoind executable
-#BITCOIND_BIN="/usr/bin/dogecoind"
+# Path to doged executable
+#BITCOIND_BIN="/usr/bin/doged"
 
-# Nice value to run dogecoind under
+# Nice value to run doged under
 #BITCOIND_NICE=0
 
 # Additional options (avoid -conf and -datadir, use flags above)
 #BITCOIND_OPTS=""
 
-# The timeout in seconds OpenRC will wait for dogecoind to terminate
+# The timeout in seconds OpenRC will wait for doged to terminate
 # after a SIGTERM has been raised.
 # Note that this will be mapped as argument to start-stop-daemon's
 # '--retry' option, which means you can specify a retry schedule

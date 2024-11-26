@@ -186,7 +186,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             dest="noshutdown",
             default=False,
             action="store_true",
-            help="Don't stop dogecoinds after the test execution",
+            help="Don't stop dogeds after the test execution",
         )
         parser.add_argument(
             "--cachedir",
@@ -254,7 +254,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             dest="usecli",
             default=False,
             action="store_true",
-            help="use dogecoin-cli instead of RPC for all commands",
+            help="use doge-cli instead of RPC for all commands",
         )
         parser.add_argument(
             "--perf",
@@ -322,12 +322,12 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         fname_bitcoind = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            f"dogecoind{config['environment']['EXEEXT']}",
+            f"doged{config['environment']['EXEEXT']}",
         )
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
-            f"dogecoin-cli{config['environment']['EXEEXT']}",
+            f"doge-cli{config['environment']['EXEEXT']}",
         )
         self.options.bitcoind = os.getenv("BITCOIND", default=fname_bitcoind)
         self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
@@ -399,7 +399,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         else:
             for node in self.nodes:
                 node.cleanup_on_exit = False
-            self.log.info("Note: dogecoinds were not stopped and may still be running")
+            self.log.info("Note: dogeds were not stopped and may still be running")
 
         should_clean_up = (
             not self.options.nocleanup
@@ -1047,14 +1047,14 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             raise SkipTest("wallet has not been compiled.")
 
     def skip_if_no_wallet_tool(self):
-        """Skip the running test if dogecoin-wallet has not been compiled."""
+        """Skip the running test if doge-wallet has not been compiled."""
         if not self.is_wallet_tool_compiled():
-            raise SkipTest("dogecoin-wallet has not been compiled")
+            raise SkipTest("doge-wallet has not been compiled")
 
     def skip_if_no_cli(self):
-        """Skip the running test if dogecoin-cli has not been compiled."""
+        """Skip the running test if doge-cli has not been compiled."""
         if not self.is_cli_compiled():
-            raise SkipTest("dogecoin-cli has not been compiled.")
+            raise SkipTest("doge-cli has not been compiled.")
 
     def skip_if_no_chronik(self):
         """Skip the running test if Chronik indexer has not been compiled."""
@@ -1067,7 +1067,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             raise SkipTest("Chronik indexer plugins have not been compiled.")
 
     def is_cli_compiled(self):
-        """Checks whether dogecoin-cli was compiled."""
+        """Checks whether doge-cli was compiled."""
         return self.config["components"].getboolean("ENABLE_CLI")
 
     def is_wallet_compiled(self):
@@ -1075,7 +1075,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         return self.config["components"].getboolean("ENABLE_WALLET")
 
     def is_wallet_tool_compiled(self):
-        """Checks whether dogecoin-wallet was compiled."""
+        """Checks whether doge-wallet was compiled."""
         return self.config["components"].getboolean("ENABLE_WALLET_TOOL")
 
     def is_chronik_compiled(self):

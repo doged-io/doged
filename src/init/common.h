@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 //! @file
-//! @brief Common init functions shared by bitcoin-node, dogecoin-wallet, etc.
+//! @brief Common init functions shared by bitcoin-node, doge-wallet, etc.
 
 #ifndef BITCOIN_INIT_COMMON_H
 #define BITCOIN_INIT_COMMON_H

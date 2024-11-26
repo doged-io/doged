@@ -31,7 +31,7 @@ Homepage: https://bitcoinabc.org/
 Vcs-Git: ssh://vcs@reviews.bitcoinabc.org:2221/source/bitcoin-abc.git
 Vcs-Browser: https://reviews.bitcoinabc.org/source/bitcoin-abc/
 
-Package: dogecoind
+Package: doged
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
@@ -41,10 +41,10 @@ Description: peer-to-peer network based digital currency - daemon
  and issuing money are carried out collectively by the network. Dogecash
  is the name of the open source software which enables the use of this currency.
  .
- This package provides the daemon, dogecoind, and the CLI tool
- dogecoin-cli to interact with the daemon.
+ This package provides the daemon, doged, and the CLI tool
+ doge-cli to interact with the daemon.
 
-Package: dogecoin-qt
+Package: doge-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
@@ -54,9 +54,9 @@ Description: peer-to-peer network based digital currency - Qt GUI
  and issuing money are carried out collectively by the network. Dogecash
  is the name of the open source software which enables the use of this currency.
  .
- This package provides Dogecoin-Qt, a GUI for Bitcoin based on Qt.
+ This package provides Doge-Qt, a GUI for Bitcoin based on Qt.
 
-Package: dogecoin-tx
+Package: doge-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
@@ -66,11 +66,11 @@ Description: peer-to-peer digital currency - standalone transaction tool
  and issuing money are carried out collectively by the network. Dogecash
  is the name of the open source software which enables the use of this currency.
  .
- This package provides dogecoin-tx, a command-line transaction creation
+ This package provides doge-tx, a command-line transaction creation
  tool which can be used without a bitcoin daemon.  Some means of
  exchanging minimal transaction data with peers is still required.
 
-Package: dogecoin-wallet
+Package: doge-wallet
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - wallet tool
@@ -80,5 +80,5 @@ Description: peer-to-peer digital currency - wallet tool
  and issuing money are carried out collectively by the network. Dogecash
  is the name of the open source software which enables the use of this currency.
  .
- This package provides dogecoin-wallet, an offline tool for creating and
+ This package provides doge-wallet, an offline tool for creating and
  interacting with Dogecash wallet files.

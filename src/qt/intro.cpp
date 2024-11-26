@@ -248,7 +248,7 @@ bool Intro::showIfNeeded(bool &did_show_intro, bool &prune) {
     /* Only override -datadir if different from the default, to make it possible
      * to
      * override -datadir in the dogecoin.conf file in the default data directory
-     * (to be consistent with dogecoind behavior)
+     * (to be consistent with doged behavior)
      */
     if (dataDir != GUIUtil::getDefaultDataDirectory()) {
         // use OS locale for path setting

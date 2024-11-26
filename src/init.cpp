@@ -151,7 +151,7 @@ static const std::string HEADERS_TIME_FILE_NAME{"headerstime.dat"};
 /**
  * The PID file facilities.
  */
-static const char *BITCOIN_PID_FILENAME = "dogecoind.pid";
+static const char *BITCOIN_PID_FILENAME = "doged.pid";
 
 static fs::path GetPidFile(const ArgsManager &args) {
     return AbsPathForConfigVal(args,

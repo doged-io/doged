@@ -19,11 +19,11 @@ bool noui_ThreadSafeQuestion(
 /** Non-GUI handler, which only logs a message. */
 void noui_InitMessage(const std::string &message);
 
-/** Connect all dogecoind signal handlers */
+/** Connect all doged signal handlers */
 void noui_connect();
 
 /**
- * Redirect all dogecoind signal handlers to LogPrintf. Used to check or suppress
+ * Redirect all doged signal handlers to LogPrintf. Used to check or suppress
  * output during test runs that produce expected errors.
  */
 void noui_test_redirect();

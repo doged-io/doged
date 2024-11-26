@@ -1,5 +1,5 @@
 [Protocol]
-exec=dogecoin-qt '%u'
+exec=doge-qt '%u'
 protocol=bitcoin
 input=none
 output=none

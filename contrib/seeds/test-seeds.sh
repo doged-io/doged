@@ -49,8 +49,8 @@ case $1 in
 esac
 done
 
-BITCOIND="${BUILD_DIR}/src/dogecoind"
-BITCOIN_CLI="${BUILD_DIR}/src/dogecoin-cli"
+BITCOIND="${BUILD_DIR}/src/doged"
+BITCOIN_CLI="${BUILD_DIR}/src/doge-cli"
 if [ ! -x "${BITCOIND}" ]; then
   echo "${BITCOIND} does not exist or has incorrect permissions."
   exit 10
@@ -65,9 +65,9 @@ TEMP_DATADIR=$(mktemp -d)
 BITCOIND="${BITCOIND} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT} -connect=0 -daemon"
 BITCOIN_CLI="${BITCOIN_CLI} -datadir=${TEMP_DATADIR} ${OPTION_TESTNET} -rpcport=${RPC_PORT}"
 
->&2 echo "Spinning up dogecoind..."
+>&2 echo "Spinning up doged..."
 ${BITCOIND} || {
-  echo "Error starting dogecoind. Stopping script."
+  echo "Error starting doged. Stopping script."
   exit 12
 }
 cleanup() {
@@ -80,7 +80,7 @@ trap "cleanup" EXIT
 
 # Short sleep to make sure the RPC server is available
 sleep 0.1
-# Wait until dogecoind is fully spun up
+# Wait until doged is fully spun up
 WARMUP_TIMEOUT=60
 for _ in $(seq 1 ${WARMUP_TIMEOUT}); do
   ${BITCOIN_CLI} getconnectioncount &> /dev/null

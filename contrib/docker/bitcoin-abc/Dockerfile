@@ -24,4 +24,4 @@ VOLUME "${BITCOIN_DATA}"
 EXPOSE 22555 22556 44555 44556
 
 USER bitcoin
-CMD ["dogecoind"]
+CMD ["doged"]

@@ -6,13 +6,13 @@ After=network.target
 [Service]
 User=bitcoin
 Group=bitcoin
-ExecStart=/usr/bin/dogecoind -daemon=0                       \
+ExecStart=/usr/bin/doged -daemon=0                       \
                             -conf=/etc/bitcoin/dogecoin.conf \
                             -datadir=/srv/bitcoin           \
                             -reindex                        \
-                            -pid=/run/bitcoin/dogecoind.pid
+                            -pid=/run/bitcoin/doged.pid
 ExecReload=/usr/bin/kill -HUP $MAINPID
-ExecStop=/usr/bin/dogecoind stop
+ExecStop=/usr/bin/doged stop
 PrivateTmp=true
 
 [Install]

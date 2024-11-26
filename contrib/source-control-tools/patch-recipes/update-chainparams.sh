@@ -13,7 +13,7 @@ if [ "$#" == 0 ]; then
   ARGS=("abc" 22555 44555)
 fi
 
-# Assumes dogecoind instances are already running on mainnet and testnet
+# Assumes doged instances are already running on mainnet and testnet
 pushd "${CHAINPARAMS_SCRIPTS_DIR}"
 INDEX=0
 while [ "${INDEX}" -lt "${#ARGS[@]}" ]; do

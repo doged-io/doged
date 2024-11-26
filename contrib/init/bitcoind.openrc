@@ -5,23 +5,23 @@
 if [ -d "/var/lib/bitcoin/.dogecash" ]; then
 	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.dogecash"
 else
-	BITCOIND_DEFAULT_DATADIR="/var/lib/dogecoind"
+	BITCOIND_DEFAULT_DATADIR="/var/lib/doged"
 fi
 
 BITCOIND_CONFIGFILE=${BITCOIND_CONFIGFILE:-/etc/bitcoin/dogecoin.conf}
-BITCOIND_PIDDIR=${BITCOIND_PIDDIR:-/var/run/dogecoind}
-BITCOIND_PIDFILE=${BITCOIND_PIDFILE:-${BITCOIND_PIDDIR}/dogecoind.pid}
+BITCOIND_PIDDIR=${BITCOIND_PIDDIR:-/var/run/doged}
+BITCOIND_PIDFILE=${BITCOIND_PIDFILE:-${BITCOIND_PIDDIR}/doged.pid}
 BITCOIND_DATADIR=${BITCOIND_DATADIR:-${BITCOIND_DEFAULT_DATADIR}}
 BITCOIND_USER=${BITCOIND_USER:-${BITCOIN_USER:-bitcoin}}
 BITCOIND_GROUP=${BITCOIND_GROUP:-bitcoin}
-BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/dogecoind}
+BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/doged}
 BITCOIND_NICE=${BITCOIND_NICE:-${NICELEVEL:-0}}
 BITCOIND_OPTS="${BITCOIND_OPTS:-${BITCOIN_OPTS}}"
 
 name="Dogecash Daemon"
 description="Bitcoin cryptocurrency P2P network daemon"
 
-command="/usr/bin/dogecoind"
+command="/usr/bin/doged"
 command_args="-pid=\"${BITCOIND_PIDFILE}\" \
 		-conf=\"${BITCOIND_CONFIGFILE}\" \
 		-datadir=\"${BITCOIND_DATADIR}\" \
@@ -71,7 +71,7 @@ checkconfig()
 {
 	if ! grep -qs '^rpcpassword=' "${BITCOIND_CONFIGFILE}" ; then
 		eerror ""
-		eerror "ERROR: You must set a secure rpcpassword to run dogecoind."
+		eerror "ERROR: You must set a secure rpcpassword to run doged."
 		eerror "The setting must appear in ${BITCOIND_CONFIGFILE}"
 		eerror ""
 		eerror "This password is security critical to securing wallets "

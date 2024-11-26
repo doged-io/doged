@@ -30,7 +30,7 @@ public:
                     activityId = [processInfo
                         beginActivityWithOptions:activityOptions
                                           reason:@"Temporarily disable App Nap "
-                                                 @"for dogecoin-qt."];
+                                                 @"for doge-qt."];
                     [activityId retain];
                 }
             }

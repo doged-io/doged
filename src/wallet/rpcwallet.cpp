@@ -2681,7 +2681,7 @@ static RPCHelpMan loadwallet() {
         "loadwallet",
         "Loads a wallet from a wallet file or directory."
         "\nNote that all wallet command-line options used when starting "
-        "dogecoind will be"
+        "doged will be"
         "\napplied to the new wallet (eg -rescan, etc).\n",
         {
             {"filename", RPCArg::Type::STR, RPCArg::Optional::NO,

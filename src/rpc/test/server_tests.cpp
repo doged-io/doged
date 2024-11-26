@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(server_IsDeprecatedRPCEnabled) {
     testArgs.AddArg("-deprecatedrpc", "", ArgsManager::ALLOW_ANY,
                     OptionsCategory::OPTIONS);
 
-    const char *argv_test[] = {"dogecoind", "-deprecatedrpc=foo",
+    const char *argv_test[] = {"doged", "-deprecatedrpc=foo",
                                "-deprecatedrpc=bar"};
 
     std::string error;

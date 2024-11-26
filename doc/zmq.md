@@ -47,7 +47,7 @@ operation.
 ## Enabling
 
 By default, the ZeroMQ feature is automatically compiled.
-To disable, use -DBUILD_BITCOIN_ZMQ=OFF to `cmake` when building dogecoind:
+To disable, use -DBUILD_BITCOIN_ZMQ=OFF to `cmake` when building doged:
 
     $ cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF [...]
 
@@ -81,9 +81,9 @@ The high water mark value must be an integer greater than or equal to 0.
 
 For instance:
 
-    $ dogecoind -zmqpubhashtx=tcp://127.0.0.1:28332 \
+    $ doged -zmqpubhashtx=tcp://127.0.0.1:28332 \
                -zmqpubhashtx=tcp://192.168.1.2:28332 \
-               -zmqpubrawtx=ipc:///tmp/dogecoind.tx.raw \
+               -zmqpubrawtx=ipc:///tmp/doged.tx.raw \
                -zmqpubhashtxhwm=10000
 
 Each PUB notification has a topic and body, where the header
@@ -126,9 +126,9 @@ dropped by network middle boxes.
 
 ## Remarks
 
-From the perspective of dogecoind, the ZeroMQ socket is write-only; PUB
+From the perspective of doged, the ZeroMQ socket is write-only; PUB
 sockets don't even have a read function. Thus, there is no state
-introduced into dogecoind directly. Furthermore, no information is
+introduced into doged directly. Furthermore, no information is
 broadcast that wasn't already received from the public P2P network.
 
 No authentication or authorization is done on connecting clients; it

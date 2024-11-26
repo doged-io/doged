@@ -12,7 +12,7 @@ class ArgsManager;
 
 /**
  * CBaseChainParams defines the base parameters
- * (shared between dogecoin-cli and dogecoind)
+ * (shared between doge-cli and doged)
  * of a given instance of the Bitcoin system.
  */
 class CBaseChainParams {

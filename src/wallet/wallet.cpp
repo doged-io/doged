@@ -385,7 +385,7 @@ CreateWallet(interfaces::Chain &chain, const std::string &name,
 
 const CChainParams &CWallet::GetChainParams() const {
     // Get CChainParams from interfaces::Chain, unless wallet doesn't have a
-    // chain (i.e. dogecoin-wallet), in which case return global Params()
+    // chain (i.e. doge-wallet), in which case return global Params()
     return m_chain ? m_chain->params() : Params();
 }
 
