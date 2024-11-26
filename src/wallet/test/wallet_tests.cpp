@@ -61,8 +61,7 @@ static CMutableTransaction TestSimpleSpend(const CTransaction &from,
                                            uint32_t index, const CKey &key,
                                            const CScript &pubkey) {
     CMutableTransaction mtx;
-    mtx.vout.push_back(
-        {from.vout[index].nValue - DEFAULT_TRANSACTION_MAXFEE, pubkey});
+    mtx.vout.push_back({from.vout[index].nValue - DEFAULT_PAY_TX_FEE, pubkey});
     mtx.vin.push_back({CTxIn{from.GetId(), index}});
     FillableSigningProvider keystore;
     keystore.AddKey(key);
