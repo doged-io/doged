@@ -2,8 +2,8 @@ Example scripts for User-space, Statically Defined Tracing (USDT)
 =================================================================
 
 This directory contains scripts showcasing User-space, Statically Defined
-Tracing (USDT) support for Dogecash on Linux using. For more information on
-USDT support in Dogecash see the [USDT documentation].
+Tracing (USDT) support for doged on Linux using. For more information on
+USDT support in doged see the [USDT documentation].
 
 [USDT documentation]: ../../doc/tracing.md
 
@@ -34,10 +34,10 @@ The bpftrace examples contain a relative path to the `doged` binary. By
 default, the scripts should be run from the repository-root and assume a
 self-compiled `doged` binary. The paths in the examples can be changed, for
 example, to point to release builds if needed. See the
-[Dogecash USDT documentation] on how to list available tracepoints in your
+[doged USDT documentation] on how to list available tracepoints in your
 `doged` binary.
 
-[Dogecash USDT documentation]: ../../doc/tracing.md#listing-available-tracepoints
+[doged USDT documentation]: ../../doc/tracing.md#listing-available-tracepoints
 
 **WARNING: eBPF programs require root privileges to be loaded into a Linux
 kernel VM. This means the bpftrace and BCC examples must be executed with root
@@ -184,7 +184,7 @@ longer than 25ms to connect.
 $ bpftrace contrib/tracing/connectblock_benchmark.bt 20000 38000 25
 ```
 
-In a different terminal, starting Dogecash in Testnet mode and with
+In a different terminal, starting doged in Testnet mode and with
 re-indexing enabled.
 
 ```

@@ -9,14 +9,14 @@ trap "kill 0" SIGINT
 
 TOPLEVEL=$(git rev-parse --show-toplevel)
 DEFAULT_BITCOIND="${TOPLEVEL}/build/src/doged"
-DEFAULT_LOG_FILE=~/".dogecash/debug.log"
+DEFAULT_LOG_FILE=~/".doge/debug.log"
 
 help_message() {
   set +x
   echo "Run doged until a given log message is encountered, then kill doged."
   echo ""
   echo "Example usages:"
-  echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.dogecash\" --callback mycallback"
+  echo "$0 --grep 'progress=1.000000' --params \"-datadir=~/.doge\" --callback mycallback"
   echo ""
   echo "Options:"
   echo "-h, --help            Display this help message."

@@ -2,8 +2,8 @@
 
 # backward compatibility for existing gentoo layout
 #
-if [ -d "/var/lib/bitcoin/.dogecash" ]; then
-	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.dogecash"
+if [ -d "/var/lib/bitcoin/.doge" ]; then
+	BITCOIND_DEFAULT_DATADIR="/var/lib/bitcoin/.doge"
 else
 	BITCOIND_DEFAULT_DATADIR="/var/lib/doged"
 fi
@@ -18,7 +18,7 @@ BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/doged}
 BITCOIND_NICE=${BITCOIND_NICE:-${NICELEVEL:-0}}
 BITCOIND_OPTS="${BITCOIND_OPTS:-${BITCOIN_OPTS}}"
 
-name="Dogecash Daemon"
+name="doged Daemon"
 description="Bitcoin cryptocurrency P2P network daemon"
 
 command="/usr/bin/doged"

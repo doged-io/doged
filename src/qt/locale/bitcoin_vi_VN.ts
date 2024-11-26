@@ -998,8 +998,8 @@
         <translation>Lựa chọn:</translation>
     </message>
     <message>
-        <source>Dogecash</source>
-        <translation>Dogecash</translation>
+        <source>doged</source>
+        <translation>doged</translation>
     </message>
     <message>
         <source>(default: %u)</source>

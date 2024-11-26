@@ -3070,7 +3070,7 @@
         <translation>HTTPサーバを開始できませんでした。詳細はデバッグログをご確認ください。</translation>
     </message>
     <message>
-        <source>Dogecash</source>
+        <source>doged</source>
         <translation>Bitcoin のコア</translation>
     </message>
     <message>

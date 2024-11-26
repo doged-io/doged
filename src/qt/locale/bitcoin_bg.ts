@@ -2346,7 +2346,7 @@
         <translation>Въведете Ваш публичен адрес</translation>
     </message>
     <message>
-        <source>Dogecash</source>
+        <source>doged</source>
         <translation>Биткойн ядро</translation>
     </message>
     <message>

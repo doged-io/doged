@@ -757,12 +757,12 @@ std::string HelpMessageOpt(const std::string &option,
 }
 
 fs::path GetDefaultDataDir() {
-    // Windows: C:\Users\Username\AppData\Roaming\Dogecash
-    // macOS: ~/Library/Application Support/Dogecash
-    // Unix-like: ~/.dogecash
+    // Windows: C:\Users\Username\AppData\Roaming\doge
+    // macOS: ~/Library/Application Support/doge
+    // Unix-like: ~/.doge
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Dogecash";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "doge";
 #else
     fs::path pathRet;
     char *pszHome = getenv("HOME");
@@ -773,10 +773,10 @@ fs::path GetDefaultDataDir() {
     }
 #ifdef MAC_OSX
     // macOS
-    return pathRet / "Library/Application Support/Dogecash";
+    return pathRet / "Library/Application Support/doge";
 #else
     // Unix-like
-    return pathRet / ".dogecash";
+    return pathRet / ".doge";
 #endif
 #endif
 }
