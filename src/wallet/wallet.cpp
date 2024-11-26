@@ -2019,8 +2019,8 @@ bool CWallet::SignTransaction(CMutableTransaction &tx) const {
     std::map<int, std::string> input_errors;
     return SignTransaction(tx, coins,
                            GetSignScriptFlags() & SCRIPT_ENABLE_SIGHASH_FORKID
-                               ? SigHashType()
-                               : SigHashType().withForkId(),
+                               ? SigHashType().withForkId()
+                               : SigHashType(),
                            input_errors);
 }
 
