@@ -1258,8 +1258,8 @@
         <translation>Запусціць у фоне як дэман і прымаць каманды</translation>
     </message>
     <message>
-        <source>Dogecash</source>
-        <translation>Dogecash</translation>
+        <source>doged</source>
+        <translation>doged</translation>
     </message>
     <message>
         <source>Do you want to rebuild the block database now?</source>

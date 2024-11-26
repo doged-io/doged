@@ -3,7 +3,7 @@
 pkgname=bitcoin-abc-qt
 pkgver=0.30.5
 pkgrel=0
-pkgdesc="Dogecash with doged, doge-cli, doge-tx, doge-seeder and doge-qt"
+pkgdesc="Dogecoin node with doged, doge-cli, doge-tx, doge-seeder and doge-qt"
 arch=('i686' 'x86_64')
 url="https://bitcoinabc.org"
 depends=('boost-libs' 'libevent' 'desktop-file-utils' 'qt5-base' 'protobuf' 'openssl' 'miniupnpc' 'libnatpmp' 'zeromq' 'qrencode' 'jemalloc')

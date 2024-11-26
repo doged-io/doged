@@ -3066,8 +3066,8 @@
         <translation>Kann HTTP Server nicht starten. Siehe debug log für Details.</translation>
     </message>
     <message>
-        <source>Dogecash</source>
-        <translation>Dogecash</translation>
+        <source>doged</source>
+        <translation>doged</translation>
     </message>
     <message>
         <source>The %s developers</source>

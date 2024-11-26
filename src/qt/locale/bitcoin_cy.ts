@@ -484,7 +484,7 @@
         <translation>Opsiynau:</translation>
     </message>
     <message>
-        <source>Dogecash</source>
+        <source>doged</source>
         <translation>ABC Bitcoin</translation>
     </message>
     <message>

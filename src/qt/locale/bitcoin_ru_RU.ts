@@ -59,7 +59,7 @@
     <name>BitcoinGUI</name>
     <message>
         <source>Bitcoin</source>
-        <translation>Dogecash</translation>
+        <translation>doged</translation>
     </message>
     <message>
         <source>&amp;Command-line options</source>
@@ -228,8 +228,8 @@
 <context>
     <name>bitcoin-abc</name>
     <message>
-        <source>Dogecash</source>
-        <translation>Dogecash</translation>
+        <source>doged</source>
+        <translation>doged</translation>
     </message>
     <message>
         <source>Whitelisted peers cannot be DoS banned and their transactions are always relayed, even if they are already in the mempool, useful e.g. for a gateway</source>

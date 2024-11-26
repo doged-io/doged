@@ -3066,8 +3066,8 @@
         <translation>Não foi possível iniciar o servidor HTTP. Veja o log para detaihes.</translation>
     </message>
     <message>
-        <source>Dogecash</source>
-        <translation>Dogecash</translation>
+        <source>doged</source>
+        <translation>doged</translation>
     </message>
     <message>
         <source>The %s developers</source>

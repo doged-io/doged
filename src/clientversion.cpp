@@ -16,7 +16,7 @@
  * for both doged and doge-qt, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("Dogecash");
+const std::string CLIENT_NAME("doged");
 
 #ifdef HAVE_BUILD_INFO
 #include <obj/build.h>

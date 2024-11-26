@@ -389,7 +389,7 @@ EOF
         exit 1
     fi
 
-    # Build Dogecash
+    # Build doged
     ninja
     ninja security-check
     ninja symbol-check
