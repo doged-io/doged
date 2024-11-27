@@ -26,7 +26,7 @@ hero:
     - label: Explorer
       size: xl
       color: gray
-      to: https://doge-explorer.be.cash/
+      to: http://explorer.dogecash.io/
       target: _blank
       icon: i-heroicons-globe-alt
       trailing: true
