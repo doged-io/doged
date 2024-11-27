@@ -1,8 +1,8 @@
 title: Doge, Unleashed
-description: DogeCash is a feature-rich full node implementation for Dogecoin, based on battle-tested blockchain software, developed and maintained by Bitcoin veterans
+description: doged is a feature-rich full node implementation for Dogecoin, based on battle-tested blockchain software, developed and maintained by Bitcoin veterans
 hero:
   title: 'Doge, Unleashed'
-  description: DogeCash is a feature-rich full node implementation for Dogecoin, based on battle-tested blockchain software, developed and maintained by Bitcoin veterans
+  description: doged is a feature-rich full node implementation for Dogecoin, based on battle-tested blockchain software, developed and maintained by Bitcoin veterans
   image:
     light: /img/abc-plus-doge.png
     dark: /img/abc-plus-doge-dark.png
@@ -12,21 +12,21 @@ hero:
     - label: Get Started
       size: xl
       color: gray
-      to: https://github.com/dogecash-io/dogecash/
+      to: https://github.com/doged-io/doged/
       target: _blank
       icon: i-simple-icons-dogecoin
       trailing: true
     - label: Download
       size: xl
       color: gray
-      to: https://download.dogecash.io/
+      to: https://download.doged.io/
       target: _blank
       icon: i-heroicons-arrow-down-tray
       trailing: true
     - label: Explorer
       size: xl
       color: gray
-      to: https://explorer.dogecash.io/
+      to: https://explorer.doged.io/
       target: _blank
       icon: i-heroicons-globe-alt
       trailing: true
@@ -35,7 +35,7 @@ sections:
     description:
       - Every development team that aims to achieve "veteran" status in their craft must establish an extensive track record and standard of excellence.
       - Bitcoin ABC is one such team. Their historical and ongoing ability to consistently produce enterprise-ready Bitcoin software firmly cements their "veteran" status.
-      - DogeCash builds on Bitcoin ABC's battle-tested technology to bring scale and fresh innovation to the Dogecoin blockchain.
+      - doged builds on Bitcoin ABC's battle-tested technology to bring scale and fresh innovation to the Dogecoin blockchain.
     image:
       light: /img/abc-blockchain-experience.png
       dark: /img/abc-blockchain-experience-dark.png
@@ -64,7 +64,7 @@ sections:
       - name: Thorough documentation and how-tos for all runtime configurations
     links:
       - label: Development Philosophy
-        to: https://github.com/dogecash-io/dogecash/blob/master/CONTRIBUTING.md#bitcoin-abc-development-philosophy
+        to: https://github.com/doged-io/doged/blob/master/CONTRIBUTING.md#bitcoin-abc-development-philosophy
         target: _blank
         color: gray
         icon: i-heroicons-arrow-top-right-on-square
@@ -74,29 +74,29 @@ sections:
 features:
   grid:
     header:
-      title: Why Choose DogeCash?
+      title: Why Choose doged?
       description: 
     items:
       - title: Extensive track record
-        description: Bitcoin ABC was the team responsible for launching the Bitcoin Cash blockchain in August 2017 and the eCash blockchain in 2020. DogeCash is the culmination of nearly seven years of enterprise production experience in the blockchain space by building on the learnings from Bitcoin ABC.
+        description: Bitcoin ABC was the team responsible for launching the Bitcoin Cash blockchain in August 2017 and the eCash blockchain in 2020. doged is the culmination of nearly seven years of enterprise production experience in the blockchain space by building on the learnings from Bitcoin ABC.
         icon: i-heroicons-clipboard-document-check
       - title: Regular software updates
         description: Maintenance of any software is of utmost importance, and a cryptocurrency network of Dogecoin stature is certainly no exception. Dogecash is dedicated to releasing regular software updates to squash bugs and ensure your node is stable and secure.
         icon: i-heroicons-cog
-        to: https://github.com/dogecash.io/dogecash/releases
-        linkinfo: Click to visit Dogecash Releases
+        to: https://github.com/doged-io/doged/releases
+        linkinfo: Click to visit doged Releases
         target: _blank
       - title: Dedicated application toolkit
-        description: Dogecash brings Dogecoin into the modern world by providing all of the tooling and RPCs that you expect of a mature blockchain. Dogecashes modern tooling gets out of your way so you can build the latest applications on Dogecoin.
+        description: doged brings Dogecoin into the modern world by providing all of the tooling and RPCs that you expect of a mature blockchain. Dogecashes modern tooling gets out of your way so you can build the latest applications on Dogecoin.
         icon: i-heroicons-wrench-screwdriver
 cta:
   headline: Dogecoin For The World
-  title: Unleash the Doge with DogeCash
+  title: Unleash the Doge with doged
   image: /img/bootstrap-doge.png
   description:
     - Since its inception, Dogecoin was a special project. The "doge" meme has captured the hearts and minds of many, and Dogecoin has helped spread the loveable doge worldwide.
     - It is important that crypto-memes which promulgate positive values have their infrastructure meticulously maintained to ensure their long-term survival.
-    - Dogecash recognizes this necessity and has crafted a Dogecoin-compatible node from the best open source software available. This tried and tested blockchain software will scale Dogecoin for the world... and beyond?
+    - doged recognizes this necessity and has crafted a Dogecoin-compatible node from the best open source software available. This tried and tested blockchain software will scale Dogecoin for the world... and beyond?
 faq:
   title: Frequently asked questions
   description: Coming soon!

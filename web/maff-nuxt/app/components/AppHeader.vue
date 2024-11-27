@@ -27,7 +27,7 @@ nuxtApp.hooks.hookOnce('page:finish', () => {
 <template>
   <UHeader :links="links">
     <template #logo>
-      <div class="mr-2">DogeCash</div>
+      <div class="mr-2">doged</div>
       <UBadge
         label="Such wow"
         variant="subtle"
