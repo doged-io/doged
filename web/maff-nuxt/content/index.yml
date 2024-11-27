@@ -81,13 +81,13 @@ features:
         description: Bitcoin ABC was the team responsible for launching the Bitcoin Cash blockchain in August 2017 and the eCash blockchain in 2020. doged is the culmination of nearly seven years of enterprise production experience in the blockchain space by building on the learnings from Bitcoin ABC.
         icon: i-heroicons-clipboard-document-check
       - title: Regular software updates
-        description: Maintenance of any software is of utmost importance, and a cryptocurrency network of Dogecoin stature is certainly no exception. Dogecash is dedicated to releasing regular software updates to squash bugs and ensure your node is stable and secure.
+        description: Maintenance of any software is of utmost importance, and a cryptocurrency network of Dogecoin stature is certainly no exception. doged is dedicated to releasing regular software updates to squash bugs and ensure your node is stable and secure.
         icon: i-heroicons-cog
         to: https://github.com/doged-io/doged/releases
         linkinfo: Click to visit doged Releases
         target: _blank
       - title: Dedicated application toolkit
-        description: doged brings Dogecoin into the modern world by providing all of the tooling and RPCs that you expect of a mature blockchain. Dogecashes modern tooling gets out of your way so you can build the latest applications on Dogecoin.
+        description: doged brings Dogecoin into the modern world by providing all of the tooling and RPCs that you expect of a mature blockchain. doged modern tooling gets out of your way so you can build the latest applications on Dogecoin.
         icon: i-heroicons-wrench-screwdriver
 cta:
   headline: Dogecoin For The World
