@@ -481,6 +481,7 @@ def write_config(config_path, *, n, chain, extra_config="", disable_autoconnect=
         f.write("natpmp=0\n")
         f.write("usecashaddr=1\n")
         f.write("usedogeunit=0\n")
+        f.write("legacyscriptrules=0\n")
         f.write("minrelaytxfee=10\n")
         f.write("blockmintxfee=10\n")
         # Increase peertimeout to avoid disconnects while using mocktime.
