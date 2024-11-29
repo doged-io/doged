@@ -420,8 +420,8 @@ public:
         consensus.digishieldHeight = 1450;
         // keep maturity same as Bitcoin for tests
         consensus.initialCoinbaseMaturity = REGTEST_COINBASE_MATURITY;
-        // legacy rules disabled for regtest so we don't refactor the universe
-        consensus.enforceLegacyScriptRules = false;
+        // legacy rules enabled for regtest
+        consensus.enforceLegacyScriptRules = true;
 
         diskMagic[0] = 0x94;
         diskMagic[1] = 0xb1;
