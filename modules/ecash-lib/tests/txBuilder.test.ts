@@ -3,7 +3,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import { expect } from 'chai';
-
 import { ChronikClient } from 'chronik-client';
 
 import { Ecc, EccDummy } from '../src/ecc.js';
@@ -41,7 +40,7 @@ import {
     signWithSigHash,
 } from '../src/txBuilder.js';
 import { UnsignedTxInput } from '../src/unsignedTx.js';
-import * as cashaddr from 'ecashaddrjs';
+import { encodeCashAddress } from 'ecashaddrjs';
 
 const NUM_COINS = 500;
 const COIN_VALUE = 100000;
@@ -106,14 +105,14 @@ describe('TxBuilder', () => {
         const recipientScript = Script.p2pkh(recipientPkh);
 
         // Add another p2pkh recipient using an address
-        const otherRecipientAddressP2pkh = cashaddr.encode(
+        const otherRecipientAddressP2pkh = encodeCashAddress(
             'ecash',
             'p2pkh',
             '9876543210987654321098765432109876543210',
         );
 
         // Add a p2sh recipient using an address
-        const otherRecipientAddressP2sh = cashaddr.encode(
+        const otherRecipientAddressP2sh = encodeCashAddress(
             'ecash',
             'p2sh',
             '9876543210987654321098765432109876543210',
@@ -554,7 +553,7 @@ describe('TxBuilder', () => {
         const pk1 = ecc.derivePubkey(sk1);
         const sk2 = fromHex('22'.repeat(32));
         const pk2 = ecc.derivePubkey(sk2);
-        const leftoverAddress = cashaddr.encode(
+        const leftoverAddress = encodeCashAddress(
             'ecash',
             'p2pkh',
             fromHex('33'.repeat(20)),
