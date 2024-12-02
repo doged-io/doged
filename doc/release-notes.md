@@ -1,9 +1,10 @@
-# doged 0.30.5 Release Notes
+# doged 0.3.2 Release Notes
 
-doged version 0.30.5 is now available from:
+doged version 0.3.2 is now available from:
 
-  <https://download.bitcoinabc.org/0.30.5/>
+  <https://download.doged.io/0.3.2/>
 
 This release includes the following features and fixes:
-  - Additional flags "in" and "out" have been added to `-whitelist` to control whether
-    permissions apply to incoming connections and/or manual (default: incoming only).
+  - Additional logging when a header is first seen.
+  - Addition of severity level to logs.
+  - Fix a bug where peers.dat could become corrupted, forcing the user to delete the file before restarting the node again.
