@@ -24,6 +24,7 @@ class P2PLeakTxTest(BitcoinTestFramework):
         self.noban_tx_relay = True
         self.extra_args = [
             [
+                "-avalanche",
                 "-avalanchepreconsensus=1",
                 "-avacooldown=0",
                 "-avaproofstakeutxoconfirmations=1",
