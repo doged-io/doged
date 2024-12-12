@@ -100,7 +100,7 @@ function onSubmit() {
       <UColorModeButton size="sm" />
 
       <UButton
-        to="https://github.com/dogecash.io/dogecash"
+        to="https://github.com/doged-io/doged"
         target="_blank"
         icon="i-simple-icons-github"
         aria-label="GitHub"
