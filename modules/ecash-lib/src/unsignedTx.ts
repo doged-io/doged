@@ -3,15 +3,12 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import { sha256d } from './hash.js';
-import {
-    isPushOp,
-    Op,
-    OP_CODESEPARATOR,
-    writeVarSize,
-} from './indexBrowser.js';
 import { Writer } from './io/writer.js';
 import { WriterBytes } from './io/writerbytes.js';
 import { WriterLength } from './io/writerlength.js';
+import { writeVarSize } from './io/varsize.js';
+import { isPushOp, Op } from './op.js';
+import { OP_CODESEPARATOR } from './opcode.js';
 import { Script } from './script.js';
 import {
     SigHashType,
@@ -91,7 +88,7 @@ export interface SighashPreimage {
 }
 
 // Write the legacy preimage used pre-UAHF.
-// It's modelled closely after SignatureHash in interpreter.cpp.
+// It's modeled closely after SignatureHash in interpreter.cpp.
 function writeLegacyPreimage(
     writer: Writer,
     tx: Tx,
@@ -221,6 +218,15 @@ export class UnsignedTxInput {
 
         // Sign LEGACY signatures that don't use SIGHASH_FORKID
         if (sigHashType.variant === SigHashTypeVariant.LEGACY) {
+            if (
+                sigHashType.outputType == SigHashTypeOutputs.SINGLE &&
+                this.inputIdx >= tx.outputs.length
+            ) {
+                throw new Error(
+                    'Invalid usage of SINGLE, input has no corresponding output',
+                );
+            }
+
             const writePreimage = (writer: Writer) => {
                 writeLegacyPreimage(
                     writer,

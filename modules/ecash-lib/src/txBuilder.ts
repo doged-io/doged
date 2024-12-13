@@ -217,18 +217,21 @@ export function flagSignature(
     return writer.data;
 }
 
-/** Sign the sighash using Schnorr for BIP143 signatures and ECDSA for Legacy signatures */
-export function signSigHash(
+/**
+ * Sign the sighash using Schnorr for BIP143 signatures and ECDSA for Legacy
+ * signatures, and then flags the signature correctly
+ **/
+export function signWithSigHash(
     ecc: Ecc,
     sk: Uint8Array,
-    sighash: Uint8Array,
+    sigHash: Uint8Array,
     sigHashType: SigHashType,
 ): Uint8Array {
-    if (sigHashType.variant == SigHashTypeVariant.LEGACY) {
-        return ecc.ecdsaSign(sk, sighash);
-    } else {
-        return ecc.schnorrSign(sk, sighash);
-    }
+    const sig =
+        sigHashType.variant == SigHashTypeVariant.LEGACY
+            ? ecc.ecdsaSign(sk, sigHash)
+            : ecc.schnorrSign(sk, sigHash);
+    return flagSignature(sig, sigHashType);
 }
 
 /** Signatory for a P2PKH input. Always uses Schnorr signatures */
@@ -240,10 +243,7 @@ export const P2PKHSignatory = (
     return (ecc: Ecc, input: UnsignedTxInput): Script => {
         const preimage = input.sigHashPreimage(sigHashType);
         const sighash = sha256d(preimage.bytes);
-        const sigFlagged = flagSignature(
-            signSigHash(ecc, sk, sighash, sigHashType),
-            sigHashType,
-        );
+        const sigFlagged = signWithSigHash(ecc, sk, sighash, sigHashType);
         return Script.p2pkhSpend(pk, sigFlagged);
     };
 };
@@ -253,10 +253,7 @@ export const P2PKSignatory = (sk: Uint8Array, sigHashType: SigHashType) => {
     return (ecc: Ecc, input: UnsignedTxInput): Script => {
         const preimage = input.sigHashPreimage(sigHashType);
         const sighash = sha256d(preimage.bytes);
-        const sigFlagged = flagSignature(
-            signSigHash(ecc, sk, sighash, sigHashType),
-            sigHashType,
-        );
+        const sigFlagged = signWithSigHash(ecc, sk, sighash, sigHashType);
         return Script.fromOps([pushBytesOp(sigFlagged)]);
     };
 };

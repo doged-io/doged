@@ -38,7 +38,7 @@ import {
     P2PKSignatory,
     TxBuilder,
     flagSignature,
-    signSigHash,
+    signWithSigHash,
 } from '../src/txBuilder.js';
 import { UnsignedTxInput } from '../src/unsignedTx.js';
 import * as cashaddr from 'ecashaddrjs';
@@ -398,13 +398,10 @@ describe('TxBuilder', () => {
                                     sigHashType,
                                     i + 1,
                                 );
-                                return flagSignature(
-                                    signSigHash(
-                                        ecc,
-                                        sks[i],
-                                        sha256d(preimage.bytes),
-                                        sigHashType,
-                                    ),
+                                return signWithSigHash(
+                                    ecc,
+                                    sks[i],
+                                    sha256d(preimage.bytes),
                                     sigHashType,
                                 );
                             });
@@ -456,13 +453,10 @@ describe('TxBuilder', () => {
                         const sigs = [...Array(2).keys()].map(i => {
                             const preimage =
                                 input.sigHashPreimage(sigHashFlags);
-                            return flagSignature(
-                                signSigHash(
-                                    ecc,
-                                    sks[i],
-                                    sha256d(preimage.bytes),
-                                    sigHashFlags,
-                                ),
+                            return signWithSigHash(
+                                ecc,
+                                sks[i],
+                                sha256d(preimage.bytes),
                                 sigHashFlags,
                             );
                         });
@@ -592,13 +586,10 @@ describe('TxBuilder', () => {
                         const sigs = [...Array(2).keys()].map(i => {
                             const preimage =
                                 input.sigHashPreimage(sigHashFlags);
-                            return flagSignature(
-                                signSigHash(
-                                    ecc,
-                                    sks[i],
-                                    sha256d(preimage.bytes),
-                                    sigHashFlags,
-                                ),
+                            return signWithSigHash(
+                                ecc,
+                                sks[i],
+                                sha256d(preimage.bytes),
                                 sigHashFlags,
                             );
                         });
