@@ -220,6 +220,12 @@ class P2PAddConnections(BitcoinTestFramework):
         self.simple_test()
         self.random_test()
 
+        # Test default args (without avalanche)
+        for node in range(len(self.nodes)):
+            self.restart_node(node, extra_args=[])
+        self.simple_test()
+        self.random_test()
+
 
 if __name__ == "__main__":
     P2PAddConnections().main()
