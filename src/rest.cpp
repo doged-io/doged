@@ -235,8 +235,8 @@ static bool rest_headers(Config &config, const std::any &context,
         switch (rf) {
             case RetFormat::BINARY: {
                 CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
-                for (const CBlockIndex *pindex : headers) {
-                    ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
+                for (const CBlockIndex *header : headers) {
+                    ssHeader << header->GetBlockHeader(chainman.m_blockman);
                 }
 
                 std::string binaryHeader = ssHeader.str();
@@ -247,8 +247,8 @@ static bool rest_headers(Config &config, const std::any &context,
 
             case RetFormat::HEX: {
                 CDataStream ssHeader(SER_NETWORK, PROTOCOL_VERSION);
-                for (const CBlockIndex *pindex : headers) {
-                    ssHeader << pindex->GetBlockHeader(chainman.m_blockman);
+                for (const CBlockIndex *header : headers) {
+                    ssHeader << header->GetBlockHeader(chainman.m_blockman);
                 }
 
                 std::string strHex = HexStr(ssHeader) + "\n";
