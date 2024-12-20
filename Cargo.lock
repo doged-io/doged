@@ -1430,6 +1430,7 @@ dependencies = [
  "bitcoinsuite-chronik-client",
  "bitcoinsuite-core 0.1.0 (git+https://github.com/LogosFoundation/bitcoinsuite?rev=6d2d946)",
  "bitcoinsuite-error",
+ "bs58",
  "chrono",
  "chrono-humanize",
  "eyre",
