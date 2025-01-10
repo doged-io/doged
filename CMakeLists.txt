@@ -7,7 +7,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 )
 
 project(doged-node
-	VERSION 0.3.3
+	VERSION 0.3.4
 	DESCRIPTION "doged is a full node implementation of the Dogecoin protocol."
 	HOMEPAGE_URL "https://www.doged.io"
 )
