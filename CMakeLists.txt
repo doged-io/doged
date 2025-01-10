@@ -27,7 +27,7 @@ set(PACKAGE_NAME "doged")
 set(PACKAGE_BUGREPORT "https://github.com/dogecash-io/dogecash/issues")
 
 # Copyright
-set(COPYRIGHT_YEAR 2024)
+set(COPYRIGHT_YEAR 2025)
 set(COPYRIGHT_HOLDERS "The %s developers")
 set(COPYRIGHT_HOLDERS_SUBSTITUTION Bitcoin)
 string(REPLACE "%s" ${COPYRIGHT_HOLDERS_SUBSTITUTION} COPYRIGHT_HOLDERS_FINAL ${COPYRIGHT_HOLDERS})
