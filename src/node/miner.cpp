@@ -56,73 +56,19 @@ int64_t UpdateTime(CBlockHeader *pblock, const CChainParams &chainParams,
     return nNewTime - nOldTime;
 }
 
-BlockAssembler::Options::Options()
-    : nExcessiveBlockSize(DEFAULT_MAX_BLOCK_SIZE),
-      nMaxGeneratedBlockSize(DEFAULT_MAX_GENERATED_BLOCK_SIZE),
-      blockMinFeeRate(DEFAULT_BLOCK_MIN_TX_FEE_PER_KB) {}
-
-BlockAssembler::BlockAssembler(Chainstate &chainstate,
+BlockAssembler::BlockAssembler(const BlockFitter &fitter,
+                               Chainstate &chainstate,
                                const CTxMemPool *mempool,
-                               const Options &options,
                                const avalanche::Processor *avalanche)
-    : chainParams(chainstate.m_chainman.GetParams()), m_mempool(mempool),
-      m_chainstate(chainstate), m_avalanche(avalanche),
+    : blockFitter(fitter), chainParams(chainstate.m_chainman.GetParams()),
+      m_mempool(mempool), m_chainstate(chainstate), m_avalanche(avalanche),
       fPrintPriority(
-          gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY)) {
-    blockMinFeeRate = options.blockMinFeeRate;
-    // Limit size to between COINBASE_RESERVED_SIZE and
-    // options.nExcessiveBlockSize - COINBASE_RESERVED_SIZE for sanity:
-    nMaxGeneratedBlockSize =
-        std::clamp(options.nMaxGeneratedBlockSize, COINBASE_RESERVED_SIZE,
-                   options.nExcessiveBlockSize - COINBASE_RESERVED_SIZE);
-    // Calculate the max consensus sigchecks for this block.
-    auto nMaxBlockSigChecks = GetMaxBlockSigChecksCount(nMaxGeneratedBlockSize);
-    // Allow the full amount of signature check operations in lieu of a separate
-    // config option. (We are mining relayed transactions with validity cached
-    // by everyone else, and so the block will propagate quickly, regardless of
-    // how many sigchecks it contains.)
-    nMaxGeneratedBlockSigChecks = nMaxBlockSigChecks;
-
-    resetBlock();
-}
-
-static BlockAssembler::Options DefaultOptions(const Config &config) {
-    // Block resource limits
-    // If -blockmaxsize is not given, limit to DEFAULT_MAX_GENERATED_BLOCK_SIZE
-    // If only one is given, only restrict the specified resource.
-    // If both are given, restrict both.
-    BlockAssembler::Options options;
-
-    options.nExcessiveBlockSize = config.GetMaxBlockSize();
-
-    if (gArgs.IsArgSet("-blockmaxsize")) {
-        options.nMaxGeneratedBlockSize =
-            gArgs.GetIntArg("-blockmaxsize", DEFAULT_MAX_GENERATED_BLOCK_SIZE);
-    }
-
-    Amount n = Amount::zero();
-    if (gArgs.IsArgSet("-blockmintxfee") &&
-        ParseMoney(gArgs.GetArg("-blockmintxfee", ""), n)) {
-        options.blockMinFeeRate = CFeeRate(n);
-    }
-
-    return options;
-}
+          gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY)) {}
 
 BlockAssembler::BlockAssembler(const Config &config, Chainstate &chainstate,
                                const CTxMemPool *mempool,
                                const avalanche::Processor *avalanche)
-    : BlockAssembler(chainstate, mempool, DefaultOptions(config), avalanche) {}
-
-void BlockAssembler::resetBlock() {
-    // Reserve space for coinbase tx.
-    nBlockSize = COINBASE_RESERVED_SIZE;
-    nBlockSigChecks = COINBASE_RESERVED_SIGCHECKS;
-
-    // These counters do not include coinbase tx.
-    nBlockTx = 0;
-    nFees = Amount::zero();
-}
+    : BlockAssembler(BlockFitter(config), chainstate, mempool, avalanche) {}
 
 std::optional<int64_t> BlockAssembler::m_last_block_num_txs{std::nullopt};
 std::optional<int64_t> BlockAssembler::m_last_block_size{std::nullopt};
@@ -131,7 +77,7 @@ std::unique_ptr<CBlockTemplate>
 BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     int64_t nTimeStart = GetTimeMicros();
 
-    resetBlock();
+    blockFitter.resetBlock();
 
     pblocktemplate.reset(new CBlockTemplate());
     if (!pblocktemplate.get()) {
@@ -185,8 +131,8 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
 
     int64_t nTime1 = GetTimeMicros();
 
-    m_last_block_num_txs = nBlockTx;
-    m_last_block_size = nBlockSize;
+    m_last_block_num_txs = blockFitter.nBlockTx;
+    m_last_block_size = blockFitter.nBlockSize;
 
     // Create coinbase transaction.
     CMutableTransaction coinbaseTx;
@@ -195,7 +141,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue =
-        nFees +
+        blockFitter.nFees +
         GetBlockSubsidy(nHeight, consensusParams, pindexPrev->GetBlockHash());
     coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
 
@@ -228,14 +174,15 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     }
 
     pblocktemplate->entries[0].tx = MakeTransactionRef(coinbaseTx);
-    pblocktemplate->entries[0].fees = -1 * nFees;
+    pblocktemplate->entries[0].fees = -1 * blockFitter.nFees;
     pblock->vtx[0] = pblocktemplate->entries[0].tx;
 
     uint64_t nSerializeSize = GetSerializeSize(*pblock, PROTOCOL_VERSION);
 
     LogPrintf(
         "CreateNewBlock(): total size: %u txs: %u fees: %ld sigChecks %d\n",
-        nSerializeSize, nBlockTx, nFees, nBlockSigChecks);
+        nSerializeSize, blockFitter.nBlockTx, blockFitter.nFees,
+        blockFitter.nBlockSigChecks);
 
     // Fill in header.
     pblock->hashPrevBlock = pindexPrev->GetBlockHash();
@@ -246,11 +193,12 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     pblocktemplate->entries[0].sigChecks = 0;
 
     BlockValidationState state;
-    if (!TestBlockValidity(state, chainParams, m_chainstate, *pblock,
-                           pindexPrev, GetAdjustedTime,
-                           BlockValidationOptions(nMaxGeneratedBlockSize)
-                               .withCheckPoW(false)
-                               .withCheckMerkleRoot(false))) {
+    if (!TestBlockValidity(
+            state, chainParams, m_chainstate, *pblock, pindexPrev,
+            GetAdjustedTime,
+            BlockValidationOptions(blockFitter.getMaxGeneratedBlockSize())
+                .withCheckPoW(false)
+                .withCheckMerkleRoot(false))) {
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s",
                                            __func__, state.ToString()));
     }
@@ -265,25 +213,12 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     return std::move(pblocktemplate);
 }
 
-bool BlockAssembler::TestTxFits(uint64_t txSize, int64_t txSigChecks) const {
-    if (nBlockSize + txSize >= nMaxGeneratedBlockSize) {
-        return false;
-    }
-
-    if (nBlockSigChecks + txSigChecks >= nMaxGeneratedBlockSigChecks) {
-        return false;
-    }
-
-    return true;
-}
-
 void BlockAssembler::AddToBlock(const CTxMemPoolEntryRef &entry) {
     pblocktemplate->entries.emplace_back(entry->GetSharedTx(), entry->GetFee(),
                                          entry->GetSigChecks());
-    nBlockSize += entry->GetTxSize();
-    ++nBlockTx;
-    nBlockSigChecks += entry->GetSigChecks();
-    nFees += entry->GetFee();
+
+    blockFitter.addTx(entry->GetTxSize(), entry->GetSigChecks(),
+                      entry->GetFee());
 
     if (fPrintPriority) {
         LogPrintf(
@@ -358,7 +293,7 @@ void BlockAssembler::addTxs(const CTxMemPool &mempool) {
         bool isFromBacklog = false;
         const CTxMemPoolEntryRef &entry = nextEntry(isFromBacklog);
 
-        if (entry->GetModifiedFeeRate() < blockMinFeeRate) {
+        if (blockFitter.isBelowBlockMinFeeRate(entry->GetModifiedFeeRate())) {
             // Since the txs are sorted by fee, bail early if there is none that
             // can be included in the block anymore.
             break;
@@ -375,10 +310,12 @@ void BlockAssembler::addTxs(const CTxMemPool &mempool) {
         }
 
         // Check whether the tx will exceed the block limits.
-        if (!TestTxFits(entry->GetTxSize(), entry->GetSigChecks())) {
+        if (!blockFitter.testTxFits(entry->GetTxSize(),
+                                    entry->GetSigChecks())) {
             ++nConsecutiveFailed;
             if (nConsecutiveFailed > MAX_CONSECUTIVE_FAILURES &&
-                nBlockSize > nMaxGeneratedBlockSize - 1000) {
+                blockFitter.nBlockSize >
+                    blockFitter.getMaxGeneratedBlockSize() - 1000) {
                 // Give up if we're close to full and haven't succeeded in a
                 // while.
                 break;
