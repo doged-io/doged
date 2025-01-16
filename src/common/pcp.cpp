@@ -87,7 +87,7 @@ constexpr uint8_t NATPMP_RESULT_NO_RESOURCES = 4;
 
 //! Mapping of NATPMP result code to string (RFC6886 3.5). Result codes <=2
 //! match PCP.
-const std::map<uint8_t, std::string> NATPMP_RESULT_STR{
+const std::map<uint16_t, std::string> NATPMP_RESULT_STR{
     {0, "SUCCESS"},         {1, "UNSUPP_VERSION"}, {2, "NOT_AUTHORIZED"},
     {3, "NETWORK_FAILURE"}, {4, "NO_RESOURCES"},   {5, "UNSUPP_OPCODE"},
 };
@@ -163,7 +163,7 @@ const std::map<uint8_t, std::string> PCP_RESULT_STR{
 };
 
 //! Return human-readable string from NATPMP result code.
-std::string NATPMPResultString(uint8_t result_code) {
+std::string NATPMPResultString(uint16_t result_code) {
     auto result_i = NATPMP_RESULT_STR.find(result_code);
     return strprintf("%s (code %d)",
                      result_i == NATPMP_RESULT_STR.end() ? "(unknown)"
@@ -242,7 +242,7 @@ PCPSendRecv(Sock &sock, const std::string &protocol,
         // Dispatch packet to gateway.
         if (sock.Send(request.data(), request.size(), 0) !=
             static_cast<ssize_t>(request.size())) {
-            LogPrintLevel(BCLog::NET, BCLog::Level::Warning,
+            LogPrintLevel(BCLog::NET, BCLog::Level::Debug,
                           "%s: Could not send request: %s\n", protocol,
                           NetworkErrorString(WSAGetLastError()));
             // Network-level error, probably no use retrying.
@@ -274,7 +274,7 @@ PCPSendRecv(Sock &sock, const std::string &protocol,
             // Receive response.
             recvsz = sock.Recv(response, sizeof(response), MSG_DONTWAIT);
             if (recvsz < 0) {
-                LogPrintLevel(BCLog::NET, BCLog::Level::Warning,
+                LogPrintLevel(BCLog::NET, BCLog::Level::Debug,
                               "%s: Could not receive response: %s\n", protocol,
                               NetworkErrorString(WSAGetLastError()));
                 // Network-level error, probably no use retrying.
@@ -661,7 +661,7 @@ PCPRequestPortMap(const PCPMappingNonce &nonce, const CNetAddr &gateway,
                          CService(external_addr, external_port), lifetime_ret);
 }
 
-std::string MappingResult::ToString() {
+std::string MappingResult::ToString() const {
     Assume(version == NATPMP_VERSION || version == PCP_VERSION);
     return strprintf(
         "%s:%s -> %s (for %ds)", version == NATPMP_VERSION ? "natpmp" : "pcp",
