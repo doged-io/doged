@@ -7,7 +7,6 @@ import { ChronikClient } from 'chronik-client';
 
 import { Ecc, EccDummy } from '../src/ecc.js';
 import { sha256d, shaRmd160 } from '../src/hash.js';
-import { initWasm } from '../src/initNodeJs.js';
 import { fromHex, toHex } from '../src/io/hex.js';
 import { pushBytesOp } from '../src/op.js';
 import {
@@ -41,6 +40,7 @@ import {
 } from '../src/txBuilder.js';
 import { UnsignedTxInput } from '../src/unsignedTx.js';
 import { encodeCashAddress } from 'ecashaddrjs';
+import '../src/initNodeJs.js';
 
 const NUM_COINS = 500;
 const COIN_VALUE = 100000;
@@ -76,7 +76,6 @@ describe('TxBuilder', () => {
     let ecc: Ecc;
 
     before(async () => {
-        await initWasm();
         runner = await TestRunner.setup(
             IS_LEGACY_MODE ? 'setup_scripts/ecash-lib_legacy' : undefined,
         );
