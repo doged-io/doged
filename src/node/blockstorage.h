@@ -313,7 +313,7 @@ public:
     void CleanupBlockRevFiles() const;
 };
 
-void ThreadImport(ChainstateManager &chainman,
+void ImportBlocks(ChainstateManager &chainman,
                   avalanche::Processor *const avalanche,
                   std::vector<fs::path> vImportFiles);
 } // namespace node
