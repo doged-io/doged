@@ -143,7 +143,6 @@ Then:
 cd dogecash
 [sudo] nvm install 20
 [sudo] npm install -g npm@latest
-[sudo] npm install -g eslint@8.3.0
 npm ci
 ```
 
