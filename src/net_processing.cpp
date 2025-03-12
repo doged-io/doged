@@ -9220,10 +9220,5 @@ bool PeerManagerImpl::ReceivedAvalancheProof(CNode &node, Peer &peer,
     }
 
     saveProofIfStaker(node, proofid, nodeid);
-
-    if (isStaker && m_opts.avalanche_staking_preconsensus) {
-        m_avalanche->addStakeContender(proof);
-    }
-
     return true;
 }
