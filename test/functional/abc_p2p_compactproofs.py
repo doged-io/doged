@@ -11,7 +11,7 @@ import time
 from test_framework.avatools import (
     AvaP2PInterface,
     NoHandshakeAvaP2PInterface,
-    build_msg_avaproofs,
+    build_raw_msg_avaproofs,
     gen_proof,
     get_ava_p2p_interface,
     get_proof_ids,
@@ -188,7 +188,7 @@ class CompactProofsTest(BitcoinTestFramework):
         _, proof = gen_proof(self, node)
 
         # Send the avaproofs message
-        avaproofs = build_msg_avaproofs([proof])
+        avaproofs = build_raw_msg_avaproofs([proof])
         responding_outbound_avapeer.send_and_ping(avaproofs)
 
         # Now the node will request from all its peers at each time period
@@ -203,7 +203,7 @@ class CompactProofsTest(BitcoinTestFramework):
 
         self.log.info("Empty avaproofs will not trigger any request")
         for p in outbound_avapeers:
-            p.send_message(build_msg_avaproofs([]))
+            p.send_message(build_raw_msg_avaproofs([]))
 
         with p2p_lock:
             # Only this peer actually sent a proof
@@ -352,7 +352,9 @@ class CompactProofsTest(BitcoinTestFramework):
 
         spam_peer = get_ava_p2p_interface(self, node)
 
-        msg = build_msg_avaproofs(proofs, prefilled_proofs=[], key_pair=[key0, key1])
+        msg = build_raw_msg_avaproofs(
+            proofs, prefilled_proofs=[], key_pair=[key0, key1]
+        )
 
         with node.assert_debug_log(["Ignoring unsollicited avaproofs"]):
             spam_peer.send_message(msg)
@@ -382,7 +384,7 @@ class CompactProofsTest(BitcoinTestFramework):
         def expect_indices(shortids, expected_indices, prefilled_proofs=None):
             nonlocal p2p_idx
 
-            msg = build_msg_avaproofs(
+            msg = build_raw_msg_avaproofs(
                 [], prefilled_proofs=prefilled_proofs, key_pair=[key0, key1]
             )
             msg.shortids = shortids
@@ -396,7 +398,7 @@ class CompactProofsTest(BitcoinTestFramework):
 
         self.log.info("Check no proof is requested if there is no shortid")
 
-        msg = build_msg_avaproofs([])
+        msg = build_raw_msg_avaproofs([])
         sender = add_avalanche_p2p_outbound()
         sender.send_message(msg)
         # Make sure we don't get an avaproofsreq message
@@ -457,7 +459,7 @@ class CompactProofsTest(BitcoinTestFramework):
 
         bad_peer = add_avalanche_p2p_outbound()
 
-        msg = build_msg_avaproofs(
+        msg = build_raw_msg_avaproofs(
             [],
             prefilled_proofs=[
                 AvalanchePrefilledProof(len(shortid_map) + 1, gen_proof(self, node)[1])
@@ -477,7 +479,7 @@ class CompactProofsTest(BitcoinTestFramework):
 
         bad_peer = add_avalanche_p2p_outbound()
 
-        msg = build_msg_avaproofs(
+        msg = build_raw_msg_avaproofs(
             [],
             prefilled_proofs=[
                 AvalanchePrefilledProof(len(shortid_map), no_stake),
@@ -597,7 +599,7 @@ class CompactProofsTest(BitcoinTestFramework):
         # Make sure to send at least one avaproofs message, otherwise the node
         # will only send a getavaproofs message to up to 3 nodes and the test
         # might randomly fail.
-        avaproofs_msg = build_msg_avaproofs([slow_peer.proof])
+        avaproofs_msg = build_raw_msg_avaproofs([slow_peer.proof])
         slow_peer.send_and_ping(avaproofs_msg)
 
         slow_peer.nodeid = node.getpeerinfo()[-1]["id"]
