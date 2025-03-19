@@ -6832,6 +6832,7 @@ void PeerManagerImpl::ProcessMessage(
                         }
                         break;
                     case avalanche::VoteStatus::Finalized:
+                        m_avalanche->setRecentlyFinalized(proofid);
                         nextCooldownTimePoint += std::chrono::seconds(
                             m_opts.avalanche_peer_replacement_cooldown);
                     case avalanche::VoteStatus::Accepted:
@@ -6920,6 +6921,8 @@ void PeerManagerImpl::ProcessMessage(
                         m_chainman.ActiveChainstate().UnparkBlock(pindex);
                     } break;
                     case avalanche::VoteStatus::Finalized: {
+                        m_avalanche->setRecentlyFinalized(
+                            pindex->GetBlockHash());
                         {
                             LOCK(cs_main);
                             m_chainman.ActiveChainstate().UnparkBlock(pindex);
@@ -6957,6 +6960,7 @@ void PeerManagerImpl::ProcessMessage(
                             break;
                         }
                         case avalanche::VoteStatus::Finalized: {
+                            m_avalanche->setRecentlyFinalized(contenderId);
                             m_avalanche->finalizeStakeContender(contenderId);
                             break;
                         }
