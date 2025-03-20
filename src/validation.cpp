@@ -4159,6 +4159,8 @@ void Chainstate::UnparkBlock(CBlockIndex *pindex) {
 
 bool Chainstate::AvalancheFinalizeBlock(CBlockIndex *pindex,
                                         avalanche::Processor &avalanche) {
+    AssertLockNotHeld(cs_avalancheFinalizedBlockIndex);
+
     if (!pindex) {
         return false;
     }
