@@ -73,6 +73,8 @@ struct Params {
     int augustoActivationTime;
     /** Unix time used for MTP activation of 15 May 2025 12:00:00 UTC upgrade */
     int schumpeterActivationTime;
+    /** Unix time used for MTP activation of 15 Nov 2025 12:00:00 UTC upgrade */
+    int shibusawaActivationTime;
 
     /** Dogecoin "Digishield" activation height */
     int digishieldHeight;
