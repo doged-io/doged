@@ -56,18 +56,15 @@ CBlockIndex::GetBlockHeader(const node::BlockManager &blockman) const {
 bool CBlockIndex::UpdateChainStats() {
     if (pprev == nullptr) {
         nChainTx = nTx;
-        nChainSize = nSize;
         return true;
     }
 
     if (pprev->nChainTx > 0) {
         nChainTx = pprev->nChainTx + nTx;
-        nChainSize = pprev->nChainSize + nSize;
         return true;
     }
 
     nChainTx = 0;
-    nChainSize = 0;
     return false;
 }
 
