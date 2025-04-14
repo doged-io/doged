@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import { ChronikClient } from 'chronik-client';
 
-import { Ecc } from '../src/ecc.js';
+import { Ecc, EccDummy } from '../src/ecc.js';
 import { sha256d, shaRmd160 } from '../src/hash.js';
 import { fromHex, toHex } from '../src/io/hex.js';
 import { pushBytesOp } from '../src/op.js';
@@ -157,7 +157,9 @@ describe('TxBuilder', () => {
             ],
         });
         const spendTx = txBuild.sign({ feePerKb: 1000, dustLimit: 546 });
-        const estimatedSize = txBuild.sign({ feePerKb: 1000, dustLimit: 546 }).serSize();
+        const estimatedSize = txBuild
+            .sign({ ecc: new EccDummy(), feePerKb: 1000, dustLimit: 546 })
+            .serSize();
         const txid = (await chronik.broadcastTx(spendTx.ser())).txid;
 
         // Now have 1 UTXO change in the wallet
@@ -340,7 +342,10 @@ describe('TxBuilder', () => {
                     ],
                     outputs: [p2sh],
                 });
-                const spendTx = txBuild.sign({ feePerKb: 1000, dustLimit: 546 });
+                const spendTx = txBuild.sign({
+                    feePerKb: 1000,
+                    dustLimit: 546,
+                });
                 await chronik.broadcastTx(spendTx.ser());
             }
         },
@@ -479,13 +484,19 @@ describe('TxBuilder', () => {
         });
 
         // 0sats/kB (not broadcast)
-        let spendTx = txBuild.sign({ feePerKb: 0, dustLimit: 546 });
+        let spendTx = txBuild.sign({
+            ecc: new EccDummy(),
+            feePerKb: 0,
+            dustLimit: 546,
+        });
         expect(spendTx.outputs[1].value).to.equal(40000n);
 
         // 1ksats/kB
         spendTx = txBuild.sign({ feePerKb: 1000, dustLimit: 546 });
         await chronik.broadcastTx(spendTx.ser());
-        let estimatedSize = txBuild.sign({ feePerKb: 1000, dustLimit: 546 }).serSize();
+        let estimatedSize = txBuild
+            .sign({ ecc: new EccDummy(), feePerKb: 1000, dustLimit: 546 })
+            .serSize();
         expect(spendTx.outputs[1].value).to.equal(
             BigInt(40000 - estimatedSize),
         );
@@ -497,7 +508,9 @@ describe('TxBuilder', () => {
         );
         spendTx = txBuild.sign({ feePerKb: 10000, dustLimit: 546 });
         await chronik.broadcastTx(spendTx.ser());
-        estimatedSize = txBuild.sign({ feePerKb: 10000, dustLimit: 546 }).serSize();
+        estimatedSize = txBuild
+            .sign({ ecc: new EccDummy(), feePerKb: 10000, dustLimit: 546 })
+            .serSize();
         expect(spendTx.outputs[1].value).to.equal(
             BigInt(40000 - 10 * estimatedSize),
         );
@@ -509,7 +522,9 @@ describe('TxBuilder', () => {
         );
         spendTx = txBuild.sign({ feePerKb: 100000, dustLimit: 546 });
         await chronik.broadcastTx(spendTx.ser());
-        estimatedSize = txBuild.sign({ feePerKb: 100000, dustLimit: 546 }).serSize();
+        estimatedSize = txBuild
+            .sign({ ecc: new EccDummy(), feePerKb: 100000, dustLimit: 546 })
+            .serSize();
         expect(spendTx.outputs[1].value).to.equal(
             BigInt(40000 - 100 * estimatedSize),
         );
@@ -521,7 +536,7 @@ describe('TxBuilder', () => {
         );
         spendTx = txBuild.sign({ feePerKb: 117600, dustLimit: 546 });
         const estimatedSizeNoLeftover = txBuild
-            .sign({ feePerKb: 117600, dustLimit: 546 })
+            .sign({ ecc: new EccDummy(), feePerKb: 117600, dustLimit: 546 })
             .serSize();
         await chronik.broadcastTx(spendTx.ser());
         expect(spendTx.outputs.length).to.equal(2);
@@ -621,7 +636,9 @@ describe('TxBuilder', () => {
         // 1ksats/kB
         spendTx = txBuild.sign({ feePerKb: 1000, dustLimit: 546 });
         await chronik.broadcastTx(spendTx.ser());
-        const estimatedSize = txBuild.sign({ feePerKb: 1000, dustLimit: 546 }).serSize();
+        const estimatedSize = txBuild
+            .sign({ ecc: new EccDummy(), feePerKb: 1000, dustLimit: 546 })
+            .serSize();
         expect(spendTx.outputs[2].value).to.equal(
             BigInt(40000 - estimatedSize),
         );
@@ -719,7 +736,11 @@ describe('TxBuilder', () => {
             // Leftover script, but will be spliced out again
             outputs: [new Script()],
         });
-        const tx = txBuild.sign({ feePerKb: 1000, dustLimit: 9999 });
+        const tx = txBuild.sign({
+            ecc: new EccDummy(),
+            feePerKb: 1000,
+            dustLimit: 9999,
+        });
         expect(tx.serSize()).to.equal(expectedSize);
     });
 
