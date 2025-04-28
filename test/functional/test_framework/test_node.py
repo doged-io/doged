@@ -667,8 +667,10 @@ class TestNode:
 
         yield
 
+        missing = []
         while True:
             found = True
+            missing = []
             with open(self.debug_log_path, encoding="utf-8", errors="replace") as dl:
                 dl.seek(prev_size)
                 log = dl.read()
@@ -681,15 +683,22 @@ class TestNode:
                     )
             for expected_msg in expected_msgs:
                 if re.search(re.escape(expected_msg), log, flags=re.MULTILINE) is None:
+                    missing.append(expected_msg)
                     found = False
             if found:
                 return
             if time.time() >= time_end:
                 break
             time.sleep(0.05)
+
+        missing_msg = f'Missing messages: "{pprint.pformat(missing, width=120)}"'
+        if len(expected_msgs) == len(missing):
+            # Do not confuse by duplicating expected_msgs
+            missing_msg = "All expected messages are missing."
+
         self._raise_assertion_error(
             f"Captured debug log:\n\n{print_log}\n\n"
-            f'Expected messages "{pprint.pformat(expected_msgs, width=120)}" does not partially match the above log.'
+            f'Expected messages "{pprint.pformat(expected_msgs, width=120)}" does not partially match the above log.\n\n{missing_msg}\n'
         )
 
     @contextlib.contextmanager
@@ -711,8 +720,10 @@ class TestNode:
 
         yield
 
+        missing: List[bytes] = []
         while True:
             found = True
+            missing = []
 
             if chatty_callable is not None:
                 # Ignore the chatty_callable returned value, as we are only
@@ -725,6 +736,7 @@ class TestNode:
 
             for expected_msg in expected_msgs:
                 if expected_msg not in log:
+                    missing.append(expected_msg)
                     found = False
 
             if found:
@@ -738,9 +750,14 @@ class TestNode:
 
             time.sleep(interval)
 
+        missing_msg = f'Missing messages: "{pprint.pformat(missing, width=120)}"'
+        if len(expected_msgs) == len(missing):
+            # Do not confuse by duplicating expected_msgs
+            missing_msg = "All expected messages are missing."
+
         self._raise_assertion_error(
             f"Captured debug log:\n\n{print_log}\n\n"
-            f'Expected messages "{pprint.pformat(expected_msgs, width=120)}" does not partially match the above log.'
+            f'Expected messages "{pprint.pformat(expected_msgs, width=120)}" does not partially match the above log.\n\n{missing_msg}\n'
         )
 
     @contextlib.contextmanager
