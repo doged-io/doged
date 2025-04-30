@@ -364,7 +364,9 @@ class AvalancheTest(BitcoinTestFramework):
                 )
 
         # Then we start discouraging
-        with node.assert_debug_log(["Misbehaving", "unexpected-ava-response"]):
+        with node.assert_debug_log(
+            ["Repeated failure to register votes from peer", "unexpected-ava-response"]
+        ):
             # unknown voting round
             poll_node.send_avaresponse(
                 avaround=2**32 - 1, votes=[], privkey=poll_node.delegated_privkey
@@ -398,7 +400,9 @@ class AvalancheTest(BitcoinTestFramework):
                 )
 
         # Then we start discouraging again
-        with node.assert_debug_log(["Misbehaving", "unexpected-ava-response"]):
+        with node.assert_debug_log(
+            ["Repeated failure to register votes from peer", "unexpected-ava-response"]
+        ):
             # unknown voting round
             poll_node.send_avaresponse(
                 avaround=2**32 - 1, votes=[], privkey=poll_node.delegated_privkey
