@@ -54,7 +54,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
                 "-avacooldown=0",
                 "-avaminquorumstake=0",
                 "-avaminavaproofsnodecount=0",
-                "-avastalevotethreshold=160",
+                "-avastalevotethreshold=500",
                 "-avastalevotefactor=1",
                 "-simplegbt",
             ],
@@ -152,6 +152,21 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         for peer in quorum:
             self.wait_until(lambda: has_finalized_proof(peer.proof.proofid))
 
+        def finalize_tip(tip):
+            def is_final(tip):
+                can_find_inv_in_poll(
+                    quorum,
+                    int(tip, 16),
+                    response_map={
+                        MSG_AVA_STAKE_CONTENDER: AvalancheContenderVoteError.UNKNOWN
+                    },
+                )
+                return node.isfinalblock(tip)
+
+            self.wait_until(lambda: is_final(tip))
+
+        finalize_tip(tip)
+
         # Get the key so we can verify signatures.
         avakey = ECPubKey()
         avakey.set(bytes.fromhex(node.getavalanchekey()))
@@ -240,6 +255,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         # Some contenders may have been finalized already while finalizing the proofs.
         # Mine a block to trigger contender promotion and start from a clean slate.
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
 
         # Finalize any contenders that might have been polled since the quorum became active
         # so we do not have any unanswered polls before calling find_polled_contenders.
@@ -247,6 +263,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         # Mining a block will promote contenders to the new block
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
 
         # Unknown contender is still unknown
         poll_node.send_poll([unknown_contender_id], inv_type=MSG_AVA_STAKE_CONTENDER)
@@ -313,6 +330,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         now += 90 * 60 + 1
         node.setmocktime(now)
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
 
         # Staking rewards has been computed. Check vote for all contenders.
         contenders = get_all_contender_ids(tip)
@@ -420,6 +438,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         self.log.info("Vote on contenders: local winner only")
 
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         staking_reward = node.getstakingreward(tip)
         local_winner_payout_script = staking_reward[0]["hex"]
         local_winner_proofid = int(staking_reward[0]["proofid"], 16)
@@ -443,6 +462,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
             )
 
             tip = self.generate(node, 1)[0]
+            finalize_tip(tip)
             staking_reward = node.getstakingreward(tip)
             local_winner_payout_script = staking_reward[0]["hex"]
             local_winner_proofid = int(staking_reward[0]["proofid"], 16)
@@ -476,6 +496,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         self.log.info("Vote on contenders: zero winners")
 
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         staking_reward = node.getstakingreward(tip)
         local_winner_payout_script = staking_reward[0]["hex"]
         local_winner_proofid = int(staking_reward[0]["proofid"], 16)
@@ -496,6 +517,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         self.log.info("Vote on contenders: stale contenders")
 
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         staking_reward = node.getstakingreward(tip)
         local_winner_payout_script = staking_reward[0]["hex"]
         local_winner_proofid = int(staking_reward[0]["proofid"], 16)
@@ -582,6 +604,8 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         for peer in quorum:
             self.wait_until(lambda: has_finalized_proof(peer.proof.proofid))
 
+        finalize_tip(tip)
+
         def peer_has_getavaproofs():
             with p2p_lock:
                 for peer in quorum:
@@ -652,6 +676,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         # Trigger contenders promotion
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         expected_response = expected_contender_poll_response(tip)
 
         # Check last proof was not promoted
@@ -696,6 +721,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         # Trigger contenders promotion
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         expected_response = expected_contender_poll_response(tip)
 
         # Sanity check
@@ -758,6 +784,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         # Trigger contenders promotion
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
 
         # The proof is not mature yet. Contender status should still be unknown.
         contender_id = make_contender_id(tip, immature_proof.proofid)
@@ -770,6 +797,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         # Trigger contenders promotion and mature the proof
         tip = self.generate(node, 1)[0]
+        finalize_tip(tip)
         expected_response = expected_contender_poll_response(tip)
         self.wait_until(lambda: check_immature_proofs([]))
 
