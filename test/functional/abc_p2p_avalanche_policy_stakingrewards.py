@@ -127,7 +127,6 @@ class ABCStakingRewardsPolicyTest(BitcoinTestFramework):
                 )
 
             pad_tx(cb)
-            cb.calc_sha256()
             return cb
 
         def new_block(tip, payout_script, amount, expect_accepted=None):

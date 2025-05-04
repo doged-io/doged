@@ -87,7 +87,6 @@ class MinerFundTest(BitcoinTestFramework):
             )
 
             pad_tx(cb)
-            cb.calc_sha256()
 
             return cb
 
