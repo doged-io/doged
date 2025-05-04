@@ -96,7 +96,6 @@ class MiningTest(BitcoinTestFramework):
         coinbase_tx = create_coinbase(height=next_height)
         # sequence numbers must not be max for nLockTime to have effect
         coinbase_tx.vin[0].nSequence = 2**32 - 2
-        coinbase_tx.rehash()
 
         block = CBlock()
         block.nVersion = tmpl["version"]
@@ -117,7 +116,6 @@ class MiningTest(BitcoinTestFramework):
         self.log.info("getblocktemplate: Test bad input hash for coinbase transaction")
         bad_block = copy.deepcopy(block)
         bad_block.vtx[0].vin[0].prevout.txid += 1
-        bad_block.vtx[0].rehash()
         assert_template(node, bad_block, "bad-cb-missing")
 
         self.log.info("submitblock: Test invalid coinbase transaction")
@@ -146,7 +144,6 @@ class MiningTest(BitcoinTestFramework):
         bad_block = copy.deepcopy(block)
         bad_tx = copy.deepcopy(bad_block.vtx[0])
         bad_tx.vin[0].prevout.txid = 255
-        bad_tx.rehash()
         bad_block.vtx.append(bad_tx)
         assert_template(node, bad_block, "bad-txns-inputs-missingorspent")
         assert_submitblock(bad_block, "bad-txns-inputs-missingorspent")
@@ -154,7 +151,6 @@ class MiningTest(BitcoinTestFramework):
         self.log.info("getblocktemplate: Test nonfinal transaction")
         bad_block = copy.deepcopy(block)
         bad_block.vtx[0].nLockTime = 2**32 - 1
-        bad_block.vtx[0].rehash()
         assert_template(node, bad_block, "bad-txns-nonfinal")
         assert_submitblock(bad_block, "bad-txns-nonfinal")
 
@@ -256,7 +252,6 @@ class MiningTest(BitcoinTestFramework):
 
         bad_block_lock = copy.deepcopy(block)
         bad_block_lock.vtx[0].nLockTime = 2**32 - 1
-        bad_block_lock.vtx[0].rehash()
         bad_block_lock.hashMerkleRoot = bad_block_lock.calc_merkle_root()
         bad_block_lock.solve()
         assert_equal(
