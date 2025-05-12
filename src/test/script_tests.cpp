@@ -133,8 +133,8 @@ static void DoTest(const CScript &scriptPubKey, const CScript &scriptSig,
     ScriptError err;
     const CTransaction txCredit{
         BuildCreditingTransaction(scriptPubKey, nValue)};
-    CMutableTransaction tx = BuildSpendingTransaction(scriptSig, txCredit);
-    CMutableTransaction tx2 = tx;
+    const CMutableTransaction tx =
+        BuildSpendingTransaction(scriptSig, txCredit);
     BOOST_CHECK_MESSAGE(VerifyScript(scriptSig, scriptPubKey, flags,
                                      MutableTransactionSignatureChecker(
                                          &tx, 0, txCredit.vout[0].nValue),
@@ -172,7 +172,7 @@ static void DoTest(const CScript &scriptPubKey, const CScript &scriptSig,
 
 #if defined(HAVE_CONSENSUS_LIB)
     CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
-    stream << tx2;
+    stream << tx;
     uint32_t libconsensus_flags =
         flags & bitcoinconsensus_SCRIPT_FLAGS_VERIFY_ALL;
     if (libconsensus_flags == flags) {
