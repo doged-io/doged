@@ -861,7 +861,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             for client in clients:
                 notification = client.wait_for_notification(
                     "blockchain.headers.subscribe"
-                )
+                )[0]
                 assert_equal(notification["height"], height)
                 assert_equal(notification["hex"], header_hex)
 
