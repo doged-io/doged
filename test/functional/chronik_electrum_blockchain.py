@@ -655,6 +655,13 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
                     "message": "Invalid scripthash",
                 },
             )
+            assert_equal(
+                self.client.blockchain.scripthash.get_mempool(invalid_scripthash).error,
+                {
+                    "code": 1,
+                    "message": "Invalid scripthash",
+                },
+            )
 
         for invalid_address in (
             "",
@@ -690,6 +697,13 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
                     "message": f"Invalid address: {invalid_address}",
                 },
             )
+            assert_equal(
+                self.client.blockchain.address.get_mempool(invalid_address).error,
+                {
+                    "code": 1,
+                    "message": f"Invalid address: {invalid_address}",
+                },
+            )
 
         # valid hash, but not associated with any known script
         assert_equal(
@@ -710,6 +724,10 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         assert_equal(
             self.client.blockchain.scripthash.get_first_use(32 * "ff").result,
             None,
+        )
+        assert_equal(
+            self.client.blockchain.scripthash.get_mempool(32 * "ff").result,
+            [],
         )
 
         # Valid address, but not associated with any known coin. With or without
@@ -736,6 +754,10 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             assert_equal(
                 self.client.blockchain.scripthash.get_first_use(32 * "ff").result,
                 None,
+            )
+            assert_equal(
+                self.client.blockchain.scripthash.get_mempool(32 * "ff").result,
+                [],
             )
 
         # Mine a block just to be sure all the utxos are confirmed
@@ -797,6 +819,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         confirmed = 0
         unconfirmed = 0
         history = []
+        mempool = []
         utxos = []
 
         assert_equal(
@@ -841,6 +864,15 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             )
             expected_utxos = utxos
 
+            actual_mempool = self.client.blockchain.scripthash.get_mempool(
+                scripthash
+            ).result
+            assert_equal(
+                self.client.blockchain.address.get_mempool(address).result,
+                actual_mempool,
+            )
+            expected_mempool = mempool
+
             def electrum_history_sort(hist):
                 # Extract confirmed txs and sort by ascending height then
                 # txid
@@ -864,9 +896,11 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             # Actually the same sort except all mempool txs have a block
             # height of 0
             expected_utxos = electrum_history_sort(expected_utxos)
+            expected_mempool = electrum_history_sort(expected_mempool)
 
             assert_equal(actual_history, expected_history)
             assert_equal(actual_utxos, expected_utxos)
+            assert_equal(actual_mempool, expected_mempool)
 
         assert_scripthash_balance_and_history()
 
@@ -874,23 +908,25 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             nonlocal unconfirmed
             nonlocal history
             nonlocal utxos
+            nonlocal mempool
             txid, n = self.wallet.send_to(
                 from_node=self.node, scriptPubKey=script, amount=amount, fee=fee
             )
             unconfirmed += amount
 
             unconfirmed_parents = len(self.node.getmempoolentry(txid)["depends"]) > 0
-            history.append(
-                {
-                    "fee": fee,
-                    "height": -1 if unconfirmed_parents else 0,
-                    "tx_hash": txid,
-                }
-            )
+            history_entry = {
+                "fee": fee,
+                "height": -1 if unconfirmed_parents else 0,
+                "tx_hash": txid,
+            }
+            history.append(history_entry)
+            mempool.append(history_entry)
 
             # Note that unlike history, mempool utxos are always returned with a
             # height of 0 independently of the presence of unconfirmed parents.
             utxos.append({"height": 0, "tx_hash": txid, "tx_pos": n, "value": amount})
+
             return txid, n
 
         txid, n = add_unconfirmed_transaction(amount=1337, fee=1000)
@@ -919,6 +955,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         history.append({"height": h, "tx_hash": txid})
         utxos.pop()
         utxos.append({"height": h, "tx_hash": txid, "tx_pos": n, "value": 1337})
+        mempool.clear()
         assert_scripthash_balance_and_history()
 
         first_use = self.client.blockchain.scripthash.get_first_use(scripthash).result
@@ -957,6 +994,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
             history.append({"height": h, "tx_hash": txid})
             utxos.pop()
             utxos.append({"height": h, "tx_hash": txid, "tx_pos": n, "value": 1337})
+            mempool.clear()
             assert_scripthash_balance_and_history()
 
             assert_equal(
