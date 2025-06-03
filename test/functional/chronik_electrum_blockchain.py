@@ -102,7 +102,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         # Too many params
         for response in (
             self.client.blockchain.transaction.get(1, 2, 3),
-            self.client.blockchain.transaction.get(txid=1, verbose=2, blockhash=3),
+            self.client.blockchain.transaction.get(tx_hash=1, verbose=2, blockhash=3),
         ):
             assert_equal(
                 response.error,
@@ -125,12 +125,12 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         ):
             assert_equal(
                 response.error,
-                {"code": -32602, "message": "Missing mandatory 'txid' parameter"},
+                {"code": -32602, "message": "Missing mandatory 'tx_hash' parameter"},
             )
 
         # Non-string json type for txid
         assert_equal(
-            self.client.blockchain.transaction.get(txid=int(32 * "ff", 16)).error,
+            self.client.blockchain.transaction.get(tx_hash=int(32 * "ff", 16)).error,
             {"code": 1, "message": "Invalid tx hash"},
         )
 
@@ -150,7 +150,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         # Invalid type for boolean argument
         assert_equal(
             self.client.blockchain.transaction.get(
-                txid=32 * "ff", verbose="true"
+                tx_hash=32 * "ff", verbose="true"
             ).error,
             {
                 "code": 1,
@@ -160,7 +160,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
 
         # Valid txid, but no such transaction was found
         assert_equal(
-            self.client.blockchain.transaction.get(txid=32 * "ff").error,
+            self.client.blockchain.transaction.get(tx_hash=32 * "ff").error,
             {
                 "code": 1,
                 "message": "No transaction matching the requested hash was found",
@@ -171,14 +171,18 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         for response in (
             self.client.blockchain.transaction.get(GENESIS_CB_TXID),
             self.client.blockchain.transaction.get(GENESIS_CB_TXID, False),
-            self.client.blockchain.transaction.get(txid=GENESIS_CB_TXID),
-            self.client.blockchain.transaction.get(txid=GENESIS_CB_TXID, verbose=False),
+            self.client.blockchain.transaction.get(tx_hash=GENESIS_CB_TXID),
+            self.client.blockchain.transaction.get(
+                tx_hash=GENESIS_CB_TXID, verbose=False
+            ),
         ):
             assert_equal(response.result, COINBASE_TX_HEX)
 
         for response in (
             self.client.blockchain.transaction.get(GENESIS_CB_TXID, True),
-            self.client.blockchain.transaction.get(txid=GENESIS_CB_TXID, verbose=True),
+            self.client.blockchain.transaction.get(
+                tx_hash=GENESIS_CB_TXID, verbose=True
+            ),
         ):
             assert_equal(
                 response.result,
@@ -195,7 +199,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         self.generate(self.wallet, 2)
         assert_equal(
             self.client.blockchain.transaction.get(
-                txid=GENESIS_CB_TXID, verbose=True
+                tx_hash=GENESIS_CB_TXID, verbose=True
             ).result["confirmations"],
             203,
         )
@@ -224,7 +228,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         assert_equal(response.result, 203)
 
         response = self.client.blockchain.transaction.get_height(32 * "ff")
-        assert_equal(response.error, {"code": -32600, "message": "Unknown txid"})
+        assert_equal(response.error, {"code": -32600, "message": "Unknown tx_hash"})
 
     def test_transaction_broadcast(self):
         tx_reference = self.wallet.create_self_transfer(target_size=100)
@@ -434,7 +438,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
         # We can optionally specify the correct block height as 2nd argument
         assert_equal(
             self.client.blockchain.transaction.get_merkle(
-                txid=txids_hex[-1], height=height
+                tx_hash=txids_hex[-1], height=height
             ).result,
             {
                 "block_height": height,
