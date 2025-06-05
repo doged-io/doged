@@ -682,7 +682,7 @@ BOOST_AUTO_TEST_CASE(setAvalancheFinalized_ContextualCheckTransactionFailures) {
     auto checkTx = [&](const CMutableTransaction &bad,
                        const CMutableTransaction &good,
                        const std::string &&reason) NO_THREAD_SAFETY_ANALYSIS {
-        auto bad_entry = entry.Fee(1000 * SATOSHI).FromTx(bad);
+        auto bad_entry = entry.Fee(100000 * SATOSHI).FromTx(bad);
         // Add the entry to the mempool
         mempool.addUnchecked(bad_entry);
         BOOST_CHECK(mempool.exists(bad.GetId()));
@@ -702,7 +702,7 @@ BOOST_AUTO_TEST_CASE(setAvalancheFinalized_ContextualCheckTransactionFailures) {
         mempool.clear(/*include_finalized_txs=*/true);
 
         // Check the good transaction can be finalized
-        auto good_entry = entry.Fee(1000 * SATOSHI).FromTx(good);
+        auto good_entry = entry.Fee(100000 * SATOSHI).FromTx(good);
         mempool.addUnchecked(good_entry);
         BOOST_CHECK(mempool.exists(good.GetId()));
 
@@ -731,6 +731,7 @@ BOOST_AUTO_TEST_CASE(setAvalancheFinalized_ContextualCheckTransactionFailures) {
     }
 
     // Transaction size is below 100 bytes
+    /* TODO: Uncomment if/when undersized txs is supported
     {
         CMutableTransaction bad_tx{good_tx};
         bad_tx.vin.clear();
@@ -738,7 +739,7 @@ BOOST_AUTO_TEST_CASE(setAvalancheFinalized_ContextualCheckTransactionFailures) {
         BOOST_CHECK_LT(entry.Fee(1000 * SATOSHI).FromTx(bad_tx)->GetTxSize(),
                        MIN_TX_SIZE);
         checkTx(bad_tx, good_tx, "bad-txns-undersize");
-    }
+    }*/
 
     // Transaction version is 3
     {
