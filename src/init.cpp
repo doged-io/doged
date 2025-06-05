@@ -2222,6 +2222,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     assert(!node.scheduler);
     node.scheduler = std::make_unique<CScheduler>();
+    auto &scheduler = *node.scheduler;
 
     // Start the lightweight task scheduler thread
     node.scheduler->m_service_thread =
@@ -2235,6 +2236,12 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             return true;
         },
         std::chrono::minutes{1});
+
+    LogInstance().SetRateLimiting(std::make_unique<BCLog::LogRateLimiter>(
+        [&scheduler](auto func, auto window) {
+            scheduler.scheduleEvery(std::move(func), window);
+        },
+        BCLog::RATELIMIT_MAX_BYTES, 1h));
 
     GetMainSignals().RegisterBackgroundSignalScheduler(*node.scheduler);
 
