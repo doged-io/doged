@@ -9,15 +9,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
-option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
-option(BUILD_BITCOIN_CLI "Build doge-cli" ON)
-option(BUILD_BITCOIN_TX "Build doge-tx" ON)
-option(BUILD_BITCOIN_QT "Build doge-qt" ON)
-option(BUILD_BITCOIN_SEEDER "Build doge-seeder" ON)
+include(Deprecation)
+foreach(FEATURE WALLET ZMQ CLI TX QT SEEDER CHAINSTATE IGUANA)
+	deprecate_build_flag("BUILD_BITCOIN_${FEATURE}" "BUILD_${FEATURE}")
+endforeach()
+
+option(BUILD_WALLET "Activate the wallet functionality" ON)
+option(BUILD_ZMQ "Activate the ZeroMQ functionalities" ON)
+option(BUILD_CLI "Build doge-cli" ON)
+option(BUILD_TX "Build doge-tx" ON)
+option(BUILD_QT "Build doge-qt" ON)
+option(BUILD_SEEDER "Build doge-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
-option(BUILD_BITCOIN_CHAINSTATE "Build doge-chainstate" OFF)
-option(BUILD_BITCOIN_IGUANA "Activate the Iguana debugger" ON)
+option(BUILD_CHAINSTATE "Build doge-chainstate" OFF)
+option(BUILD_IGUANA "Activate the Iguana debugger" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
 option(ENABLE_REDUCE_EXPORTS "Reduce the amount of exported symbols" OFF)
@@ -76,10 +81,10 @@ endif(CCACHE)
 # Disable what we do not need for the native build.
 include(NativeExecutable)
 native_add_cmake_flags(
-	"-DBUILD_BITCOIN_WALLET=OFF"
-	"-DBUILD_BITCOIN_CHRONIK=OFF"
-	"-DBUILD_BITCOIN_QT=OFF"
-	"-DBUILD_BITCOIN_ZMQ=OFF"
+	"-DBUILD_WALLET=OFF"
+	"-DBUILD_CHRONIK=OFF"
+	"-DBUILD_QT=OFF"
+	"-DBUILD_ZMQ=OFF"
 	"-DENABLE_QRCODE=OFF"
 	"-DENABLE_NATPMP=OFF"
 	"-DENABLE_UPNP=OFF"
@@ -770,7 +775,7 @@ include(BinaryTest)
 include(WindowsVersionInfo)
 
 # Wallet
-if(BUILD_BITCOIN_WALLET)
+if(BUILD_WALLET)
 	add_subdirectory(wallet)
 	target_link_libraries(server wallet)
 
@@ -792,7 +797,7 @@ else()
 endif()
 
 # ZeroMQ
-if(BUILD_BITCOIN_ZMQ)
+if(BUILD_ZMQ)
 	add_subdirectory(zmq)
 	target_link_libraries(server zmq)
 
@@ -810,12 +815,12 @@ add_library(rpcclient
 target_link_libraries(rpcclient univalue util)
 
 # doge-seeder
-if(BUILD_BITCOIN_SEEDER)
+if(BUILD_SEEDER)
 	add_subdirectory(seeder)
 endif()
 
 # doge-cli
-if(BUILD_BITCOIN_CLI)
+if(BUILD_CLI)
 	add_executable(doge-cli bitcoin-cli.cpp)
 	generate_windows_version_info(doge-cli
 		DESCRIPTION "JSON-RPC client for ${PACKAGE_NAME}"
@@ -832,7 +837,7 @@ if(BUILD_BITCOIN_CLI)
 endif()
 
 # doge-tx
-if(BUILD_BITCOIN_TX)
+if(BUILD_TX)
 	add_executable(doge-tx bitcoin-tx.cpp)
 	generate_windows_version_info(doge-tx
 		DESCRIPTION "CLI Bitcoin transaction editor utility"
@@ -848,7 +853,7 @@ if(BUILD_BITCOIN_TX)
 endif()
 
 # doge-chainstate
-if(BUILD_BITCOIN_CHAINSTATE)
+if(BUILD_CHAINSTATE)
 	# TODO: libbitcoinkernel is a work in progress consensus engine library, as more
 	#       and more modules are decoupled from the consensus engine, this list will
 	#       shrink to only those which are absolutely necessary. For example, things
@@ -1029,10 +1034,10 @@ install_target(doged)
 install_manpages(doged)
 
 # Bitcoin-qt
-if(BUILD_BITCOIN_QT)
+if(BUILD_QT)
 	add_subdirectory(qt)
 endif()
 
-if(BUILD_BITCOIN_IGUANA)
+if(BUILD_IGUANA)
 	add_subdirectory(iguana)
 endif()

@@ -21,7 +21,7 @@ add_test_to_suite(doge-qt test_doge-qt
 target_link_libraries(test_doge-qt testutil bitcoin-qt-base Qt5::Test)
 
 # Wallet
-if(BUILD_BITCOIN_WALLET)
+if(BUILD_WALLET)
 	# Add wallet functionality to test_doge-qt
 	target_sources(test_doge-qt
 		PRIVATE
