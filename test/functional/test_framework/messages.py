@@ -647,7 +647,7 @@ class CBlockHeader:
         return hash256(self._serialize_header())[::-1].hex()
 
     @property
-    def sha256(self) -> int:
+    def hash_int(self) -> int:
         """Return block header hash as integer."""
         return uint256_from_str(hash256(self._serialize_header()))
 
@@ -657,10 +657,6 @@ class CBlockHeader:
             hashBytes = scrypt(r)
             self.powHash = uint256_from_str(hashBytes)
             self.powHashHex = hashBytes[::-1].hex()
-
-    # TODO: get rid of this method, replace call-sites by .sha256 access (if return value is used)
-    def rehash(self):
-        return self.sha256
 
     def rehashPow(self):
         self.powHash = None
@@ -713,7 +709,7 @@ class CBlock(CBlockHeader):
 
     def is_valid(self):
         target = uint256_from_compact(self.nBits)
-        if self.sha256 > target:
+        if self.hash_int > target:
             return False
         for tx in self.vtx:
             if not tx.is_valid():
@@ -730,7 +726,6 @@ class CBlock(CBlockHeader):
             while self.auxpow.parentBlock.powHash > target:
                 self.auxpow.parentBlock.nNonce += 1
                 self.auxpow.parentBlock.rehashPow()
-            self.auxpow.parentBlock.rehash()
             return
 
         # Otherwise, we mine normally

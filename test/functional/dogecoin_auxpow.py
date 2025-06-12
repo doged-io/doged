@@ -48,7 +48,6 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
             int(node.getbestblockhash(), 16), coinbase_tx, mocktime + 1100
         )
         block.nVersion = VERSION_CHAIN_ID_BITS | VERSION_AUXPOW_BIT | 5
-        block.rehash()
         block_hash = bytes.fromhex(block.hash)
 
         # nIndex = 1 not allowed
@@ -177,9 +176,8 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         height = 2
         coinbase_tx = create_coinbase(height)
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
-        block2 = create_block(block.sha256, coinbase_tx, mocktime + 1101)
+        block2 = create_block(block.hash_int, coinbase_tx, mocktime + 1101)
         block2.nVersion = VERSION_CHAIN_ID_BITS | VERSION_AUXPOW_BIT | 0xFF
-        block2.rehash()
         block_hash = bytes.fromhex(block.hash)
 
         nMerkleNonce = 0xD4D3D2D1
@@ -189,7 +187,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
 
         block2.auxpow = CAuxPow()
         chain_merkle_root = block2.get_merkle_root(
-            [ser_uint256(555), ser_uint256(block2.sha256)]
+            [ser_uint256(555), ser_uint256(block2.hash_int)]
         )
         coinbase_script = CScript(
             MERGE_MINE_PREFIX

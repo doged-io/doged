@@ -463,7 +463,7 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
             base_block_hash = self.genesis_hash
             block_time = int(time.time()) + 1
         else:
-            base_block_hash = self.tip.sha256
+            base_block_hash = self.tip.hash_int
             block_time = self.tip.nTime + 1
         # First create the coinbase
         height = self.block_heights[base_block_hash] + 1
@@ -483,7 +483,7 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
         if solve:
             block.solve()
         self.tip = block
-        self.block_heights[block.sha256] = height
+        self.block_heights[block.hash_int] = height
         assert number not in self.blocks
         self.blocks[number] = block
         return block
@@ -506,15 +506,15 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
     def update_block(self, block_number, new_transactions, reorder=True):
         block = self.blocks[block_number]
         self.add_transactions_to_block(block, new_transactions)
-        old_sha256 = block.sha256
+        old_sha256 = block.hash_int
         if reorder:
             make_conform_to_ctor(block)
         block.hashMerkleRoot = block.calc_merkle_root()
         block.solve()
         # Update the internal state just like in next_block
         self.tip = block
-        if block.sha256 != old_sha256:
-            self.block_heights[block.sha256] = self.block_heights[old_sha256]
+        if block.hash_int != old_sha256:
+            self.block_heights[block.hash_int] = self.block_heights[old_sha256]
             del self.block_heights[old_sha256]
         self.blocks[block_number] = block
         return block
