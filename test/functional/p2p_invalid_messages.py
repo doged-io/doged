@@ -405,11 +405,9 @@ class InvalidMessagesTest(BitcoinTestFramework):
         blockheader.hashPrevBlock = int(blockheader_tip_hash, 16)
         blockheader.nTime = int(time.time())
         blockheader.nBits = blockheader_tip.nBits
-        blockheader.rehash()
         blockheader.rehashPow()
         while not blockheader.powHashHex.startswith("0"):
             blockheader.nNonce += 1
-            blockheader.rehash()
             blockheader.rehashPow()
         peer = self.nodes[0].add_p2p_connection(P2PInterface())
         peer.send_and_ping(msg_headers([blockheader]))

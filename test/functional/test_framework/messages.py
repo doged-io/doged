@@ -599,7 +599,6 @@ class CBlockHeader:
             self.auxpow = header.auxpow
             self.powHash = header.powHash
             self.powHashHex = header.powHashHex
-            self.calc_sha256()
 
     def set_null(self):
         self.nVersion = 1
@@ -659,10 +658,6 @@ class CBlockHeader:
             self.powHash = uint256_from_str(hashBytes)
             self.powHashHex = hashBytes[::-1].hex()
 
-    # TODO: get rid of this method, remove call-sites
-    def calc_sha256(self):
-        pass
-
     # TODO: get rid of this method, replace call-sites by .sha256 access (if return value is used)
     def rehash(self):
         return self.sha256
@@ -717,7 +712,6 @@ class CBlock(CBlockHeader):
         return self.get_merkle_root(hashes)
 
     def is_valid(self):
-        self.calc_sha256()
         target = uint256_from_compact(self.nBits)
         if self.sha256 > target:
             return False
@@ -744,7 +738,6 @@ class CBlock(CBlockHeader):
         while self.powHash > target:
             self.nNonce += 1
             self.rehashPow()
-        self.rehash()
 
     def __repr__(self):
         return (

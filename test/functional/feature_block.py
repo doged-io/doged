@@ -501,7 +501,6 @@ class FullBlockTest(BitcoinTestFramework, BlockTestMixin):
             # Rehash nonces until an invalid too-high-hash block is found.
             b47.nNonce += 1
             b47.rehashPow()
-        b47.rehash()
         self.send_blocks(
             [b47], False, force_send=True, reject_reason="high-hash", reconnect=True
         )
