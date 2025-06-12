@@ -633,7 +633,14 @@ class CBlockHeader:
         self.powHash = None
         self.powHashHex = None
 
-    def _serheader(self):
+    def serialize(self) -> bytes:
+        r = self._serialize_header()
+        if self.nVersion & VERSION_AUXPOW_BIT:
+            assert self.auxpow is not None
+            r += self.auxpow.serialize()
+        return r
+
+    def _serialize_header(self) -> bytes:
         return (
             struct.pack("<i", self.nVersion)
             + ser_uint256(self.hashPrevBlock)
@@ -643,22 +650,15 @@ class CBlockHeader:
             + struct.pack("<I", self.nNonce)
         )
 
-    def serialize(self):
-        r = self._serheader()
-        if self.nVersion & VERSION_AUXPOW_BIT:
-            assert self.auxpow is not None
-            r += self.auxpow.serialize()
-        return r
-
     def calc_sha256(self):
         if self.sha256 is None:
-            r = self._serheader()
+            r = self._serialize_header()
             self.sha256 = uint256_from_str(hash256(r))
             self.hash = hash256(r)[::-1].hex()
 
     def calc_powHash(self):
         if self.powHash is None:
-            r = self._serheader()
+            r = self._serialize_header()
             hashBytes = scrypt(r)
             self.powHash = uint256_from_str(hashBytes)
             self.powHashHex = hashBytes[::-1].hex()
