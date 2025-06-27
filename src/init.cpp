@@ -741,7 +741,7 @@ void SetupServerArgs(NodeContext &node) {
             regtestBaseParams->ChronikElectrumPort()),
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
             ArgsManager::NETWORK_ONLY,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumcert",
         "Path to the certificate file to be used by the Chronik Electrum "
@@ -750,7 +750,7 @@ void SetupServerArgs(NodeContext &node) {
         "-chronikelectrumprivkey must be set as well.",
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
             ArgsManager::NETWORK_ONLY,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumprivkey",
         "Path to the private key file to be used by the Chronik Electrum "
@@ -758,7 +758,7 @@ void SetupServerArgs(NodeContext &node) {
         "-chronikelectrumcert must be set as well.",
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
             ArgsManager::NETWORK_ONLY,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumurl",
         "The URL to advertise to the Electrum peers. This needs to be set to "
@@ -768,13 +768,13 @@ void SetupServerArgs(NodeContext &node) {
         "protocol-methods.html#server.features (default: 127.0.0.1).",
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION |
             ArgsManager::NETWORK_ONLY,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrummaxhistory",
         strprintf("Largest tx history we are willing to serve. (default: %u)",
                   chronik::DEFAULT_ELECTRUM_MAX_HISTORY),
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumdonationaddress",
         strprintf(
@@ -783,7 +783,7 @@ void SetupServerArgs(NodeContext &node) {
             "to clients verbatim as a text string (%u characters maximum).",
             chronik::MAX_LENGTH_DONATION_ADDRESS),
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
     argsman.AddArg(
         "-chronikelectrumpeersvalidationinterval",
         strprintf(
@@ -797,7 +797,7 @@ void SetupServerArgs(NodeContext &node) {
                 chronik::DEFAULT_ELECTRUM_PEER_VALIDATION_INTERVAL)
                 .count()),
         ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION,
-        OptionsCategory::HIDDEN);
+        OptionsCategory::CHRONIK);
 #endif
     argsman.AddArg(
         "-blockfilterindex=<type>",
