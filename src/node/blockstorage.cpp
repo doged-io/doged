@@ -346,7 +346,7 @@ bool BlockManager::LoadBlockIndex(
     return true;
 }
 
-bool BlockManager::WriteBlockIndexDB() {
+void BlockManager::WriteBlockIndexDB() {
     std::vector<std::pair<int, const CBlockFileInfo *>> vFiles;
     vFiles.reserve(m_dirty_fileinfo.size());
     for (int i : m_dirty_fileinfo) {
@@ -365,10 +365,7 @@ bool BlockManager::WriteBlockIndexDB() {
 
     int max_blockfile =
         WITH_LOCK(cs_LastBlockFile, return this->MaxBlockfileNum());
-    if (!m_block_tree_db->WriteBatchSync(vFiles, max_blockfile, vBlocks)) {
-        return false;
-    }
-    return true;
+    m_block_tree_db->WriteBatchSync(vFiles, max_blockfile, vBlocks);
 }
 
 bool BlockManager::LoadBlockIndexDB(
