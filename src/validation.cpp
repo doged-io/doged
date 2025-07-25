@@ -4178,6 +4178,7 @@ void Chainstate::UnparkBlock(CBlockIndex *pindex) {
 
 bool Chainstate::AvalancheFinalizeBlock(CBlockIndex *pindex,
                                         avalanche::Processor &avalanche) {
+    AssertLockHeld(::cs_main);
     AssertLockNotHeld(cs_avalancheFinalizedBlockIndex);
 
     if (!pindex) {
@@ -4192,8 +4193,6 @@ bool Chainstate::AvalancheFinalizeBlock(CBlockIndex *pindex,
         return false;
     }
 
-    avalanche.cleanupStakingRewards(pindex->nHeight);
-
     if (IsBlockAvalancheFinalized(pindex)) {
         return true;
     }
@@ -4203,7 +4202,7 @@ bool Chainstate::AvalancheFinalizeBlock(CBlockIndex *pindex,
         m_avalancheFinalizedBlockIndex = pindex;
     }
 
-    WITH_LOCK(cs_main, GetMainSignals().BlockFinalized(pindex));
+    GetMainSignals().BlockFinalized(pindex);
 
     return true;
 }

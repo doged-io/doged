@@ -6943,11 +6943,16 @@ void PeerManagerImpl::ProcessMessage(
                         m_avalanche->setRecentlyFinalized(
                             pindex->GetBlockHash());
 
+                        m_avalanche->cleanupStakingRewards(pindex->nHeight);
+
                         std::unique_ptr<node::CBlockTemplate> blockTemplate;
                         {
                             LOCK(cs_main);
                             auto &chainstate = m_chainman.ActiveChainstate();
                             chainstate.UnparkBlock(pindex);
+
+                            m_chainman.ActiveChainstate()
+                                .AvalancheFinalizeBlock(pindex, *m_avalanche);
 
                             if (m_opts.avalanche_preconsensus) {
                                 auto pblock = getBlockFromIndex(pindex);
@@ -6993,9 +6998,6 @@ void PeerManagerImpl::ProcessMessage(
                                 m_avalanche->addToReconcile(templateEntry.tx);
                             }
                         }
-
-                        m_chainman.ActiveChainstate().AvalancheFinalizeBlock(
-                            pindex, *m_avalanche);
                     } break;
                     case avalanche::VoteStatus::Stale:
                         // Fall back on Nakamoto consensus in the absence of
