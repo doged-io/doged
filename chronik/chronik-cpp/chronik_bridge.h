@@ -86,6 +86,9 @@ public:
 
     rust::Vec<uint8_t> get_block_header(const CBlockIndex &index) const;
 
+    bool is_avalanche_finalized_preconsensus(
+        const std::array<uint8_t, 32> &txid) const;
+
     const CBlockIndex &find_fork(const CBlockIndex &index) const;
 
     void lookup_spent_coins(Tx &, rust::Vec<OutPoint> &not_found,

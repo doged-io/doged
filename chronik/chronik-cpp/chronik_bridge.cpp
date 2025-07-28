@@ -311,6 +311,12 @@ ChronikBridge::get_block_header(const CBlockIndex &index) const {
     return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(ser_header));
 }
 
+bool ChronikBridge::is_avalanche_finalized_preconsensus(
+    const std::array<uint8_t, 32> &mempool_txid) const {
+    TxId txid{chronik::util::ArrayToHash(mempool_txid)};
+    return m_node.mempool->isAvalancheFinalizedPreConsensus(txid);
+}
+
 Tx bridge_tx(const CTransaction &tx, const std::vector<::Coin> &spent_coins) {
     return BridgeTx(false, tx, spent_coins);
 }
