@@ -71,8 +71,10 @@ class AvalancheMiningPreconsensusTest(BitcoinTestFramework):
                 for proofid in proofids
             )
 
-        finalize_proofs(node_non_preconsensus, quorum_non_preconsensus)
-        finalize_proofs(node_preconsensus, quorum_preconsensus)
+        self.wait_until(
+            lambda: finalize_proofs(node_non_preconsensus, quorum_non_preconsensus)
+        )
+        self.wait_until(lambda: finalize_proofs(node_preconsensus, quorum_preconsensus))
 
         # Get some coins so we can generate transactions
         wallet = MiniWallet(node_non_preconsensus)
