@@ -62,6 +62,8 @@ SET_FALSE_POSITIVE_UNDOCUMENTED = {
     "-replayprotectionactivationtime",
     # Remove after Nov. 2024 upgrade
     "-augustoactivationtime",
+    # Remove after Nov 2025 upgrade
+    "-shibusawaactivationtime",
 }
 
 

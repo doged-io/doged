@@ -51,8 +51,8 @@ TEST_EXIT_PASSED = 0
 TEST_EXIT_FAILED = 1
 TEST_EXIT_SKIPPED = 77
 
-# Timestamp is May. 16th, 2024 at 08:00:00
-TIMESTAMP_IN_THE_PAST = 1715846400
+# Timestamp is May. 16th, 2025 at 08:00:00
+TIMESTAMP_IN_THE_PAST = 1747382400
 
 TMPDIR_PREFIX = "bitcoin_func_test_"
 
@@ -297,6 +297,13 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             default=False,
             action="store_true",
             help=f"Activate Augusto update on timestamp {TIMESTAMP_IN_THE_PAST}",
+        )
+        parser.add_argument(
+            "--with-shibusawaactivation",
+            dest="shibusawaactivation",
+            default=False,
+            action="store_true",
+            help=f"Activate Shibusawa update on timestamp {TIMESTAMP_IN_THE_PAST}",
         )
         parser.add_argument(
             "--timeout-factor",
@@ -616,6 +623,10 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             if self.options.augustoactivation:
                 self.nodes[i].extend_default_args(
                     [f"-augustoactivationtime={TIMESTAMP_IN_THE_PAST}"]
+                )
+            if self.options.shibusawaactivation:
+                self.nodes[i].extend_default_args(
+                    [f"-shibusawaactivationtime={TIMESTAMP_IN_THE_PAST}"]
                 )
 
     def start_node(self, i, *args, **kwargs):
@@ -992,6 +1003,10 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             if self.options.augustoactivation:
                 self.nodes[CACHE_NODE_ID].extend_default_args(
                     [f"-augustoactivationtime={TIMESTAMP_IN_THE_PAST}"]
+                )
+            if self.options.shibusawaactivation:
+                self.nodes[CACHE_NODE_ID].extend_default_args(
+                    [f"-shibusawaactivationtime={TIMESTAMP_IN_THE_PAST}"]
                 )
 
             self.start_node(CACHE_NODE_ID)

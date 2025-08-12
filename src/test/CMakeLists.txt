@@ -315,6 +315,8 @@ function(add_boost_test_runners_with_upgrade_activated SUITE EXECUTABLE)
 			"-testsuitename=doged unit tests with next upgrade activated"
 			# May. 16th, 2024 at 08:00:00
 			-augustoactivationtime=1715846400
+			# May. 16th, 2025 at 08:00:00
+			-shibusawaactivationtime=1747382400
 		)
 	endforeach()
 endfunction()

@@ -129,6 +129,21 @@ bool IsAugustoEnabled(const Consensus::Params &params,
     return IsAugustoEnabled(params, pindexPrev->GetMedianTimePast());
 }
 
+bool IsShibusawaEnabled(const Consensus::Params &params,
+                        int64_t nMedianTimePast) {
+    return nMedianTimePast >= gArgs.GetIntArg("-shibusawaactivationtime",
+                                              params.shibusawaActivationTime);
+}
+
+bool IsShibusawaEnabled(const Consensus::Params &params,
+                      const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
+    }
+
+    return IsShibusawaEnabled(params, pindexPrev->GetMedianTimePast());
+}
+
 bool IsDigishieldEnabled(const Consensus::Params &params, int32_t nHeight) {
     return nHeight >= params.digishieldHeight;
 }
