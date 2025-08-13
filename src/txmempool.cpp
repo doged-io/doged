@@ -361,6 +361,8 @@ void CTxMemPool::removeForFinalizedBlock(
                                        entry->GetSigChecks(), entry->GetFee());
         }
     }
+
+    nTransactionsUpdated++;
 }
 
 void CTxMemPool::_clear() {
@@ -642,6 +644,8 @@ bool CTxMemPool::setAvalancheFinalized(const CTxMemPoolEntryRef &tx,
             GetMainSignals().TransactionFinalized((*it)->GetSharedTx());
         }
     }
+
+    nTransactionsUpdated++;
 
     return true;
 }
