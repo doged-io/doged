@@ -54,8 +54,7 @@
                                 {% when None %} {{ input.value|render_sats|safe }} DOGE {% when
                                 None %}
                             {% endmatch %}
-                            {% when None %} {{
-                            input.value|render_sats|safe }} DOGE
+                            {% when None %} {{input.sats|render_sats|safe }} DOGE
                         {% endmatch %}
                     </div>
                 </div>
