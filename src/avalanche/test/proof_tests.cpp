@@ -635,7 +635,18 @@ BOOST_AUTO_TEST_CASE(deserialization) {
         BOOST_CHECK_EQUAL(p.getScore(), c.score);
 
         ProofValidationState state;
-        BOOST_CHECK_EQUAL(p.verify(PROOF_DUST_THRESHOLD, state),
+        /**
+         * TODO: Redo test cases using new PROOF_DUST_THRESHOLD
+         * Process for updating these:
+         *  * Bump the below value to PROOF_DUST_THRESHOLD
+         *  * Take note of failing test cases. Decode them so you can copy as
+         *    many details as possible.
+         *  * Prepare up to 4 UTXOs (regtest!)
+         *  * Prepare proofs using the master key and payout address above
+         *  * Replace each failing test cases' hex and proofid (and score as
+         *    needed). Result should remain unmodified.
+         */
+        BOOST_CHECK_EQUAL(p.verify(100 * COIN, state),
                           c.result == ProofValidationResult::NONE);
         BOOST_CHECK(state.GetResult() == c.result);
         BOOST_TEST_MESSAGE(c.proofid);

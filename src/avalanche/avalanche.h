@@ -44,7 +44,7 @@ static constexpr size_t AVALANCHE_DEFAULT_COOLDOWN = 100;
  * quorum.
  */
 static constexpr Amount AVALANCHE_DEFAULT_MIN_QUORUM_STAKE =
-    int64_t(1'000'000'000'000) * SATOSHI; // 10B XEC
+    int64_t(100'000'000'000'000) * SATOSHI; // 1M DOGE
 
 /**
  * Default minimum percentage of stake-weighted peers we must have a node for to
