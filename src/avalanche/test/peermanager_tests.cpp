@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(remove_peer) {
         BOOST_CHECK(pm.addNode(InsecureRand32(), p->getId()));
     }
 
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 40000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 4000000);
     BOOST_CHECK_EQUAL(pm.getFragmentation(), 0);
 
     for (int i = 0; i < 100; i++) {
@@ -413,13 +413,13 @@ BOOST_AUTO_TEST_CASE(remove_peer) {
 
     // Remove one peer, it nevers show up now.
     BOOST_CHECK(pm.removePeer(peerids[2]));
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 40000);
-    BOOST_CHECK_EQUAL(pm.getFragmentation(), 10000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 4000000);
+    BOOST_CHECK_EQUAL(pm.getFragmentation(), 1000000);
 
     // Make sure we compact to never get NO_PEER.
-    BOOST_CHECK_EQUAL(pm.compact(), 10000);
+    BOOST_CHECK_EQUAL(pm.compact(), 1000000);
     BOOST_CHECK(pm.verify());
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 30000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 3000000);
     BOOST_CHECK_EQUAL(pm.getFragmentation(), 0);
 
     for (int i = 0; i < 100; i++) {
@@ -434,22 +434,22 @@ BOOST_AUTO_TEST_CASE(remove_peer) {
         BOOST_CHECK(pm.addNode(InsecureRand32(), p->getId()));
     }
 
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 70000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 7000000);
     BOOST_CHECK_EQUAL(pm.getFragmentation(), 0);
 
     BOOST_CHECK(pm.removePeer(peerids[0]));
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 70000);
-    BOOST_CHECK_EQUAL(pm.getFragmentation(), 10000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 7000000);
+    BOOST_CHECK_EQUAL(pm.getFragmentation(), 1000000);
 
     // Removing the last entry do not increase fragmentation.
     BOOST_CHECK(pm.removePeer(peerids[7]));
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 60000);
-    BOOST_CHECK_EQUAL(pm.getFragmentation(), 10000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 6000000);
+    BOOST_CHECK_EQUAL(pm.getFragmentation(), 1000000);
 
     // Make sure we compact to never get NO_PEER.
-    BOOST_CHECK_EQUAL(pm.compact(), 10000);
+    BOOST_CHECK_EQUAL(pm.compact(), 1000000);
     BOOST_CHECK(pm.verify());
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 50000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 5000000);
     BOOST_CHECK_EQUAL(pm.getFragmentation(), 0);
 
     for (int i = 0; i < 100; i++) {
@@ -483,14 +483,14 @@ BOOST_AUTO_TEST_CASE(compact_slots) {
         pm.removePeer(p);
     }
 
-    BOOST_CHECK_EQUAL(pm.getSlotCount(), 30000);
-    BOOST_CHECK_EQUAL(pm.getFragmentation(), 30000);
+    BOOST_CHECK_EQUAL(pm.getSlotCount(), 3000000);
+    BOOST_CHECK_EQUAL(pm.getFragmentation(), 3000000);
 
     for (int i = 0; i < 100; i++) {
         BOOST_CHECK_EQUAL(pm.selectPeer(), NO_PEER);
     }
 
-    BOOST_CHECK_EQUAL(pm.compact(), 30000);
+    BOOST_CHECK_EQUAL(pm.compact(), 3000000);
     BOOST_CHECK(pm.verify());
     BOOST_CHECK_EQUAL(pm.getSlotCount(), 0);
     BOOST_CHECK_EQUAL(pm.getFragmentation(), 0);
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE(node_crud) {
 
     // Create one peer.
     auto proof =
-        buildRandomProof(active_chainstate, 10000000 * MIN_VALID_PROOF_SCORE);
+        buildRandomProof(active_chainstate, 100000 * MIN_VALID_PROOF_SCORE);
     BOOST_CHECK(pm.registerProof(proof));
     BOOST_CHECK_EQUAL(pm.selectNode(), NO_NODE);
 
@@ -1749,7 +1749,7 @@ BOOST_AUTO_TEST_CASE(connected_score_tracking) {
 
     // Create one peer without a node. Its score should be registered but not
     // connected
-    Score score1 = 10000000 * MIN_VALID_PROOF_SCORE;
+    Score score1 = 100000 * MIN_VALID_PROOF_SCORE;
     auto proof1 = buildRandomProof(active_chainstate, score1);
     PeerId peerid1 = TestPeerManager::registerAndGetPeerId(pm, proof1);
     checkScores(score1, 0);
