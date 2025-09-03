@@ -237,7 +237,7 @@ public:
         consensus.powLimit = uint256S("0x00000fffffffffffffffffffffffffffffffff"
                                       "ffffffffffffffffffffffffff");
         // two weeks
-        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowTargetSpacing = 60; // one minute
         consensus.fPowNoRetargeting = false;
 
         // two days
