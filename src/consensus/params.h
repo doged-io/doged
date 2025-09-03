@@ -79,6 +79,16 @@ struct Params {
     /** Dogecoin "Digishield" activation height */
     int digishieldHeight;
 
+    /**
+     * Dogecoin "Digishield" testnet min-difficulty height.
+     * Note: The logic for this is confusing and the original dogecoin code
+     * should be used as reference. The mainnet and testnet logic are
+     * intertwined in an ugly way and should be refactored with extreme care.
+     * Ideally, this min-diff logic should be removed and testnet forked from
+     * a point that it is not required.
+     */
+    int digishieldMinDiffHeight;
+
     /** Coinbase maturity before Digishield */
     int32_t initialCoinbaseMaturity;
 
