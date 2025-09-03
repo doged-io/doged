@@ -15,7 +15,7 @@ DaaParams Params::DaaParamsAtHeight(int32_t nHeight) const {
 
     daaParams.fPowAllowMinDifficultyBlocks = enableTestnetMinDifficulty;
     // Blocks 145000 - 157499 have fPowAllowMinDifficultyBlocks disabled
-    if (enableTestnetMinDifficulty && hasDigishield && nHeight < 157500) {
+    if (enableTestnetMinDifficulty && nHeight >= 145000 && nHeight < 157500) {
         daaParams.fPowAllowMinDifficultyBlocks = false;
     }
 

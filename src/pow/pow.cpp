@@ -50,7 +50,7 @@ uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
     const Consensus::DaaParams daaParams = params.DaaParamsAtHeight(nHeight);
 
     // Dogecoin: Special rules for minimum difficulty blocks with Digishield
-    if (AllowDigishieldMinDifficultyForBlock(pindexPrev, pblock, params,
+    if (nHeight >= 157500 && AllowDigishieldMinDifficultyForBlock(pindexPrev, pblock, params,
                                              daaParams)) {
         // Special difficulty rule for testnet:
         // If the new block's timestamp is more than 2* nTargetSpacing minutes
