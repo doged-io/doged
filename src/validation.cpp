@@ -7179,6 +7179,12 @@ Chainstate &ChainstateManager::ActiveChainstate() const {
     return *m_active_chainstate;
 }
 
+const CBlockIndex *ChainstateManager::GetAvalancheFinalizedTip() const {
+    auto &active_chainstate = ActiveChainstate();
+    LOCK(active_chainstate.cs_avalancheFinalizedBlockIndex);
+    return active_chainstate.m_avalancheFinalizedBlockIndex;
+}
+
 bool ChainstateManager::IsSnapshotActive() const {
     LOCK(::cs_main);
     return m_snapshot_chainstate &&

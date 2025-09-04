@@ -1412,6 +1412,8 @@ public:
         return ActiveChain().Tip();
     }
 
+    const CBlockIndex *GetAvalancheFinalizedTip() const;
+
     //! The state of a background sync (for net processing)
     bool BackgroundSyncInProgress() const EXCLUSIVE_LOCKS_REQUIRED(GetMutex()) {
         return IsUsable(m_snapshot_chainstate.get()) &&
