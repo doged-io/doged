@@ -136,6 +136,7 @@ public:
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
+        consensus.digishieldMinDiffHeight = 157500;
         consensus.initialCoinbaseMaturity = 30;
         // Dogecoin: Enforce legacy script rules on mainnet
         consensus.enforceLegacyScriptRules = true;
@@ -279,6 +280,7 @@ public:
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
+        consensus.digishieldMinDiffHeight = 157500;
         consensus.initialCoinbaseMaturity = 30;
         // Dogecoin: Enforce legacy script rules on testnet
         consensus.enforceLegacyScriptRules = true;
@@ -423,6 +425,7 @@ public:
 
         // Digishield activation height
         consensus.digishieldHeight = 1450;
+        consensus.digishieldMinDiffHeight = 157500;
         // keep maturity same as Bitcoin for tests
         consensus.initialCoinbaseMaturity = REGTEST_COINBASE_MATURITY;
         // legacy rules enabled for regtest
