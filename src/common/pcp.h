@@ -6,6 +6,7 @@
 #define BITCOIN_COMMON_PCP_H
 
 #include <netaddress.h>
+#include <util/threadinterrupt.h>
 
 #include <array>
 #include <cstddef>
@@ -67,7 +68,7 @@ struct MappingResult {
 //! otherwise a MappingError.
 std::variant<MappingResult, MappingError>
 NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
-                     int num_tries = 3,
+                     CThreadInterrupt &interrupt, int num_tries = 3,
                      std::chrono::milliseconds timeout_per_try =
                          std::chrono::milliseconds(1000));
 
@@ -89,7 +90,7 @@ NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
 std::variant<MappingResult, MappingError>
 PCPRequestPortMap(const PCPMappingNonce &nonce, const CNetAddr &gateway,
                   const CNetAddr &bind, uint16_t port, uint32_t lifetime,
-                  int num_tries = 3,
+                  CThreadInterrupt &interrupt, int num_tries = 3,
                   std::chrono::milliseconds timeout_per_try =
                       std::chrono::milliseconds(1000));
 

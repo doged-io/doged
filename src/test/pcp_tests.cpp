@@ -15,6 +15,8 @@
 
 using namespace std::literals;
 
+static CThreadInterrupt g_interrupt;
+
 /// UDP test server operation.
 struct TestOp {
     std::chrono::milliseconds delay;
@@ -311,7 +313,8 @@ BOOST_AUTO_TEST_CASE(natpmp_ipv4) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000, 1, 200ms);
+    auto res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000,
+                                    g_interrupt, 1, 200ms);
 
     MappingResult *mapping = std::get_if<MappingResult>(&res);
     BOOST_REQUIRE(mapping);
@@ -364,8 +367,9 @@ BOOST_AUTO_TEST_CASE(pcp_ipv4) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 1, 1000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 1, 1000ms);
 
     MappingResult *mapping = std::get_if<MappingResult>(&res);
     BOOST_REQUIRE(mapping);
@@ -418,8 +422,9 @@ BOOST_AUTO_TEST_CASE(pcp_ipv6) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv6,
-                                 default_local_ipv6, 1234, 1000, 1, 1000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv6, default_local_ipv6,
+                          1234, 1000, g_interrupt, 1, 1000ms);
 
     MappingResult *mapping = std::get_if<MappingResult>(&res);
     BOOST_REQUIRE(mapping);
@@ -447,8 +452,9 @@ BOOST_AUTO_TEST_CASE(pcp_timeout) {
     ASSERT_DEBUG_LOG("pcp: Retrying (2)");
     ASSERT_DEBUG_LOG("pcp: Timeout");
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 3, 2000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 3, 2000ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -477,8 +483,9 @@ BOOST_AUTO_TEST_CASE(pcp_connrefused) {
 
     ASSERT_DEBUG_LOG("pcp: Could not receive response");
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 3, 2000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 3, 2000ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -550,8 +557,9 @@ BOOST_AUTO_TEST_CASE(pcp_ipv6_timeout_success) {
     ASSERT_DEBUG_LOG("pcp: Retrying (1)");
     ASSERT_DEBUG_LOG("pcp: Timeout");
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv6,
-                                 default_local_ipv6, 1234, 1000, 2, 2000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv6, default_local_ipv6,
+                          1234, 1000, g_interrupt, 2, 2000ms);
 
     BOOST_CHECK(std::get_if<MappingResult>(&res));
 }
@@ -600,8 +608,9 @@ BOOST_AUTO_TEST_CASE(pcp_ipv4_fail_no_resources) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 3, 1000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 3, 1000ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -649,8 +658,9 @@ BOOST_AUTO_TEST_CASE(pcp_ipv4_fail_unsupported_version) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 3, 1000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 3, 1000ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -686,7 +696,8 @@ BOOST_AUTO_TEST_CASE(natpmp_protocol_error) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000, 1, 200ms);
+    auto res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000,
+                                    g_interrupt, 1, 200ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -736,7 +747,8 @@ BOOST_AUTO_TEST_CASE(natpmp_protocol_error) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000, 1, 200ms);
+    res = NATPMPRequestPortMap(default_gateway_ipv4, 1234, 1000, g_interrupt, 1,
+                               200ms);
 
     err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);
@@ -786,8 +798,9 @@ BOOST_AUTO_TEST_CASE(pcp_protocol_error) {
         return std::unique_ptr<PCPTestSock>();
     };
 
-    auto res = PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4,
-                                 bind_any_ipv4, 1234, 1000, 1, 1000ms);
+    auto res =
+        PCPRequestPortMap(TEST_NONCE, default_gateway_ipv4, bind_any_ipv4, 1234,
+                          1000, g_interrupt, 1, 1000ms);
 
     MappingError *err = std::get_if<MappingError>(&res);
     BOOST_REQUIRE(err);

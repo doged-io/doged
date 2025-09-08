@@ -89,16 +89,17 @@ static bool ProcessPCP() {
             // gateway.
             struct in_addr inaddr_any;
             inaddr_any.s_addr = htonl(INADDR_ANY);
-            auto res =
-                PCPRequestPortMap(pcp_nonce, *gateway4, CNetAddr(inaddr_any),
-                                  private_port, requested_lifetime);
+            auto res = PCPRequestPortMap(
+                pcp_nonce, *gateway4, CNetAddr(inaddr_any), private_port,
+                requested_lifetime, g_mapport_interrupt);
             MappingError *pcp_err = std::get_if<MappingError>(&res);
             if (pcp_err && *pcp_err == MappingError::UNSUPP_VERSION) {
                 LogPrintLevel(BCLog::NET, BCLog::Level::Debug,
                               "portmap: Got unsupported PCP version response, "
                               "falling back to NAT-PMP\n");
                 res = NATPMPRequestPortMap(*gateway4, private_port,
-                                           requested_lifetime);
+                                           requested_lifetime,
+                                           g_mapport_interrupt);
             }
             handle_mapping(res);
         }
@@ -119,8 +120,9 @@ static bool ProcessPCP() {
                 if (!addr.IsRoutable() || !addr.IsIPv6()) {
                     continue;
                 }
-                auto res = PCPRequestPortMap(pcp_nonce, *gateway6, addr,
-                                             private_port, requested_lifetime);
+                auto res =
+                    PCPRequestPortMap(pcp_nonce, *gateway6, addr, private_port,
+                                      requested_lifetime, g_mapport_interrupt);
                 handle_mapping(res);
             }
         }

@@ -15,6 +15,7 @@
 #include <util/readwritefile.h>
 #include <util/sock.h>
 #include <util/strencodings.h>
+#include <util/threadinterrupt.h>
 
 namespace {
 
@@ -228,7 +229,9 @@ std::optional<std::vector<uint8_t>>
 PCPSendRecv(Sock &sock, const std::string &protocol,
             Span<const uint8_t> request, int num_tries,
             std::chrono::milliseconds timeout_per_try,
-            std::function<bool(Span<const uint8_t>)> check_packet) {
+            std::function<bool(Span<const uint8_t>)> check_packet,
+
+            CThreadInterrupt &interrupt) {
     using namespace std::chrono;
     // UDP is a potentially lossy protocol, so we try to send again a few times.
     uint8_t response[PCP_MAX_SIZE];
@@ -256,6 +259,9 @@ PCPSendRecv(Sock &sock, const std::string &protocol,
         auto deadline = cur_time + timeout_per_try;
         while ((cur_time = time_point_cast<milliseconds>(
                     MockableSteadyClock::now())) < deadline) {
+            if (interrupt) {
+                return std::nullopt;
+            }
             Sock::Event occurred = 0;
             if (!sock.Wait(deadline - cur_time, Sock::RECV, &occurred)) {
                 LogPrintLevel(BCLog::NET, BCLog::Level::Warning,
@@ -304,7 +310,8 @@ PCPSendRecv(Sock &sock, const std::string &protocol,
 
 std::variant<MappingResult, MappingError>
 NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
-                     int num_tries, std::chrono::milliseconds timeout_per_try) {
+                     CThreadInterrupt &interrupt, int num_tries,
+                     std::chrono::milliseconds timeout_per_try) {
     struct sockaddr_storage dest_addr;
     socklen_t dest_addrlen = sizeof(struct sockaddr_storage);
 
@@ -375,7 +382,8 @@ NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
                 return false;
             }
             return true;
-        });
+        },
+        interrupt);
 
     struct in_addr external_addr;
     if (recv_res) {
@@ -435,7 +443,8 @@ NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
                 return false;
             }
             return true;
-        });
+        },
+        interrupt);
 
     if (recv_res) {
         const std::span<uint8_t> response = *recv_res;
@@ -467,7 +476,8 @@ NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
 std::variant<MappingResult, MappingError>
 PCPRequestPortMap(const PCPMappingNonce &nonce, const CNetAddr &gateway,
                   const CNetAddr &bind, uint16_t port, uint32_t lifetime,
-                  int num_tries, std::chrono::milliseconds timeout_per_try) {
+                  CThreadInterrupt &interrupt, int num_tries,
+                  std::chrono::milliseconds timeout_per_try) {
     struct sockaddr_storage dest_addr, bind_addr;
     socklen_t dest_addrlen = sizeof(struct sockaddr_storage),
               bind_addrlen = sizeof(struct sockaddr_storage);
@@ -628,7 +638,8 @@ PCPRequestPortMap(const PCPMappingNonce &nonce, const CNetAddr &gateway,
                 return false;
             }
             return true;
-        });
+        },
+        interrupt);
 
     if (!recv_res) {
         return MappingError::NETWORK_ERROR;
