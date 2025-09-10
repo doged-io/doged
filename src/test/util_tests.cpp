@@ -3055,10 +3055,12 @@ template <typename T> void TestCheckedLeftShift() {
     if constexpr (std::is_signed_v<T>) {
         constexpr auto MIN{std::numeric_limits<T>::min()};
         // Negative input
-        BOOST_CHECK(CheckedLeftShift<T>(-1, 1) == -2);
-        BOOST_CHECK(CheckedLeftShift<T>((MIN >> 2), 1) == MIN / 2);
-        BOOST_CHECK(CheckedLeftShift<T>((MIN >> 1) + 1, 1) == MIN + 2);
-        BOOST_CHECK(CheckedLeftShift<T>(MIN >> 1, 1) == MIN);
+        // TODO: uncomment these tests after switching to C++20.
+        //       In C++17, left shifting negative values is undefined behavior.
+        // BOOST_CHECK(CheckedLeftShift<T>(-1, 1) == -2);
+        // BOOST_CHECK(CheckedLeftShift<T>((MIN >> 2), 1) == MIN / 2);
+        // BOOST_CHECK(CheckedLeftShift<T>((MIN >> 1) + 1, 1) == MIN + 2);
+        // BOOST_CHECK(CheckedLeftShift<T>(MIN >> 1, 1) == MIN);
         // Overflow negative
         BOOST_CHECK(!CheckedLeftShift<T>((MIN >> 1) - 1, 1));
         BOOST_CHECK(!CheckedLeftShift<T>(MIN >> 1, 2));
@@ -3094,10 +3096,12 @@ template <typename T> void TestSaturatingLeftShift() {
     if constexpr (std::is_signed_v<T>) {
         constexpr auto MIN{std::numeric_limits<T>::min()};
         // Negative input
-        BOOST_CHECK(SaturatingLeftShift<T>(-1, 1) == -2);
-        BOOST_CHECK(SaturatingLeftShift<T>((MIN >> 2), 1) == MIN / 2);
-        BOOST_CHECK(SaturatingLeftShift<T>((MIN >> 1) + 1, 1) == MIN + 2);
-        BOOST_CHECK(SaturatingLeftShift<T>(MIN >> 1, 1) == MIN);
+        // TODO: uncomment these tests after switching to C++20.
+        //       In C++17, left shifting negative values is undefined behavior.
+        // BOOST_CHECK(SaturatingLeftShift<T>(-1, 1) == -2);
+        // BOOST_CHECK(SaturatingLeftShift<T>((MIN >> 2), 1) == MIN / 2);
+        // BOOST_CHECK(SaturatingLeftShift<T>((MIN >> 1) + 1, 1) == MIN + 2);
+        // BOOST_CHECK(SaturatingLeftShift<T>(MIN >> 1, 1) == MIN);
         // Saturation negative
         BOOST_CHECK(SaturatingLeftShift<T>((MIN >> 1) - 1, 1) == MIN);
         BOOST_CHECK(SaturatingLeftShift<T>(MIN >> 1, 2) == MIN);
