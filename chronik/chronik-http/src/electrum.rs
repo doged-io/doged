@@ -411,7 +411,7 @@ impl ChronikElectrumRPCServerEndpoint {
             }
         };
         let version_number = ffi::format_full_version();
-        let server_version = format!("Bitcoin ABC {version_number}");
+        let server_version = format!("doged {version_number}");
         Ok(json!([server_version, ELECTRUM_PROTOCOL_VERSION]))
     }
 }
