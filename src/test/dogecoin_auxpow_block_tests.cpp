@@ -20,10 +20,6 @@ BOOST_AUTO_TEST_CASE(mine_auxpow_blocks_test) {
     const Consensus::Params &consensus = config.GetChainParams().GetConsensus();
     const BlockValidationOptions blockopts(config);
 
-    CBlock block =
-        CreateAuxPowBlock({}, CScript() << OP_1, 0x63, 0x12345678, {uint256()},
-                          {uint256(), uint256()}, chainman.ActiveChainstate());
-
     // Block must have the auxpow version bit set if it has auxpow
     {
         CBlock block = CreateAuxPowBlock(
