@@ -57,6 +57,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
                 "-avastalevotethreshold=500",
                 "-avastalevotefactor=1",
                 "-simplegbt",
+                f"-shibusawaactivationtime={int(time.time()) - 1000}",
             ],
         ]
         self.supports_cli = False
@@ -70,6 +71,12 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         # Set mock time so we can control when proofs will be considered for staking rewards
         now = int(time.time())
         node.setmocktime(now)
+
+        # Activate the Shibusawa upgrade
+        assert node.getinfo()["avalanche_staking_rewards"]
+        assert not node.getinfo()["avalanche_staking_preconsensus"]
+        self.generate(node, 6)
+        assert node.getinfo()["avalanche_staking_preconsensus"]
 
         # Build a fake quorum of nodes.
         def get_quorum(stake_utxo_confirmations=1, proof_data=None):
@@ -287,8 +294,6 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
             polled_contenders = set()
 
             def poll_round():
-                nonlocal polled_contenders
-
                 # Answer polls until contenders start polling
                 for n in quorum:
                     poll = n.get_avapoll_if_available()
@@ -587,7 +592,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
             extra_args=self.extra_args[0]
             + [
                 # After restart we will have a new quorum worth 16 * 45M XEC,
-                # but also dangling proofs worth 16* 50M XEC due to avapeeers
+                # but also dangling proofs worth 16 * 50M XEC due to avapeeers
                 # persistency. Set the ratio so the quorum is established only
                 # after the last peer (out of 16) has connected, otherwise the
                 # test will use a subset of the peers to determine the
@@ -599,6 +604,10 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
 
         now = int(time.time())
         node.setmocktime(now)
+
+        # Make sure staking rewards preconsensus is active
+        assert node.getinfo()["avalanche_staking_rewards"]
+        assert node.getinfo()["avalanche_staking_preconsensus"]
 
         assert node.getavalancheinfo()["ready_to_poll"] is False
 

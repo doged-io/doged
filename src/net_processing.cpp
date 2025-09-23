@@ -6724,6 +6724,14 @@ void PeerManagerImpl::ProcessMessage(
         std::vector<avalanche::Vote> votes;
         votes.reserve(nCount);
 
+        bool fStakingPreconsensus{false};
+        {
+            LOCK(::cs_main);
+            const CBlockIndex *tip = m_chainman.ActiveTip();
+            fStakingPreconsensus =
+                m_avalanche->isStakingPreconsensusActivated(tip);
+        }
+
         for (unsigned int n = 0; n < nCount; n++) {
             CInv inv;
             vRecv >> inv;
@@ -6754,7 +6762,7 @@ void PeerManagerImpl::ProcessMessage(
                         *m_avalanche, avalanche::ProofId(inv.hash));
                 } break;
                 case MSG_AVA_STAKE_CONTENDER: {
-                    if (m_opts.avalanche_staking_preconsensus) {
+                    if (fStakingPreconsensus) {
                         vote = m_avalanche->getStakeContenderStatus(
                             avalanche::StakeContenderId(inv.hash));
                     }
@@ -6883,6 +6891,14 @@ void PeerManagerImpl::ProcessMessage(
         };
 
         bool shouldActivateBestChain = false;
+
+        bool fStakingPreconsensus{false};
+        {
+            LOCK(::cs_main);
+            const CBlockIndex *tip = m_chainman.ActiveTip();
+            fStakingPreconsensus =
+                m_avalanche->isStakingPreconsensusActivated(tip);
+        }
 
         for (const auto &u : updates) {
             const avalanche::AnyVoteItem &item = u.getVoteItem();
@@ -7111,7 +7127,7 @@ void PeerManagerImpl::ProcessMessage(
                 }
             }
 
-            if (m_opts.avalanche_staking_preconsensus) {
+            if (fStakingPreconsensus) {
                 if (auto pitem =
                         std::get_if<const avalanche::StakeContenderId>(&item)) {
                     const avalanche::StakeContenderId contenderId = *pitem;
