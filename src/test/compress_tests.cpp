@@ -23,6 +23,9 @@
 // amounts 50 .. 21000000
 #define NUM_MULTIPLES_50BCH 420000
 
+// amounts 10000 .. 10000000000
+#define NUM_MULTIPLES_10000BCH 1000000
+
 BOOST_FIXTURE_TEST_SUITE(compress_tests, BasicTestingSetup)
 
 static bool TestEncode(Amount in) {
@@ -44,6 +47,10 @@ BOOST_AUTO_TEST_CASE(compress_amounts) {
     BOOST_CHECK(TestPair(COIN, 0x9));
     BOOST_CHECK(TestPair(50 * COIN, 0x32));
     BOOST_CHECK(TestPair(21000000 * COIN, 0x1406f40));
+    BOOST_CHECK(TestPair(10000000000 * COIN, 0x2540be400));
+    BOOST_CHECK(TestPair(MAX_MONEY, 0x2540be400));
+    BOOST_CHECK(TestPair(10000000001 * COIN, 0x14F46B0409));
+    BOOST_CHECK(TestPair(MAX_MONEY + COIN, 0x14F46B0409));
 
     for (int64_t i = 1; i <= NUM_MULTIPLES_UNIT; i++) {
         BOOST_CHECK(TestEncode(i * SATOSHI));
@@ -59,6 +66,10 @@ BOOST_AUTO_TEST_CASE(compress_amounts) {
 
     for (int64_t i = 1; i <= NUM_MULTIPLES_50BCH; i++) {
         BOOST_CHECK(TestEncode(i * 50 * COIN));
+    }
+
+    for (int64_t i = 1; i <= NUM_MULTIPLES_10000BCH; i++) {
+        BOOST_CHECK(TestEncode(i * 10000 * COIN));
     }
 
     for (int64_t i = 0; i < 100000; i++) {
