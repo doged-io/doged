@@ -134,6 +134,7 @@ public:
         consensus.augustoActivationTime = 0x7ffffffe;
         consensus.schumpeterActivationTime = 0x7ffffffe;
         consensus.shibusawaActivationTime = 0x7ffffffe;
+        consensus.obolenskyActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
@@ -286,6 +287,7 @@ public:
         consensus.augustoActivationTime = 0x7ffffffe;
         consensus.schumpeterActivationTime = 0x7ffffffe;
         consensus.shibusawaActivationTime = 0x7ffffffe;
+        consensus.obolenskyActivationTime = 0x7ffffffe;
 
         // Dogecoin: Digishield activation height
         consensus.digishieldHeight = 145000;
@@ -439,6 +441,9 @@ public:
 
         // Nov. 15, 2025 12:00:00 UTC protocol upgrade
         consensus.shibusawaActivationTime = 1763208000;
+
+        // May 15, 2026 12:00:00 UTC protocol upgrade
+        consensus.obolenskyActivationTime = 1778846400;
 
         // Digishield activation height
         consensus.digishieldHeight = 1450;
