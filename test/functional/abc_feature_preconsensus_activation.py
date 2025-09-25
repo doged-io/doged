@@ -24,6 +24,7 @@ class AvalanchePreconsensusActivationTest(BitcoinTestFramework):
         self.noban_tx_relay = True
         self.extra_args = [
             [
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
@@ -151,6 +152,7 @@ class AvalanchePreconsensusActivationTest(BitcoinTestFramework):
         self.restart_node(
             0,
             extra_args=[
+                "-avalanche",
                 "-avalanchepreconsensus=0",
                 "-avalanchepreconsensusmining=1",
                 f"-mocktime={now}",
@@ -163,6 +165,19 @@ class AvalanchePreconsensusActivationTest(BitcoinTestFramework):
         self.restart_node(
             0,
             extra_args=[
+                "-avalanche",
+                "-avalanchepreconsensus=0",
+                f"-mocktime={now}",
+            ],
+        )
+
+        assert not node.getinfo()["avalanche_preconsensus"]
+        assert not node.getinfo()["avalanche_mining_preconsensus"]
+
+        self.restart_node(
+            0,
+            extra_args=[
+                "-avalanche",
                 "-avalanchepreconsensus=1",
                 "-avalanchepreconsensusmining=0",
                 f"-mocktime={now}",
@@ -175,6 +190,19 @@ class AvalanchePreconsensusActivationTest(BitcoinTestFramework):
         self.restart_node(
             0,
             extra_args=[
+                "-avalanche",
+                "-avalanchepreconsensusmining=0",
+                f"-mocktime={now}",
+            ],
+        )
+
+        assert not node.getinfo()["avalanche_preconsensus"]
+        assert not node.getinfo()["avalanche_mining_preconsensus"]
+
+        self.restart_node(
+            0,
+            extra_args=[
+                "-avalanche",
                 "-avalanchepreconsensus=0",
                 "-avalanchepreconsensusmining=0",
                 f"-mocktime={now}",
@@ -187,6 +215,7 @@ class AvalanchePreconsensusActivationTest(BitcoinTestFramework):
         self.restart_node(
             0,
             extra_args=[
+                "-avalanche",
                 "-avalanchepreconsensus=1",
                 "-avalanchepreconsensusmining=1",
                 f"-mocktime={now}",
