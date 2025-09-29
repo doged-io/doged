@@ -255,7 +255,7 @@ class ChronikScriptHistoryTest(BitcoinTestFramework):
         for idx, tx in enumerate(mempool_txs[:5]):
             tx.nLockTime = 12
             mine_txs.append(tx)
-            newblocktxs.append({"time_first_seen": 0, "txid": tx.hash})
+            newblocktxs.append({"time_first_seen": 0, "txid": tx.txid_hex})
 
         height = 1002
         coinbase_tx = create_coinbase(height)
@@ -271,7 +271,7 @@ class ChronikScriptHistoryTest(BitcoinTestFramework):
         peer.send_blocks_and_test([block], node)
 
         newblocktxs.append(
-            {"time_first_seen": 0, "txid": coinbase_tx.hash, "is_coinbase": True}
+            {"time_first_seen": 0, "txid": coinbase_tx.txid_hex, "is_coinbase": True}
         )
 
         newblocktxs.sort(key=tx_sort_key, reverse=True)
