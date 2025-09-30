@@ -253,7 +253,7 @@ class ChronikWsTest(BitcoinTestFramework):
         # also be rejected
         cb2 = create_coinbase(height + 1)
         block2 = create_block(
-            int(block1.hash, 16), cb2, now, version=VERSION_CHAIN_ID_BITS | 4
+            int(block1.hash_hex, 16), cb2, now, version=VERSION_CHAIN_ID_BITS | 4
         )
         block2.solve()
 
@@ -261,9 +261,9 @@ class ChronikWsTest(BitcoinTestFramework):
         with node.assert_debug_log(["policy-bad-miner-fund"]):
             quorum[0].send_message(msg_block(block1))
         with node.wait_for_debug_log(
-            [f"Avalanche invalidated block {block1.hash}".encode()],
+            [f"Avalanche invalidated block {block1.hash_hex}".encode()],
             chatty_callable=lambda: can_find_inv_in_poll(
-                quorum, int(block1.hash, 16), AvalancheVoteError.INVALID
+                quorum, int(block1.hash_hex, 16), AvalancheVoteError.INVALID
             ),
         ):
             pass
@@ -271,21 +271,21 @@ class ChronikWsTest(BitcoinTestFramework):
         # Then the second one
         quorum[0].send_message(msg_block(block2))
         with node.wait_for_debug_log(
-            [f"Avalanche invalidated block {block2.hash}".encode()],
+            [f"Avalanche invalidated block {block2.hash_hex}".encode()],
             chatty_callable=lambda: can_find_inv_in_poll(
-                quorum, int(block2.hash, 16), AvalancheVoteError.INVALID
+                quorum, int(block2.hash_hex, 16), AvalancheVoteError.INVALID
             ),
         ):
             pass
 
         # We get an INVALIDATED msg for the first block ...
-        coinbase_data1 = coinbase_data_from_block(block1.hash)
+        coinbase_data1 = coinbase_data_from_block(block1.hash_hex)
         assert_equal(
             ws.recv(),
             pb.WsMsg(
                 block=pb.MsgBlock(
                     msg_type=pb.BLK_INVALIDATED,
-                    block_hash=bytes.fromhex(block1.hash)[::-1],
+                    block_hash=bytes.fromhex(block1.hash_hex)[::-1],
                     block_height=height,
                     block_timestamp=now,
                     coinbase_data=coinbase_data1,
@@ -402,7 +402,7 @@ class ChronikWsTest(BitcoinTestFramework):
             ),
         )
 
-        node.parkblock(block.hash)
+        node.parkblock(block.hash_hex)
         node.unparkblock(tip)
         assert_equal(
             ws.recv(),

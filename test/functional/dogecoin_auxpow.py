@@ -48,7 +48,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
             int(node.getbestblockhash(), 16), coinbase_tx, mocktime + 1100
         )
         block.nVersion = VERSION_CHAIN_ID_BITS | VERSION_AUXPOW_BIT | 5
-        block_hash = bytes.fromhex(block.hash)
+        block_hash = bytes.fromhex(block.hash_hex)
 
         # nIndex = 1 not allowed
         block.auxpow = CAuxPow()
@@ -170,7 +170,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         # Success!
         block.solve()
         assert_equal(node.submitblock(block.serialize().hex()), None)
-        assert_equal(node.getbestblockhash(), block.hash)
+        assert_equal(node.getbestblockhash(), block.hash_hex)
 
         # Add another block with each a merkle branch of 1 (instead of 0)
         height = 2
@@ -178,7 +178,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
         block2 = create_block(block.hash_int, coinbase_tx, mocktime + 1101)
         block2.nVersion = VERSION_CHAIN_ID_BITS | VERSION_AUXPOW_BIT | 0xFF
-        block_hash = bytes.fromhex(block.hash)
+        block_hash = bytes.fromhex(block.hash_hex)
 
         nMerkleNonce = 0xD4D3D2D1
         nChainIndex = 1
@@ -205,7 +205,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block2.solve()
 
         assert_equal(node.submitblock(block2.serialize().hex()), None)
-        assert_equal(node.getbestblockhash(), block2.hash)
+        assert_equal(node.getbestblockhash(), block2.hash_hex)
 
 
 if __name__ == "__main__":

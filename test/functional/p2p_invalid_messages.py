@@ -414,7 +414,7 @@ class InvalidMessagesTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getblockchaininfo()["headers"], 1)
         chaintips = self.nodes[0].getchaintips()
         assert_equal(chaintips[0]["status"], "headers-only")
-        assert_equal(chaintips[0]["hash"], blockheader.hash)
+        assert_equal(chaintips[0]["hash"], blockheader.hash_hex)
 
         # invalidate PoW
         while not blockheader.powHashHex.startswith("f"):
