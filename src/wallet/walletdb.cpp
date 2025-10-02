@@ -907,11 +907,6 @@ DBErrors WalletBatch::LoadWallet(CWallet *pwallet) {
         WriteTx(pwallet->mapWallet.at(txid));
     }
 
-    // Rewrite encrypted wallets of versions 0.4.0 and 0.5.0rc:
-    if (wss.fIsEncrypted && (last_client == 40000 || last_client == 50000)) {
-        return DBErrors::NEED_REWRITE;
-    }
-
     if (!has_last_client || last_client != CLIENT_VERSION) {
         // Update
         m_batch->Write(DBKeys::VERSION, CLIENT_VERSION);
