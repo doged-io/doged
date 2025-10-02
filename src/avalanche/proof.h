@@ -33,12 +33,12 @@ static constexpr int AVALANCHE_MAX_PROOF_STAKES = 1000;
  * Minimum number of confirmations before a stake utxo is mature enough to be
  * included into a proof.
  */
-static constexpr int AVALANCHE_DEFAULT_STAKE_UTXO_CONFIRMATIONS = 2016;
+static constexpr int AVALANCHE_DEFAULT_STAKE_UTXO_CONFIRMATIONS = 20160;
 
 namespace avalanche {
 
 /** Minimum amount per utxo */
-static constexpr Amount PROOF_DUST_THRESHOLD = 100 * COIN;
+static constexpr Amount PROOF_DUST_THRESHOLD = 10000 * COIN;
 
 class ProofValidationState;
 

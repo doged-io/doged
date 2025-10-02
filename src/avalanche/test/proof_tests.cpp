@@ -635,7 +635,8 @@ BOOST_AUTO_TEST_CASE(deserialization) {
         BOOST_CHECK_EQUAL(p.getScore(), c.score);
 
         ProofValidationState state;
-        BOOST_CHECK_EQUAL(p.verify(PROOF_DUST_THRESHOLD, state),
+        // TODO Redo test cases using new PROOF_DUST_THRESHOLD
+        BOOST_CHECK_EQUAL(p.verify(100 * COIN, state),
                           c.result == ProofValidationResult::NONE);
         BOOST_CHECK(state.GetResult() == c.result);
         BOOST_TEST_MESSAGE(c.proofid);
