@@ -1,4 +1,5 @@
 # Copyright (c) 2017 The Bitcoin developers
+# Copyright (c) 2025-2026 Tobias Ruck and Alexandre Guillioud
 
 project(doged)
 
