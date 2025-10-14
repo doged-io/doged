@@ -1044,6 +1044,8 @@ std::string RemovalReasonToString(const MemPoolRemovalReason &r) noexcept {
             return "conflict";
         case MemPoolRemovalReason::AVALANCHE:
             return "avalanche";
+        case MemPoolRemovalReason::MANUAL:
+            return "manual";
     }
     assert(false);
 }
