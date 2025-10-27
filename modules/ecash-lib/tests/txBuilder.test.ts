@@ -1,4 +1,4 @@
-// Copyright (c) 2024 The Bitcoin developers
+// Copyright (c) 2024-2025 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -157,6 +157,16 @@ describe('TxBuilder', () => {
             ],
         });
         const spendTx = txBuild.sign({ feePerKb: 1000n, dustSats: 546n });
+
+        // We can go back to a TxBuilder from a Tx
+        const txBuilderFromTx = TxBuilder.fromTx(spendTx);
+        // We can sign it again and get the same serialized Tx
+        txBuilderFromTx.sign({ feePerKb: 1000n, dustSats: 546n });
+        const serializedTxFromTx = txBuilderFromTx
+            .sign({ feePerKb: 1000n, dustSats: 546n })
+            .ser();
+        expect(spendTx.ser()).to.deep.equal(serializedTxFromTx);
+
         const estimatedSize = txBuild
             .sign({ ecc: new EccDummy(), feePerKb: 1000n, dustSats: 546n })
             .serSize();
@@ -209,12 +219,17 @@ describe('TxBuilder', () => {
                 outputs: [p2pkh],
             });
             const spendTx = txBuild.sign({ feePerKb: 1000n, dustSats: 546n });
-            try {
-                await chronik.broadcastTx(spendTx.ser());
-            } catch (ex) {
-                console.log('sig hash type failed:', sigHashType);
-                throw ex;
-            }
+
+            // We can go back to a TxBuilder from a Tx
+            const txBuilderFromTx = TxBuilder.fromTx(spendTx);
+            // We can sign it again and get the same serialized Tx
+            txBuilderFromTx.sign({ feePerKb: 1000n, dustSats: 546n });
+            const serializedTxFromTx = txBuilderFromTx
+                .sign({ feePerKb: 1000n, dustSats: 546n })
+                .ser();
+            expect(spendTx.ser()).to.deep.equal(serializedTxFromTx);
+
+            await chronik.broadcastTx(spendTx.ser());
         }
     });
 
@@ -246,6 +261,16 @@ describe('TxBuilder', () => {
                 outputs: [p2pk],
             });
             const spendTx = txBuild.sign({ feePerKb: 1000n, dustSats: 546n });
+
+            // We can go back to a TxBuilder from a Tx
+            const txBuilderFromTx = TxBuilder.fromTx(spendTx);
+            // We can sign it again and get the same serialized Tx
+            txBuilderFromTx.sign({ feePerKb: 1000n, dustSats: 546n });
+            const serializedTxFromTx = txBuilderFromTx
+                .sign({ feePerKb: 1000n, dustSats: 546n })
+                .ser();
+            expect(spendTx.ser()).to.deep.equal(serializedTxFromTx);
+
             await chronik.broadcastTx(spendTx.ser());
         }
     });
@@ -290,6 +315,16 @@ describe('TxBuilder', () => {
                 outputs: [p2pk],
             });
             const spendTx = txBuild.sign({ feePerKb: 1000n, dustSats: 546n });
+
+            // We can go back to a TxBuilder from a Tx
+            const txBuilderFromTx = TxBuilder.fromTx(spendTx);
+            // We can sign it again and get the same serialized Tx
+            txBuilderFromTx.sign({ feePerKb: 1000n, dustSats: 546n });
+            const serializedTxFromTx = txBuilderFromTx
+                .sign({ feePerKb: 1000n, dustSats: 546n })
+                .ser();
+            expect(spendTx.ser()).to.deep.equal(serializedTxFromTx);
+
             await chronik.broadcastTx(spendTx.ser());
         }
     });
@@ -344,10 +379,17 @@ describe('TxBuilder', () => {
                     ],
                     outputs: [p2sh],
                 });
-                const spendTx = txBuild.sign({
-                    feePerKb: 1000n,
-                    dustSats: 546n,
-                });
+                const spendTx = txBuild.sign({ feePerKb: 1000n, dustSats: 546n });
+
+                // We can go back to a TxBuilder from a Tx
+                const txBuilderFromTx = TxBuilder.fromTx(spendTx);
+                // We can sign it again and get the same serialized Tx
+                txBuilderFromTx.sign({ feePerKb: 1000n, dustSats: 546n });
+                const serializedTxFromTx = txBuilderFromTx
+                    .sign({ feePerKb: 1000n, dustSats: 546n })
+                    .ser();
+                expect(spendTx.ser()).to.deep.equal(serializedTxFromTx);
+
                 await chronik.broadcastTx(spendTx.ser());
             }
         },
