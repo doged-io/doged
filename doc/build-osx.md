@@ -29,7 +29,7 @@ See [dependencies.md](dependencies.md) for a complete overview.
 Build doged
 -----------------
 
-Before you start building, please make sure that your compiler supports C++17.
+Before you start building, please make sure that your compiler supports C++20.
 
 1. Clone the doged source code and cd into `bitcoin-abc`
 
