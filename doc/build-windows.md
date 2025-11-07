@@ -5,7 +5,7 @@ Below are some notes on how to build doged for Windows.
 
 The options known to work for building doged on Windows are:
 
-* On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler tool chain. Debian Bullseye is recommended
+* On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler tool chain. Debian Bookworm is recommended
 and is the platform used to build the doged Windows release binaries.
 * On Windows, using [Windows
 Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about) and the Mingw-w64 cross compiler tool chain.
