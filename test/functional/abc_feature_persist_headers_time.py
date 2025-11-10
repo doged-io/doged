@@ -2,6 +2,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test dumping/loading the headers receive time to/from file."""
+
 from test_framework.messages import uint256_from_compact
 from test_framework.p2p import P2PInterface
 from test_framework.test_framework import BitcoinTestFramework
