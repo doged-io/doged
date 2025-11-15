@@ -299,14 +299,14 @@ rust::Vec<uint8_t> ChronikBridge::load_raw_tx(uint32_t file_num,
             tx, FlatFilePos(file_num, data_pos))) {
         throw std::runtime_error("Reading tx data from disk failed");
     }
-    CDataStream raw_tx{SER_NETWORK, PROTOCOL_VERSION};
+    DataStream raw_tx{};
     raw_tx << tx;
     return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(raw_tx));
 }
 
 rust::Vec<uint8_t>
 ChronikBridge::get_block_header(const CBlockIndex &index) const {
-    CDataStream ser_header{SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ser_header{};
     ser_header << index.GetBlockHeader(m_node.chainman->m_blockman);
     return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(ser_header));
 }
@@ -380,7 +380,7 @@ std::array<uint8_t, 32>
 ChronikBridge::broadcast_tx(rust::Slice<const uint8_t> raw_tx,
                             int64_t max_fee) const {
     std::vector<uint8_t> vec = chronik::util::FromRustSlice(raw_tx);
-    CDataStream stream{vec, SER_NETWORK, PROTOCOL_VERSION};
+    DataStream stream{vec};
     CMutableTransaction tx;
     stream >> tx;
     CTransactionRef tx_ref = MakeTransactionRef(tx);
@@ -482,14 +482,14 @@ const CBlockIndex &get_block_ancestor(const CBlockIndex &index,
 rust::Vec<uint8_t> compress_script(rust::Slice<const uint8_t> bytecode) {
     std::vector<uint8_t> vec = chronik::util::FromRustSlice(bytecode);
     CScript script{vec.begin(), vec.end()};
-    CDataStream compressed{SER_NETWORK, PROTOCOL_VERSION};
+    DataStream compressed{};
     compressed << Using<ScriptCompression>(script);
     return chronik::util::ToRustVec<uint8_t>(MakeUCharSpan(compressed));
 }
 
 rust::Vec<uint8_t> decompress_script(rust::Slice<const uint8_t> compressed) {
     std::vector<uint8_t> vec = chronik::util::FromRustSlice(compressed);
-    CDataStream stream{vec, SER_NETWORK, PROTOCOL_VERSION};
+    DataStream stream{vec};
     CScript script;
     stream >> Using<ScriptCompression>(script);
     return chronik::util::ToRustVec<uint8_t>(script);
