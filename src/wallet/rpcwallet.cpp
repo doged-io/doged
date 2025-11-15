@@ -1958,8 +1958,7 @@ static RPCHelpMan gettransaction() {
                              nullptr /* filter_label */);
             entry.pushKV("details", details);
 
-            std::string strHex =
-                EncodeHexTx(*wtx.tx, pwallet->chain().rpcSerializationFlags());
+            std::string strHex = EncodeHexTx(*wtx.tx);
             entry.pushKV("hex", strHex);
 
             if (verbose) {

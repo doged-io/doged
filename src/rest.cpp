@@ -322,8 +322,7 @@ static bool rest_block(const Config &config, const std::any &context,
 
     switch (rf) {
         case RetFormat::BINARY: {
-            CDataStream ssBlock(SER_NETWORK,
-                                PROTOCOL_VERSION | RPCSerializationFlags());
+            CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
             ssBlock << block;
             std::string binaryBlock = ssBlock.str();
             req->WriteHeader("Content-Type", "application/octet-stream");
@@ -332,8 +331,7 @@ static bool rest_block(const Config &config, const std::any &context,
         }
 
         case RetFormat::HEX: {
-            CDataStream ssBlock(SER_NETWORK,
-                                PROTOCOL_VERSION | RPCSerializationFlags());
+            CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
             ssBlock << block;
             std::string strHex = HexStr(ssBlock) + "\n";
             req->WriteHeader("Content-Type", "text/plain");
@@ -493,8 +491,7 @@ static bool rest_tx(Config &config, const std::any &context, HTTPRequest *req,
 
     switch (rf) {
         case RetFormat::BINARY: {
-            CDataStream ssTx(SER_NETWORK,
-                             PROTOCOL_VERSION | RPCSerializationFlags());
+            CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
             ssTx << tx;
 
             std::string binaryTx = ssTx.str();
@@ -504,8 +501,7 @@ static bool rest_tx(Config &config, const std::any &context, HTTPRequest *req,
         }
 
         case RetFormat::HEX: {
-            CDataStream ssTx(SER_NETWORK,
-                             PROTOCOL_VERSION | RPCSerializationFlags());
+            CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
             ssTx << tx;
 
             std::string strHex = HexStr(ssTx) + "\n";
