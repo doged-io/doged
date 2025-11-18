@@ -402,6 +402,8 @@ public:
     /** Functions for disk access for blocks */
     bool ReadBlockFromDisk(CBlock &block, const FlatFilePos &pos) const;
     bool ReadBlockFromDisk(CBlock &block, const CBlockIndex &index) const;
+    bool ReadRawBlockFromDisk(std::vector<uint8_t> &block,
+                              const FlatFilePos &pos) const;
     bool ReadBlockHeaderFromDisk(CBlockHeader &header,
                                  const FlatFilePos &pos) const;
     bool ReadBlockHeaderFromDisk(CBlockHeader &header,
