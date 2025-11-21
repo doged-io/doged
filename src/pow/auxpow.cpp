@@ -15,21 +15,24 @@ bool CheckAuxProofOfWork(const CBlockHeader &block,
     // start, which is checked in AcceptBlockHeader where the height is known.
     if (params.enforceStrictAuxPowChainId && !VersionIsLegacy(block.nVersion) &&
         VersionChainId(block.nVersion) != AUXPOW_CHAIN_ID) {
-        return error("%s: block does not have our chain ID (got %x, expected "
-                     "%x, full nVersion %x)",
-                     __func__, VersionChainId(block.nVersion), AUXPOW_CHAIN_ID,
-                     block.nVersion);
+        LogError("%s: block does not have our chain ID (got %x, expected "
+                 "%x, full nVersion %x)",
+                 __func__, VersionChainId(block.nVersion), AUXPOW_CHAIN_ID,
+                 block.nVersion);
+        return false;
     }
 
     // If there is no auxpow, just check the block hash.
     if (!block.auxpow) {
         if (VersionHasAuxPow(block.nVersion)) {
-            return error("%s: no auxpow on block %s with auxpow version %08x",
-                         __func__, block.GetHash().ToString(), block.nVersion);
+            LogError("%s: no auxpow on block %s with auxpow version %08x",
+                     __func__, block.GetHash().ToString(), block.nVersion);
+            return false;
         }
 
         if (!CheckProofOfWork(block.GetPowHash(), block.nBits, params)) {
-            return error("%s: non-AUX proof of work failed", __func__);
+            LogError("%s: non-AUX proof of work failed", __func__);
+            return false;
         }
 
         return true;
@@ -37,19 +40,22 @@ bool CheckAuxProofOfWork(const CBlockHeader &block,
 
     if (!VersionHasAuxPow(block.nVersion)) {
         // Header encodes auxpow, but version doesn't reflect it
-        return error("%s: AuxPow on block with non-auxpow version", __func__);
+        LogError("%s: AuxPow on block with non-auxpow version", __func__);
+        return false;
     }
 
     util::Result<std::monostate> auxResult = block.auxpow->CheckAuxBlockHash(
         block.GetHash(), VersionChainId(block.nVersion), params);
     if (!auxResult) {
-        return error("%s: AuxPow validity check failed: %s", __func__,
-                     ErrorString(auxResult).original);
+        LogError("%s: AuxPow validity check failed: %s", __func__,
+                 ErrorString(auxResult).original);
+        return false;
     }
 
     if (!CheckProofOfWork(BlockHash(block.auxpow->parentBlock.GetPowHash()),
                           block.nBits, params)) {
-        return error("%s: Auxillary header proof of work failed", __func__);
+        LogError("%s: Auxillary header proof of work failed", __func__);
+        return false;
     }
 
     return true;

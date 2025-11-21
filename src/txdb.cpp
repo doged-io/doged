@@ -312,8 +312,9 @@ bool CBlockTreeDB::LoadBlockIndexGuts(
     }
 
     if (version != CLIENT_VERSION) {
-        return error("%s: Invalid block index database version: %s", __func__,
-                     version);
+        LogError("%s: Invalid block index database version: %s\n", __func__,
+                 version);
+        return false;
     }
 
     pcursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
@@ -330,7 +331,8 @@ bool CBlockTreeDB::LoadBlockIndexGuts(
 
         CDiskBlockIndex diskindex;
         if (!pcursor->GetValue(diskindex)) {
-            return error("%s : failed to read value", __func__);
+            LogError("%s : failed to read value\n", __func__);
+            return false;
         }
 
         // Construct block index object
