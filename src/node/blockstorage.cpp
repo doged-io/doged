@@ -557,8 +557,8 @@ CBlockFileInfo *BlockManager::GetBlockFileInfo(size_t n) {
     return &m_blockfile_info.at(n);
 }
 
-bool BlockManager::UndoReadFromDisk(CBlockUndo &blockundo,
-                                    const CBlockIndex &index) const {
+bool BlockManager::ReadBlockUndo(CBlockUndo &blockundo,
+                                 const CBlockIndex &index) const {
     const FlatFilePos pos{WITH_LOCK(::cs_main, return index.GetUndoPos())};
 
     if (pos.IsNull()) {
@@ -870,9 +870,9 @@ bool BlockManager::FindUndoPos(BlockValidationState &state, int nFile,
     return true;
 }
 
-bool BlockManager::WriteUndoDataForBlock(const CBlockUndo &blockundo,
-                                         BlockValidationState &state,
-                                         CBlockIndex &block) {
+bool BlockManager::WriteBlockUndo(const CBlockUndo &blockundo,
+                                  BlockValidationState &state,
+                                  CBlockIndex &block) {
     AssertLockHeld(::cs_main);
     const BlockfileType type = BlockfileTypeForHeight(block.nHeight);
     auto &cursor =
@@ -940,15 +940,13 @@ bool BlockManager::WriteUndoDataForBlock(const CBlockUndo &blockundo,
     return true;
 }
 
-bool BlockManager::ReadBlockFromDisk(CBlock &block,
-                                     const FlatFilePos &pos) const {
+bool BlockManager::ReadBlock(CBlock &block, const FlatFilePos &pos) const {
     block.SetNull();
 
     // Open history file to read
     AutoFile filein{OpenBlockFile(pos, true)};
     if (filein.IsNull()) {
-        LogError("ReadBlockFromDisk: OpenBlockFile failed for %s\n",
-                 pos.ToString());
+        LogError("ReadBlock: OpenBlockFile failed for %s\n", pos.ToString());
         return false;
     }
 
@@ -963,24 +961,22 @@ bool BlockManager::ReadBlockFromDisk(CBlock &block,
 
     // Check the header
     if (!CheckAuxProofOfWork(block, GetConsensus())) {
-        LogError("ReadBlockFromDisk: Errors in block header at %s\n",
-                 pos.ToString());
+        LogError("ReadBlock: Errors in block header at %s\n", pos.ToString());
         return false;
     }
 
     return true;
 }
 
-bool BlockManager::ReadBlockFromDisk(CBlock &block,
-                                     const CBlockIndex &index) const {
+bool BlockManager::ReadBlock(CBlock &block, const CBlockIndex &index) const {
     const FlatFilePos block_pos{WITH_LOCK(cs_main, return index.GetBlockPos())};
 
-    if (!ReadBlockFromDisk(block, block_pos)) {
+    if (!ReadBlock(block, block_pos)) {
         return false;
     }
 
     if (block.GetHash() != index.GetBlockHash()) {
-        LogError("ReadBlockFromDisk(CBlock&, CBlockIndex*): GetHash() "
+        LogError("ReadBlock(CBlock&, CBlockIndex*): GetHash() "
                  "doesn't match index for %s at %s\n",
                  index.ToString(), block_pos.ToString());
         return false;
@@ -989,8 +985,8 @@ bool BlockManager::ReadBlockFromDisk(CBlock &block,
     return true;
 }
 
-bool BlockManager::ReadRawBlockFromDisk(std::vector<uint8_t> &block,
-                                        const FlatFilePos &pos) const {
+bool BlockManager::ReadRawBlock(std::vector<uint8_t> &block,
+                                const FlatFilePos &pos) const {
     FlatFilePos hpos = pos;
     // If nPos is less than 8 the pos is null and we don't have the block data
     // Return early to prevent undefined behavior of unsigned int underflow
@@ -1037,14 +1033,14 @@ bool BlockManager::ReadRawBlockFromDisk(std::vector<uint8_t> &block,
     return true;
 }
 
-bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
+bool BlockManager::ReadBlockHeader(CBlockHeader &header,
                                            const FlatFilePos &pos) const {
     header.SetNull();
 
     // Open history file to read
     AutoFile filein{OpenBlockFile(pos, true)};
     if (filein.IsNull()) {
-        LogError("ReadBlockHeaderFromDisk: OpenBlockFile failed for %s",
+        LogError("ReadBlockHeader: OpenBlockFile failed for %s",
                  pos.ToString());
         return false;
     }
@@ -1060,7 +1056,7 @@ bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
 
     // Check the header
     if (!CheckAuxProofOfWork(header, GetConsensus())) {
-        LogError("ReadBlockHeaderFromDisk: Errors in block header at %s",
+        LogError("ReadBlockHeader: Errors in block header at %s",
                  pos.ToString());
         return false;
     }
@@ -1068,16 +1064,16 @@ bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
     return true;
 }
 
-bool BlockManager::ReadBlockHeaderFromDisk(CBlockHeader &header,
+bool BlockManager::ReadBlockHeader(CBlockHeader &header,
                                            const CBlockIndex &index) const {
     const FlatFilePos block_pos{WITH_LOCK(cs_main, return index.GetBlockPos())};
 
-    if (!ReadBlockHeaderFromDisk(header, block_pos)) {
+    if (!ReadBlockHeader(header, block_pos)) {
         return false;
     }
 
     if (header.GetHash() != index.GetBlockHash()) {
-        LogError("ReadBlockHeaderFromDisk(CBlock&, CBlockIndex*): "
+        LogError("ReadBlockHeader(CBlock&, CBlockIndex*): "
                  "GetHash() doesn't match index for %s at %s",
                  index.ToString(), block_pos.ToString());
         return false;
@@ -1132,7 +1128,7 @@ bool BlockManager::ReadTxUndoFromDisk(CTxUndo &tx_undo,
     return true;
 }
 
-FlatFilePos BlockManager::SaveBlockToDisk(const CBlock &block, int nHeight) {
+FlatFilePos BlockManager::WriteBlock(const CBlock &block, int nHeight) {
     const unsigned int block_size{
         static_cast<unsigned int>(GetSerializeSize(block))};
     FlatFilePos pos{
