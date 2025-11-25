@@ -6891,7 +6891,9 @@ void PeerManagerImpl::ProcessMessage(
                     break;
                 case avalanche::VoteStatus::Finalized:
                     voteOutcome = "finalized";
-                    alwaysPrint = true;
+                    // Don't log tx finalization unconditionally as it can be
+                    // quite spammy.
+                    alwaysPrint = voteItemTypeStr != "tx";
                     break;
                 case avalanche::VoteStatus::Stale:
                     voteOutcome = "stalled";
@@ -6901,6 +6903,9 @@ void PeerManagerImpl::ProcessMessage(
                     // No default case, so the compiler can warn about missing
                     // cases
             }
+
+            // Always log the stake contenders to the avalanche category
+            alwaysPrint &= (voteItemTypeStr != "contender");
 
             if (alwaysPrint) {
                 LogPrintf("Avalanche %s %s %s\n", voteOutcome, voteItemTypeStr,
