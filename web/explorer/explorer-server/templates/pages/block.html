@@ -9,7 +9,9 @@
     <div class="page_ctn">
         <div class="ui container">
             <div class="block-header">
-                <h1>Block #{{ block_info.height }}</h1>
+                <div class="tx-header__container">
+                    <h1>Block #{{ block_info.height }}</h1>
+                </div>
                 <div class="next-block-ctn">
                     {% if block_info.height != 0 %}
                         <a class="nextblock-btn"

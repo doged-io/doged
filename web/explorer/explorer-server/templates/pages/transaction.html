@@ -116,9 +116,9 @@ import "components/output.html" as output %} {% import
                                 </a>
                                 ({{ confirmations|to_i128|render_integer|safe }}
                                 {% if confirmations|to_i128 > 1 %}
-                                    confirmations)
+                                    blocks ago)
                                 {% else %}
-                                    confirmation)
+                                    block ago)
                                 {% endif %}
                                 {% when None %}
                                 Not mined yet
