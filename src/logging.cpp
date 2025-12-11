@@ -132,6 +132,7 @@ static const std::map<std::string, BCLog::LogFlags> LOG_CATEGORIES_BY_STR{
     {"blockstorage", BCLog::BLOCKSTORE},
     {"netdebug", BCLog::NETDEBUG},
     {"txpackages", BCLog::TXPACKAGES},
+    {"stratum", BCLog::STRATUM},
     {"1", BCLog::ALL},
     {"all", BCLog::ALL},
 };
