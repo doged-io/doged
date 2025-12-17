@@ -549,7 +549,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-error",
  "async-trait",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bytes",
  "chronik-proto",
  "futures-util",
@@ -566,21 +566,6 @@ dependencies = [
  "tokio-tungstenite 0.26.2",
  "tungstenite 0.26.2",
  "url",
-]
-
-[[package]]
-name = "bitcoinsuite-chronik-client"
-version = "0.1.0"
-source = "git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7#840b0a7bab8005d5ff3a16455b97573345a89633"
-dependencies = [
- "bitcoinsuite-core 0.1.0 (git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7)",
- "bitcoinsuite-error",
- "hex",
- "prost",
- "prost-build",
- "reqwest",
- "thiserror 1.0.69",
- "tokio",
 ]
 
 [[package]]
@@ -601,53 +586,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "bitcoinsuite-core"
-version = "0.1.0"
-source = "git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7#840b0a7bab8005d5ff3a16455b97573345a89633"
-dependencies = [
- "bs58 0.4.0",
- "bytes",
- "digest",
- "hex",
- "hex-literal",
- "once_cell",
- "regex",
- "ripemd",
- "secrecy",
- "serde",
- "sha-1",
- "sha2",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "bitcoinsuite-error"
-version = "0.1.0"
-source = "git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7#840b0a7bab8005d5ff3a16455b97573345a89633"
-dependencies = [
- "bitcoinsuite-error-derive",
- "eyre",
- "lazy_static",
- "stable-eyre",
-]
-
-[[package]]
-name = "bitcoinsuite-error-derive"
-version = "0.1.0"
-source = "git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7#840b0a7bab8005d5ff3a16455b97573345a89633"
-dependencies = [
- "convert_case",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "bitcoinsuite-slp"
 version = "0.1.0"
 dependencies = [
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bytes",
  "hex",
  "itertools 0.10.5",
@@ -783,7 +726,7 @@ name = "chronik-bridge"
 version = "0.1.0"
 dependencies = [
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "cxx",
  "cxx-build",
 ]
@@ -795,7 +738,7 @@ dependencies = [
  "abc-rust-error",
  "abc-rust-lint",
  "bimap",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "bytes",
  "chronik-plugin",
@@ -822,7 +765,7 @@ dependencies = [
  "async-trait",
  "async-tungstenite",
  "axum 0.7.9",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "bytes",
  "chronik-bridge",
@@ -856,7 +799,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-error",
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "bytes",
  "chronik-bridge",
@@ -882,7 +825,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-error",
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "chronik-plugin-common",
  "chronik-plugin-impl",
@@ -894,7 +837,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-lint",
  "bimap",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "serde",
  "versions",
@@ -906,7 +849,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-error",
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "bitcoinsuite-slp",
  "bytes",
  "chronik-plugin-common",
@@ -943,7 +886,7 @@ version = "0.1.0"
 dependencies = [
  "abc-rust-error",
  "abc-rust-lint",
- "bitcoinsuite-core 0.1.0",
+ "bitcoinsuite-core",
  "chronik-bridge",
  "chronik-db",
  "chronik-http",
@@ -1391,9 +1334,9 @@ dependencies = [
 name = "explorer-exe"
 version = "0.1.0"
 dependencies = [
+ "abc-rust-error",
  "axum 0.5.17",
- "bitcoinsuite-chronik-client 0.1.0 (git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7)",
- "bitcoinsuite-error",
+ "bitcoinsuite-chronik-client",
  "explorer-server",
  "futures",
  "tokio",
@@ -1403,14 +1346,15 @@ dependencies = [
 name = "explorer-server"
 version = "0.1.0"
 dependencies = [
+ "abc-rust-error",
  "askama",
  "axum 0.5.17",
  "base64 0.13.1",
  "bitcoin",
- "bitcoinsuite-chronik-client 0.1.0 (git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7)",
- "bitcoinsuite-core 0.1.0 (git+https://github.com/LogosFoundation/bitcoinsuite?rev=840b0a7)",
- "bitcoinsuite-error",
+ "bitcoinsuite-chronik-client",
+ "bitcoinsuite-core",
  "bs58 0.4.0",
+ "bytes",
  "chrono",
  "chrono-humanize",
  "eyre",
@@ -3397,15 +3341,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "secrecy"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bd1c54ea06cfd2f6b63219704de0b9b4f72dcc2b8fdef820be6cd799780e91e"
-dependencies = [
- "zeroize",
-]
-
-[[package]]
 name = "security-framework"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3515,17 +3450,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "sha-1"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5058ada175748e33390e40e872bd0fe59a19f265d0158daa551c5a88a76009c"
-dependencies = [
- "cfg-if",
- "cpufeatures",
- "digest",
 ]
 
 [[package]]

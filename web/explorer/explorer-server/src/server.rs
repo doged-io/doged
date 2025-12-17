@@ -4,14 +4,14 @@ use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
 };
 
+use abc_rust_error::Result;
 use askama::Template;
 use axum::{response::Redirect, routing::get, Router};
 use bitcoinsuite_chronik_client::proto::{
-    token_type, ScriptUtxo, SlpTokenType, TokenInfo, TokenTxType, TokenType,
+    token_type, SlpTokenType, TokenInfo, TokenTxType, TokenType,
 };
 use bitcoinsuite_chronik_client::{proto::OutPoint, ChronikClient};
-use bitcoinsuite_core::{Hashed, Sha256d};
-use bitcoinsuite_error::Result;
+use bitcoinsuite_core::hash::{Hashed, Sha256d};
 use chrono::{TimeZone, Utc};
 use eyre::{bail, eyre};
 use futures::future;
@@ -21,8 +21,7 @@ use crate::{
         block_txs_to_json, calc_tx_stats, tokens_to_json, tx_history_to_json,
     },
     blockchain::{
-        calculate_block_difficulty, doge_addr_to_script_type_payload,
-        from_be_hex, to_be_hex,
+        calculate_block_difficulty, doge_addr_to_script_type_payload, to_be_hex,
     },
     chain::Chain,
     dogeaddress::DogeAddress,
@@ -162,7 +161,7 @@ impl Server {
         page: usize,
         page_size: usize,
     ) -> Result<JsonTxsResponse> {
-        let block_hash = Sha256d::from_hex_be(block_hex)?;
+        let block_hash = Sha256d::from_be_hex(block_hex)?;
         let block = self.chronik.block_by_hash(&block_hash).await?;
         let block_txs = self
             .chronik
@@ -178,7 +177,7 @@ impl Server {
                     return None;
                 }
                 Some(
-                    Sha256d::from_hex_be(&token_entry.token_id)
+                    Sha256d::from_be_hex(&token_entry.token_id)
                         .expect("Impossible"),
                 )
             })
@@ -223,7 +222,7 @@ impl Server {
                     return None;
                 }
                 Some(
-                    Sha256d::from_hex_be(&token_entry.token_id)
+                    Sha256d::from_be_hex(&token_entry.token_id)
                         .expect("Impossible"),
                 )
             })
@@ -241,7 +240,7 @@ impl Server {
 
 impl Server {
     pub async fn block(&self, block_hex: &str) -> Result<String> {
-        let block_hash = Sha256d::from_hex_be(block_hex)?;
+        let block_hash = Sha256d::from_be_hex(block_hex)?;
 
         let block = self.chronik.block_by_hash(&block_hash).await?;
         let block_txs = self
@@ -273,7 +272,7 @@ impl Server {
     }
 
     pub async fn tx(&self, tx_hex: &str) -> Result<String> {
-        let tx_hash = Sha256d::from_hex_be(tx_hex)?;
+        let tx_hash = Sha256d::from_be_hex(tx_hex)?;
         let tx = self.chronik.tx(&tx_hash).await?;
         let token_entry = tx
             .token_entries
@@ -282,7 +281,7 @@ impl Server {
 
         let (token_id, token) = match &token_entry {
             Some(token_entry) => {
-                let token_id = Sha256d::from_hex_be(&token_entry.token_id)?;
+                let token_id = Sha256d::from_be_hex(&token_entry.token_id)?;
                 let mut token = None;
                 let tx_type = TokenTxType::from_i32(token_entry.tx_type)
                     .ok_or_else(|| eyre!("Malformed token_entry.tx_type"))?;
@@ -309,7 +308,7 @@ impl Server {
             },
         };
 
-        let token_hex = token_id.as_ref().map(|token| token.to_hex_be());
+        let token_hex = token_id.as_ref().map(|token| token.hex_be());
 
         let (token_section_title, action_str, token_type_str, specification): (
             Cow<str>,
@@ -430,7 +429,7 @@ impl Server {
         let timestamp = Utc.timestamp_nanos(timestamp * 1_000_000_000);
 
         let raw_tx = self.chronik.raw_tx(&tx_hash).await?;
-        let raw_tx = raw_tx.hex();
+        let raw_tx = hex::encode(raw_tx);
 
         let tx_stats = calc_tx_stats(&tx, None);
 
@@ -479,7 +478,6 @@ impl Server {
         let mut total_xec: i64 = 0;
 
         let mut token_ids: HashSet<Sha256d> = HashSet::new();
-        let mut token_utxos: Vec<ScriptUtxo> = Vec::new();
         let mut json_balances: HashMap<String, JsonBalance> = HashMap::new();
         let mut main_json_balance: JsonBalance = JsonBalance {
             token_id: None,
@@ -501,7 +499,7 @@ impl Server {
 
             match &utxo.token {
                 Some(token) => {
-                    let token_id_hash = Sha256d::from_hex_be(&token.token_id)
+                    let token_id_hash = Sha256d::from_be_hex(&token.token_id)
                         .expect("Impossible");
 
                     json_utxo.token_amount = token.atoms;
@@ -525,7 +523,6 @@ impl Server {
 
                     token_ids.insert(token_id_hash);
                     token_dust += utxo.sats;
-                    token_utxos.push(utxo);
                 }
                 _ => {
                     total_xec += utxo.sats;
@@ -553,7 +550,6 @@ impl Server {
 
         let address_template = AddressTemplate {
             tokens,
-            token_utxos,
             token_dust,
             total_xec,
             address_num_txs,
@@ -576,7 +572,7 @@ impl Server {
         let mut token_calls = Vec::new();
         let mut token_map = HashMap::new();
 
-        let unknown_token = Sha256d::from_hex(
+        let unknown_token = Sha256d::from_be_hex(
             "0000000000000000000000000000000000000000000000000000000000000000",
         )?;
 
@@ -630,8 +626,7 @@ impl Server {
             }
         }
 
-        let bytes = from_be_hex(query)?;
-        let unknown_hash = Sha256d::from_slice(&bytes)?;
+        let unknown_hash = Sha256d::from_be_hex(query)?;
 
         if self.chronik.tx(&unknown_hash).await.is_ok() {
             return Ok(self.redirect(format!("/tx/{}", query)));

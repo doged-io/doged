@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
+use abc_rust_error::Result;
 use bitcoinsuite_chronik_client::proto::{
     token_type, Block, GenesisInfo, TokenInfo, TokenType, Tx, TxHistoryPage,
 };
-use bitcoinsuite_error::Result;
 use eyre::eyre;
 
 use crate::{

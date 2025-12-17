@@ -1,6 +1,9 @@
 use bitcoinsuite_chronik_client::ScriptType;
-use bitcoinsuite_core::{AddressType, Hashed, Op, Script, ShaRmd160};
-use bitcoinsuite_error::Result;
+use bitcoinsuite_core::{
+    address::AddressType,
+    hash::{Hashed, ShaRmd160},
+    script::{Op, Script},
+};
 
 use crate::chain::Chain;
 use crate::dogeaddress::DogeAddress;
@@ -9,12 +12,6 @@ pub fn to_be_hex(slice: &[u8]) -> String {
     let mut vec = slice.to_vec();
     vec.reverse();
     hex::encode(&vec)
-}
-
-pub fn from_be_hex(string: &str) -> Result<Vec<u8>> {
-    let mut decoded = hex::decode(string)?;
-    decoded.reverse();
-    Ok(decoded)
 }
 
 #[derive(Clone, Debug)]
@@ -40,7 +37,7 @@ pub fn destination_from_script<'a>(
         [OP_DUP, OP_HASH160, 20, hash @ .., OP_EQUALVERIFY, OP_CHECKSIG] => {
             DogeAddress::from_hash(
                 AddressType::P2PKH,
-                ShaRmd160::from_slice(hash).expect("Invalid hash"),
+                ShaRmd160::from_le_slice(hash).expect("Invalid hash"),
                 chain,
             )
             .map_or_else(
@@ -50,7 +47,7 @@ pub fn destination_from_script<'a>(
         }
         [OP_HASH160, 20, hash @ .., OP_EQUAL] => DogeAddress::from_hash(
             AddressType::P2SH,
-            ShaRmd160::from_slice(hash).expect("Invalid hash"),
+            ShaRmd160::from_le_slice(hash).expect("Invalid hash"),
             chain,
         )
         .map_or_else(
@@ -60,8 +57,8 @@ pub fn destination_from_script<'a>(
         [33, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
         [65, pk @ .., OP_CHECKSIG] => Destination::P2PK(pk.to_vec()),
         [OP_RETURN, data @ ..] => {
-            let ops = Script::from_slice(data);
-            let ops = ops.ops().into_iter().map(|op| op.unwrap()).collect();
+            let ops = Script::new(data.to_vec().into());
+            let ops = ops.iter_ops().map(|op| op.unwrap()).collect();
             Destination::Nulldata(ops)
         }
         _ => Destination::Unknown(script.to_vec()),
@@ -83,7 +80,7 @@ pub fn doge_addr_to_script_type_payload(
         AddressType::P2PKH => ScriptType::P2pkh,
         AddressType::P2SH => ScriptType::P2sh,
     };
-    let script_payload: &[u8; 20] = addr.hash().byte_array().as_array();
+    let script_payload: &[u8; 20] = &addr.hash().clone().into();
 
     (script_type, *script_payload)
 }

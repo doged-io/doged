@@ -1,8 +1,11 @@
 use std::borrow::Cow;
 
 use bitcoinsuite_core::{
-    AddressType, BytesMut, Hashed, Script, Sha256d, ShaRmd160,
+    address::AddressType,
+    hash::{Hashed, Sha256d, ShaRmd160},
+    script::Script,
 };
+use bytes::{BufMut, BytesMut};
 use thiserror::Error;
 
 use crate::chain::Chain;
@@ -59,7 +62,7 @@ impl<'a> DogeAddress<'a> {
         };
 
         Ok(DogeAddress {
-            addr: _to_doge_addr(prefix as u8, &hash.as_slice()).into(),
+            addr: _to_doge_addr(prefix as u8, hash.as_le_bytes()).into(),
             addr_type,
             hash,
             chain,
@@ -77,7 +80,7 @@ impl<'a> DogeAddress<'a> {
         }
         Ok(DogeAddress {
             addr_type,
-            hash: ShaRmd160::from_array(hash.into()),
+            hash: ShaRmd160::from_le_bytes(hash.into()),
             addr,
             chain: curr_chain,
         })
@@ -117,7 +120,7 @@ fn _calculate_checksum(prefix: u8, payload: &[u8]) -> [u8; 4] {
     checksum_preimage.put_slice(&[prefix]);
     checksum_preimage.put_slice(payload);
     let checksum_hash = Sha256d::digest(checksum_preimage.freeze());
-    checksum_hash.as_slice()[..DOGE_ADDRESS_CHECKSUM_LEN]
+    checksum_hash.as_le_bytes()[..DOGE_ADDRESS_CHECKSUM_LEN]
         .try_into()
         .unwrap()
 }
@@ -153,7 +156,7 @@ fn _to_doge_addr(prefix: u8, hash_bytes: &[u8]) -> String {
     let mut data = BytesMut::new();
     data.put_slice(&payload);
     data.put_slice(&checksum);
-    bs58::encode(data.as_slice()).into_string()
+    bs58::encode(data.freeze()).into_string()
 }
 
 fn _from_str(

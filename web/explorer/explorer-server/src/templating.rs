@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use askama::Template;
 use bitcoinsuite_chronik_client::proto::{
-    BlockInfo, GenesisInfo, ScriptUtxo, TokenEntry, TokenInfo, Tx,
+    BlockInfo, GenesisInfo, TokenEntry, TokenInfo, Tx,
 };
 use chrono::{DateTime, Utc};
 
@@ -62,7 +62,6 @@ pub struct AddressTemplate<'a> {
     pub tokens: HashMap<String, TokenInfo>,
     pub token_dust: i64,
     pub total_xec: i64,
-    pub token_utxos: Vec<ScriptUtxo>,
     pub address_num_txs: u32,
     pub address: &'a str,
     pub sats_address: &'a str,
