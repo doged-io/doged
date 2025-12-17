@@ -34,6 +34,8 @@ function formatByteSize(size) {
     }
 }
 
+const renderSize = size => formatByteSize(size);
+
 function renderInteger(number) {
     var fmt = Intl.NumberFormat('en-EN').format(number);
     return fmt;

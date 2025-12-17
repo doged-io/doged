@@ -1,63 +1,3 @@
-const renderHash = data => {
-    let minifiedHash = minifyHash(data.txHash, 6, 10);
-    if (data.blockHeight === 0) {
-        return (
-            '<a style="color:#CD0BC3" href="/tx/' +
-            data.txHash +
-            '">' +
-            minifiedHash +
-            '</a>'
-        );
-    } else {
-        return '<a href="/tx/' + data.txHash + '">' + minifiedHash + '</a>';
-    }
-};
-
-var today = Date.now() / 1000;
-var fiveYearsAgo = today - 157800000;
-
-const renderSize = size => formatByteSize(size);
-
-const renderInput = data => {
-    const txDate = data.timestamp;
-    let fiveIcon = '';
-    if (txDate < fiveYearsAgo) {
-        fiveIcon =
-            '<div class="age-icon"><img src="/assets/five-years-icon.png" /><span>Over Five<br />Years Old</span></div>';
-    }
-    return (
-        '<div class="age-icons-ctn">' +
-        fiveIcon +
-        `<div class="input-margin">${data.numInputs}</div></div>`
-    );
-};
-
-const escapeHtml = unsafe => {
-    return unsafe
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-};
-
-const renderOutput = (satsOutput, _type, row) => {
-    if (row.token) {
-        var ticker =
-            '<a href="/tx/' +
-            row.txHash +
-            '" class="num-col-suffix" data-suffix=' +
-            escapeHtml(row.token.tokenTicker) +
-            '></a>';
-        return renderAmount(row.stats.tokenOutput, row.token.decimals) + ticker;
-    }
-    return (
-        '<div class="num-col-suffix" data-suffix="DOGE">' +
-        renderSats(row.stats.satsOutput) +
-        '</div>'
-    );
-};
-
 const updateLoading = status => {
     if (status) {
         $('#txs-table > tbody').addClass('blur');
@@ -111,7 +51,7 @@ const datatable = () => {
                 data: { txHash: 'txHash', blockHeight: 'blockHeight' },
                 title: 'ID',
                 className: 'hash',
-                render: renderHash,
+                render: renderTxId,
                 orderable: false,
             },
             {
