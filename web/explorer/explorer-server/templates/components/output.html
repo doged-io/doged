@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2025 The Bitcoin developers -->
+<!-- Distributed under the MIT software license, see the accompanying -->
+<!-- file COPYING or http://www.opensource.org/licenses/mit-license.php. -->
 {% macro render(index, output, tx, slp_genesis_info,chain) %}
     {% let is_token = output.token|check_is_token %} {% let
     destination = output.output_script|destination_from_script(chain, is_token) %} {% let decoded_output_script =
