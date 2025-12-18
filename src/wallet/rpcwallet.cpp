@@ -4466,7 +4466,7 @@ static RPCHelpMan send() {
 
             if (psbt_opt_in || !complete || !add_to_wallet) {
                 // Serialize the PSBT
-                CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+                DataStream ssTx{};
                 ssTx << psbtx;
                 result.pushKV("psbt", EncodeBase64(ssTx.str()));
             }
@@ -4658,7 +4658,7 @@ static RPCHelpMan walletprocesspsbt() {
             }
 
             UniValue result(UniValue::VOBJ);
-            CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+            DataStream ssTx{};
             ssTx << psbtx;
             result.pushKV("psbt", EncodeBase64(ssTx.str()));
             result.pushKV("complete", complete);
@@ -4854,7 +4854,7 @@ static RPCHelpMan walletcreatefundedpsbt() {
             }
 
             // Serialize the PSBT
-            CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
+            DataStream ssTx{};
             ssTx << psbtx;
 
             UniValue result(UniValue::VOBJ);
