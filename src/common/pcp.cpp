@@ -4,6 +4,7 @@
 
 #include <common/pcp.h>
 
+#include <atomic>
 #include <common/netif.h>
 #include <crypto/common.h>
 #include <logging.h>
@@ -83,6 +84,9 @@ constexpr size_t NATPMP_MAP_RESPONSE_LIFETIME_OFS = 12;
 constexpr uint8_t NATPMP_RESULT_SUCCESS = 0;
 //! Result code representing unsupported version.
 constexpr uint8_t NATPMP_RESULT_UNSUPP_VERSION = 1;
+//! Result code representing not authorized (router doesn't support port
+//! mapping).
+constexpr uint8_t NATPMP_RESULT_NOT_AUTHORIZED = 2;
 //! Result code representing lack of resources.
 constexpr uint8_t NATPMP_RESULT_NO_RESOURCES = 4;
 
@@ -148,6 +152,8 @@ constexpr size_t PCP_MAP_EXTERNAL_IP_OFS = 20;
 
 //! Result code representing success (RFC6887 7.4), shared with NAT-PMP.
 constexpr uint8_t PCP_RESULT_SUCCESS = NATPMP_RESULT_SUCCESS;
+//! Result code representing not authorized (RFC6887 7.4), shared with NAT-PMP.
+constexpr uint8_t PCP_RESULT_NOT_AUTHORIZED = NATPMP_RESULT_NOT_AUTHORIZED;
 //! Result code representing lack of resources (RFC6887 7.4).
 constexpr uint8_t PCP_RESULT_NO_RESOURCES = 8;
 
@@ -453,9 +459,20 @@ NATPMPRequestPortMap(const CNetAddr &gateway, uint16_t port, uint32_t lifetime,
         uint16_t result_code =
             ReadBE16(response.data() + NATPMP_RESPONSE_HDR_RESULT_OFS);
         if (result_code != NATPMP_RESULT_SUCCESS) {
-            LogPrintLevel(BCLog::NET, BCLog::Level::Warning,
-                          "natpmp: Port mapping failed with result %s\n",
-                          NATPMPResultString(result_code));
+            if (result_code == NATPMP_RESULT_NOT_AUTHORIZED) {
+                static std::atomic<bool> warned{false};
+                if (!warned.exchange(true)) {
+                    LogWarning("natpmp: Port mapping failed with result %s\n",
+                               NATPMPResultString(result_code));
+                } else {
+                    LogDebug(BCLog::NET,
+                             "natpmp: Port mapping failed with result %s\n",
+                             NATPMPResultString(result_code));
+                }
+            } else {
+                LogWarning("natpmp: Port mapping failed with result %s\n",
+                           NATPMPResultString(result_code));
+            }
             if (result_code == NATPMP_RESULT_NO_RESOURCES) {
                 return MappingError::NO_RESOURCES;
             }
@@ -659,9 +676,19 @@ PCPRequestPortMap(const PCPMappingNonce &nonce, const CNetAddr &gateway,
     CNetAddr external_addr{PCPUnwrapAddress(response.subspan(
         PCP_HDR_SIZE + PCP_MAP_EXTERNAL_IP_OFS, ADDR_IPV6_SIZE))};
     if (result_code != PCP_RESULT_SUCCESS) {
-        LogPrintLevel(BCLog::NET, BCLog::Level::Warning,
-                      "pcp: Mapping failed with result %s\n",
-                      PCPResultString(result_code));
+        if (result_code == PCP_RESULT_NOT_AUTHORIZED) {
+            static std::atomic<bool> warned{false};
+            if (!warned.exchange(true)) {
+                LogWarning("pcp: Mapping failed with result %s\n",
+                           PCPResultString(result_code));
+            } else {
+                LogDebug(BCLog::NET, "pcp: Mapping failed with result %s\n",
+                         PCPResultString(result_code));
+            }
+        } else {
+            LogWarning("pcp: Mapping failed with result %s\n",
+                       PCPResultString(result_code));
+        }
         if (result_code == PCP_RESULT_NO_RESOURCES) {
             return MappingError::NO_RESOURCES;
         }
