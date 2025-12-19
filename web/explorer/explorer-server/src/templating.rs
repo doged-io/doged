@@ -11,7 +11,9 @@ use bitcoinsuite_chronik_client::proto::{
 use chrono::{DateTime, Utc};
 
 use crate::{
-    blockchain::Destination, chain::Chain, server_primitives::JsonBalance,
+    blockchain::Destination, file_hashes::FileHashes,
+    chain::Chain,
+    server_primitives::JsonBalance,
 };
 
 mod filters;
@@ -21,6 +23,7 @@ mod filters;
 pub struct BlocksTemplate {
     pub last_block_height: u32,
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
@@ -33,6 +36,7 @@ pub struct BlockTemplate<'a> {
     pub coinbase_data: Vec<u8>,
     pub best_height: i32,
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
@@ -53,11 +57,7 @@ pub struct TransactionTemplate<'a> {
     pub sats_input: i64,
     pub sats_output: i64,
     pub network_selector: bool,
-    pub token_input: i128,
-    pub token_output: i128,
-    pub action_str: &'a str,
-    pub specification: &'a str,
-    pub token_type: &'a str,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
@@ -74,6 +74,7 @@ pub struct AddressTemplate<'a> {
     pub encoded_tokens: String,
     pub encoded_balances: String,
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
@@ -82,12 +83,14 @@ pub struct MempoolTemplate {
     pub num_txs: u32,
     pub total_size: u64,
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
 #[template(path = "pages/testnet-faucet.html")]
 pub struct TestnetFaucetTemplate {
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
 
 #[derive(Template)]
@@ -95,4 +98,5 @@ pub struct TestnetFaucetTemplate {
 pub struct ErrorTemplate {
     pub message: String,
     pub network_selector: bool,
+    pub hashes: FileHashes,
 }
