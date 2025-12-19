@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(auxpow_serialize_block_5462519_test) {
         "e3df0000000014000020914f47f57dbd460a348179763e195fbae41090f7e87a1836e6"
         "0b9f876e32a6ea4093045657cce77921dcb897ea71bbeff7fa6ace8e7c4020b9f3b7ca"
         "f3be35cb11e83667db555c195945a9ff";
-    CDataStream ss{ParseHex(hexHeader), SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{ParseHex(hexHeader)};
 
     CMutableTransaction tx;
     tx.nVersion = 1;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(auxpow_serialize_block_5462519_test) {
     BOOST_CHECK_EQUAL(auxpow.parentBlock.GetHash(), parentHeader.GetHash());
     BOOST_CHECK_EQUAL(auxpow.parentBlock.GetPowHash(), hashBlock);
 
-    CDataStream ss2{SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss2{};
     ss2 << header;
     BOOST_CHECK_EQUAL(HexStr(std::vector<std::byte>(ss2.begin(), ss2.end())),
                       hexHeader);

@@ -418,7 +418,7 @@ CBlock TestChain100Setup::CreateAuxPowBlock(
     std::vector<uint8_t> coinbaseBytes = ToByteVector(MERGE_MINE_PREFIX);
     coinbaseBytes.insert(coinbaseBytes.end(), hashChainRoot.begin(),
                          hashChainRoot.end());
-    CDataStream ss{0, 0};
+    DataStream ss{};
     ss << uint32_t(1 << chainMerkleBranch.size());
     ss << mergeMineNonce;
     Span<const uint8_t> span = MakeUCharSpan(ss);

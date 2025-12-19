@@ -84,7 +84,7 @@ std::string hexHeader3000000 =
     "5d09e3021ab13d0e90";
 
 BOOST_AUTO_TEST_CASE(auxpow_block700000_test) {
-    CDataStream ss{ParseHex(hexHeader700000), SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{ParseHex(hexHeader700000)};
     CBlockHeader header;
     ss >> header;
     const CAuxPow &auxpow = *header.auxpow;
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(auxpow_block700000_test) {
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
-    CDataStream ss{ParseHex(hexHeader800000), SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{ParseHex(hexHeader800000)};
     CBlockHeader header;
     ss >> header;
     const CAuxPow &auxpow = *header.auxpow;
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(auxpow_block800000_test) {
 }
 
 BOOST_AUTO_TEST_CASE(auxpow_block3000000_test) {
-    CDataStream ss{ParseHex(hexHeader3000000), SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{ParseHex(hexHeader3000000)};
     CBlockHeader header;
     ss >> header;
     const CAuxPow &auxpow = *header.auxpow;
@@ -570,7 +570,7 @@ BOOST_AUTO_TEST_CASE(CheckAuxBlockHash_rng_test) {
         CChainParams::RegTest({})->GetConsensus()};
 
     MMIXLinearCongruentialGenerator lcg;
-    CDataStream ss{0, 0};
+    DataStream ss{};
     // Randomly generate a lot of configurations and test for successes.
     for (size_t testCase = 0; testCase < 2048; testCase++) {
         // Generate random parameters

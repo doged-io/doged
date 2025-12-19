@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(genesis) {
         "0000026f3f7874ca0c251314eaed2d2fcf83d7da3acfaacf59417d485310b448");
 
     // Check serialization
-    CDataStream ss(0, 0);
+    DataStream ss{};
     ss << genesis;
     BOOST_CHECK_EQUAL(HexStr(ss),
                       "01000000000000000000000000000000000000000000000000000000"
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(block_145000) {
         "00000000002dfb87dd0d1b359eac948f33e91f87d586d36c497df2b08db7eb8a");
 
     // Check serialization
-    CDataStream ss(0, 0);
+    DataStream ss{};
     ss << block;
     BOOST_CHECK_EQUAL(HexStr(ss),
                       "0200000058054081d6f4a30d6976ac03be7e3890f67fd8331613bb7a"

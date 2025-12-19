@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(auxpow_block_setnull_test) {
     // Zero'd merge-mined block
     std::vector<uint8_t> nullAuxPowBlockBytes(NULL_AUXPOW_HEADER_SIZE + 1);
     nullAuxPowBlockBytes[1] = 1; // set auxpow bit
-    CDataStream ss{nullAuxPowBlockBytes, SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{nullAuxPowBlockBytes};
 
     CBlock block;
     ss >> block;
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(auxpow_blockheader_setnull_test) {
     // Zero'd merge-mined block header
     std::vector<uint8_t> nullAuxPowBlockHeaderBytes(NULL_AUXPOW_HEADER_SIZE);
     nullAuxPowBlockHeaderBytes[1] = 1; // set auxpow bit
-    CDataStream ss{nullAuxPowBlockHeaderBytes, SER_NETWORK, PROTOCOL_VERSION};
+    DataStream ss{nullAuxPowBlockHeaderBytes};
 
     CBlockHeader header;
     ss >> header;
