@@ -32,6 +32,7 @@ class AvalanchePersistAvapeers(BitcoinTestFramework):
                 "-avaminquorumstake=0",
                 "-avaminavaproofsnodecount=0",
                 "-avalanchestakingrewards=1",
+                "-avalanchestakingpreconsensus=0",
             ]
         ]
         self.noban_tx_relay = True
