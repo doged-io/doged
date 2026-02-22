@@ -31,6 +31,10 @@ import {
     BINANCE_OUTPUTSCRIPT,
     COINEX_OUTPUTSCRIPT,
 } from '../constants/senders';
+import {
+    BLITZCHIPS_OUTPUTSCRIPT,
+    EVERYDAYJACKPOT_OUTPUTSCRIPT,
+} from '../constants/games';
 import { prepareStringForTelegramHTML, splitOverflowTgMsg } from './telegram';
 import { OutputscriptInfo } from './chronik';
 import {
@@ -2453,6 +2457,9 @@ export const summarizeTxHistory = (
     let coinexWithdrawalCount = 0;
     let coinexWithdrawalSats = 0n;
 
+    let blitzchipsTxCount = 0;
+    let everydayjackpotTxCount = 0;
+
     let fungibleTokenTxs = 0;
     let appTxs = 0;
     let unknownLokadTxs = 0;
@@ -2537,7 +2544,23 @@ export const summarizeTxHistory = (
             // No further analysis for this tx
             continue;
         }
+
         const senderOutputScript = inputs[0].outputScript;
+        // Count txs to/from game addresses (by address, not EMPP)
+        // Txs from these addresses have senderOutputScript; txs to them have it in outputs
+
+        if (
+            senderOutputScript === BLITZCHIPS_OUTPUTSCRIPT ||
+            outputs.some(o => o.outputScript === BLITZCHIPS_OUTPUTSCRIPT)
+        ) {
+            blitzchipsTxCount += 1;
+        }
+        if (
+            senderOutputScript === EVERYDAYJACKPOT_OUTPUTSCRIPT ||
+            outputs.some(o => o.outputScript === EVERYDAYJACKPOT_OUTPUTSCRIPT)
+        ) {
+            everydayjackpotTxCount += 1;
+        }
         if (senderOutputScript === TOKEN_SERVER_OUTPUTSCRIPT) {
             // If this tx was sent by token-server
             if (tokenEntries.length > 0) {
@@ -3989,7 +4012,8 @@ export const summarizeTxHistory = (
     if (hasTokenSummaryLines) {
         tgMsg.push('');
     }
-    if (appTxs > 0) {
+    const totalAppTxs = appTxs + blitzchipsTxCount + everydayjackpotTxCount;
+    if (totalAppTxs > 0) {
         // Sort appTxMap by most common app txs
         const sortedAppTxMap = new Map(
             [...appTxMap.entries()].sort(
@@ -3998,9 +4022,9 @@ export const summarizeTxHistory = (
             ),
         );
         tgMsg.push(
-            `${config.emojis.app} <b><i>${appTxs.toLocaleString(
+            `${config.emojis.app} <b><i>${totalAppTxs.toLocaleString(
                 'en-US',
-            )} app tx${appTxs > 1 ? 's' : ''}</i></b>`,
+            )} app tx${totalAppTxs > 1 ? 's' : ''}</i></b>`,
         );
         sortedAppTxMap.forEach((count, lokadId) => {
             // Do we recognize this app?
@@ -4025,6 +4049,24 @@ export const summarizeTxHistory = (
                 );
             }
         });
+        if (blitzchipsTxCount > 0) {
+            tgMsg.push(
+                `🎲 <b>${blitzchipsTxCount.toLocaleString(
+                    'en-US',
+                )}</b> <a href="https://blitzchips.com">Blitzchips</a> tx${
+                    blitzchipsTxCount > 1 ? 's' : ''
+                }`,
+            );
+        }
+        if (everydayjackpotTxCount > 0) {
+            tgMsg.push(
+                `💰 <b>${everydayjackpotTxCount.toLocaleString(
+                    'en-US',
+                )}</b> <a href="https://everydayjackpot.com">everydayjackpot.com</a> tx${
+                    everydayjackpotTxCount > 1 ? 's' : ''
+                }`,
+            );
+        }
         // Add line for unknown txs
         if (unknownLokadTxs > 0) {
             tgMsg.push(
