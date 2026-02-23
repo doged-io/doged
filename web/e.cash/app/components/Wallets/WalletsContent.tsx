@@ -284,10 +284,7 @@ export default function WalletsContent() {
               Check out our comprehensive wallet guide to find the best wallet
               for your needs.
             </p>
-            <Button
-              href="/blog/choose-the-best-ecash-xec-wallet-a-comprehensive-guide"
-              variant="white"
-            >
+            <Button href="/blog/best-ecash-wallet" variant="white">
               Read Wallet Guide
             </Button>
           </div>
