@@ -6,11 +6,13 @@ import config from '../config';
 import opReturn from '../constants/op_return';
 import {
     fromHex,
+    toHex,
     consume,
     consumeNextPush,
     swapEndianness,
     Script,
     OP_0,
+    parseEmppScript,
 } from 'ecash-lib';
 import knownMinersJson, { KnownMiners, MinerInfo } from '../constants/miners';
 import cachedTokenInfoMap from '../constants/tokens';
@@ -2561,6 +2563,48 @@ export const summarizeTxHistory = (
         ) {
             everydayjackpotTxCount += 1;
         }
+
+        // App tx parsing
+        const firstOutputScript = outputs[0].outputScript;
+        if (firstOutputScript.startsWith(opReturn.opReturnPrefix)) {
+            const script = new Script(fromHex(firstOutputScript));
+            const emppPushes = parseEmppScript(script);
+            if (emppPushes !== undefined && tokenEntries.length > 0) {
+                // Token txs with EMPP: look for known app lokads (e.g. Overmind XOVM)
+                for (const push of emppPushes) {
+                    if (push.length >= 4) {
+                        // If the push is long enough to include a lokad (4-bytes)
+                        const lokadId = toHex(push.slice(0, 4));
+                        if (lokadMap.has(lokadId)) {
+                            appTxs += 1;
+                            const countThisLokad = appTxMap.get(lokadId);
+                            appTxMap.set(
+                                lokadId,
+                                typeof countThisLokad === 'undefined'
+                                    ? 1
+                                    : countThisLokad + 1,
+                            );
+                        }
+                    }
+                }
+            } else if (
+                tokenEntries.length === 0 &&
+                firstOutputScript.startsWith('6a04') &&
+                firstOutputScript.length >= 12
+            ) {
+                // Extract lokad id from a non-EMPP OP_RETURN, i.e. first 4-bytes (8 chars) after 6a04 outputScript
+                appTxs += 1;
+                const lokadId = firstOutputScript.slice(4, 12);
+                const countThisLokad = appTxMap.get(lokadId);
+                appTxMap.set(
+                    lokadId,
+                    typeof countThisLokad === 'undefined'
+                        ? 1
+                        : countThisLokad + 1,
+                );
+            }
+        }
+
         if (senderOutputScript === TOKEN_SERVER_OUTPUTSCRIPT) {
             // If this tx was sent by token-server
             if (tokenEntries.length > 0) {
@@ -3307,22 +3351,6 @@ export const summarizeTxHistory = (
 
             // No further action this tx
             continue;
-        }
-        const firstOutputScript = outputs[0].outputScript;
-        const LOKAD_OPRETURN_STARTSWITH = '6a04';
-        if (firstOutputScript.startsWith(LOKAD_OPRETURN_STARTSWITH)) {
-            appTxs += 1;
-            // We only parse minimally-pushed lokad ids
-
-            // Get the lokadId (the 4-byte first push)
-            const lokadId = firstOutputScript.slice(4, 12);
-
-            // Add to map
-            const countThisLokad = appTxMap.get(lokadId);
-            appTxMap.set(
-                lokadId,
-                typeof countThisLokad === 'undefined' ? 1 : countThisLokad + 1,
-            );
         }
     }
 

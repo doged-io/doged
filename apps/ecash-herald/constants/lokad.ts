@@ -32,5 +32,10 @@ lokadMap.set('626c6f67', {
     emoji: '🖋',
     url: 'https://www.ecashchat.com/',
 });
+lokadMap.set('584f564d', {
+    name: 'Overmind tx',
+    emoji: '🤖',
+    url: 'https://t.me/TheOvermind_bot',
+});
 
 export default lokadMap;
