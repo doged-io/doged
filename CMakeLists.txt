@@ -154,4 +154,9 @@ add_subdirectory(electrum)
 add_subdirectory(contrib)
 add_subdirectory(doc)
 
+option(BUILD_MINER "Build the doged-miner Scrypt GPU/CPU mining tool" ON)
+if(BUILD_MINER)
+	add_subdirectory(tools/miner)
+endif()
+
 include(PackageOptions.cmake)
