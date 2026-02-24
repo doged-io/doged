@@ -244,6 +244,21 @@ body {
     color: var(--primary-text);
 }
 
+.footer-link-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-link-icon {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.footer-link-with-icon:hover .footer-link-icon {
+    filter: brightness(0) invert(1);
+}
+
 .footer-separator {
     color: var(--secondary-text);
     font-weight: 300;
