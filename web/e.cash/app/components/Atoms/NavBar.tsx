@@ -11,14 +11,19 @@ import { cn } from "../../utils/cn";
 import { navbarLinks } from "../../data/navbarLinks";
 import Button from "./Button";
 import UpgradeCountdown from "./UpgradeCountdown";
+import StoreAnnouncementBanner from "./StoreAnnouncementBanner";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 
 interface NavbarProps {
-  showBanner: boolean;
+  showStoreBanner: boolean;
+  showUpgradeBanner: boolean;
 }
 
-export default function Navbar({ showBanner }: NavbarProps) {
+export default function Navbar({
+  showStoreBanner,
+  showUpgradeBanner,
+}: NavbarProps) {
   const pathname = usePathname();
   const isHomepage = pathname === "/";
 
@@ -97,10 +102,11 @@ export default function Navbar({ showBanner }: NavbarProps) {
             "bg-background/30 shadow-sm backdrop-blur-sm",
         )}
       >
-        {/* Banner
-         ***** Note: Set the endtime timestamp for the banner in layout.tsx. *****
+        {/* Banners
+         ***** Note: Set the endtime timestamps for the banners in layout.tsx. *****
          */}
-        {showBanner && <UpgradeCountdown />}
+        {showStoreBanner && !showUpgradeBanner && <StoreAnnouncementBanner />}
+        {showUpgradeBanner && <UpgradeCountdown />}
         <div className="flex w-full max-w-[1400px] items-center justify-between px-4 py-4">
           {/* Left: Logo and main links */}
           <div className="flex items-center gap-12">
@@ -163,6 +169,8 @@ export default function Navbar({ showBanner }: NavbarProps) {
                           key={link.title}
                           href={link.href}
                           className={dropDownItem}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {link.title}
                         </Link>

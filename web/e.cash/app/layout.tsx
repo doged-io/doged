@@ -68,11 +68,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Endtime timestamp for the top banner
-  // Banner is shown if the current time is before the endtime.
-  // We need to set it here so we apply the extra padding to the main content when banner is active.
-  const bannerEndTime = "2025-12-01T00:00:00Z";
-  const showBanner = shouldShowBanner(bannerEndTime);
+  // Endtime timestamps for the top banners.
+  // Each banner is shown if the current time is before its endtime.
+  // We need to set these here so we apply the extra padding to the main content when banners are active.
+  const storeBannerEndTime = "2026-06-01T00:00:00Z";
+  const upgradeBannerEndTime = "2025-12-01T00:00:00Z";
+  const showStoreBanner = shouldShowBanner(storeBannerEndTime);
+  const showUpgradeBanner = shouldShowBanner(upgradeBannerEndTime);
 
   return (
     <html lang="en">
@@ -83,8 +85,17 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <Analytics />
           </Suspense>
-          <Navbar showBanner={showBanner} />
-          <div className={showBanner ? "pt-[40px] sm:pt-[30px]" : ""}>
+          <Navbar
+            showStoreBanner={showStoreBanner}
+            showUpgradeBanner={showUpgradeBanner}
+          />
+          <div
+            className={
+              showStoreBanner || showUpgradeBanner
+                ? "pt-[40px] sm:pt-[30px]"
+                : ""
+            }
+          >
             {children}
           </div>
           <Footer />
