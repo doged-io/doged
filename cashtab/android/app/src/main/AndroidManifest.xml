@@ -30,6 +30,15 @@
                 <data android:scheme="${deepLinkScheme}" />
             </intent-filter>
 
+            <!-- Deep link intent-filter -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="paybutton.org" android:pathPrefix="/app"/>
+                <data android:scheme="https" android:host="api.paybutton.org" android:pathPrefix="/app"/>
+            </intent-filter>
+
             <!-- BIP21 URI intent filter - open when scanning payment URI from system camera -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

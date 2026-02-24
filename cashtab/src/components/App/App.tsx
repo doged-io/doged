@@ -50,6 +50,7 @@ import { Capacitor } from '@capacitor/core';
 import TabCash from 'assets/tabcash.png';
 import { hasEnoughToken } from 'wallet';
 import { parseAddressInput } from 'validation';
+import { paybuttonDeepLinkToBip21Uri } from 'paybutton';
 import ServiceWorkerWrapper from 'components/Common/ServiceWorkerWrapper';
 import WebApp from 'components/AppModes/WebApp';
 import Extension from 'components/AppModes/Extension';
@@ -158,14 +159,21 @@ const App = () => {
             return;
         }
 
-        const handleBip21Uri = (bip21Uri: string) => {
-            const normalizedBip21Uri = bip21Uri.trim().toLowerCase();
+        const handleBip21Uri = (url: string) => {
+            const normalizedBip21Uri = url.trim().toLowerCase();
+            // PayButton deep links: https://paybutton.org/app?address=...&b=1
+            const { bip21Uri, returnToBrowser } =
+                paybuttonDeepLinkToBip21Uri(normalizedBip21Uri);
             // Only do a limited check here that this is a valid BIP21 URI.
             // The amount is not validated at this point, this will be handled
             // after we jumped to the send screen.
-            const parsed = parseAddressInput(normalizedBip21Uri, 0);
+            const parsed = parseAddressInput(bip21Uri, 0);
             if (parsed.address.error === false && parsed.address.value) {
-                navigate(`/send?bip21=${normalizedBip21Uri}`);
+                let sendParams = `bip21=${bip21Uri}`;
+                if (returnToBrowser) {
+                    sendParams += '&returnToBrowser=1';
+                }
+                navigate(`/send?${sendParams}`);
             }
         };
 

@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import Modal from 'components/Common/Modal';
 import PrimaryButton, {
@@ -370,6 +371,7 @@ interface CashtabTxInfo {
     bip21?: string;
     value?: string;
     parseAllAsBip21?: boolean;
+    returnToBrowser?: boolean;
 }
 const SendXec: React.FC = () => {
     const ContextValue = useContext(WalletContext);
@@ -518,17 +520,23 @@ const SendXec: React.FC = () => {
     const [isUrlBasedTransaction, setIsUrlBasedTransaction] =
         useState<boolean>(false);
 
-    // On native mobile, navigate home instead of window.close() for URL-based tx
+    // On native mobile: exitApp for PayButton (return to browser), else navigate home
     const closeOrNavigateFromUrlBasedTransaction = useCallback(() => {
         setShowSuccessModal(false);
+        const shouldReturnToBrowser =
+            txInfoFromUrl !== false && txInfoFromUrl.returnToBrowser === true;
+        setTxInfoFromUrl(false);
+        setIsUrlBasedTransaction(false);
         if (Capacitor.isNativePlatform()) {
-            setTxInfoFromUrl(false);
-            setIsUrlBasedTransaction(false);
-            navigate('/', { replace: true });
+            if (shouldReturnToBrowser) {
+                CapacitorApp.exitApp();
+            } else {
+                navigate('/', { replace: true });
+            }
         } else {
             window.close();
         }
-    }, [navigate]);
+    }, [navigate, txInfoFromUrl]);
 
     // Auto-close success modal after progress bar animation duration
     useEffect(() => {
@@ -1305,6 +1313,11 @@ const SendXec: React.FC = () => {
         if (parseAllAsBip21) {
             // Cashtab requires param string to start with bip21 if this is requesting bip21 validation
             txInfo.bip21 = txInfoStr.slice('bip21='.length);
+            // If bip21 param string contains &returnToBrowser=1, remove it and set returnToBrowser flag
+            if (txInfo.bip21.includes('&returnToBrowser=1')) {
+                txInfo.bip21 = txInfo.bip21.replace('&returnToBrowser=1', '');
+                txInfo.returnToBrowser = true;
+            }
         } else {
             // Parse for legacy amount and value params
             const legacyParams = new URLSearchParams(txInfoStr);

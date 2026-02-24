@@ -47,6 +47,12 @@ android {
         }
     }
     signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
         if (keystoreFileExists) {
             release {
                 // Resolve keystore path relative to android directory (rootProject.rootDir)
@@ -68,6 +74,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

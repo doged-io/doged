@@ -1,0 +1,14 @@
+[
+    {
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.cashtab.app",
+            "sha256_cert_fingerprints": [
+                "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+                "02:71:C6:C3:30:1F:FC:F1:E7:5E:F5:92:8D:03:A3:7C:6C:FE:33:CE:6D:22:B9:4C:8F:FF:E7:65:BE:84:04:A1",
+                "18:43:19:21:31:B6:EA:C3:DF:29:40:86:EA:96:6E:DE:21:D1:BE:F2:FD:B1:9C:C4:44:43:5F:94:22:D8:0F:22"
+            ]
+        }
+    }
+]
