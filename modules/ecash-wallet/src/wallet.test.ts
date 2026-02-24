@@ -2490,6 +2490,195 @@ describe('Support functions', () => {
                 config: { satsStrategy: SatsSelectionStrategy.REQUIRE_SATS },
             });
         });
+        it('Throws when p2shInputData is used with SLP SEND exceeding SLP_MAX_SEND_OUTPUTS', () => {
+            const tooManyOutputs = Array(SLP_MAX_SEND_OUTPUTS + 1)
+                .fill(null)
+                .map(() => ({
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                    tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                    atoms: 1n,
+                    isMintBaton: false,
+                }));
+            const action = {
+                outputs: [{ sats: 0n }, ...tooManyOutputs],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                    },
+                ] as payment.TokenAction[],
+                p2shInputData: {
+                    lokad: strToBytes('INP1'),
+                    data: strToBytes('test'),
+                },
+            };
+            const spendableUtxos = [
+                getDummySlpUtxo(BigInt(SLP_MAX_SEND_OUTPUTS + 1)),
+                { ...DUMMY_UTXO, sats: 100_000n },
+            ];
+            expect(() => selectUtxos(action, spendableUtxos)).to.throw(
+                `p2shInputData is not supported when the number of token recipients exceeds ${SLP_MAX_SEND_OUTPUTS} (SLP max per tx). Use p2shInputData only for sends within the protocol limit.`,
+            );
+        });
+        it('Throws when p2shInputData is used with XEC outputs exceeding broadcast limit', async () => {
+            const mockChronik = new MockChronikClient();
+            const testWallet = Wallet.fromSk(
+                DUMMY_SK,
+                mockChronik as unknown as ChronikClient,
+            );
+            mockChronik.setBlockchainInfo({
+                tipHash: DUMMY_TIPHASH,
+                tipHeight: DUMMY_TIPHEIGHT,
+            });
+            const maxTxSersize = 2000;
+            const maxOutputs = getMaxP2pkhOutputs(1, 0, maxTxSersize);
+            const tooManyOutputs = Array(maxOutputs + 1)
+                .fill(null)
+                .map(() => ({
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                }));
+            const largeUtxo = {
+                ...DUMMY_UTXO,
+                sats: BigInt(tooManyOutputs.length) * 546n + 10_000n,
+            };
+            mockChronik.setUtxosByAddress(DUMMY_ADDRESS, [largeUtxo]);
+            await testWallet.sync();
+
+            const action = {
+                outputs: tooManyOutputs,
+                p2shInputData: {
+                    lokad: strToBytes('INP1'),
+                    data: strToBytes('test'),
+                },
+                maxTxSersize,
+            };
+            expect(() => testWallet.action(action).build()).to.throw(
+                'p2shInputData is not supported when the number of XEC outputs would cause the resulting tx to exceed the broadcast limit. Use p2shInputData only for sends that fit within a single tx.',
+            );
+        });
+        it('Throws when p2shInputData is used with NFT mint fan-out', () => {
+            const action = {
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: 1n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS' as const,
+                        tokenType: SLP_TOKEN_TYPE_NFT1_CHILD,
+                        genesisInfo: {},
+                        groupTokenId: '11'.repeat(32),
+                    },
+                ],
+                p2shInputData: {
+                    lokad: strToBytes('INP1'),
+                    data: strToBytes('test'),
+                },
+            };
+            const mockNftParentBigInput = {
+                ...DUMMY_UTXO,
+                token: {
+                    tokenId: '11'.repeat(32),
+                    atoms: 100n,
+                    isMintBaton: false,
+                    tokenType: SLP_TOKEN_TYPE_NFT1_GROUP,
+                },
+            };
+            const spendableUtxos = [DUMMY_UTXO, mockNftParentBigInput];
+            expect(() => selectUtxos(action, spendableUtxos)).to.throw(
+                'p2shInputData is not supported with NFT mint fan-out. Use p2shInputData only for actions that complete in a single tx.',
+            );
+        });
+        it('Throws when p2shInputData is used with intentional SLP burn', () => {
+            const action = {
+                outputs: [
+                    { sats: 1_000n, script: MOCK_DESTINATION_SCRIPT },
+                    {
+                        sats: 546n,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        atoms: 1n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'BURN',
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                        burnAtoms: 42n,
+                    },
+                ] as payment.TokenAction[],
+                p2shInputData: {
+                    lokad: strToBytes('INP1'),
+                    data: strToBytes('test'),
+                },
+            };
+            const spendableUtxos = [
+                { ...DUMMY_UTXO, sats: 10_000n },
+                getDummySlpUtxo(45n),
+            ];
+            expect(() => selectUtxos(action, spendableUtxos)).to.throw(
+                'p2shInputData is not supported with intentional SLP burn (requires chained prep tx). Use p2shInputData only for actions that complete in a single tx.',
+            );
+        });
+        it('Throws when p2shInputData is used with token tx exceeding broadcast limit', async () => {
+            const mockChronik = new MockChronikClient();
+            const testWallet = Wallet.fromSk(
+                DUMMY_SK,
+                mockChronik as unknown as ChronikClient,
+            );
+            mockChronik.setBlockchainInfo({
+                tipHash: DUMMY_TIPHASH,
+                tipHeight: DUMMY_TIPHEIGHT,
+            });
+            // Use small maxTxSersize so that token outputs (within SLP limit) exceed it.
+            // Must stay within SLP_MAX_SEND_OUTPUTS (19) or we hit that check first.
+            const maxTxSersize = 700;
+            const tokenOutputCount = SLP_MAX_SEND_OUTPUTS - 1;
+            const tokenOutputs = Array(tokenOutputCount)
+                .fill(null)
+                .map(() => ({
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                    tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                    atoms: 1n,
+                    isMintBaton: false,
+                }));
+            const totalAtoms = BigInt(tokenOutputCount);
+            const spendableUtxos = [
+                getDummySlpUtxo(totalAtoms),
+                { ...DUMMY_UTXO, sats: 100_000n },
+            ];
+            mockChronik.setUtxosByAddress(DUMMY_ADDRESS, spendableUtxos);
+            await testWallet.sync();
+
+            const action = {
+                outputs: [{ sats: 0n }, ...tokenOutputs],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                    },
+                ] as payment.TokenAction[],
+                p2shInputData: {
+                    lokad: strToBytes('INP1'),
+                    data: strToBytes('test'),
+                },
+                maxTxSersize,
+            };
+            expect(() => testWallet.action(action).build()).to.throw(
+                'p2shInputData is not supported when the token tx would exceed the broadcast limit. Use p2shInputData only for sends that fit within a single tx.',
+            );
+        });
         it('With ignoredTokenIds, does not select UTXOs for the ignored tokens even if the action requires them', () => {
             const action = {
                 outputs: [
@@ -3541,6 +3730,40 @@ describe('Support functions', () => {
                     Error,
                     'Data actions are only supported for ALP_TOKEN_TYPE_STANDARD token actions.',
                 );
+            });
+            it('Does not throw when user includes p2shInputData with SLP SEND (chained tx)', () => {
+                const slpSendAction: payment.SendAction = {
+                    type: 'SEND',
+                    tokenId: '11'.repeat(32),
+                    tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                };
+                const slpUtxoWithEnoughAtoms = getDummySlpUtxo(
+                    1_000_000n,
+                    '11'.repeat(32),
+                );
+                expect(() =>
+                    finalizeOutputs(
+                        {
+                            outputs: [
+                                { sats: 0n },
+                                {
+                                    sats: 546n,
+                                    tokenId: '11'.repeat(32),
+                                    atoms: 1_000_000n,
+                                    script: DUMMY_SCRIPT,
+                                    isMintBaton: false,
+                                },
+                            ],
+                            tokenActions: [slpSendAction],
+                            p2shInputData: {
+                                lokad: strToBytes('INP1'),
+                                data: strToBytes('test'),
+                            },
+                        },
+                        [slpUtxoWithEnoughAtoms],
+                        () => DUMMY_CHANGE_SCRIPT,
+                    ),
+                ).to.not.throw();
             });
             it('Throws when user includes data action with SLP_TOKEN_TYPE_MINT_VAULT token action', () => {
                 const dataAction: payment.DataAction = {

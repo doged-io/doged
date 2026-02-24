@@ -76,6 +76,20 @@ export interface Action {
     feePerKb?: bigint;
     /** Maximum tx sersize to be used for tx(s) of this action, defaults to MAX_TX_SERSIZE */
     maxTxSersize?: number;
+    /**
+     * Data encoded in a P2SH redeem script, revealed when the input is spent.
+     * Creates a chained tx: prep tx sends to P2SH, main tx spends it.
+     * Works for any tx type (XEC-only, SLP, ALP). Redeem script includes
+     * sender pubkey, so P2PKH address derivable from the spending input.
+     *
+     * Format follows ecash-agora ad script for chronik indexing:
+     * - lokad: 4-byte identifier (indexed by chronik as lokadId)
+     * - data: arbitrary bytes (like Agora covenant consts, minus covenant variant)
+     *
+     * scriptSig = <lokad> <data> <sig> <pubkey> <redeemScript>
+     * Redeem script: OP_CHECKSIGVERIFY pushBytes(data) OP_EQUALVERIFY pushBytes(lokad) OP_EQUAL
+     */
+    p2shInputData?: { lokad: Uint8Array; data: Uint8Array };
 }
 
 /**
@@ -156,6 +170,7 @@ export interface BurnAction {
 /**
  * Arbitrary data push to be included for token types that support EMPP
  * Not associated with PaymentOutput[]
+ * Only supported for ALP_TOKEN_TYPE_STANDARD (EMPP in OP_RETURN)
  */
 export interface DataAction {
     type: 'DATA';

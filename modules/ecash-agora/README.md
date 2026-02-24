@@ -306,3 +306,7 @@ Running from `bitcoin-abc/modules/ecash-agora` if your build dir is `bitcoin-abc
 ### 3.0.1 [D19556](https://reviews.bitcoinabc.org/D19556)
 
 - Publish to catch updated `ecash-wallet`
+
+### 3.0.2 [D19600](https://reviews.bitcoinabc.org/D19600)
+
+- Upgrade to `ecash-wallet` 4.1.0 and `ecash-lib` 4.8.0

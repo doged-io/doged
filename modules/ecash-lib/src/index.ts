@@ -31,4 +31,5 @@ export * from './token/empp.js';
 export * from './token/slp.js';
 export * from './token/slp.parse.js';
 export * from './parse/opreturn.js';
+export * from './inputData.js';
 export * as payment from './payment';

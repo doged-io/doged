@@ -18,11 +18,16 @@ import {
     Script,
     toHex,
     fromHex,
+    strToBytes,
+    bytesToStr,
     TxOutput,
     SLP_MAX_SEND_OUTPUTS,
     ALP_POLICY_MAX_OUTPUTS,
     OP_RETURN_MAX_BYTES,
     payment,
+    decodeInputData,
+    pushBytesOp,
+    shaRmd160,
     SLP_TOKEN_TYPE_FUNGIBLE,
     ALP_TOKEN_TYPE_STANDARD,
     SLP_TOKEN_TYPE_MINT_VAULT,
@@ -31,6 +36,9 @@ import {
     ALL_BIP143,
     MAX_TX_SERSIZE,
     OP_RETURN,
+    OP_CHECKSIGVERIFY,
+    OP_EQUAL,
+    OP_EQUALVERIFY,
 } from 'ecash-lib';
 import { TestRunner } from 'ecash-lib/dist/test/testRunner.js';
 import { Wallet } from '../src/wallet';
@@ -827,6 +835,544 @@ describe('Wallet can build and broadcast on regtest', () => {
             .broadcast();
         expect(chainedSendResponse.success).to.equal(true);
         expect(chainedSendResponse.broadcasted).to.have.length(2);
+    });
+    it('We can SEND SLP tokens with p2shInputData (chained tx, data in input)', async () => {
+        // Init the wallet
+        const slpWallet = Wallet.fromSk(fromHex('13'.repeat(32)), chronik);
+
+        // Send 1M XEC to the wallet
+        const inputSats = 1_000_000_00n;
+        await runner.sendToScript(inputSats, slpWallet.script);
+
+        // Sync the wallet
+        await slpWallet.sync();
+
+        // Genesis a fungible token
+        const slpGenesisInfo = {
+            tokenTicker: 'SLP',
+            tokenName: 'SLP Test Token',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisMintQty = 1_000n;
+        const slpGenesisAction: payment.Action = {
+            outputs: [
+                { sats: 0n },
+                {
+                    sats: 546n,
+                    tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                    script: slpWallet.script,
+                    atoms: genesisMintQty,
+                },
+                {
+                    sats: 546n,
+                    script: slpWallet.script,
+                    tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                    isMintBaton: true,
+                    atoms: 0n,
+                },
+            ],
+            tokenActions: [
+                {
+                    type: 'GENESIS',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    genesisInfo: slpGenesisInfo,
+                },
+            ],
+        };
+        const genesisResp = await slpWallet
+            .action(slpGenesisAction)
+            .build()
+            .broadcast();
+        const slpGenesisTokenId = genesisResp.broadcasted[0];
+
+        // action.p2shInputData: prep tx sends tokens to P2SH, main tx spends it.
+        // Agora-style format: scriptSig = [lokad, data, sig, pubkey, redeemScript]
+        // Redeem script: OP_CHECKSIGVERIFY pushBytes(data) OP_EQUALVERIFY pushBytes(lokad) OP_EQUAL
+        // lokad INP1 (4 bytes) for chronik lokadId indexing; unique per test to avoid history collision.
+        const lokad = strToBytes('INP1');
+        const data = strToBytes('thisisatest');
+        const p2shInputData = { lokad, data };
+        const slpP2shInputDataAction: payment.Action = {
+            outputs: [
+                { sats: 0n },
+                {
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                    tokenId: slpGenesisTokenId,
+                    atoms: 50n,
+                    isMintBaton: false,
+                },
+            ],
+            tokenActions: [
+                {
+                    type: 'SEND',
+                    tokenId: slpGenesisTokenId,
+                    tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                },
+            ],
+            p2shInputData,
+        };
+
+        const p2shResp = await slpWallet
+            .action(slpP2shInputDataAction)
+            .build()
+            .broadcast();
+
+        expect(p2shResp.success).to.equal(true);
+        expect(p2shResp.broadcasted).to.have.length(2);
+
+        const [dataPrepTxid, mainTxid] = p2shResp.broadcasted;
+        const dataPrepTx = await chronik.tx(dataPrepTxid);
+        const mainTx = await chronik.tx(mainTxid);
+
+        // Data prep tx has OP_RETURN at 0, P2SH+token at 1
+        const dataPrepScript = Script.fromOps([
+            OP_CHECKSIGVERIFY,
+            pushBytesOp(data),
+            OP_EQUALVERIFY,
+            pushBytesOp(lokad),
+            OP_EQUAL,
+        ]);
+        const expectedP2shScript = Script.p2sh(
+            shaRmd160(dataPrepScript.bytecode),
+        );
+        expect(dataPrepTx.outputs[1].outputScript).to.equal(
+            expectedP2shScript.toHex(),
+        );
+        expect(dataPrepTx.outputs[1].sats).to.equal(833n);
+
+        expect(dataPrepTx.tokenEntries).to.have.length(1);
+        expect(dataPrepTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(mainTx.tokenEntries).to.have.length(1);
+        expect(mainTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(mainTx.tokenEntries[0].actualBurnAtoms).to.equal(0n);
+
+        // The main tx has only the p2sh input
+        expect(mainTx.inputs).to.have.length(1);
+
+        // Verify tokens at destination
+        const destUtxos = await chronik
+            .address(MOCK_DESTINATION_ADDRESS)
+            .utxos();
+        const tokenUtxo = destUtxos.utxos.find(
+            u => u.token?.tokenId === slpGenesisTokenId,
+        );
+        expect(tokenUtxo?.token?.atoms).to.equal(50n);
+
+        // Decode sender address, lokadId, and data from input script
+        const mainTxInput0 = mainTx.inputs[0];
+        const scriptSig = fromHex(mainTxInput0.inputScript);
+        const decoded = decodeInputData(scriptSig);
+        expect(decoded).to.not.equal(undefined);
+        expect(decoded!.address).to.equal(slpWallet.address);
+        expect(decoded!.lokadId).to.deep.equal(lokad);
+        expect(decoded!.data).to.deep.equal(data);
+        expect(bytesToStr(decoded!.data)).to.equal('thisisatest');
+
+        // History by lokad INP1 returns the main tx (data in input)
+        const inputHistory = await chronik.lokadId(toHex(lokad)).history();
+        expect(inputHistory.txs).to.have.length(1);
+        expect(inputHistory.txs[0].txid).to.equal(mainTxid);
+    });
+    it('We can SEND SLP tokens with p2shInputData at max outputs (18 recipients)', async () => {
+        // NB we "could" do 19 recipients, because this is a chained tx and we would not actually need the auto-change
+        // However this is an extreme edge case, for now there is more value in supporting multiple outputs without overhauling all validation for this one case
+        const slpWallet = Wallet.fromSk(fromHex('1a'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, slpWallet.script);
+        await slpWallet.sync();
+
+        const slpGenesisInfo = {
+            tokenTicker: 'SLP',
+            tokenName: 'SLP Max Test',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisMintQty = 1_000n;
+        const genesisResp = await slpWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        script: slpWallet.script,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: slpWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: {
+                            protocol: 'SLP',
+                            type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                            number: 1,
+                        },
+                        genesisInfo: slpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const slpTokenId = genesisResp.broadcasted[0];
+
+        const lokad = strToBytes('INP7');
+        const data = strToBytes('maxoutputstest');
+        const p2shInputData = { lokad, data };
+
+        const recipientOutputs: payment.PaymentTokenOutput[] = [];
+        for (let i = 1; i <= SLP_MAX_SEND_OUTPUTS - 1; i++) {
+            recipientOutputs.push({
+                sats: 546n,
+                script: MOCK_DESTINATION_SCRIPT,
+                tokenId: slpTokenId,
+                atoms: 1n,
+                isMintBaton: false,
+            });
+        }
+
+        const action: payment.Action = {
+            outputs: [{ sats: 0n }, ...recipientOutputs],
+            tokenActions: [
+                {
+                    type: 'SEND',
+                    tokenId: slpTokenId,
+                    tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                },
+            ],
+            p2shInputData,
+        };
+
+        const resp = await slpWallet.action(action).build().broadcast();
+
+        expect(resp.success).to.equal(true);
+        expect(resp.broadcasted).to.have.length(2);
+
+        const [_dataPrepTxid, mainTxid] = resp.broadcasted;
+        const mainTx = await chronik.tx(mainTxid);
+
+        expect(mainTx.tokenEntries).to.have.length(1);
+        expect(mainTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(mainTx.tokenEntries[0].actualBurnAtoms).to.equal(0n);
+
+        const tokenOutputs = mainTx.outputs.filter(o => o.token !== undefined);
+        // We do not need token change in the main tx
+        expect(tokenOutputs.length).to.equal(SLP_MAX_SEND_OUTPUTS - 1);
+
+        const scriptSig = fromHex(mainTx.inputs[0].inputScript);
+        const decoded = decodeInputData(scriptSig);
+        expect(decoded).to.not.equal(undefined);
+        expect(decoded!.lokadId).to.deep.equal(lokad);
+        expect(bytesToStr(decoded!.data)).to.equal('maxoutputstest');
+
+        const inputHistory = await chronik.lokadId(toHex(lokad)).history();
+        expect(inputHistory.txs).to.have.length(1);
+        expect(inputHistory.txs[0].txid).to.equal(mainTxid);
+    });
+    it('We can send XEC with p2shInputData and OP_RETURN (extends data in tx)', async () => {
+        const xecWallet = Wallet.fromSk(fromHex('15'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, xecWallet.script);
+        await xecWallet.sync();
+
+        const lokadInput = strToBytes('INP2');
+        const lokadOutput = strToBytes('OUT1');
+        const p2shInputData = {
+            lokad: lokadInput,
+            data: strToBytes('thisisatest'),
+        };
+        const opReturnScript = new Script(
+            fromHex(`6a04${toHex(lokadOutput)}04${toHex(strToBytes('test'))}`),
+        );
+
+        const xecP2shAction: payment.Action = {
+            outputs: [
+                { sats: 0n, script: opReturnScript },
+                {
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                },
+            ],
+            p2shInputData,
+        };
+
+        const resp = await xecWallet.action(xecP2shAction).build().broadcast();
+
+        expect(resp.success).to.equal(true);
+        expect(resp.broadcasted).to.have.length(2);
+
+        const [dataPrepTxid, mainTxid] = resp.broadcasted;
+        const dataPrepTx = await chronik.tx(dataPrepTxid);
+        const mainTx = await chronik.tx(mainTxid);
+
+        // Data prep tx has P2SH output at 0 (XEC-only)
+        const dataPrepScript = Script.fromOps([
+            OP_CHECKSIGVERIFY,
+            pushBytesOp(p2shInputData.data),
+            OP_EQUALVERIFY,
+            pushBytesOp(lokadInput),
+            OP_EQUAL,
+        ]);
+        const expectedP2shScript = Script.p2sh(
+            shaRmd160(dataPrepScript.bytecode),
+        );
+        expect(dataPrepTx.outputs[0].outputScript).to.equal(
+            expectedP2shScript.toHex(),
+        );
+        expect(dataPrepTx.outputs[0].sats).to.equal(789n);
+
+        // Main tx has OP_RETURN at outIdx 0, XEC output at outIdx 1
+        expect(mainTx.outputs[0].sats).to.equal(0n);
+        expect(mainTx.outputs[0].outputScript).to.equal(opReturnScript.toHex());
+        expect(mainTx.outputs[1].sats).to.equal(546n);
+
+        // The main tx has only the p2sh input
+        expect(mainTx.inputs).to.have.length(1);
+
+        const scriptSig = fromHex(mainTx.inputs[0].inputScript);
+        const decoded = decodeInputData(scriptSig);
+        expect(decoded).to.not.equal(undefined);
+        expect(decoded!.address).to.equal(xecWallet.address);
+        expect(bytesToStr(decoded!.data)).to.equal('thisisatest');
+
+        // History by lokad INP2 returns the main tx (data in input)
+        const inputHistory = await chronik.lokadId(toHex(lokadInput)).history();
+        expect(inputHistory.txs).to.have.length(1);
+        expect(inputHistory.txs[0].txid).to.equal(mainTxid);
+
+        // History by lokad OUT1 returns the main tx (data in OP_RETURN output)
+        const outputHistory = await chronik
+            .lokadId(toHex(lokadOutput))
+            .history();
+        expect(outputHistory.txs).to.have.length(1);
+        expect(outputHistory.txs[0].txid).to.equal(mainTxid);
+    });
+    it('We can SEND ALP tokens with p2shInputData and DATA action (extends data in tx)', async () => {
+        const alpWallet = Wallet.fromSk(fromHex('16'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, alpWallet.script);
+        await alpWallet.sync();
+
+        const alpGenesisInfo = {
+            tokenTicker: 'ALP',
+            tokenName: 'ALP Test',
+            url: 'cashtab.com',
+            decimals: 0,
+            authPubkey: toHex(alpWallet.pk),
+        };
+        const genesisResp = await alpWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: alpWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: 1000n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+
+        const lokadInput = strToBytes('INP3');
+        const lokadOutput = strToBytes('OUT2');
+        const p2shInputData = {
+            lokad: lokadInput,
+            data: strToBytes('thisisatest'),
+        };
+        const dataActionData = new Uint8Array([
+            ...lokadOutput,
+            ...strToBytes('thisisalsoatest'),
+        ]);
+
+        const alpP2shAction: payment.Action = {
+            outputs: [
+                { sats: 0n },
+                {
+                    sats: 546n,
+                    script: MOCK_DESTINATION_SCRIPT,
+                    tokenId: alpTokenId,
+                    atoms: 50n,
+                    isMintBaton: false,
+                },
+            ],
+            tokenActions: [
+                {
+                    type: 'SEND',
+                    tokenId: alpTokenId,
+                    tokenType: ALP_TOKEN_TYPE_STANDARD,
+                },
+                { type: 'DATA', data: dataActionData },
+            ],
+            p2shInputData,
+        };
+
+        const resp = await alpWallet.action(alpP2shAction).build().broadcast();
+
+        expect(resp.success).to.equal(true);
+        expect(resp.broadcasted).to.have.length(2);
+
+        const [dataPrepTxid, mainTxid] = resp.broadcasted;
+        const dataPrepTx = await chronik.tx(dataPrepTxid);
+        const mainTx = await chronik.tx(mainTxid);
+
+        // Data prep tx has OP_RETURN at 0, P2SH+token at 1
+        const dataPrepScript = Script.fromOps([
+            OP_CHECKSIGVERIFY,
+            pushBytesOp(p2shInputData.data),
+            OP_EQUALVERIFY,
+            pushBytesOp(lokadInput),
+            OP_EQUAL,
+        ]);
+        const expectedP2shScript = Script.p2sh(
+            shaRmd160(dataPrepScript.bytecode),
+        );
+        expect(dataPrepTx.outputs[1].outputScript).to.equal(
+            expectedP2shScript.toHex(),
+        );
+        expect(dataPrepTx.outputs[1].sats).to.equal(850n);
+
+        // The main tx has only the p2sh input
+        expect(mainTx.inputs).to.have.length(1);
+
+        expect(mainTx.tokenEntries).to.have.length(1);
+        expect(mainTx.tokenEntries[0].txType).to.equal('SEND');
+
+        // DATA action in OP_RETURN (EMPP)
+        expect(mainTx.outputs[0].outputScript).to.include(
+            toHex(dataActionData),
+        );
+
+        const scriptSig = fromHex(mainTx.inputs[0].inputScript);
+        const decoded = decodeInputData(scriptSig);
+        expect(decoded).to.not.equal(undefined);
+        expect(decoded!.address).to.equal(alpWallet.address);
+        expect(bytesToStr(decoded!.data)).to.equal('thisisatest');
+
+        // History by lokad INP3 returns the main tx (data in input)
+        const inputHistory = await chronik.lokadId(toHex(lokadInput)).history();
+        expect(inputHistory.txs).to.have.length(1);
+        expect(inputHistory.txs[0].txid).to.equal(mainTxid);
+
+        // History by lokad OUT2 returns the main tx (data in EMPP output)
+        const outputHistory = await chronik
+            .lokadId(toHex(lokadOutput))
+            .history();
+
+        expect(outputHistory.txs).to.have.length(1);
+        expect(outputHistory.txs[0].txid).to.equal(mainTxid);
+    });
+    it('We can SEND ALP tokens with p2shInputData at max outputs (28 recipients)', async () => {
+        // NB we "could" do 29 recipients, because this is a chained tx and we would not actually need the auto-change
+        // However this is an extreme edge case, for now there is more value in supporting multiple outputs without overhauling all validation for this one case
+        const alpWallet = Wallet.fromSk(fromHex('1b'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, alpWallet.script);
+        await alpWallet.sync();
+
+        const alpGenesisInfo = {
+            tokenTicker: 'ALP',
+            tokenName: 'ALP Max Test',
+            url: 'cashtab.com',
+            decimals: 0,
+            authPubkey: toHex(alpWallet.pk),
+        };
+        const genesisMintQty = 100_000n;
+        const genesisResp = await alpWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: alpWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+
+        const lokad = strToBytes('INP8');
+        const data = strToBytes('alp max outputs');
+        const p2shInputData = { lokad, data };
+
+        const atomsPerRecipient = 1000n;
+        const recipientOutputs: payment.PaymentTokenOutput[] = [];
+        for (let i = 0; i < ALP_POLICY_MAX_OUTPUTS - 1; i++) {
+            const hex = (i + 100).toString(16).padStart(40, '0');
+            const script = Script.p2pkh(fromHex(hex));
+            recipientOutputs.push({
+                sats: DEFAULT_DUST_SATS,
+                script,
+                tokenId: alpTokenId,
+                atoms: atomsPerRecipient,
+                isMintBaton: false,
+            });
+        }
+
+        const action: payment.Action = {
+            outputs: [{ sats: 0n }, ...recipientOutputs],
+            tokenActions: [
+                {
+                    type: 'SEND',
+                    tokenId: alpTokenId,
+                    tokenType: ALP_TOKEN_TYPE_STANDARD,
+                },
+            ],
+            p2shInputData,
+        };
+
+        const resp = await alpWallet.action(action).build().broadcast();
+
+        expect(resp.success).to.equal(true);
+        expect(resp.broadcasted).to.have.length(2);
+
+        const [_dataPrepTxid, mainTxid] = resp.broadcasted;
+        const mainTx = await chronik.tx(mainTxid);
+
+        expect(mainTx.tokenEntries).to.have.length(1);
+        expect(mainTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(mainTx.tokenEntries[0].actualBurnAtoms).to.equal(0n);
+
+        const tokenOutputs = mainTx.outputs.filter(o => o.token !== undefined);
+        // We do not need token change in the main tx
+        expect(tokenOutputs.length).to.equal(ALP_POLICY_MAX_OUTPUTS - 1);
+
+        const scriptSig = fromHex(mainTx.inputs[0].inputScript);
+        const decoded = decodeInputData(scriptSig);
+        expect(decoded).to.not.equal(undefined);
+        expect(decoded!.lokadId).to.deep.equal(lokad);
+        expect(bytesToStr(decoded!.data)).to.equal('alp max outputs');
+
+        const inputHistory = await chronik.lokadId(toHex(lokad)).history();
+        expect(inputHistory.txs).to.have.length(1);
+        expect(inputHistory.txs[0].txid).to.equal(mainTxid);
     });
     it('We can handle ALP ALP_TOKEN_TYPE_STANDARD token actions', async () => {
         // Init the wallet

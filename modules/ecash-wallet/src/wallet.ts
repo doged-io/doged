@@ -46,6 +46,12 @@ import {
     fromHex,
     EccDummy,
     P2PKH_OUTPUT_SIZE,
+    pushBytesOp,
+    OP_EQUAL,
+    OP_EQUALVERIFY,
+    OP_CHECKSIGVERIFY,
+    flagSignature,
+    UnsignedTxInput,
 } from 'ecash-lib';
 import { WalletBase } from './walletBase';
 import { ChronikClient, ScriptUtxo, TokenType } from 'chronik-client';
@@ -676,11 +682,288 @@ class WalletAction {
                 return this._buildNftMintFanoutChained(sighash);
             case ChainedTxType.TOKEN_SEND_EXCEEDS_MAX_OUTPUTS:
                 return this._buildTokenSendChained(sighash);
+            case ChainedTxType.P2SH_INPUT_DATA:
+                return this._buildP2shInputDataChained(sighash);
             default:
                 throw new Error(
                     `Unsupported chained transaction type: ${this.selectUtxosResult.chainedTxType}`,
                 );
         }
+    }
+
+    /**
+     * Build chained txs for action.p2shInputData.
+     * Tx 1 (data prep) sends XEC or tokens to P2SH whose redeem script encodes the data.
+     * Tx 2 spends that P2SH (data in input). Works for any tx type (XEC-only, SLP, ALP).
+     * Redeem script includes sender pubkey, so P2PKH address derivable from input.
+     */
+    private _buildP2shInputDataChained(sighash = ALL_BIP143): BuiltAction {
+        const { tokenActions, outputs, p2shInputData } = this.action;
+        if (!p2shInputData) {
+            throw new Error(
+                'action.p2shInputData required for _buildP2shInputDataChained',
+            );
+        }
+        const { lokad, data } = p2shInputData;
+        if (lokad.length !== 4) {
+            throw new Error(
+                `action.p2shInputData.lokad must be 4 bytes (for chronik lokadId indexing), got ${lokad.length}`,
+            );
+        }
+        const sendAction = tokenActions?.find(a => a.type === 'SEND') as
+            | payment.SendAction
+            | undefined;
+        const isTokenTx = typeof sendAction !== 'undefined';
+        const tokenId = sendAction?.tokenId;
+        const tokenType = sendAction?.tokenType;
+
+        const dustSats = this.action.dustSats || DEFAULT_DUST_SATS;
+        const feePerKb = this.action.feePerKb || DEFAULT_FEE_SATS_PER_KB;
+
+        /**
+         * Redeem script follows ecash-agora ad script pattern (partial.ts adScript)
+         * for chronik indexing. Agora: covenantConsts, OP_SPLIT, OP_NIP, OP_CHECKSIGVERIFY,
+         * covenantVariant OP_EQUALVERIFY, lokad OP_EQUAL. We omit covenant variant.
+         *
+         * scriptSig = <lokad> <data> <sig> <pubkey> <redeemScript>
+         * Stack: [lokad, data, sig, pubkey]. OP_CHECKSIGVERIFY consumes sig,pubkey (no push).
+         * pushBytes(data) OP_EQUALVERIFY, pushBytes(lokad) OP_EQUAL.
+         */
+        const dataPrepScript = Script.fromOps([
+            OP_CHECKSIGVERIFY,
+            pushBytesOp(data),
+            OP_EQUALVERIFY,
+            pushBytesOp(lokad),
+            OP_EQUAL,
+        ]);
+        const dataPrepP2sh = Script.p2sh(shaRmd160(dataPrepScript.bytecode));
+
+        const dataPrepSignatory = (ecc: Ecc, input: UnsignedTxInput) => {
+            const preimage = input.sigHashPreimage(ALL_BIP143);
+            const sighashBytes = sha256d(preimage.bytes);
+            const sig = flagSignature(
+                ecc.schnorrSign(this._wallet.sk, sighashBytes),
+                sighash,
+            );
+            return Script.fromOps([
+                pushBytesOp(lokad),
+                pushBytesOp(data),
+                pushBytesOp(sig),
+                pushBytesOp(this._wallet.pk),
+                pushBytesOp(preimage.redeemScript.bytecode),
+            ]);
+        };
+
+        let tx2Outputs: TxBuilderOutput[];
+        let dataPrepOutputSats: bigint;
+        let dataPrepAction: payment.Action;
+
+        if (isTokenTx && tokenId && tokenType) {
+            // Token tx: Tx 2 has OP_RETURN + token outputs
+            const tokenOutputs = outputs.filter(
+                (o): o is payment.PaymentTokenOutput =>
+                    'tokenId' in o &&
+                    o.tokenId === tokenId &&
+                    typeof (o as payment.PaymentTokenOutput).atoms !==
+                        'undefined',
+            );
+            const totalAtoms = tokenOutputs.reduce(
+                (sum, o) => sum + (o.atoms ?? 0n),
+                0n,
+            );
+            const atomsArray = tokenOutputs.map(o => o.atoms ?? 0n);
+            const opReturnScript =
+                tokenType.protocol === 'ALP'
+                    ? emppScript(
+                          (tokenActions ?? []).flatMap(a => {
+                              if (a.type === 'SEND') {
+                                  return [
+                                      alpSend(
+                                          tokenId,
+                                          tokenType.number,
+                                          atomsArray,
+                                      ),
+                                  ];
+                              }
+                              if (a.type === 'DATA') {
+                                  return [(a as payment.DataAction).data];
+                              }
+                              return [];
+                          }),
+                      )
+                    : slpSend(tokenId, tokenType.number, atomsArray);
+            tx2Outputs = [
+                { sats: 0n, script: opReturnScript },
+                ...tokenOutputs.map(o => ({
+                    sats: (o.sats ?? dustSats) as bigint,
+                    script: o.script as Script,
+                })),
+            ];
+            const dummyTx2 = new TxBuilder({
+                inputs: [
+                    {
+                        input: {
+                            prevOut: {
+                                txid: DUMMY_PRELIMINARY_TXID,
+                                outIdx: 1,
+                            },
+                            signData: {
+                                // sats value does not impact fee calc; use dust as placeholder
+                                sats: DEFAULT_DUST_SATS,
+                                redeemScript: dataPrepScript,
+                            },
+                        },
+                        signatory: dataPrepSignatory,
+                    },
+                ],
+                outputs: tx2Outputs,
+            });
+            const signedDummyTx2 = dummyTx2.sign({
+                feePerKb,
+                dustSats,
+                ecc: eccDummy,
+            });
+            const maxTxSersize = this.action.maxTxSersize || MAX_TX_SERSIZE;
+            if (signedDummyTx2.serSize() > maxTxSersize) {
+                throw new Error(
+                    'p2shInputData is not supported when the token tx would exceed the broadcast limit. Use p2shInputData only for sends that fit within a single tx.',
+                );
+            }
+            const tx2FeeSats = calcTxFee(signedDummyTx2.serSize(), feePerKb);
+            const tx2OutputSats = tokenOutputs.reduce(
+                (sum, o) => sum + (o.sats ?? dustSats),
+                0n,
+            );
+            dataPrepOutputSats = tx2OutputSats + tx2FeeSats;
+            dataPrepAction = {
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: dataPrepOutputSats,
+                        script: dataPrepP2sh,
+                        tokenId,
+                        atoms: totalAtoms,
+                        isMintBaton: false,
+                    },
+                ],
+                tokenActions: [{ type: 'SEND', tokenId, tokenType }],
+                feePerKb,
+            };
+            const requiredUtxos = this.selectUtxosResult.utxos ?? [];
+            const tokenUtxos = requiredUtxos.filter(
+                u => u.token?.tokenId === tokenId && !u.token?.isMintBaton,
+            );
+            const totalInputAtoms = tokenUtxos.reduce(
+                (s, u) => s + (u.token?.atoms ?? 0n),
+                0n,
+            );
+            const tokenChange = totalInputAtoms - totalAtoms;
+            if (tokenChange > 0n) {
+                dataPrepAction.outputs!.push({
+                    sats: dustSats,
+                    script: this._wallet.getChangeScript(),
+                    tokenId,
+                    atoms: tokenChange,
+                    isMintBaton: false,
+                });
+            }
+        } else {
+            // XEC-only tx: Tx 2 has user outputs (may include OP_RETURN with sats: 0n)
+            const xecOutputs = outputs.filter(
+                (o): o is payment.PaymentOutput =>
+                    o.script !== undefined &&
+                    (o.sats === undefined || o.sats >= 0n),
+            );
+            tx2Outputs = xecOutputs.map(o => ({
+                sats: (o.sats ?? 0n) as bigint,
+                script: o.script as Script,
+            }));
+            const dummyTx2 = new TxBuilder({
+                inputs: [
+                    {
+                        input: {
+                            prevOut: {
+                                txid: DUMMY_PRELIMINARY_TXID,
+                                outIdx: 0,
+                            },
+                            signData: {
+                                // sats value does not impact fee calc; use dust as placeholder
+                                sats: DEFAULT_DUST_SATS,
+                                redeemScript: dataPrepScript,
+                            },
+                        },
+                        signatory: dataPrepSignatory,
+                    },
+                ],
+                outputs: tx2Outputs,
+            });
+            const signedDummyTx2 = dummyTx2.sign({
+                feePerKb,
+                dustSats,
+                ecc: eccDummy,
+            });
+            const maxTxSersize = this.action.maxTxSersize || MAX_TX_SERSIZE;
+            if (signedDummyTx2.serSize() > maxTxSersize) {
+                throw new Error(
+                    'p2shInputData is not supported when the number of XEC outputs would cause the resulting tx to exceed the broadcast limit. Use p2shInputData only for sends that fit within a single tx.',
+                );
+            }
+            const tx2FeeSats = calcTxFee(signedDummyTx2.serSize(), feePerKb);
+            const tx2OutputSats = xecOutputs.reduce(
+                (sum, o) => sum + (o.sats ?? 0n),
+                0n,
+            );
+            dataPrepOutputSats = tx2OutputSats + tx2FeeSats;
+            dataPrepAction = {
+                outputs: [
+                    {
+                        sats: dataPrepOutputSats,
+                        script: dataPrepP2sh,
+                    },
+                ],
+                feePerKb,
+            };
+        }
+
+        const dataPrepBuilt = this._wallet
+            .action(dataPrepAction)
+            .build(sighash);
+        const dataPrepTx = dataPrepBuilt.txs[0];
+        const dataPrepTxid = toHexRev(sha256d(dataPrepTx.ser()));
+        const p2shOutIdx = isTokenTx ? 1 : 0;
+
+        // Tx 2: Spend data prep P2SH, send to user outputs
+        const tx2Inputs: TxBuilderInput[] = [
+            {
+                input: {
+                    prevOut: {
+                        txid: dataPrepTxid,
+                        outIdx: p2shOutIdx,
+                    },
+                    signData: {
+                        sats: dataPrepOutputSats,
+                        redeemScript: dataPrepScript,
+                    },
+                },
+                signatory: dataPrepSignatory,
+            },
+        ];
+
+        const tx2Builder = new TxBuilder({
+            inputs: tx2Inputs,
+            outputs: tx2Outputs,
+        });
+        const mainTx = tx2Builder.sign({
+            feePerKb,
+            dustSats,
+        });
+
+        return new BuiltAction(
+            this._wallet,
+            [dataPrepTx, mainTx],
+            feePerKb,
+            this,
+        );
     }
 
     private _buildIntentionalBurnChained(sighash = ALL_BIP143): BuiltAction {
@@ -3198,6 +3481,12 @@ export enum ChainedTxType {
     INTENTIONAL_BURN = 'INTENTIONAL_BURN',
     /** We need to chain txs because token send outputs exceed protocol max outputs per tx */
     TOKEN_SEND_EXCEEDS_MAX_OUTPUTS = 'TOKEN_SEND_EXCEEDS_MAX_OUTPUTS',
+    /**
+     * action.p2shInputData: Data prep tx encodes data in P2SH redeem script,
+     * spent by 2nd tx. Works for any tx type (XEC-only, SLP, ALP).
+     * Redeem script includes sender pubkey, so P2PKH address derivable from input.
+     */
+    P2SH_INPUT_DATA = 'P2SH_INPUT_DATA',
 
     /**
      * NB we intentionally omit EXCEEDS_MAX_SERSIZE as we cannot
@@ -3442,17 +3731,31 @@ export const selectUtxos = (
     // Init "chainedTxType" as NONE
     let chainedTxType = ChainedTxType.NONE;
 
+    // action.p2shInputData: requires chained tx (any tx type)
+    if (typeof action.p2shInputData !== 'undefined') {
+        chainedTxType = ChainedTxType.P2SH_INPUT_DATA;
+    }
+
     // Check if token send outputs exceed protocol max outputs per tx
     // This check must happen EARLY, before any early returns, so we can detect
     // chained transaction needs even if we have enough utxos
     const tokenType = getTokenType(action);
     if (typeof tokenType !== 'undefined') {
-        const result = checkTokenSendExceedsMaxOutputs(
+        const exceedsMax = checkTokenSendExceedsMaxOutputs(
             action,
             tokenType,
             tokens,
         );
-        if (result) {
+        if (exceedsMax && chainedTxType === ChainedTxType.P2SH_INPUT_DATA) {
+            const maxOutputs =
+                tokenType.protocol === 'SLP'
+                    ? SLP_MAX_SEND_OUTPUTS
+                    : ALP_POLICY_MAX_OUTPUTS;
+            throw new Error(
+                `p2shInputData is not supported when the number of token recipients exceeds ${maxOutputs} (${tokenType.protocol} max per tx). Use p2shInputData only for sends within the protocol limit.`,
+            );
+        }
+        if (exceedsMax && chainedTxType !== ChainedTxType.P2SH_INPUT_DATA) {
             chainedTxType = ChainedTxType.TOKEN_SEND_EXCEEDS_MAX_OUTPUTS;
         }
     }
@@ -3515,6 +3818,11 @@ export const selectUtxos = (
             // We have an input but it's not qty-1, we need to fan out
             // nftMintInput is already set to the highest qty input
             needsNftFanout = true;
+            if (chainedTxType === ChainedTxType.P2SH_INPUT_DATA) {
+                throw new Error(
+                    'p2shInputData is not supported with NFT mint fan-out. Use p2shInputData only for actions that complete in a single tx.',
+                );
+            }
             chainedTxType = ChainedTxType.NFT_MINT_FANOUT;
         }
     }
@@ -3713,6 +4021,11 @@ export const selectUtxos = (
 
         if (!hasExact) {
             // If we do not have utxos with the exact burn atoms, we must have a chained tx for an intentional BURN
+            if (chainedTxType === ChainedTxType.P2SH_INPUT_DATA) {
+                throw new Error(
+                    'p2shInputData is not supported with intentional SLP burn (requires chained prep tx). Use p2shInputData only for actions that complete in a single tx.',
+                );
+            }
             chainedTxType = ChainedTxType.INTENTIONAL_BURN;
         }
 
@@ -3978,6 +4291,11 @@ export const selectUtxos = (
 
     if (needsNftFanout) {
         // We handle this with a chained tx, to eliminate the (confusing) need for fan-out txs
+        if (chainedTxType === ChainedTxType.P2SH_INPUT_DATA) {
+            throw new Error(
+                'p2shInputData is not supported with NFT mint fan-out. Use p2shInputData only for actions that complete in a single tx.',
+            );
+        }
         chainedTxType = ChainedTxType.NFT_MINT_FANOUT;
     }
 
@@ -4225,9 +4543,7 @@ export const finalizeOutputs = (
     ) as payment.DataAction[];
 
     if (dataActions && dataActions.length > 0) {
-        // Data actions are only supported for ALP_TOKEN_TYPE_STANDARD token actions
-        // Users who want straight-up EMPP in a tx or straight-up OP_RETURN do not include
-        // DataAction in tokenActions, but instead specify their OP_RETURN output
+        // Data actions are only supported for ALP_TOKEN_TYPE_STANDARD (EMPP in OP_RETURN)
         if (tokenType?.type !== 'ALP_TOKEN_TYPE_STANDARD') {
             throw new Error(
                 `Data actions are only supported for ALP_TOKEN_TYPE_STANDARD token actions.`,
