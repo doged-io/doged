@@ -30,6 +30,14 @@
                 <data android:scheme="${deepLinkScheme}" />
             </intent-filter>
 
+            <!-- BIP21 URI intent filter - open when scanning payment URI from system camera -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="ecash" />
+            </intent-filter>
+
         </activity>
 
         <provider

@@ -2,8 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import React, { useState, useEffect, useContext } from 'react';
-import { useLocation } from 'react-router';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { Capacitor } from '@capacitor/core';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import Modal from 'components/Common/Modal';
 import PrimaryButton, {
@@ -377,6 +378,7 @@ const SendXec: React.FC = () => {
         return null;
     }
     const location = useLocation();
+    const navigate = useNavigate();
     const {
         fiatPrice,
         apiError,
@@ -509,24 +511,35 @@ const SendXec: React.FC = () => {
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
     const [successTxid, setSuccessTxid] = useState<string>('');
 
-    // Auto-close success modal after progress bar animation duration
-    useEffect(() => {
-        if (showSuccessModal) {
-            const timer = setTimeout(() => {
-                setShowSuccessModal(false);
-                window.close();
-            }, SUCCESS_MODAL_DURATION_MS); // Match the progress bar animation duration
-
-            return () => clearTimeout(timer);
-        }
-    }, [showSuccessModal]);
-
     // Extension transaction handling
     const [isExtensionTransaction, setIsExtensionTransaction] =
         useState<boolean>(false);
     const [extensionTabId, setExtensionTabId] = useState<number | null>(null);
     const [isUrlBasedTransaction, setIsUrlBasedTransaction] =
         useState<boolean>(false);
+
+    // On native mobile, navigate home instead of window.close() for URL-based tx
+    const closeOrNavigateFromUrlBasedTransaction = useCallback(() => {
+        setShowSuccessModal(false);
+        if (Capacitor.isNativePlatform()) {
+            setTxInfoFromUrl(false);
+            setIsUrlBasedTransaction(false);
+            navigate('/', { replace: true });
+        } else {
+            window.close();
+        }
+    }, [navigate]);
+
+    // Auto-close success modal after progress bar animation duration
+    useEffect(() => {
+        if (showSuccessModal) {
+            const timer = setTimeout(() => {
+                closeOrNavigateFromUrlBasedTransaction();
+            }, SUCCESS_MODAL_DURATION_MS); // Match the progress bar animation duration
+
+            return () => clearTimeout(timer);
+        }
+    }, [showSuccessModal, closeOrNavigateFromUrlBasedTransaction]);
 
     // Airdrop transactions embed the additional tokenId (32 bytes), along with prefix (4 bytes) and two pushdata (2 bytes)
     // hence setting airdrop tx message limit to 38 bytes less than opreturnConfig.cashtabMsgByteLimit
@@ -1203,13 +1216,15 @@ const SendXec: React.FC = () => {
                 toast.error('Failed to send transaction rejection');
             }
         } else {
-            // For non-extension URL-based transactions, just close the window
+            // For non-extension URL-based transactions, close or navigate home
             console.log(
-                '[Cashtab] Non-extension transaction rejected, closing window',
+                '[Cashtab] Non-extension transaction rejected, closing or navigating',
             );
+            closeOrNavigateFromUrlBasedTransaction();
+            return;
         }
 
-        // Close the window for both cases
+        // For extension: close the window
         window.close();
     };
 
@@ -2366,19 +2381,17 @@ const SendXec: React.FC = () => {
                 )}
                 {showSuccessModal && (
                     <SuccessModalOverlay
-                        onClick={async () => {
-                            // Close the window on any click off of the modal
-                            setShowSuccessModal(false);
-                            window.close();
+                        onClick={() => {
+                            // Close the window or navigate home on any click off of the modal
+                            closeOrNavigateFromUrlBasedTransaction();
                         }}
                     >
                         <SuccessModalContent
-                            onClick={async e => {
-                                // Close the window when clicking on the modal content
+                            onClick={e => {
+                                // Close when clicking on the modal content
                                 // (but not on interactive elements like copy button or link)
                                 if (e.target === e.currentTarget) {
-                                    setShowSuccessModal(false);
-                                    window.close();
+                                    closeOrNavigateFromUrlBasedTransaction();
                                 }
                             }}
                         >
@@ -2399,9 +2412,8 @@ const SendXec: React.FC = () => {
                             </TransactionIdLink>
 
                             <SuccessButton
-                                onClick={async () => {
-                                    setShowSuccessModal(false);
-                                    window.close();
+                                onClick={() => {
+                                    closeOrNavigateFromUrlBasedTransaction();
                                 }}
                             >
                                 Close

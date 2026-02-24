@@ -49,6 +49,7 @@ import { Capacitor } from '@capacitor/core';
 // Easter egg imports not used in extension/src/components/App.js
 import TabCash from 'assets/tabcash.png';
 import { hasEnoughToken } from 'wallet';
+import { parseAddressInput } from 'validation';
 import ServiceWorkerWrapper from 'components/Common/ServiceWorkerWrapper';
 import WebApp from 'components/AppModes/WebApp';
 import Extension from 'components/AppModes/Extension';
@@ -150,6 +151,48 @@ const App = () => {
             };
         }
     }, [navigate]);
+
+    // Handle BIP21 URIs when app is opened from an external intent
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) {
+            return;
+        }
+
+        const handleBip21Uri = (bip21Uri: string) => {
+            const normalizedBip21Uri = bip21Uri.trim().toLowerCase();
+            // Only do a limited check here that this is a valid BIP21 URI.
+            // The amount is not validated at this point, this will be handled
+            // after we jumped to the send screen.
+            const parsed = parseAddressInput(normalizedBip21Uri, 0);
+            if (parsed.address.error === false && parsed.address.value) {
+                navigate(`/send?bip21=${normalizedBip21Uri}`);
+            }
+        };
+
+        let urlOpenListener: { remove: () => void } | null = null;
+
+        const setupBip21Handlers = async () => {
+            // Handle cold start - app launched from BIP21 URI
+            const launchUrl = await CapacitorApp.getLaunchUrl();
+            if (launchUrl?.url) {
+                handleBip21Uri(launchUrl.url);
+            }
+
+            // Handle warm start - app receives BIP21 URI while running
+            urlOpenListener = await CapacitorApp.addListener(
+                'appUrlOpen',
+                (event: { url: string }) => {
+                    handleBip21Uri(event.url);
+                },
+            );
+        };
+
+        setupBip21Handlers();
+
+        return () => {
+            urlOpenListener?.remove();
+        };
+    }, []);
 
     // Easter egg boolean not used in extension/src/components/App.js
     const hasTab = hasWallet
