@@ -176,8 +176,8 @@ body {
 }
 
 .feature-icon {
-    width: 80px;
-    height: 80px;
+    width: 96px;
+    height: 96px;
     margin: 0 auto 24px;
     color: var(--accent-light);
     display: flex;
@@ -188,9 +188,8 @@ body {
 }
 
 .feature-icon img {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
+    width: 64px;
+    height: 64px;
 }
 
 .feature-title {
