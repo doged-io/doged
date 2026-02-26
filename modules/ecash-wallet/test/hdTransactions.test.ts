@@ -3794,4 +3794,121 @@ describe('HD Wallet can build and broadcast on regtest', () => {
         ).toString();
         expect(allWalletAddresses).to.include(tokenChangeAddressOmega);
     });
+
+    it('consolidateUtxos reduces 2,000 XEC and 2,000 ALP token UTXOs to 1 each (HD wallet)', async function () {
+        const xecWallet = createHDWallet(200, chronik);
+        const tokenWallet = createHDWallet(201, chronik);
+
+        // Create 2,000 XEC UTXOs: one tx with 2,000 outputs to xecWallet first address
+        const receiveAddressXec = xecWallet.getReceiveAddress(0);
+        const xecScript = Script.fromAddress(receiveAddressXec);
+        const xecOutputs = Array(2000).fill(DEFAULT_DUST_SATS);
+        await runner.sendToScript(xecOutputs, xecScript);
+        await xecWallet.sync();
+        expect(xecWallet.spendableSatsOnlyUtxos()).to.have.length(2000);
+
+        // Create 2,000 token UTXOs: genesis + SEND fanouts
+        const receiveAddressToken = tokenWallet.getReceiveAddress(0);
+        await runner.sendToScript(
+            1_000_000_00n,
+            Script.fromAddress(receiveAddressToken),
+        );
+        await tokenWallet.sync();
+
+        const TARGET_TOKEN_UTXOS = 2000;
+        const genesisMintQty = BigInt(TARGET_TOKEN_UTXOS);
+
+        const alpGenesisInfo = {
+            tokenTicker: 'CON',
+            tokenName: 'Consolidate HD Test',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await tokenWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+        await tokenWallet.sync();
+
+        await tokenWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(2000).fill({
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: 1n,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+
+        const spendableTokenUtxos = tokenWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(spendableTokenUtxos.length).to.equal(2000);
+
+        // Consolidate XEC
+        const xecResult = await xecWallet
+            .consolidateUtxos()
+            .build()
+            .broadcast();
+        expect(xecResult.broadcasted.length).to.equal(3);
+        for (const txid of xecResult.broadcasted) {
+            const tx = await chronik.tx(txid);
+            expect(tx.outputs).to.have.length(1);
+        }
+        expect(xecWallet.spendableSatsOnlyUtxos()).to.have.length(1);
+
+        // Consolidate token
+        const tokenResult = await tokenWallet
+            .consolidateUtxos({ tokenId: alpTokenId })
+            .build()
+            .broadcast();
+        expect(tokenResult.broadcasted.length).to.equal(3);
+        await tokenWallet.sync();
+        const tokenUtxosAfter = tokenWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosAfter).to.have.length(1);
+    });
 });

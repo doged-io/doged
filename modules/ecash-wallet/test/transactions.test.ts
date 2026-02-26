@@ -41,7 +41,7 @@ import {
     OP_EQUALVERIFY,
 } from 'ecash-lib';
 import { TestRunner } from 'ecash-lib/dist/test/testRunner.js';
-import { Wallet } from '../src/wallet';
+import { Wallet, CONSOLIDATE_UTXOS_BATCHSIZE } from '../src/wallet';
 import { GENESIS_TOKEN_ID_PLACEHOLDER } from 'ecash-lib/dist/payment';
 
 use(chaiAsPromised);
@@ -4366,5 +4366,159 @@ describe('Wallet can build and broadcast on regtest', () => {
             receivedUtxo?.outpoint.outIdx,
         );
         expect(cloneReceivedUtxo?.sats).to.equal(receivedUtxo?.sats);
+    });
+
+    it('consolidateUtxos reduces 2,000 XEC and 2,000 ALP token UTXOs to 1 each', async function () {
+        const xecWallet = Wallet.fromSk(fromHex('2a'.repeat(32)), chronik);
+        const tokenWallet = Wallet.fromSk(fromHex('2b'.repeat(32)), chronik);
+
+        // Create 2,000 XEC UTXOs: one tx with 2,000 outputs to xecWallet
+        const xecOutputs = Array(2000).fill(DEFAULT_DUST_SATS);
+        await runner.sendToScript(xecOutputs, xecWallet.script);
+        await xecWallet.sync();
+        expect(xecWallet.spendableSatsOnlyUtxos()).to.have.length(2000);
+
+        // Create 2,000 token UTXOs: genesis + SEND fanouts
+        await runner.sendToScript(1_000_000_00n, tokenWallet.script);
+        await tokenWallet.sync();
+
+        const TARGET_TOKEN_UTXOS = 2000;
+        const genesisMintQty = BigInt(TARGET_TOKEN_UTXOS);
+
+        const alpGenesisInfo = {
+            tokenTicker: 'CON',
+            tokenName: 'Consolidate Test',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await tokenWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+        await tokenWallet.sync();
+
+        // Use a chained tx to create 2,000 token utxos
+        await tokenWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(2000).fill({
+                        sats: 546n,
+                        script: tokenWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: 1n,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+
+        const spendableTokenUtxos = tokenWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+
+        // We have 2,000 token UTXOs
+        expect(spendableTokenUtxos.length).to.equal(2000);
+
+        // Consolidate XEC
+        const xecResult = await xecWallet
+            .consolidateUtxos()
+            .build()
+            .broadcast();
+        expect(xecResult.broadcasted.length).to.equal(3);
+        for (const txid of xecResult.broadcasted) {
+            const tx = await chronik.tx(txid);
+            expect(tx.outputs).to.have.length(1);
+        }
+        expect(xecWallet.spendableSatsOnlyUtxos()).to.have.length(1);
+
+        // Consolidate token
+        const tokenResult = await tokenWallet
+            .consolidateUtxos({ tokenId: alpTokenId })
+            .build()
+            .broadcast();
+        expect(tokenResult.broadcasted.length).to.equal(3);
+        await tokenWallet.sync();
+        const tokenUtxosAfter = tokenWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosAfter).to.have.length(1);
+    });
+
+    it('consolidateUtxos with batchSize CONSOLIDATE_UTXOS_BATCHSIZE+1 throws max sersize error; with smaller batchSize takes >3 txs', async function () {
+        const batchSizeOverLimit = CONSOLIDATE_UTXOS_BATCHSIZE + 1;
+        const NUM_UTXOS = 709;
+
+        const wallet = Wallet.fromSk(fromHex('2c'.repeat(32)), chronik);
+        const xecOutputs = Array(NUM_UTXOS).fill(DEFAULT_DUST_SATS);
+        await runner.sendToScript(xecOutputs, wallet.script);
+        await wallet.sync();
+        expect(wallet.spendableSatsOnlyUtxos()).to.have.length(NUM_UTXOS);
+
+        // TxBuilder does not validate maxTxSersize; broadcast fails at the node
+        const overLimitResult = await wallet
+            .consolidateUtxos({ batchSize: batchSizeOverLimit })
+            .build()
+            .broadcast();
+        expect(overLimitResult.success).to.equal(false);
+        expect(overLimitResult.errors?.[0]).to.match(
+            /Broadcast failed|tx-size|mempool/,
+        );
+
+        // build() updated the wallet optimistically; broadcast failed. Sync to restore real state.
+        await wallet.sync();
+
+        const result = await wallet
+            .consolidateUtxos({
+                batchSize: Math.floor(CONSOLIDATE_UTXOS_BATCHSIZE / 3),
+            })
+            .build()
+            .broadcast();
+
+        // We can use a smaller batch and it takes more txs to complete a consolidation
+        expect(result.broadcasted.length).to.equal(4);
+        for (const txid of result.broadcasted) {
+            const tx = await chronik.tx(txid);
+            expect(tx.outputs).to.have.length(1);
+        }
+        await wallet.sync();
+        expect(wallet.spendableSatsOnlyUtxos()).to.have.length(1);
     });
 });

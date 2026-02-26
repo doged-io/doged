@@ -306,3 +306,9 @@ See tests for detailed methods.
 - Add support for optional `p2shInputData` key. When used, create a chained tx so that a user may encode arbitrary data in a p2sh input. The approach follows what is modeled by `ecash-agora` "ad prep" txs that allow advertisable SLP listings for NFTs and partials. This could be used to allow SLP txs to include data, or to expand the data included by an XEC or ALP tx.
 
 [D19600](https://reviews.bitcoinabc.org/D19600)
+
+# 4.2.0
+
+- Add a `consolidateUtxos` method that consolidates XEC or token utxos by tokenId down to a single utxo
+
+[D19613](https://reviews.bitcoinabc.org/D19613)

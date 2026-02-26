@@ -53,6 +53,7 @@ import {
     flagSignature,
     UnsignedTxInput,
 } from 'ecash-lib';
+import type { TokenType as EcashTokenType } from 'ecash-lib';
 import { WalletBase } from './walletBase';
 import { ChronikClient, ScriptUtxo, TokenType } from 'chronik-client';
 
@@ -100,6 +101,23 @@ const DP_ENTRY_LIMIT = 100_000;
  * when we convert PreliminaryTxs to final signed txs
  */
 const DUMMY_PRELIMINARY_TXID = '99'.repeat(32);
+
+/**
+ * Maximum number of UTXOs to consolidate in a single transaction.
+ * Used by consolidateUtxos as the default batch size.
+ *
+ * Discovered through trial and error: 709 p2pkh inputs results in a
+ * consolidation tx above max ser size; 708 is the largest that works.
+ */
+export const CONSOLIDATE_UTXOS_BATCHSIZE = 708;
+
+/** Optional config for consolidateUtxos */
+export interface ConsolidateUtxosConfig {
+    /** If provided, consolidate only token UTXOs with this tokenId */
+    tokenId?: string;
+    /** Max UTXOs per tx. Defaults to CONSOLIDATE_UTXOS_BATCHSIZE */
+    batchSize?: number;
+}
 
 /**
  * Keypair data for an HD wallet address
@@ -376,6 +394,138 @@ export class Wallet extends WalletBase<KeypairData> {
         config: SelectUtxosConfig = {},
     ): WalletAction {
         return WalletAction.fromAction(this, action, config);
+    }
+
+    /**
+     * Consolidate UTXOs by sending them to self in batches.
+     * Call sync() first, then build() to get txs, then broadcast() to send.
+     *
+     * - Without tokenId: consolidates spendableSatsOnlyUtxos (XEC-only UTXOs) to wallet.address.
+     * - With tokenId: consolidates spendable token UTXOs with that tokenId (excluding mint batons).
+     *
+     * @param config - Optional. tokenId and/or batchSize.
+     * @returns ConsolidateUtxosBuilder with build() returning BuiltAction
+     */
+    public consolidateUtxos(
+        config?: ConsolidateUtxosConfig,
+    ): ConsolidateUtxosBuilder {
+        const tokenId = config?.tokenId;
+        const batchSize = config?.batchSize ?? CONSOLIDATE_UTXOS_BATCHSIZE;
+
+        if (batchSize < 2) {
+            throw new Error(
+                `consolidateUtxos batchSize must be >= 2 (got ${batchSize}). ` +
+                    'With batchSize 1, each tx spends 1 UTXO and creates 1, making no progress.',
+            );
+        }
+
+        const buildFn =
+            typeof tokenId === 'undefined'
+                ? () => this._consolidateSpendableSatsBuild(batchSize)
+                : () => this._consolidateTokenBuild(tokenId, batchSize);
+        return new ConsolidateUtxosBuilder(buildFn);
+    }
+
+    private _consolidateSpendableSatsBuild(batchSize: number): BuiltAction {
+        const feePerKb = DEFAULT_FEE_SATS_PER_KB;
+        const destScript = this.script;
+        const dustSats = DEFAULT_DUST_SATS;
+
+        const signedTxs: Tx[] = [];
+
+        while (this.spendableSatsOnlyUtxos().length > 1) {
+            const batch = this.spendableSatsOnlyUtxos().slice(0, batchSize);
+            const inputs: TxBuilderInput[] = batch.map(utxo =>
+                this.p2pkhUtxoToBuilderInput(utxo, ALL_BIP143),
+            );
+            const txBuilder = new TxBuilder({
+                inputs,
+                outputs: [destScript],
+            });
+            const signedTx = txBuilder.sign({ feePerKb, dustSats });
+            signedTxs.push(signedTx);
+
+            const txid = toHexRev(sha256d(signedTx.ser()));
+            this._applyRawTxToUtxos(signedTx, txid);
+        }
+
+        return new BuiltAction(this, signedTxs, feePerKb);
+    }
+
+    private _consolidateTokenBuild(
+        tokenId: string,
+        batchSize: number,
+    ): BuiltAction {
+        const feePerKb = DEFAULT_FEE_SATS_PER_KB;
+        const destScript = this.script;
+
+        const signedTxs: Tx[] = [];
+
+        while (true) {
+            const workingTokenUtxos = this.spendableUtxos().filter(
+                u => u.token?.tokenId === tokenId && !u.token?.isMintBaton,
+            );
+            if (workingTokenUtxos.length <= 1) {
+                break;
+            }
+
+            const chronikTokenType = workingTokenUtxos[0].token?.tokenType;
+            if (!chronikTokenType) {
+                throw new Error(
+                    `Token UTXO missing tokenType for tokenId ${tokenId}`,
+                );
+            }
+            const tokenType = chronikTokenType as EcashTokenType;
+
+            const batch = workingTokenUtxos.slice(0, batchSize);
+            const totalAtoms = batch.reduce(
+                (sum, u) => sum + (u.token?.atoms ?? 0n),
+                0n,
+            );
+
+            const builtAction = this.action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: DEFAULT_DUST_SATS,
+                        script: destScript,
+                        tokenId,
+                        atoms: totalAtoms,
+                        isMintBaton: false,
+                    },
+                ],
+                tokenActions: [{ type: 'SEND', tokenId, tokenType }],
+                requiredUtxos: batch.map(u => u.outpoint),
+                feePerKb,
+            }).build();
+
+            signedTxs.push(builtAction.txs[0]);
+        }
+
+        return new BuiltAction(this, signedTxs, feePerKb);
+    }
+
+    /**
+     * Update utxos after a raw tx (e.g. from TxBuilder) that was built outside the action flow.
+     * Used for "change only" txs like XEC consolidation where _updateUtxosAfterSuccessfulBuild is never called.
+     */
+    private _applyRawTxToUtxos(tx: Tx, txid: string): void {
+        removeSpentUtxos(this, tx);
+        for (let i = 0; i < tx.outputs.length; i++) {
+            const output = tx.outputs[i];
+            if (output.sats === 0n) continue;
+            if (!this.isWalletScript(output.script)) continue;
+            const walletUtxo = getWalletUtxoFromOutput(
+                output as payment.PaymentOutput,
+                txid,
+                i,
+                output.script.toHex(),
+                undefined,
+                this.prefix,
+            );
+            this.utxos.push(walletUtxo);
+        }
+        this.updateBalance();
     }
 
     /**
@@ -2766,6 +2916,18 @@ export class BuiltAction {
         }
 
         return { success: true, broadcasted };
+    }
+}
+
+/**
+ * Builder for consolidateUtxos. Call build() to get BuiltAction, then broadcast() to send.
+ * Call wallet.sync() before build() to ensure utxo set is current.
+ */
+export class ConsolidateUtxosBuilder {
+    constructor(private _buildFn: () => BuiltAction) {}
+
+    public build(): BuiltAction {
+        return this._buildFn();
     }
 }
 
