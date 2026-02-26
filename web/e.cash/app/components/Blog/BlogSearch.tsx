@@ -202,10 +202,10 @@ export default function BlogSearch({ posts }: BlogSearchProps) {
                     <h3
                       className={cn(
                         "group-hover:text-accentMedium flex items-center gap-1 text-xl font-bold transition-all group-hover:underline",
-                        post.attributes.featured && "text-purple-500",
+                        post.attributes.highlighted && "text-purple-500",
                       )}
                     >
-                      {post.attributes.featured && (
+                      {post.attributes.highlighted && (
                         <span className="flex items-center leading-none">
                           *
                         </span>

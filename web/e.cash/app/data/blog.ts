@@ -31,6 +31,7 @@ export interface BlogPostAttributes {
   publishedAt: string;
   slug: string;
   featured: boolean;
+  highlighted: boolean;
   image: {
     data: BlogImageData;
   };
