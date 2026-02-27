@@ -2,7 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, {
+    useState,
+    useEffect,
+    useContext,
+    useCallback,
+    useMemo,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -46,6 +52,7 @@ import {
     parseOpReturnRaw,
     parseFirma,
     parseEmppRaw,
+    parseInputDataRaw,
     ParsedOpReturnRaw,
 } from 'opreturn';
 import ApiError from 'components/Common/ApiError';
@@ -488,6 +495,25 @@ const SendXec: React.FC = () => {
     );
     const [parsedAddressInput, setParsedAddressInput] =
         useState<CashtabParsedAddressInfo>(parseAddressInput('', 0));
+
+    // input_data_raw is only parsed from BIP21 (URL or address field), not manually entered
+    const parsedInputDataRaw = useMemo((): ParsedOpReturnRaw => {
+        const inputDataRaw = parsedAddressInput.input_data_raw;
+        if (
+            typeof inputDataRaw !== 'undefined' &&
+            inputDataRaw.error === false &&
+            typeof inputDataRaw.value === 'string' &&
+            inputDataRaw.value !== ''
+        ) {
+            return parseInputDataRaw(inputDataRaw.value);
+        }
+        return { protocol: '', data: '' };
+    }, [parsedAddressInput.input_data_raw]);
+
+    const inputDataRawError =
+        typeof parsedAddressInput.input_data_raw !== 'undefined'
+            ? parsedAddressInput.input_data_raw.error
+            : false;
 
     // Cashtab does not yet support sending all types of tokens
     const cashtabSupportedSendTypes = [
@@ -1028,6 +1054,27 @@ const SendXec: React.FC = () => {
                         data: fromHex(tokenFormData.emppRaw),
                     });
                 }
+            }
+
+            // Add p2shInputData when input_data_raw is in BIP21 (token mode, SLP or ALP)
+            const tokenInputDataRaw =
+                typeof parsedAddressInput.input_data_raw !== 'undefined' &&
+                parsedAddressInput.input_data_raw.error === false &&
+                typeof parsedAddressInput.input_data_raw.value === 'string'
+                    ? parsedAddressInput.input_data_raw.value
+                    : '';
+            const p2shInputData =
+                tokenInputDataRaw !== ''
+                    ? (() => {
+                          const rawBytes = fromHex(tokenInputDataRaw);
+                          return {
+                              lokad: rawBytes.slice(0, 4),
+                              data: rawBytes.slice(4),
+                          };
+                      })()
+                    : undefined;
+            if (p2shInputData) {
+                action.p2shInputData = p2shInputData;
             }
 
             // Build and broadcast using ecash-wallet
@@ -1584,6 +1631,21 @@ const SendXec: React.FC = () => {
                 feePerKb: BigInt(settings.satsPerKb),
             };
 
+            // Add p2shInputData when input_data_raw is in BIP21 (XEC mode)
+            const inputDataRaw =
+                typeof parsedAddressInput.input_data_raw !== 'undefined' &&
+                parsedAddressInput.input_data_raw.error === false &&
+                typeof parsedAddressInput.input_data_raw.value === 'string'
+                    ? parsedAddressInput.input_data_raw.value
+                    : '';
+            if (inputDataRaw !== '') {
+                const rawBytes = fromHex(inputDataRaw);
+                action.p2shInputData = {
+                    lokad: rawBytes.slice(0, 4),
+                    data: rawBytes.slice(4),
+                };
+            }
+
             // Build and broadcast using ecash-wallet
             // Split steps so we can get rawtx if we need to rebroadcast for paybutton
             const builtAction = ecashWallet.action(action).build();
@@ -1703,6 +1765,13 @@ const SendXec: React.FC = () => {
         ) {
             tokenRenderedError = parsedAddressInput.empp_raw.error;
         }
+        if (
+            tokenRenderedError === false &&
+            typeof parsedAddressInput.input_data_raw !== 'undefined' &&
+            parsedAddressInput.input_data_raw.error !== false
+        ) {
+            tokenRenderedError = parsedAddressInput.input_data_raw.error;
+        }
 
         // Parse and set firma if it's in the query string
         if (
@@ -1730,6 +1799,9 @@ const SendXec: React.FC = () => {
                 },
             } as React.ChangeEvent<HTMLTextAreaElement>);
         }
+
+        // input_data_raw is parsed from BIP21 only, no manual set needed
+
         if (
             tokenRenderedError === false &&
             typeof parsedAddressInput.token_id !== 'undefined'
@@ -1863,6 +1935,15 @@ const SendXec: React.FC = () => {
             renderedSendToError = parsedAddressInput.empp_raw.error;
         }
 
+        // Handle errors in input_data_raw as an address error if no other error is set
+        if (
+            renderedSendToError === false &&
+            typeof parsedAddressInput.input_data_raw !== 'undefined' &&
+            typeof parsedAddressInput.input_data_raw.error === 'string'
+        ) {
+            renderedSendToError = parsedAddressInput.input_data_raw.error;
+        }
+
         // Handle errors in secondary addr&amount params
         if (
             renderedSendToError === false &&
@@ -1981,6 +2062,8 @@ const SendXec: React.FC = () => {
                 } as React.ChangeEvent<HTMLTextAreaElement>);
             }
         }
+
+        // input_data_raw is parsed from BIP21 only, no manual set needed
 
         // Set firma if it's in the query string
         if (typeof parsedAddressInput.firma !== 'undefined') {
@@ -2266,6 +2349,7 @@ const SendXec: React.FC = () => {
         cashtabMsgError,
         sendWithOpReturnRaw,
         opReturnRawError,
+        inputDataRawError,
         priceApiError,
         isOneToManyXECSend,
     );
@@ -2288,6 +2372,7 @@ const SendXec: React.FC = () => {
         sendAddressError !== false ||
         tokenCashtabMsgError !== false ||
         emppRawError !== false ||
+        inputDataRawError !== false ||
         shouldShowSlpErrorForEmppRaw ||
         apiError ||
         tokenIdQueryError ||
@@ -2787,6 +2872,23 @@ const SendXec: React.FC = () => {
                                     )}
                                 </>
                             )}
+                        {/* Parsed input_data_raw when present in BIP21 (token mode) */}
+                        {selectedTokenId &&
+                            (parsedInputDataRaw.protocol !== '' ||
+                                parsedInputDataRaw.data !== '') && (
+                                <SendXecRow>
+                                    <ParsedBip21InfoRow>
+                                        <ParsedBip21InfoLabel>
+                                            Parsed input_data_raw
+                                        </ParsedBip21InfoLabel>
+                                        <ParsedBip21Info>
+                                            <b>{parsedInputDataRaw.protocol}</b>
+                                            <br />
+                                            {parsedInputDataRaw.data}
+                                        </ParsedBip21Info>
+                                    </ParsedBip21InfoRow>
+                                </SendXecRow>
+                            )}
                         {/* Show BIP21 token send info in token mode (only if token_decimalized_qty is present) */}
                         {isBip21TokenSend(parsedAddressInput) &&
                             selectedTokenId !== null &&
@@ -3209,6 +3311,22 @@ const SendXec: React.FC = () => {
                                         </SendXecRow>
                                     )}
                             </>
+                        )}
+                        {/* Parsed input_data_raw when present in BIP21 (XEC mode) */}
+                        {(parsedInputDataRaw.protocol !== '' ||
+                            parsedInputDataRaw.data !== '') && (
+                            <SendXecRow>
+                                <ParsedBip21InfoRow>
+                                    <ParsedBip21InfoLabel>
+                                        Parsed input_data_raw
+                                    </ParsedBip21InfoLabel>
+                                    <ParsedBip21Info>
+                                        <b>{parsedInputDataRaw.protocol}</b>
+                                        <br />
+                                        {parsedInputDataRaw.data}
+                                    </ParsedBip21Info>
+                                </ParsedBip21InfoRow>
+                            </SendXecRow>
                         )}
                         {isBip21MultipleOutputsSafe(parsedAddressInput) && (
                             <SendXecRow>

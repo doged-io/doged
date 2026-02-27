@@ -78,6 +78,8 @@ import {
     firmaYieldTx,
     firmaRedeemTx,
     cachetSendToEdjTx,
+    cachetSendWithP2shInputDataTx,
+    cachetReceiveWithP2shInputDataTx,
     edjSendTx,
     edjPayoutTx,
     edjFirmaPayoutTx,
@@ -4094,6 +4096,60 @@ describe('<Tx />', () => {
 
         // We see Firma redeem app action
         expect(screen.getByText(`Firma USDT conversion`)).toBeInTheDocument();
+    });
+    it('CACHET send to P2SH (parsed as Agora list)', () => {
+        const thisMock = cachetSendWithP2shInputDataTx;
+        const tokenCache = new Map(thisMock.cache);
+        render(
+            <MemoryRouter>
+                <ThemeProvider theme={theme}>
+                    <Tx
+                        tx={{ ...thisMock.tx, parsed: thisMock.parsed }}
+                        hashes={[thisMock.sendingHash]}
+                        fiatPrice={0.00003}
+                        fiatCurrency="usd"
+                        cashtabState={{
+                            ...new CashtabState(),
+                            cashtabCache: {
+                                tokens: tokenCache,
+                            },
+                        }}
+                    />
+                </ThemeProvider>
+            </MemoryRouter>,
+        );
+
+        expect(screen.getByTitle('tx-sent')).toBeInTheDocument();
+        expect(screen.getByTitle('Agora Offer')).toBeInTheDocument();
+        expect(screen.getByText(/Listed .* CACHET/)).toBeInTheDocument();
+    });
+    it('CACHET receive with p2sh input data (Blitzchips payout)', () => {
+        const thisMock = cachetReceiveWithP2shInputDataTx;
+        const tokenCache = new Map(thisMock.cache);
+        render(
+            <MemoryRouter>
+                <ThemeProvider theme={theme}>
+                    <Tx
+                        tx={{ ...thisMock.tx, parsed: thisMock.parsed }}
+                        hashes={[thisMock.receivingHash]}
+                        fiatPrice={0.00003}
+                        fiatCurrency="usd"
+                        cashtabState={{
+                            ...new CashtabState(),
+                            cashtabCache: {
+                                tokens: tokenCache,
+                            },
+                        }}
+                    />
+                </ThemeProvider>
+            </MemoryRouter>,
+        );
+
+        expect(screen.getByTitle('tx-received')).toBeInTheDocument();
+        expect(screen.getByTitle('Blitzchips Bet')).toBeInTheDocument();
+        expect(
+            screen.getByText(/Range: \[1, 100,000,000\]/),
+        ).toBeInTheDocument();
     });
     it('CACHET sent to EverydayJackpot (free play)', () => {
         const thisMock = cachetSendToEdjTx;

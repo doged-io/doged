@@ -595,6 +595,36 @@ export const getFirmaPushError = (firmaPush: string): false | string => {
 };
 
 /**
+ * Validate input_data_raw (Cashtab-only BIP21 param for p2shInputData).
+ * First 4 bytes are the lokad; data follows. Not in BIP21 spec.
+ * @param inputDataRaw user input for input_data_raw param
+ * @param maxBytes maximum allowed bytes (default: 100)
+ */
+export const getInputDataRawError = (
+    inputDataRaw: string,
+    maxBytes = 100,
+): false | string => {
+    if (inputDataRaw === '') {
+        return 'Cashtab will not send an empty input_data_raw';
+    }
+    if (!VALID_LOWERCASE_HEX_REGEX.test(inputDataRaw)) {
+        return `Input must be lowercase hex a-f 0-9.`;
+    }
+    const BYTE_LENGTH_HEX = 2;
+    if (inputDataRaw.length % BYTE_LENGTH_HEX !== 0) {
+        return `input_data_raw input must be in hex bytes. Length of input must be divisible by two.`;
+    }
+    const byteCount = inputDataRaw.length / BYTE_LENGTH_HEX;
+    if (byteCount < 4) {
+        return `input_data_raw must be at least 4 bytes (first 4 bytes are the lokad)`;
+    }
+    if (byteCount > maxBytes) {
+        return `input_data_raw exceeds ${maxBytes} bytes`;
+    }
+    return false;
+};
+
+/**
  * Validate bip21 empp_raw input
  * @param emppRaw user input (or webapp tx input) for bip21 empp_raw
  * @param maxBytes maximum allowed bytes for the EMPP push (default: 100)
@@ -665,6 +695,7 @@ export const shouldSendXecBeDisabled = (
     cashtabMsgError: false | string,
     sendWithOpReturnRaw: boolean,
     opReturnRawError: false | string,
+    inputDataRawError: false | string,
     priceApiError: boolean,
     isOneToManyXECSend: boolean,
 ): boolean => {
@@ -688,6 +719,8 @@ export const shouldSendXecBeDisabled = (
         (sendWithCashtabMsg && cashtabMsgError !== false) ||
         // Disabled if op_return_raw fails validation AND we are sending with op_return_raw
         (sendWithOpReturnRaw && opReturnRawError !== false) ||
+        // Disabled if input_data_raw in BIP21 fails validation
+        inputDataRawError !== false ||
         // Disabled if we do not have a fiat price AND the user is attempting to send fiat
         priceApiError ||
         // Disabled if send to many and we have a send to many validation error
@@ -707,6 +740,7 @@ export interface CashtabParsedAddressInfo {
     };
     op_return_raw?: { value: null | string; error: false | string };
     empp_raw?: { value: null | string; error: false | string };
+    input_data_raw?: { value: null | string; error: false | string };
     token_id?: { value: null | string; error: false | string };
     token_decimalized_qty?: { value: null | string; error: false | string };
     firma?: { value: null | string; error: false | string };
@@ -775,7 +809,13 @@ export function parseAddressInput(
         // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
         const addrParams = new URLSearchParams(queryString);
 
-        const supportedParams = ['amount', 'op_return_raw', 'empp_raw', 'addr'];
+        const supportedParams = [
+            'amount',
+            'op_return_raw',
+            'empp_raw',
+            'input_data_raw',
+            'addr',
+        ];
 
         // Iterate over params to check for valid and/or invalid params
         // Set a flag -- the first time we see the 'amount' param, it is for the bip21 starting address
@@ -789,6 +829,7 @@ export function parseAddressInput(
         // Flag as any duplication of this param is off spec
         let opReturnRawOccurred = false;
         let emppRawOccurred = false;
+        let inputDataRawOccurred = false;
 
         if (addrParams.has('token_id')) {
             // Parse bip21 for token send tx
@@ -800,6 +841,7 @@ export function parseAddressInput(
             const hasEmppRaw = addrParams.has('empp_raw');
 
             // Validate that only allowed params are present
+            const hasInputDataRaw = addrParams.has('input_data_raw');
             const allowedParams = ['token_id'];
             if (hasTokenDecimalizedQty) {
                 allowedParams.push('token_decimalized_qty');
@@ -810,10 +852,13 @@ export function parseAddressInput(
             if (hasEmppRaw) {
                 allowedParams.push('empp_raw');
             }
+            if (hasInputDataRaw) {
+                allowedParams.push('input_data_raw');
+            }
 
             if (tokenParams > allowedParams.length) {
                 // Invalid params present
-                parsedAddressInput.queryString.error = `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), firma (optional), and empp_raw (optional)`;
+                parsedAddressInput.queryString.error = `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), firma (optional), empp_raw (optional), and input_data_raw (optional)`;
                 return parsedAddressInput;
             }
 
@@ -865,6 +910,17 @@ export function parseAddressInput(
                 parsedAddressInput.empp_raw = {
                     value: passedEmppRaw,
                     error: emppRawError,
+                };
+            }
+
+            // Parse input_data_raw if present (Cashtab-only, for p2shInputData)
+            if (hasInputDataRaw) {
+                const passedInputDataRaw = addrParams.get('input_data_raw');
+                const inputDataRawError =
+                    getInputDataRawError(passedInputDataRaw);
+                parsedAddressInput.input_data_raw = {
+                    value: passedInputDataRaw,
+                    error: inputDataRawError,
                 };
             }
         } else if (addrParams.has('token_decimalized_qty')) {
@@ -1030,6 +1086,30 @@ export function parseAddressInput(
                     if (emppRawError !== false) {
                         // If we have an invalid empp_raw param, set error
                         parsedAddressInput.empp_raw.error = `Invalid empp_raw param: ${emppRawError}`;
+                    }
+                }
+                if (key === 'input_data_raw') {
+                    if (inputDataRawOccurred) {
+                        parsedAddressInput.queryString.error = `The input_data_raw param may not appear more than once`;
+                        if (
+                            typeof parsedAddressInput.input_data_raw !==
+                            'undefined'
+                        ) {
+                            parsedAddressInput.input_data_raw.value = null;
+                            parsedAddressInput.input_data_raw.error = `Duplicated input_data_raw param`;
+                        }
+                        return parsedAddressInput;
+                    }
+                    inputDataRawOccurred = true;
+                    const inputDataRawParam = value;
+                    parsedAddressInput.input_data_raw = {
+                        value: inputDataRawParam,
+                        error: false,
+                    };
+                    const inputDataRawError =
+                        getInputDataRawError(inputDataRawParam);
+                    if (inputDataRawError !== false) {
+                        parsedAddressInput.input_data_raw.error = `Invalid input_data_raw param: ${inputDataRawError}`;
                     }
                 }
             }

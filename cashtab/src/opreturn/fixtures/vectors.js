@@ -1004,4 +1004,34 @@ export const opReturnVectors = {
             },
         ],
     },
+    parseInputDataRaw: {
+        expectedReturns: [
+            {
+                description:
+                    'Parses DICE bet input_data_raw (lokad + bet range) for blitzchips roll',
+                inputDataRaw: '44494345000100000000e1f505',
+                returned: {
+                    protocol: 'DICE Bet',
+                    data: 'Range: [1, 100000000]',
+                },
+            },
+            {
+                description:
+                    'Parses DICE bet with specific range (min 50, max 50)',
+                inputDataRaw: '44494345003200000032000000',
+                returned: {
+                    protocol: 'DICE Bet',
+                    data: 'Range: [50, 50]',
+                },
+            },
+            {
+                description: 'Shows lokad for unknown protocol (4-byte min)',
+                inputDataRaw: '61626364',
+                returned: {
+                    protocol: 'Input data (lokad: abcd)',
+                    data: '4 bytes',
+                },
+            },
+        ],
+    },
 };

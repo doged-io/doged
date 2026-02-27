@@ -10,6 +10,7 @@ import {
     parseOpReturnRaw,
     parseFirma,
     parseEmppRaw,
+    parseInputDataRaw,
     getXecxAppAction,
     getEmppAppAction,
     getEmppAppActions,
@@ -226,6 +227,16 @@ describe('Cashtab opreturn methods', () => {
             const { description, emppRaw, returned } = expectedReturn;
             it(`parseEmppRaw: ${description}`, () => {
                 expect(parseEmppRaw(emppRaw)).toStrictEqual(returned);
+            });
+        });
+    });
+    describe('parseInputDataRaw', () => {
+        const { expectedReturns } = opReturnVectors.parseInputDataRaw;
+
+        expectedReturns.forEach(expectedReturn => {
+            const { description, inputDataRaw, returned } = expectedReturn;
+            it(`parseInputDataRaw: ${description}`, () => {
+                expect(parseInputDataRaw(inputDataRaw)).toStrictEqual(returned);
             });
         });
     });

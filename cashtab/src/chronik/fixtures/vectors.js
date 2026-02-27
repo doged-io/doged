@@ -72,6 +72,8 @@ import {
     firmaRedeemTx,
     alpSendWithCashtabMsgTx,
     cachetSendToEdjTx,
+    cachetSendWithP2shInputDataTx,
+    cachetReceiveWithP2shInputDataTx,
     edjSendTx,
     edjPayoutTx,
     edjFirmaPayoutTx,
@@ -1043,6 +1045,20 @@ export default {
                 tx: cachetSendToEdjTx.tx,
                 hashes: [cachetSendToEdjTx.sendingHash],
                 parsed: cachetSendToEdjTx.parsed,
+            },
+            {
+                description:
+                    'CACHET send with p2sh input data (part 1 of chained tx)',
+                tx: cachetSendWithP2shInputDataTx.tx,
+                hashes: [cachetSendWithP2shInputDataTx.sendingHash],
+                parsed: cachetSendWithP2shInputDataTx.parsed,
+            },
+            {
+                description:
+                    'CACHET receive with p2sh input data (part 2 of chained tx)',
+                tx: cachetReceiveWithP2shInputDataTx.tx,
+                hashes: [cachetReceiveWithP2shInputDataTx.receivingHash],
+                parsed: cachetReceiveWithP2shInputDataTx.parsed,
             },
             {
                 description:

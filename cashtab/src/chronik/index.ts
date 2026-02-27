@@ -25,7 +25,7 @@ import { CashtabCachedTokenInfo } from 'config/CashtabCache';
 import appConfig from 'config/app';
 import { opReturn } from 'config/opreturn';
 import { scriptOps } from 'ecash-agora';
-import { Script, fromHex, OP_0 } from 'ecash-lib';
+import { Script, fromHex, OP_0, decodeInputData, toHex } from 'ecash-lib';
 import { getRenderedTokenType, RenderedTokenType } from 'token-protocols';
 import { getEmppAppActions, getEmppAppAction } from 'opreturn';
 import { decimalizedTokenQtyToLocaleFormat } from 'formatting';
@@ -210,7 +210,45 @@ export const parseTx = (tx: Tx, hashes: string[]): ParsedTx => {
     let isAgoraPurchase = false;
     let isAgoraAdSetup = false;
     let isAgoraOffer = false;
+    const p2shInputDataAppActions: AppAction[] = [];
     for (const input of inputs) {
+        // Check for P2SH input data (Blitzchips DICE/ROLL, etc.) on any P2SH input
+        const outputScript = input.outputScript as string | undefined;
+        const inputScript = input.inputScript as string | undefined;
+        let isP2sh = false;
+        if (typeof outputScript === 'string' && outputScript.length > 0) {
+            try {
+                const { type } = getTypeAndHashFromOutputScript(outputScript);
+                isP2sh = type === 'p2sh';
+            } catch {
+                // Not a supported output script type
+            }
+        }
+        if (
+            isP2sh &&
+            typeof inputScript === 'string' &&
+            inputScript.length > 0
+        ) {
+            try {
+                const decoded = decodeInputData(fromHex(inputScript));
+                if (typeof decoded !== 'undefined') {
+                    const inputDataRaw =
+                        toHex(decoded.lokadId) + toHex(decoded.data);
+                    const emppAction = getEmppAppAction(inputDataRaw);
+                    if (typeof emppAction !== 'undefined') {
+                        p2shInputDataAppActions.push(emppAction);
+                    }
+                    // P2SH input data tx - not Agora; skip Agora logic for token inputs
+                    if (typeof input.token !== 'undefined') {
+                        isTokenTx = true;
+                        continue;
+                    }
+                }
+            } catch {
+                // Ignore parse errors
+            }
+        }
+
         if (typeof input.token !== 'undefined') {
             // Flag if we have any token inputs for XecTxType assignment
             isTokenTx = true;
@@ -222,10 +260,8 @@ export const parseTx = (tx: Tx, hashes: string[]): ParsedTx => {
                     input.outputScript as string,
                 );
                 if (type === 'p2sh') {
-                    // Check if this is a cancellation
+                    // Agora tx: Check if this is a cancellation
                     // See agora.ts from ecash-agora lib
-                    // For now, I don't think it makes sense to have an 'isCanceled' method from ecash-agora
-                    // This is a pretty specific application
                     const ops = scriptOps(
                         new Script(fromHex(input.inputScript)),
                     );
@@ -644,6 +680,8 @@ export const parseTx = (tx: Tx, hashes: string[]): ParsedTx => {
             }
         }
     }
+
+    appActions.push(...p2shInputDataAppActions);
 
     const satoshisSent = selfSendTx
         ? outputSatoshis

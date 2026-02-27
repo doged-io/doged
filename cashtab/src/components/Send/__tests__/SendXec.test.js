@@ -541,6 +541,42 @@ describe('<SendXec />', () => {
             true,
         );
     });
+    it('Parses input_data_raw correctly (lokad + bet range) for XEC send', async () => {
+        const mockedChronik = await initializeCashtabStateForTests(
+            walletWithXecAndTokensActive,
+            localforage,
+        );
+        render(
+            <CashtabTestWrapper
+                chronik={mockedChronik}
+                ecc={ecc}
+                route="/send"
+            />,
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        const addressInputEl = await screen.findByPlaceholderText('Address');
+        const amountInputEl = screen.getByPlaceholderText('Amount');
+
+        // DICE bet format: lokad (DICE) + version + minValue + maxValue
+        // 44494345000100000000e1f505 = range [1, 100000000]
+        const inputDataRaw = '44494345000100000000e1f505';
+        const addressInput = `ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6?amount=100&input_data_raw=${inputDataRaw}`;
+        await user.type(addressInputEl, addressInput);
+
+        expect(addressInputEl).toHaveValue(addressInput);
+        expect(amountInputEl).toHaveValue(100);
+
+        // input_data_raw is parsed from BIP21 only; parsed section shows DICE Bet protocol and bet range
+        expect(screen.getByText('Parsed input_data_raw')).toBeInTheDocument();
+        expect(screen.getByText('DICE Bet')).toBeInTheDocument();
+        expect(screen.getByText('Range: [1, 100000000]')).toBeInTheDocument();
+    });
     it('Pass a valid address and bip21 query string with valid amount and op_return_raw params to Send To field', async () => {
         // Mock the app with context at the Send screen
         const mockedChronik = await initializeCashtabStateForTests(

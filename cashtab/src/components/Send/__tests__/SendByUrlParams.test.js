@@ -961,6 +961,44 @@ describe('<SendXec /> rendered with params in URL', () => {
             screen.queryByTitle('Toggle op_return_raw'),
         ).not.toBeInTheDocument();
     });
+    it('bip21 - SLP token send with input_data_raw (blitzchips roll format) parses correctly', async () => {
+        const destinationAddress =
+            'ecash:qr6lws9uwmjkkaau4w956lugs9nlg9hudqs26lyxkv';
+        const token_id = slp1FixedBear.tokenId;
+        const token_decimalized_qty = '1';
+        const inputDataRaw = '44494345000100000000e1f505';
+        const bip21Str = `${destinationAddress}?token_id=${token_id}&token_decimalized_qty=${token_decimalized_qty}&input_data_raw=${inputDataRaw}`;
+        const hash = `#/send?bip21=${bip21Str}`;
+
+        Object.defineProperty(window, 'location', {
+            value: { hash },
+            writable: true,
+        });
+
+        const mockedChronik = await initializeCashtabStateForTests(
+            tokenTestWallet,
+            localforage,
+        );
+        mockedChronik.setTx(slp1FixedBear.tx.txid, slp1FixedBear.tx);
+        mockedChronik.setToken(slp1FixedBear.tokenId, slp1FixedBear.token);
+        render(<CashtabTestWrapper chronik={mockedChronik} route="/send" />);
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        // Should switch to token mode and show parsed input_data_raw (DICE Bet + range)
+        await waitFor(() => {
+            expect(
+                screen.getByText('Parsed input_data_raw'),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('DICE Bet')).toBeInTheDocument();
+        expect(screen.getByText('Range: [1, 100000000]')).toBeInTheDocument();
+    });
     it('bip21 - ALP token send with firma param', async () => {
         const destinationAddress =
             'ecash:qr6lws9uwmjkkaau4w956lugs9nlg9hudqs26lyxkv';

@@ -10,6 +10,7 @@ import {
     isValidTokenId,
     getOpReturnRawError,
     getEmppRawError,
+    getInputDataRawError,
 } from 'validation';
 import { getStackArray, consume } from 'ecash-lib';
 import {
@@ -853,6 +854,94 @@ export const parseEmppRaw = (emppRaw: string): ParsedOpReturnRaw => {
     }
 
     // Unknown protocol
+    return parsed;
+};
+
+/**
+ * Parse input_data_raw (Cashtab-only BIP21 param for p2shInputData).
+ * Same format as empp_raw: lokad (4 bytes) + data. Used for P2SH input data.
+ * @param inputDataRaw hex string (first 4 bytes = lokad, rest = data)
+ * @returns {object} {protocol: <protocolLabel>, data: <parsedData>}
+ */
+export const parseInputDataRaw = (inputDataRaw: string): ParsedOpReturnRaw => {
+    const parsed = { protocol: 'Unknown Protocol', data: inputDataRaw };
+
+    if (getInputDataRawError(inputDataRaw) !== false) {
+        return parsed;
+    }
+
+    // Same format as empp_raw - reuse getEmppAppAction
+    let emppAction: AppAction | undefined;
+    try {
+        emppAction = getEmppAppAction(inputDataRaw);
+    } catch {
+        return parsed;
+    }
+
+    if (typeof emppAction !== 'undefined' && emppAction.action) {
+        const action = emppAction.action;
+        switch (emppAction.app) {
+            case 'DICE Bet': {
+                if (
+                    emppAction.isValid &&
+                    'minValue' in action &&
+                    'maxValue' in action
+                ) {
+                    parsed.protocol = 'DICE Bet';
+                    const diceAction = action as {
+                        minValue: number;
+                        maxValue: number;
+                    };
+                    parsed.data = `Range: [${diceAction.minValue}, ${diceAction.maxValue}]`;
+                } else {
+                    parsed.protocol = 'Invalid DICE Bet';
+                }
+                return parsed;
+            }
+            case 'ROLL Payout': {
+                if (
+                    emppAction.isValid &&
+                    'betTxid' in action &&
+                    'roll' in action &&
+                    'seedHash' in action &&
+                    'result' in action
+                ) {
+                    parsed.protocol = 'ROLL Payout';
+                    const rollAction = action as {
+                        betTxid: string;
+                        roll: number;
+                        seedHash: string;
+                        result: string;
+                    };
+                    const resultLabel =
+                        rollAction.result === 'W'
+                            ? 'Win'
+                            : rollAction.result === 'L'
+                              ? 'Loss'
+                              : 'Invalid';
+                    parsed.data = `Bet: ${rollAction.betTxid.slice(0, 8)}...${rollAction.betTxid.slice(-8)}, Roll: ${rollAction.roll}, Result: ${resultLabel}`;
+                } else {
+                    parsed.protocol = 'Invalid ROLL Payout';
+                }
+                return parsed;
+            }
+            default: {
+                // Show lokad for unknown protocols
+                const lokadHex = inputDataRaw.slice(0, 8);
+                try {
+                    const lokadStr = Buffer.from(lokadHex, 'hex').toString(
+                        'utf8',
+                    );
+                    parsed.protocol = `Input data (lokad: ${lokadStr})`;
+                } catch {
+                    parsed.protocol = `Input data (lokad: ${lokadHex})`;
+                }
+                parsed.data = `${inputDataRaw.length / 2} bytes`;
+                return parsed;
+            }
+        }
+    }
+
     return parsed;
 };
 

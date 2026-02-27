@@ -32,6 +32,8 @@ import {
     NftParentGenesisTx,
     NftChildGenesisTx,
     cachetSendToEdjTx,
+    cachetSendWithP2shInputDataTx,
+    cachetReceiveWithP2shInputDataTx,
     edjSendTx,
     edjPayoutTx,
     edjFirmaPayoutTx,
@@ -609,6 +611,41 @@ describe('Cashtab chronik.js functions', () => {
             expect(edjEntry).toBeDefined();
             expect(edjEntry.renderedTxType).toBe('SEND');
             expect(edjEntry.tokenSatoshis).toBe('5000'); // 50 EDJ payout
+        });
+
+        it('parseTx: CACHET send with p2sh input data (part 1 of chained tx)', () => {
+            const parsed = parseTx(cachetSendWithP2shInputDataTx.tx, [
+                cachetSendWithP2shInputDataTx.sendingHash,
+            ]);
+
+            expect(parsed.xecTxType).toBe('Sent');
+            const cachetEntry = parsed.parsedTokenEntries.find(
+                e => e.tokenId === CACHET_TOKEN_ID,
+            );
+            expect(cachetEntry).toBeDefined();
+            expect(cachetEntry.renderedTxType).toBe('Agora Offer');
+            expect(cachetEntry.tokenSatoshis).toBe('100');
+        });
+
+        it('parseTx: CACHET receive with p2sh input data (part 2 of chained tx)', () => {
+            const parsed = parseTx(cachetReceiveWithP2shInputDataTx.tx, [
+                cachetReceiveWithP2shInputDataTx.receivingHash,
+            ]);
+
+            expect(parsed.xecTxType).toBe('Received');
+            const cachetEntry = parsed.parsedTokenEntries.find(
+                e => e.tokenId === CACHET_TOKEN_ID,
+            );
+            expect(cachetEntry).toBeDefined();
+            expect(cachetEntry.renderedTxType).toBe('SEND');
+            expect(cachetEntry.tokenSatoshis).toBe('100');
+            const diceAction = parsed.appActions.find(
+                a => a.app === 'DICE Bet',
+            );
+            expect(diceAction).toBeDefined();
+            expect(diceAction.isValid).toBe(true);
+            expect(diceAction.action.minValue).toBe(1);
+            expect(diceAction.action.maxValue).toBe(100000000);
         });
 
         it('parseTx: FIRMA received from EverydayJackpot (EDJ.com payout with trophy)', () => {

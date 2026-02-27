@@ -25,6 +25,7 @@ import {
     isValidTokenMintAmount,
     getOpReturnRawError,
     getEmppRawError,
+    getInputDataRawError,
     getFirmaPushError,
     nodeWillAcceptOpReturnRaw,
     getContactNameError,
@@ -301,6 +302,7 @@ describe('Cashtab validation functions', () => {
                 cashtabMsgError,
                 sendWithOpReturnRaw,
                 opReturnRawError,
+                inputDataRawError = false,
                 priceApiError,
                 isOneToManyXECSend,
                 sendDisabled,
@@ -318,6 +320,7 @@ describe('Cashtab validation functions', () => {
                         cashtabMsgError,
                         sendWithOpReturnRaw,
                         opReturnRawError,
+                        inputDataRawError,
                         priceApiError,
                         isOneToManyXECSend,
                     ),
@@ -491,6 +494,22 @@ describe('Cashtab validation functions', () => {
                     expect(getEmppRawError(emppRaw, maxBytes)).toBe(returned);
                 } else {
                     expect(getEmppRawError(emppRaw)).toBe(returned);
+                }
+            });
+        });
+    });
+    describe('Can tell if a string is valid input_data_raw input, or why it is not', () => {
+        const { expectedReturns } = vectors.getInputDataRawError;
+        expectedReturns.forEach(expectedReturn => {
+            const { description, inputDataRaw, returned, maxBytes } =
+                expectedReturn;
+            it(`getInputDataRawError: ${description}`, () => {
+                if (typeof maxBytes !== 'undefined') {
+                    expect(getInputDataRawError(inputDataRaw, maxBytes)).toBe(
+                        returned,
+                    );
+                } else {
+                    expect(getInputDataRawError(inputDataRaw)).toBe(returned);
                 }
             });
         });

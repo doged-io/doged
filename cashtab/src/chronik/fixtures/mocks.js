@@ -25188,3 +25188,303 @@ export const edjFirmaPayoutTx = {
     /** Wallet hash for winner (c9ff3dc758c72bdd1fac4a557799a16c465668c6) */
     receivingHash: 'c9ff3dc758c72bdd1fac4a557799a16c465668c6',
 };
+
+export const cachetSendWithP2shInputDataTx = {
+    tx: {
+        txid: '8482970715ecdc3b9462d65c7d5d83520623b2953b3b6c8d2eb02ad951cfc66d',
+        version: 2,
+        inputs: [
+            {
+                prevOut: {
+                    txid: 'e1fe12aadfbcbbf982f5f3893a04769a19461b4eb47199a146457b391db8e234',
+                    outIdx: 2,
+                },
+                inputScript:
+                    '4199c7bca5ed1cbd61a7ffbcbfb4c91ddeaa8b5c59b0522cce44324e6c6788b430e4c1e4625fca72a6c6dbe72eec5c2228798f22fe35889b70d8a7833c1a087b14412103771805b54969a9bea4e3eb14a82851c67592156ddb5e52d3d53677d14a40fba6',
+                sats: 546n,
+                sequenceNo: 4294967295,
+                token: {
+                    tokenId:
+                        'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    atoms: 10539984n,
+                    isMintBaton: false,
+                    entryIdx: 0,
+                },
+                outputScript:
+                    '76a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac',
+            },
+            {
+                prevOut: {
+                    txid: 'e1fe12aadfbcbbf982f5f3893a04769a19461b4eb47199a146457b391db8e234',
+                    outIdx: 3,
+                },
+                inputScript:
+                    '4124f5a0d5fbace0f9681e0f0530b0df2d9a19ac42110b3083c9237eeddf30f97026d0d2984e6944d6f49d6f75a8fe324b52be611dc891066b52bd3ea433a39a06412103771805b54969a9bea4e3eb14a82851c67592156ddb5e52d3d53677d14a40fba6',
+                sats: 3210219n,
+                sequenceNo: 4294967295,
+                outputScript:
+                    '76a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac',
+            },
+        ],
+        outputs: [
+            {
+                sats: 0n,
+                outputScript:
+                    '6a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1080000000000000064080000000000a0d36c',
+            },
+            {
+                sats: 829n,
+                outputScript: 'a914606af286432b243cac514130826db9ef8fbd1b0887',
+                token: {
+                    tokenId:
+                        'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    atoms: 100n,
+                    isMintBaton: false,
+                    entryIdx: 0,
+                },
+                spentBy: {
+                    txid: 'fff8f6fc074fa6c7edbecfdbf6bbc0819162af4540f4b1683440c83a56334e61',
+                    outIdx: 0,
+                },
+            },
+            {
+                sats: 546n,
+                outputScript:
+                    '76a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac',
+                token: {
+                    tokenId:
+                        'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    atoms: 10539884n,
+                    isMintBaton: false,
+                    entryIdx: 0,
+                },
+            },
+            {
+                sats: 3208925n,
+                outputScript:
+                    '76a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac',
+            },
+        ],
+        lockTime: 0,
+        timeFirstSeen: 1772187349,
+        size: 465,
+        isCoinbase: false,
+        tokenEntries: [
+            {
+                tokenId:
+                    'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                tokenType: {
+                    protocol: 'SLP',
+                    type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                    number: 1,
+                },
+                txType: 'SEND',
+                isInvalid: false,
+                burnSummary: '',
+                failedColorings: [],
+                actualBurnAtoms: 0n,
+                intentionalBurnAtoms: 0n,
+                burnsMintBatons: false,
+            },
+        ],
+        tokenFailedParsings: [],
+        tokenStatus: 'TOKEN_STATUS_NORMAL',
+        isFinal: true,
+        block: {
+            height: 938221,
+            hash: '00000000000000005d2ec237c3d326ce7e6da71206cd9e695778f4855683d24d',
+            timestamp: 1772187359,
+        },
+    },
+    sendingHash: '95e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d',
+    parsed: {
+        satoshisSent: 829,
+        stackArray: [
+            '534c5000',
+            '01',
+            '53454e44',
+            'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+            '0000000000000064',
+            '0000000000a0d36c',
+        ],
+        xecTxType: 'Sent',
+        recipients: ['ecash:ppsx4u5xgv4jg09v29qnpqndh8hcl0gmpqm85ppqnj'],
+        appActions: [],
+        parsedTokenEntries: [
+            {
+                renderedTokenType: 'SLP',
+                renderedTxType: 'Agora Offer',
+                tokenId:
+                    'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                tokenSatoshis: '100',
+            },
+        ],
+    },
+    cache: [
+        [
+            'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+            {
+                tokenType: {
+                    protocol: 'SLP',
+                    type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                    number: 1,
+                },
+                genesisInfo: {
+                    tokenTicker: 'CACHET',
+                    tokenName: 'Cachet',
+                    decimals: 8,
+                },
+            },
+        ],
+    ],
+};
+
+export const cachetReceiveWithP2shInputDataTx = {
+    tx: {
+        txid: 'fff8f6fc074fa6c7edbecfdbf6bbc0819162af4540f4b1683440c83a56334e61',
+        version: 2,
+        inputs: [
+            {
+                prevOut: {
+                    txid: '8482970715ecdc3b9462d65c7d5d83520623b2953b3b6c8d2eb02ad951cfc66d',
+                    outIdx: 1,
+                },
+                inputScript:
+                    '044449434509000100000000e1f505419c5c9214740f95c0326c2baf2426514f2fdfead9618e390232fbedafdd2960f73f0eceb07b91cfc205aa314b03d69932daaa4d48e89c08a0d83742cb9835014a412103771805b54969a9bea4e3eb14a82851c67592156ddb5e52d3d53677d14a40fba612ad09000100000000e1f50588044449434587',
+                sats: 829n,
+                sequenceNo: 4294967295,
+                token: {
+                    tokenId:
+                        'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    atoms: 100n,
+                    isMintBaton: false,
+                    entryIdx: 0,
+                },
+                outputScript: 'a914606af286432b243cac514130826db9ef8fbd1b0887',
+            },
+        ],
+        outputs: [
+            {
+                sats: 0n,
+                outputScript:
+                    '6a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1080000000000000064',
+            },
+            {
+                sats: 546n,
+                outputScript:
+                    '76a914110e3b40d115011988a5935c613a58a093b417ab88ac',
+                token: {
+                    tokenId:
+                        'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                    tokenType: {
+                        protocol: 'SLP',
+                        type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                        number: 1,
+                    },
+                    atoms: 100n,
+                    isMintBaton: false,
+                    entryIdx: 0,
+                },
+            },
+        ],
+        lockTime: 0,
+        timeFirstSeen: 1772187349,
+        size: 283,
+        isCoinbase: false,
+        tokenEntries: [
+            {
+                tokenId:
+                    'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                tokenType: {
+                    protocol: 'SLP',
+                    type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                    number: 1,
+                },
+                txType: 'SEND',
+                isInvalid: false,
+                burnSummary: '',
+                failedColorings: [],
+                actualBurnAtoms: 0n,
+                intentionalBurnAtoms: 0n,
+                burnsMintBatons: false,
+            },
+        ],
+        tokenFailedParsings: [],
+        tokenStatus: 'TOKEN_STATUS_NORMAL',
+        isFinal: true,
+        block: {
+            height: 938221,
+            hash: '00000000000000005d2ec237c3d326ce7e6da71206cd9e695778f4855683d24d',
+            timestamp: 1772187359,
+        },
+    },
+    /** Wallet hash for receiver (110e3b40d115011988a5935c613a58a093b417ab) */
+    receivingHash: '110e3b40d115011988a5935c613a58a093b417ab',
+    parsed: {
+        satoshisSent: 546,
+        stackArray: [
+            '534c5000',
+            '01',
+            '53454e44',
+            'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+            '0000000000000064',
+        ],
+        xecTxType: 'Received',
+        recipients: [],
+        replyAddress: 'ecash:ppsx4u5xgv4jg09v29qnpqndh8hcl0gmpqm85ppqnj',
+        appActions: [
+            {
+                lokadId: '44494345',
+                app: 'DICE Bet',
+                isValid: true,
+                action: { minValue: 1, maxValue: 100000000 },
+            },
+        ],
+        parsedTokenEntries: [
+            {
+                renderedTokenType: 'SLP',
+                renderedTxType: 'SEND',
+                tokenId:
+                    'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                tokenSatoshis: '100',
+            },
+        ],
+    },
+    cache: [
+        [
+            'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+            {
+                tokenType: {
+                    protocol: 'SLP',
+                    type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                    number: 1,
+                },
+                genesisInfo: {
+                    tokenTicker: 'CACHET',
+                    tokenName: 'Cachet',
+                    decimals: 8,
+                },
+            },
+        ],
+    ],
+};
