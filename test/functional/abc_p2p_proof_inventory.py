@@ -120,7 +120,7 @@ class ProofInventoryTest(BitcoinTestFramework):
 
         msg = msg_avaproof()
         msg.proof = proof
-        peer.send_message(msg)
+        peer.send_without_ping(msg)
 
         self.wait_until(lambda: proof.proofid in get_proof_ids(node))
 
@@ -131,7 +131,7 @@ class ProofInventoryTest(BitcoinTestFramework):
 
         msg = msg_avaproof()
         msg.proof = immature
-        peer.send_message(msg)
+        peer.send_without_ping(msg)
 
         wait_for_proof(node, immature_proofid, expect_status="immature")
 
@@ -167,7 +167,7 @@ class ProofInventoryTest(BitcoinTestFramework):
         # Sending a proof with a missing utxo doesn't trigger a ban
         msg.proof = avalanche_proof_from_hex(missing_stake)
         with node.assert_debug_log(["received: avaproof"], ["Misbehaving"]):
-            peer.send_message(msg)
+            peer.send_without_ping(msg)
             peer.sync_with_ping()
 
         msg.proof = bad_proof
@@ -177,7 +177,7 @@ class ProofInventoryTest(BitcoinTestFramework):
                 "invalid-proof",
             ]
         ):
-            peer.send_message(msg)
+            peer.send_without_ping(msg)
             peer.wait_for_disconnect()
 
     def test_proof_relay(self):
@@ -309,7 +309,7 @@ class ProofInventoryTest(BitcoinTestFramework):
         # broadcast it
         node.setmocktime(int(time.time()) + UNCONDITIONAL_RELAY_DELAY)
         msg = msg_getdata([CInv(t=MSG_AVA_PROOF, h=proof.proofid)])
-        peers[-1].send_message(msg)
+        peers[-1].send_without_ping(msg)
 
         # Give enough time for the node to broadcast the proof again
         peers = add_peers(3)

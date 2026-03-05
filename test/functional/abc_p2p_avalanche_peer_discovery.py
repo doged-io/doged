@@ -245,7 +245,7 @@ class AvalanchePeerDiscoveryTest(BitcoinTestFramework):
         getdata = msg_getdata([CInv(MSG_AVA_PROOF, node_proofid)])
 
         self.log.info("Proof has been inv'ed recently, check it can be requested")
-        good_interface.send_message(getdata)
+        good_interface.send_without_ping(getdata)
 
         # This is our local proof so if it was announced it can be requested
         # without waiting for validation.
@@ -297,7 +297,7 @@ class AvalanchePeerDiscoveryTest(BitcoinTestFramework):
         getdata = msg_getdata(
             [CInv(MSG_AVA_PROOF, node_proofid), CInv(MSG_AVA_PROOF, new_proofid)]
         )
-        peer.send_message(getdata)
+        peer.send_without_ping(getdata)
 
         self.wait_until(lambda: proof_received(peer, new_proofid))
         assert not proof_received(peer, node_proofid)
@@ -307,7 +307,7 @@ class AvalanchePeerDiscoveryTest(BitcoinTestFramework):
         node.setmocktime(current_time + UNCONDITIONAL_RELAY_DELAY)
 
         getdata = msg_getdata([CInv(MSG_AVA_PROOF, node_proofid)])
-        peer.send_message(getdata)
+        peer.send_without_ping(getdata)
         self.wait_until(lambda: proof_received(peer, node_proofid))
 
         # Restart the node

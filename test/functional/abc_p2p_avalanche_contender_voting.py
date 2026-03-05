@@ -652,7 +652,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
             [peer.proof for peer in old_quorum[:-1]], key=lambda p: p.proofid
         )
         peer_with_getavaproofs = peer_has_getavaproofs()
-        peer_with_getavaproofs.send_message(
+        peer_with_getavaproofs.send_without_ping(
             build_msg_avaproofs(prefilled_proofs, prefilled_proofs)
         )
         with p2p_lock:
@@ -762,7 +762,7 @@ class AvalancheContenderVotingTest(BitcoinTestFramework):
         )
 
         # Send the proof to node
-        peer_has_getavaproofs().send_message(
+        peer_has_getavaproofs().send_without_ping(
             build_msg_avaproofs([immature_proof], [immature_proof])
         )
 
