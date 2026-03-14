@@ -224,6 +224,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
 
         assert_equal(node.getmempoolinfo()["size"], num_txs)
         assert_equal(node.getmempoolinfo()["bytes"], 13000)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], num_txs)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 13000)
 
         # Lets build a chain of 8 txs of size 200 each. Each individual tx would
@@ -234,6 +235,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
         )
         assert_equal(node.getmempoolinfo()["size"], num_txs + 8)
         assert_equal(node.getmempoolinfo()["bytes"], 14600)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], num_txs)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 13000)
 
         # We can finalize the first 4 txs but not the last 4
@@ -247,6 +249,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
 
         assert_equal(node.getmempoolinfo()["size"], num_txs + 8)
         assert_equal(node.getmempoolinfo()["bytes"], 14600)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], num_txs + 4)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 13800)
 
         # Add another tx to the chain. This tx size is 100 bytes, so it gets
@@ -276,6 +279,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
 
         assert_equal(node.getmempoolinfo()["size"], num_txs + 9)
         assert_equal(node.getmempoolinfo()["bytes"], 14700)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], num_txs + 4)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 13800)
 
         # Add a transaction that will not get polled because it doesn't fit
@@ -286,6 +290,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
         assert big_tx["txid"] in node.getrawmempool()
         assert_equal(node.getmempoolinfo()["size"], num_txs + 10)
         assert_equal(node.getmempoolinfo()["bytes"], 16700)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], num_txs + 4)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 13800)
 
         # This tx will not be polled. We can check this by looking at the vote
@@ -321,6 +326,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
 
         assert_equal(node.getmempoolinfo()["size"], 6)
         assert_equal(node.getmempoolinfo()["bytes"], 4 * 200 + 100 + 2000)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], 0)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 0)
 
         mempool = node.getrawmempool()
@@ -335,6 +341,7 @@ class AvalancheTransactionFinalizationTest(BitcoinTestFramework):
 
         assert_equal(node.getmempoolinfo()["size"], 6)
         assert_equal(node.getmempoolinfo()["bytes"], 4 * 200 + 100 + 2000)
+        assert_equal(node.getmempoolinfo()["finalized_txs_size"], 6)
         assert_equal(node.getmempoolinfo()["finalized_txs_bytes"], 4 * 200 + 100 + 2000)
 
     def test_blockmintxfee(self):
