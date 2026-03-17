@@ -47,14 +47,11 @@ import {
     ReceiveIcon,
     MinedIcon,
     AliasIconTx,
-    GenesisIcon,
     AirdropIcon,
     EncryptedMsgIcon,
-    TokenBurnIcon,
     SwapIcon,
     PayButtonIcon,
     ChatIcon,
-    MintIcon,
     UnknownIcon,
     CashtabMsgIcon,
     CopyPasteIcon,
@@ -63,14 +60,7 @@ import {
     AddContactIcon,
     ReplyIcon,
     SelfSendIcon,
-    FanOutIcon,
-    MintNftIcon,
     PaywallPaymentIcon,
-    AgoraOfferIcon,
-    AgoraBuyIcon,
-    AgoraSaleIcon,
-    AgoraCancelIcon,
-    TokenSendIcon,
     XecxIcon,
     FirmaIcon,
     SolIcon,
@@ -81,6 +71,16 @@ import {
     PayoutWinIcon,
     BlitsPayoutIcon,
     EdjIcon,
+    GenesisIcon,
+    MintIcon,
+    MintNftIcon,
+    TokenSendIcon,
+    TokenBurnIcon,
+    AgoraBuyIcon,
+    AgoraSaleIcon,
+    AgoraCancelIcon,
+    AgoraOfferIcon,
+    FanOutIcon,
 } from 'components/Common/CustomIcons';
 import { supportedFiatCurrencies } from 'config/CashtabSettings';
 import CopyToClipboard from 'components/Common/CopyToClipboard';
@@ -1018,14 +1018,12 @@ const Tx: React.FC<TxProps> = ({
                                 ? 'BURN'
                                 : renderedTxType}
                         </TokenType>
+
+                        <TokenName to={`/token/${tokenId}`}>
+                            {tokenName}
+                        </TokenName>
                     </TokenInfoCol>
                 </IconAndLabel>
-                <TokenInfoCol>
-                    <TokenName to={`/token/${tokenId}`}>{tokenName}</TokenName>
-                    {tokenTicker !== '' && (
-                        <TokenTicker>({tokenTicker})</TokenTicker>
-                    )}
-                </TokenInfoCol>
                 <TokenDesc>
                     {renderedTxType === ParsedTokenTxType.FanOut
                         ? `Created ${nftFanInputsCreated} NFT Mint Input${

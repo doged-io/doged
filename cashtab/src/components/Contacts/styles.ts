@@ -4,9 +4,15 @@
 
 import styled from 'styled-components';
 
+export const ContactsContainer = styled.div`
+    width: 100%;
+    @media (max-width: 768px) {
+        padding: 0 10px;
+    }
+`;
+
 export const ContactList = styled.div`
-    margin-top: 24px;
-    padding: 12px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -24,11 +30,11 @@ export const ContactList = styled.div`
 export const ContactsPanel = styled.div`
     display: flex;
     flex-direction: column;
-    padding: 12px;
     width: 100%;
-    background-color: ${props => props.theme.primaryBackground};
-    border-radius: 9px;
     margin-bottom: 12px;
+    background-color: ${props => props.theme.inputBackground};
+    border-radius: 8px;
+    padding: 0 10px;
 `;
 
 export const Row = styled.div`
@@ -38,8 +44,11 @@ export const Row = styled.div`
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
-    border-bottom: 0.5px solid ${props => props.theme.border};
-    padding: 6px 0;
+    padding: 16px;
+    border-bottom: 1px solid ${props => props.theme.primaryBackground};
+    &:last-child {
+        border-bottom: none;
+    }
 `;
 export const ButtonRow = styled.div`
     display: flex;

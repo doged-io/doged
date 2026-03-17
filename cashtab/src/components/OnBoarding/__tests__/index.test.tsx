@@ -17,6 +17,12 @@ import {
 import CashtabTestWrapper from 'components/App/fixtures/CashtabTestWrapper';
 import { Ecc } from 'ecash-lib';
 
+/** Public test fixture only — do not use for real funds (see wallet/fixtures/vectors). */
+const BURNED_ONBOARDING_MNEMONIC =
+    'beauty shoe decline spend still weird slot snack coach flee between paper';
+const BURNED_ONBOARDING_WALLET_ADDRESS =
+    'ecash:qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g';
+
 describe('<OnBoarding />', () => {
     const ecc = new Ecc();
     beforeEach(() => {
@@ -42,6 +48,68 @@ describe('<OnBoarding />', () => {
     afterEach(async () => {
         jest.clearAllMocks();
         await clearLocalForage(localforage);
+    });
+
+    it('With no wallet, first load shows New and Import; Import accepts burned test seed', async () => {
+        const mockedChronik = await initializeCashtabStateForTests(
+            false,
+            localforage,
+        );
+        mockedChronik.setBlockchainInfo({ tipHeight: 800000 });
+        mockedChronik.setTxHistoryByAddress(
+            BURNED_ONBOARDING_WALLET_ADDRESS,
+            [],
+        );
+
+        render(<CashtabTestWrapper ecc={ecc} chronik={mockedChronik} />);
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        const newWalletBtn = screen.getByRole('button', { name: /New Wallet/ });
+        const importWalletBtn = screen.getByRole('button', {
+            name: /Import Wallet/,
+        });
+        expect(newWalletBtn).toBeVisible();
+        expect(importWalletBtn).toBeVisible();
+
+        await userEvent.click(importWalletBtn);
+
+        const mnemonicField = screen.getByPlaceholderText(
+            'mnemonic (seed phrase)',
+        );
+        expect(mnemonicField).toBeInTheDocument();
+
+        await userEvent.type(mnemonicField, BURNED_ONBOARDING_MNEMONIC);
+
+        const okBtn = screen.getByRole('button', { name: 'OK' });
+        expect(okBtn).toHaveProperty('disabled', false);
+
+        await userEvent.click(okBtn);
+
+        const walletsAfterImport = await localforage.getItem('wallets');
+        expect(walletsAfterImport).toHaveLength(1);
+        expect(
+            (walletsAfterImport as Array<{ name: string; address: string }>)[0]
+                .name,
+        ).toBe('qqa...70g');
+        expect(
+            (walletsAfterImport as Array<{ name: string; address: string }>)[0]
+                .address,
+        ).toBe(BURNED_ONBOARDING_WALLET_ADDRESS);
+
+        await waitFor(() =>
+            expect(
+                screen.queryByPlaceholderText('mnemonic (seed phrase)'),
+            ).not.toBeInTheDocument(),
+        );
+
+        expect(
+            await screen.findByText('Backup your wallet'),
+        ).toBeInTheDocument();
     });
 
     it('We can create a new wallet', async () => {
@@ -87,7 +155,8 @@ describe('<OnBoarding />', () => {
             await screen.findByText('Backup your wallet'),
         ).toBeInTheDocument();
 
-        // We see a QR code
+        // We see a QR code on the Receive page
+        await userEvent.click(screen.getByRole('link', { name: /Receive/ }));
         expect(screen.getByTitle('Raw QR Code')).toBeInTheDocument();
 
         // New wallet is added in localforage
@@ -189,7 +258,8 @@ describe('<OnBoarding />', () => {
             await screen.findByText('Backup your wallet'),
         ).toBeInTheDocument();
 
-        // We see a QR code
+        // We see a QR code on the Receive page
+        await userEvent.click(screen.getByRole('link', { name: /Receive/ }));
         expect(screen.getByTitle('Raw QR Code')).toBeInTheDocument();
     });
 });

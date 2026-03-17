@@ -123,6 +123,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -144,26 +149,30 @@ describe('<Token /> available actions rendered', () => {
             screen.getByText('2,999,998,798.000000000 (fixed)'),
         ).toBeInTheDocument();
 
-        // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        // Token action bar is available with Buy and Sell buttons
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: '− Sell' }),
+        ).toBeInTheDocument();
 
-        // The sell switch is turned on by default
-        expect(screen.getByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
+        // More dropdown contains Send, Airdrop, Burn
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        expect(
+            screen.getByRole('button', { name: 'Send' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Burn' }),
+        ).toBeInTheDocument();
 
-        // The send switch is present
-        expect(screen.getByTitle('Toggle Send')).toBeInTheDocument();
-
-        // The Airdrop switch is present
-        expect(screen.getByTitle('Toggle Airdrop')).toBeInTheDocument();
-
-        // The Burn switch is present
-        expect(screen.getByTitle('Toggle Burn')).toBeInTheDocument();
-
-        // The Mint switch is not rendered
-        expect(screen.queryByTitle('Toggle Mint')).not.toBeInTheDocument();
+        // The Mint option is not in the dropdown for fixed supply
+        expect(
+            screen.queryByRole('button', { name: 'Mint' }),
+        ).not.toBeInTheDocument();
     });
     it('SLP1 variable supply token with mint baton', async () => {
         render(
@@ -182,6 +191,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -198,34 +212,33 @@ describe('<Token /> available actions rendered', () => {
         // Close out of the info modal
         await userEvent.click(screen.getByText('OK'));
 
-        // The supply is correctly rendered as fixed
+        // The supply is correctly rendered as variable
         expect(
             screen.getByText('18,446,744,073.709551615 (var.)'),
         ).toBeInTheDocument();
 
-        // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        // Token action bar is available with Buy and Sell buttons
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: '− Sell' }),
+        ).toBeInTheDocument();
 
-        // The sell switch is turned on by default
-        expect(screen.getByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // The send switch is present
-        expect(screen.getByTitle('Toggle Send')).toBeInTheDocument();
-
-        // The Airdrop switch is present
-        expect(screen.getByTitle('Toggle Airdrop')).toBeInTheDocument();
-
-        // The Burn switch is present
-        expect(screen.getByTitle('Toggle Burn')).toBeInTheDocument();
-
-        // The Mint switch is present and not disabled
-        expect(screen.getByTitle('Toggle Mint')).toHaveProperty(
-            'disabled',
-            false,
-        );
+        // More dropdown contains Send, Airdrop, Burn, Mint
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        expect(
+            screen.getByRole('button', { name: 'Send' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Burn' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Mint' }),
+        ).toBeInTheDocument();
     });
     it('We can list an SLP1 fungible token', async () => {
         // Mock Math.random()
@@ -269,20 +282,20 @@ describe('<Token /> available actions rendered', () => {
         const { tokenName } = slp1FixedMocks.token.genesisInfo;
 
         // Wait for element to get token info and load
-        expect(await screen.findAllByText(new RegExp(tokenName))).toHaveLength(
-            3,
-        );
+        expect(
+            (await screen.findAllByText(new RegExp(tokenName)))[0],
+        ).toBeInTheDocument();
 
         // Token image is rendered
         expect(
             screen.getByAltText(`icon for ${slp1FixedMocks.tokenId}`),
         ).toBeInTheDocument();
 
-        // Token actions are available
-        expect(await screen.findByTitle('Token Actions')).toBeInTheDocument();
-
-        // On load, default action for SLP is to list it
-        expect(await screen.findByTitle('Toggle Sell Token')).toBeEnabled();
+        // Token action bar is available - click Sell to show the list form
+        expect(
+            await screen.findByRole('button', { name: '− Sell' }),
+        ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: '− Sell' }));
 
         // The list button is disabled on load
         const listButton = await screen.findByRole('button', {
@@ -302,8 +315,11 @@ describe('<Token /> available actions rendered', () => {
         // Min qty input is disabled before we enter offered qty
         expect(minQtyInput).toBeDisabled();
 
-        // Enter token balance as offered qty
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '111');
+        // Enter token balance as offered qty (Slider uses name as placeholder when no label)
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '111',
+        );
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -478,6 +494,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -497,20 +518,27 @@ describe('<Token /> available actions rendered', () => {
         // The supply is correctly rendered
         expect(screen.getByText('100 (var.)')).toBeInTheDocument();
 
-        // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        // Token action bar is available - open dropdown for Mint NFT
+        expect(screen.getByRole('button', { name: '⋯' })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
 
-        // The mint NFT option is available
-        expect(screen.getByTitle('Toggle Mint NFT')).toBeInTheDocument();
+        // The Mint NFT option is available and enabled
+        const mintNftOption = screen.getByRole('button', { name: 'Mint NFT' });
+        expect(mintNftOption).toBeInTheDocument();
+        expect(mintNftOption).toBeEnabled();
 
-        // The mint NFT option is enabled even if there are no qty-1 utxos aka mint inputs
-        expect(screen.getByTitle('Toggle Mint NFT')).toBeEnabled();
+        // The Airdrop action is available in the dropdown
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
 
-        // The Airdrop action is available
-        expect(screen.getByTitle('Toggle Airdrop')).toBeInTheDocument();
+        // The Burn action is NOT available for NFT parent
+        expect(
+            screen.queryByRole('button', { name: 'Burn' }),
+        ).not.toBeInTheDocument();
 
-        // The Burn action is NOT available
-        expect(screen.queryByTitle('Toggle Burn')).not.toBeInTheDocument();
+        // Click Mint NFT to show the mint form
+        await userEvent.click(mintNftOption);
 
         // We can mint an NFT if we give it a name and a ticker
         await userEvent.type(
@@ -623,6 +651,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -642,25 +675,31 @@ describe('<Token /> available actions rendered', () => {
         // The supply is correctly rendered
         expect(screen.getByText('100 (var.)')).toBeInTheDocument();
 
-        // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        // Token action bar is available - open dropdown for Mint NFT
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
 
-        // The mint NFT option is available
-        expect(screen.getByTitle('Toggle Mint NFT')).toBeInTheDocument();
-
-        // The mint NFT option is NOT disabled as we have a single mint input
-        expect(screen.getByTitle('Toggle Mint NFT')).toBeEnabled();
+        // The mint NFT option is available and NOT disabled
+        const mintNftOption = screen.getByRole('button', { name: 'Mint NFT' });
+        expect(mintNftOption).toBeInTheDocument();
+        expect(mintNftOption).toBeEnabled();
 
         // The mint NFT switch label does not include the disabled explanation
         expect(
             screen.queryByText('(no NFT mint inputs)'),
         ).not.toBeInTheDocument();
 
-        // The Airdrop action is available
-        expect(screen.getByTitle('Toggle Airdrop')).toBeInTheDocument();
+        // The Airdrop action is available in the dropdown
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
 
-        // The Burn action is NOT available
-        expect(screen.queryByTitle('Toggle Burn')).not.toBeInTheDocument();
+        // The Burn action is NOT available for NFT parent
+        expect(
+            screen.queryByRole('button', { name: 'Burn' }),
+        ).not.toBeInTheDocument();
+
+        // Click Mint NFT to show the mint form (or form may already be visible from default)
+        await userEvent.click(mintNftOption);
 
         // We can mint an NFT if we give it a name and a ticker
         await userEvent.type(
@@ -770,6 +809,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -789,28 +833,28 @@ describe('<Token /> available actions rendered', () => {
         // The wallet balance of this token is correctly rendered
         expect(screen.getByText('1 (fixed)')).toBeInTheDocument();
 
-        // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        // Token action bar is available - open dropdown
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
 
-        // The mint NFT option is available
-        expect(screen.getByTitle('Toggle Mint NFT')).toBeInTheDocument();
-
-        // The mint NFT option is NOT disabled as we have a single mint input
-        expect(screen.getByTitle('Toggle Mint NFT')).toHaveProperty(
-            'disabled',
-            false,
-        );
+        // The mint NFT option is available and NOT disabled
+        const mintNftOption = screen.getByRole('button', { name: 'Mint NFT' });
+        expect(mintNftOption).toBeInTheDocument();
+        expect(mintNftOption).toHaveProperty('disabled', false);
 
         // The mint NFT switch label does not include the disabled explanation
         expect(
             screen.queryByText('(no NFT mint inputs)'),
         ).not.toBeInTheDocument();
 
-        // The Airdrop action is available
-        expect(screen.getByTitle('Toggle Airdrop')).toBeInTheDocument();
+        // The Airdrop action is available in the dropdown
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
 
-        // The Burn action is NOT available
-        expect(screen.queryByTitle('Toggle Burn')).not.toBeInTheDocument();
+        // The Burn action is NOT available for NFT parent
+        expect(
+            screen.queryByRole('button', { name: 'Burn' }),
+        ).not.toBeInTheDocument();
 
         // A child NFT is rendered
         expect(screen.getByText('NFTs in this Collection')).toBeInTheDocument();
@@ -878,6 +922,11 @@ describe('<Token /> available actions rendered', () => {
             screen.getByAltText(`icon for ${slp1NftChildMocks.tokenId}`),
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -903,11 +952,8 @@ describe('<Token /> available actions rendered', () => {
             screen.getByText('The Four Half-Coins of Jin-qua'),
         ).toBeInTheDocument();
 
-        // Token actions are available for NFTs
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
-
-        // On load, default action for NFT is to list it
-        expect(screen.getByTitle('Toggle Sell NFT')).toBeChecked();
+        // Click Sell to show the NFT list form
+        await userEvent.click(screen.getByRole('button', { name: '− Sell' }));
 
         // We see a price input field for listing this NFT
         const priceInput = screen.getByPlaceholderText('Enter NFT list price');
@@ -1018,21 +1064,21 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
-        // On load, default action for NFT is to list it
-        const sellActionSwitch = screen.getByTitle('Toggle Sell NFT');
-        await waitFor(() => expect(sellActionSwitch).toBeChecked());
+        // Click Sell to show the list form (default is Buy)
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Sell' }),
+        );
 
-        // Sending is disabled
-        const sendActionSwitch = screen.getByTitle('Toggle Send');
+        // We see the sell form (price input for listing)
+        expect(
+            screen.getByPlaceholderText('Enter NFT list price'),
+        ).toBeInTheDocument();
 
-        expect(sendActionSwitch).not.toBeChecked();
+        // Switch to Send - open dropdown and click Send
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-        // When we enable Sending, Selling is disabled, and Sending is enabled
-        await userEvent.click(sendActionSwitch);
-        expect(sendActionSwitch).toBeChecked();
-        expect(sellActionSwitch).not.toBeChecked();
-
-        // We see an Address input
+        // We see an Address input (send form)
         const addrInput = screen.getByPlaceholderText('Address');
         expect(addrInput).toBeInTheDocument();
 
@@ -1152,6 +1198,11 @@ describe('<Token /> available actions rendered', () => {
             screen.getByAltText(`icon for ${slp1NftChildMocks.tokenId}`),
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -1178,9 +1229,13 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available for NFTs
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, the default action for an NFT is to list it
+        // Click Sell to show the NFT list form
+        await userEvent.click(screen.getByRole('button', { name: '− Sell' }));
+
         const nftListInput = screen.getByPlaceholderText(
             'Enter NFT list price',
         );
@@ -1294,6 +1349,11 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
+        // Expand Token Details to access the info button
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
+
         // We can click an info icon to learn more about this token type
         await userEvent.click(
             await screen.findByRole('button', {
@@ -1310,20 +1370,31 @@ describe('<Token /> available actions rendered', () => {
         // Close out of the info modal
         await userEvent.click(screen.getByText('OK'));
 
-        // The supply is correctly rendered
-        expect(screen.getByText('111,367.0000 (var.)')).toBeInTheDocument();
+        // The supply is correctly rendered (expand already done for info button)
+        expect(screen.getByText(/111,367\.\d+ \(var\.\)/)).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // We can list, which is also the default action
-        expect(screen.getByTitle('Toggle Sell Token')).toBeEnabled();
-        // We can send
-        expect(screen.getByTitle('Toggle Send')).toBeInTheDocument();
-        // We can burn
-        expect(screen.getByTitle('Toggle Burn')).toBeInTheDocument();
+        // We can list (Sell button is enabled)
+        expect(screen.getByRole('button', { name: '− Sell' })).toBeEnabled();
+        // We can send, airdrop, burn via the more dropdown
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        expect(
+            screen.getByRole('button', { name: 'Send' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Airdrop' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Burn' }),
+        ).toBeInTheDocument();
         // Because we do not have the mint baton for this token, the Mint action is NOT available
-        expect(screen.queryByTitle('Toggle Mint')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Mint' }),
+        ).not.toBeInTheDocument();
     });
     it('We can send an ALP token', async () => {
         const mockedAgora = new MockAgora();
@@ -1365,26 +1436,27 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
-        // Wait for supply and actions to load
-        // The supply is correctly rendered
+        // Expand Token Details and wait for supply to load
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
         expect(
-            await screen.findByText('111,367.0000 (var.)'),
+            await screen.findByText(/111,367\.\d+ \(var\.\)/),
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // Click Send
-        await userEvent.click(screen.getByTitle('Toggle Send'));
+        // Click Send - open dropdown and click Send
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Send' }));
 
-        // Wait for address input to render
+        // Wait for address input to render (send form)
         expect(
             await screen.findByPlaceholderText('Address'),
         ).toBeInTheDocument();
-
-        // On load, default action for ALP is to send it
-        const sendActionSwitch = screen.getByTitle('Toggle Send');
-        await waitFor(() => expect(sendActionSwitch).toBeChecked());
 
         // We see an Address input
         const addrInput = screen.getByPlaceholderText('Address');
@@ -1458,19 +1530,24 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
-        // Wait for supply and actions to load
-        // The supply is correctly rendered
+        // Expand Token Details and wait for supply to load
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
         expect(
-            await screen.findByText('111,367.0000 (var.)'),
+            await screen.findByText(/111,367\.\d+ \(var\.\)/),
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
         // On load, default action for ALP is to list
 
         // Select burn
-        await userEvent.click(screen.getByTitle('Toggle Burn'));
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Burn' }));
 
         await userEvent.type(screen.getByPlaceholderText('Burn Amount'), '1');
 
@@ -1538,19 +1615,24 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
-        // Wait for supply and actions to load
-        // The supply is correctly rendered
+        // Expand Token Details and wait for supply to load
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
         expect(
-            await screen.findByText('111,367.0000 (var.)'),
+            await screen.findByText(/111,367\.\d+ \(var\.\)/),
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
         // On load, default action for ALP is to list
 
         // Select burn
-        await userEvent.click(screen.getByTitle('Toggle Burn'));
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Burn' }));
 
         // Hit max for max burn
         await userEvent.click(screen.getByRole('button', { name: /max/ }));
@@ -1671,17 +1753,22 @@ describe('<Token /> available actions rendered', () => {
             (await screen.findAllByText(new RegExp(tokenName)))[0],
         ).toBeInTheDocument();
 
-        // Wait for supply and actions to load
-        // The supply is correctly rendered
+        // Expand Token Details and wait for supply to load
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
         expect(
-            await screen.findByText('111,367.0000 (var.)'),
+            await screen.findByText(/111,367\.\d+ \(var\.\)/),
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
         // Select mint
-        await userEvent.click(screen.getByTitle('Toggle Mint'));
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Mint' }));
 
         // Max qty
         await userEvent.click(screen.getByRole('button', { name: /max/ }));
@@ -1757,10 +1844,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for ALP is to list it
-        expect(screen.getByTitle('Toggle Sell Token')).toBeEnabled();
+        // Click Sell to show the list form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Sell' }),
+        );
 
         // The list button is disabled on load
         const listButton = await screen.findByRole('button', {
@@ -1775,7 +1866,10 @@ describe('<Token /> available actions rendered', () => {
         expect(priceInput).toBeDisabled();
 
         // Enter token balance as offered qty
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '100');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '100',
+        );
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -1963,10 +2057,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for XECX is to redeem it
-        expect(await screen.findByTitle('Toggle Redeem XECX')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -1987,7 +2085,7 @@ describe('<Token /> available actions rendered', () => {
 
         // Enter amount to redeem
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '5.45',
         );
 
@@ -1999,14 +2097,18 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(screen.getByPlaceholderText('Offered qty'));
+        await userEvent.clear(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+        );
 
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '10000',
         );
 
-        expect(screen.getByPlaceholderText('Offered qty')).toHaveValue(10000);
+        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
+            10000,
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2095,10 +2197,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for XECX is to redeem it
-        expect(screen.getByTitle('Toggle Redeem XECX')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -2109,11 +2215,13 @@ describe('<Token /> available actions rendered', () => {
 
         // We redeem 10k XECX
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '10000',
         );
 
-        expect(screen.getByPlaceholderText('Offered qty')).toHaveValue(10000);
+        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
+            10000,
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2187,10 +2295,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for XECX is to redeem it
-        expect(screen.getByTitle('Toggle Redeem XECX')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -2201,11 +2313,13 @@ describe('<Token /> available actions rendered', () => {
 
         // We redeem 10k XECX
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '10000',
         );
 
-        expect(screen.getByPlaceholderText('Offered qty')).toHaveValue(10000);
+        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
+            10000,
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2297,10 +2411,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for FIRMA is to redeem it
-        expect(screen.getByTitle('Toggle Redeem FIRMA')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -2321,7 +2439,7 @@ describe('<Token /> available actions rendered', () => {
 
         // Enter amount to redeem
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '0.009',
         );
 
@@ -2334,11 +2452,18 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(screen.getByPlaceholderText('Offered qty'));
+        await userEvent.clear(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+        );
 
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '10');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '10',
+        );
 
-        expect(screen.getByPlaceholderText('Offered qty')).toHaveValue(10);
+        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
+            10,
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2449,10 +2574,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for FIRMA is to redeem it
-        expect(screen.getByTitle('Toggle Redeem FIRMA')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -2472,7 +2601,10 @@ describe('<Token /> available actions rendered', () => {
         ).not.toBeInTheDocument();
 
         // Enter amount to redeem
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '10');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '10',
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2554,10 +2686,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for FIRMA is to redeem it
-        expect(screen.getByTitle('Toggle Redeem FIRMA')).toBeEnabled();
+        // Click Redeem to show the redeem form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Redeem' }),
+        );
 
         // The redeem button is disabled on load
         const redeemButton = await screen.findByRole('button', {
@@ -2577,7 +2713,7 @@ describe('<Token /> available actions rendered', () => {
 
         // Enter amount to redeem
         await userEvent.type(
-            screen.getByPlaceholderText('Offered qty'),
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
             '0.009',
         );
 
@@ -2590,11 +2726,18 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(screen.getByPlaceholderText('Offered qty'));
+        await userEvent.clear(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+        );
 
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '10');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '10',
+        );
 
-        expect(screen.getByPlaceholderText('Offered qty')).toHaveValue(10);
+        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
+            10,
+        );
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2667,21 +2810,27 @@ describe('<Token /> available actions rendered', () => {
 
         // Wait for supply and actions to load
         // The supply is correctly rendered and is variable for a MINT VAULT token even though
-        // we have no mint batons
+        // we have no mint batons - expand Token Details to see supply
+        await userEvent.click(
+            screen.getByRole('button', { name: /Token Details/i }),
+        );
         expect(
-            await screen.findByText('10,000,000 (var.)'),
+            await screen.findByText(/10,000,000 \(var\.\)/),
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
         // On load, default action for SLP MINT is to list it
-        expect(screen.getByTitle('Toggle Sell Token')).toBeChecked();
+        expect(
+            screen.getByRole('button', { name: '− Sell' }),
+        ).toBeInTheDocument();
 
-        // Click Send
-        const sendActionSwitch = screen.getByTitle('Toggle Send');
-        await userEvent.click(sendActionSwitch);
-        await waitFor(() => expect(sendActionSwitch).toBeChecked());
+        // Click Send - open dropdown and click Send
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Send' }));
 
         // Wait for address input to render
         expect(
@@ -2723,7 +2872,8 @@ describe('<Token /> available actions rendered', () => {
         // We can also burn an SLP MINT VAULT token
 
         // Select burn
-        await userEvent.click(screen.getByTitle('Toggle Burn'));
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Burn' }));
 
         await userEvent.type(screen.getByPlaceholderText('Burn Amount'), '1');
 
@@ -2806,10 +2956,14 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
-        // On load, default action for MINT vault is to list it
-        expect(screen.getByTitle('Toggle Sell Token')).toBeEnabled();
+        // Click Sell to show the list form
+        await userEvent.click(
+            await screen.findByRole('button', { name: '− Sell' }),
+        );
 
         // The list button is disabled on load
         const listButton = await screen.findByRole('button', {
@@ -2824,7 +2978,10 @@ describe('<Token /> available actions rendered', () => {
         expect(priceInput).toBeDisabled();
 
         // Enter token balance as offered qty
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '100');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '100',
+        );
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -2927,16 +3084,24 @@ describe('<Token /> available actions rendered', () => {
         ).toBeInTheDocument();
 
         // Token actions are available
-        expect(screen.getByTitle('Token Actions')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: '+ Buy' }),
+        ).toBeInTheDocument();
 
         // On load, default action for FIRMA is to redeem it
-        expect(screen.getByTitle('Toggle Redeem FIRMA')).toBeEnabled();
+        expect(screen.getByRole('button', { name: '− Redeem' })).toBeEnabled();
 
-        // We can though manually click to list it
-        await userEvent.click(screen.getByTitle('Toggle Sell Token'));
+        // We can though manually click to list it - use dropdown "List token"
+        await userEvent.click(screen.getByRole('button', { name: '⋯' }));
+        await userEvent.click(
+            screen.getByRole('button', { name: 'List token' }),
+        );
 
         // We can try to list for less than $1
-        await userEvent.type(screen.getByPlaceholderText('Offered qty'), '1');
+        await userEvent.type(
+            screen.getByPlaceholderText('agoraPartialTokenQty'),
+            '1',
+        );
         // List for 1,000 XEC
         await userEvent.type(
             screen.getByPlaceholderText('Enter list price (per token)'),
@@ -2944,8 +3109,9 @@ describe('<Token /> available actions rendered', () => {
         );
 
         // Make sure the min buy is correct
-        await userEvent.clear(screen.getByPlaceholderText('Min qty'));
-        await userEvent.type(screen.getByPlaceholderText('Min qty'), '1');
+        const minQtyInput = screen.getByPlaceholderText('Min qty');
+        await userEvent.clear(minQtyInput);
+        await userEvent.type(minQtyInput, '1');
 
         // The redeem button is disabled on load
         const listButton = await screen.findByRole('button', {

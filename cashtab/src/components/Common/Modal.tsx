@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { CashtabScroll } from './Atoms';
 import { InlineLoader } from './Spinner';
+import { ReactComponent as CloseIcon } from 'assets/close.svg';
 
 const ModalContainer = styled.div<{
     width: number;
@@ -21,11 +22,12 @@ const ModalContainer = styled.div<{
     transform: translate(-50%, -50%);
     max-width: 100%;
     max-height: 100%;
-    border-radius: 9px;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(5px);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.8);
     padding: ${props =>
-        typeof props.paddingPx === 'number' ? props.paddingPx : 12}px;
+        typeof props.paddingPx === 'number' ? props.paddingPx : 30}px;
     z-index: 1000;
     box-sizing: border-box;
     *,
@@ -41,7 +43,8 @@ const ModalTitle = styled.div`
     line-height: var(--text-xl--line-height);
     text-align: center;
     width: 100%;
-    color: ${props => props.theme.accent};
+    color: ${props => props.theme.primaryText};
+    margin-bottom: 20px;
 `;
 
 const MODAL_HEIGHT_DELTA = 68;
@@ -106,12 +109,16 @@ const ModalConfirm = styled(ModalBaseButton)`
         props.disabled
             ? props.theme.buttons.disabled.color
             : props.theme.buttons.primary.color};
-    border: 1px solid ${props => (props.disabled ? 'none' : props.theme.accent)};
     ${props =>
         props.disabled
-            ? `background: ${props.theme.buttons.disabled.background};`
-            : `background-image: ${props.theme.buttons.primary.backgroundImage}; `};
-    background-size: 200% auto;
+            ? `border: none; background: ${props.theme.buttons.disabled.background};`
+            : `
+        border-top: 1px solid ${props.theme.buttons.primary.borderTop};
+        border-left: 1px solid ${props.theme.buttons.primary.borderTop};
+        border-right: 1px solid ${props.theme.buttons.primary.borderBottom};
+        border-bottom: 1px solid ${props.theme.buttons.primary.borderBottom};
+        background: ${props.theme.buttons.primary.background};
+    `};
 `;
 const ModalCancel = styled(ModalBaseButton)`
     color: ${props => props.theme.buttons.primary.color};
@@ -125,18 +132,19 @@ const ModalCancel = styled(ModalBaseButton)`
 `;
 const ModalExit = styled.button`
     position: absolute;
-    font-size: var(--text-lg);
-    line-height: var(--text-lg--line-height);
     z-index: 1001;
-    right: 5px;
-    top: 5px;
+    right: 14px;
+    top: 14px;
     background: none;
     border: none !important;
+    margin: 0;
+    padding: 0;
+    opacity: 0.5;
     color: ${props => props.theme.primaryText};
-    font-weight: bold;
     cursor: pointer;
     :hover {
-        color: ${props => props.theme.secondaryAccent};
+        color: ${props => props.theme.accent};
+        opacity: 1;
     }
 `;
 
@@ -147,6 +155,8 @@ const Overlay = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
 `;
 
 interface ModalProps {
@@ -182,7 +192,14 @@ export const Modal: React.FC<ModalProps> = ({
     return (
         <>
             <ModalContainer width={width} height={height} paddingPx={paddingPx}>
-                <ModalExit onClick={handleCancel}>X</ModalExit>
+                <ModalExit onClick={handleCancel}>
+                    <CloseIcon
+                        title="Close"
+                        width={15}
+                        height={15}
+                        fill="currentColor"
+                    />
+                </ModalExit>
                 <ModalBody
                     height={height}
                     showButtons={showButtons}

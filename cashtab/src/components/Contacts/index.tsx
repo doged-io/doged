@@ -4,11 +4,11 @@
 
 import React, { useState, useContext } from 'react';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 import {
     TrashcanIcon,
     EditIcon,
     SendIcon,
-    ContactsIcon,
 } from 'components/Common/CustomIcons';
 import Modal from 'components/Common/Modal';
 import { ModalInput, InputFlex } from 'components/Common/Inputs';
@@ -21,6 +21,7 @@ import PrimaryButton, {
 } from 'components/Common/Buttons';
 import { getContactAddressError, getContactNameError } from 'validation';
 import {
+    ContactsContainer,
     ContactList,
     ContactsPanel,
     Row,
@@ -28,7 +29,6 @@ import {
     ContactListName,
     ButtonPanel,
 } from 'components/Contacts/styles';
-import { PageHeader } from 'components/Common/Atoms';
 import { CashtabContact } from 'config/CashtabState';
 
 const Contacts = () => {
@@ -242,10 +242,8 @@ const Contacts = () => {
     };
 
     return (
-        <>
-            <PageHeader>
-                Contacts <ContactsIcon />
-            </PageHeader>
+        <ContactsContainer>
+            <ActionButtonRow variant="tools" activeIndex={0} />
             {contactToBeRenamed !== null && (
                 <Modal
                     height={180}
@@ -387,7 +385,7 @@ const Contacts = () => {
                     </ButtonRow>
                 )}
             </ContactList>
-        </>
+        </ContactsContainer>
     );
 };
 

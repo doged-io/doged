@@ -101,7 +101,7 @@ describe('<CashtabTestWrapper />', () => {
             <CashtabTestWrapper chronik={mockedChronik} route="/configure" />,
         );
 
-        // We are at the <Configure/> component, i.e. home page if we do not nav anywhere
-        expect(await screen.findByTitle('Settings')).toBeInTheDocument();
+        // We are at the <Configure/> component
+        expect(await screen.findByText('Display Currency')).toBeInTheDocument();
     });
 });

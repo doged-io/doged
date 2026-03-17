@@ -95,12 +95,6 @@ describe('<SendXec />', () => {
         expect(addressInputEl).toHaveProperty('disabled', false);
         expect(amountInputEl).toHaveProperty('disabled', false);
 
-        // The "Send to Many" switch is not disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            false,
-        );
-
         // The Send button is disabled
         expect(screen.getByRole('button', { name: 'Send' })).toHaveStyle(
             'cursor: not-allowed',
@@ -115,8 +109,9 @@ describe('<SendXec />', () => {
             expect(screen.queryByText(amountErr)).not.toBeInTheDocument();
         }
 
-        // We select op_return_raw input
-        await user.click(screen.getByTitle('Toggle op_return_raw'));
+        // We select op_return_raw input (expand Advanced first, then click op_return_raw)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'op_return_raw' }));
 
         // We do not see the parsed op return raw msg area bc the op_return_raw input is empty
         expect(
@@ -155,12 +150,6 @@ describe('<SendXec />', () => {
 
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
-
-        // The "Send to Many" switch is not disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            false,
-        );
 
         // Amount input is untouched
         expect(amountInputEl).toHaveValue(null);
@@ -214,12 +203,6 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is not disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            false,
-        );
-
         // Amount input is untouched
         expect(amountInputEl).toHaveValue(null);
 
@@ -267,11 +250,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -342,11 +325,11 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
     });
     it('Valid address with valid bip21 query string with valid amount param rejected if amount exceeds wallet balance', async () => {
         // Mock the app with context at the Send screen
@@ -399,11 +382,11 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
     });
     it('Pass a valid address and an invalid bip21 query string', async () => {
         // Mock the app with context at the Send screen
@@ -438,11 +421,11 @@ describe('<SendXec />', () => {
         // The Send To input value matches user input
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input unchanged
         expect(amountInputEl).toHaveValue(null);
@@ -460,8 +443,8 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The Cashtab Msg switch is disabled because we have a querystring address input
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
+        // The Message button is disabled because we have a querystring address input (Advanced already expanded above)
+        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
             'disabled',
             true,
         );
@@ -499,11 +482,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input is untouched
         expect(amountInputEl).toHaveValue(null);
@@ -520,9 +503,10 @@ describe('<SendXec />', () => {
             expect(screen.queryByText(amountErr)).not.toBeInTheDocument();
         }
 
-        const opReturnRawInput = screen.getByPlaceholderText(
+        const opReturnRawInputs = screen.getAllByPlaceholderText(
             `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
         );
+        const opReturnRawInput = opReturnRawInputs[0];
 
         // The op_return_raw input is populated with this op_return_raw
         expect(opReturnRawInput).toHaveValue(op_return_raw);
@@ -535,8 +519,8 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The Cashtab Msg switch is disabled because op_return_raw is set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
+        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
+        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
             'disabled',
             true,
         );
@@ -610,11 +594,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -631,9 +615,10 @@ describe('<SendXec />', () => {
             expect(screen.queryByText(amountErr)).not.toBeInTheDocument();
         }
 
-        const opReturnRawInput = screen.getByPlaceholderText(
+        const opReturnRawInputs = screen.getAllByPlaceholderText(
             `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
         );
+        const opReturnRawInput = opReturnRawInputs[0];
 
         // The op_return_raw input is populated with this op_return_raw
         expect(opReturnRawInput).toHaveValue(op_return_raw);
@@ -646,8 +631,8 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The Cashtab Msg switch is disabled because op_return_raw is set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
+        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
+        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
             'disabled',
             true,
         );
@@ -685,11 +670,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -697,9 +682,10 @@ describe('<SendXec />', () => {
         // The amount input is disabled because it is set by a bip21 query string
         expect(amountInputEl).toHaveProperty('disabled', true);
 
-        const opReturnRawInput = screen.getByPlaceholderText(
+        const opReturnRawInputs = screen.getAllByPlaceholderText(
             `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
         );
+        const opReturnRawInput = opReturnRawInputs[0];
 
         // The op_return_raw input is populated with this op_return_raw
         expect(opReturnRawInput).toHaveValue(op_return_raw);
@@ -709,7 +695,7 @@ describe('<SendXec />', () => {
 
         // We get expected addr validation error
         expect(
-            screen.getByText('Input must be lowercase hex a-f 0-9.'),
+            screen.getAllByText('Input must be lowercase hex a-f 0-9.')[0],
         ).toBeInTheDocument();
 
         // The Send button is disabled as we have valid address and amount params
@@ -717,8 +703,8 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The Cashtab Msg switch is disabled because op_return_raw is set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
+        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
+        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
             'disabled',
             true,
         );
@@ -777,11 +763,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field is not disabled
         expect(addressInputEl).toHaveProperty('disabled', false);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(17);
@@ -789,9 +775,10 @@ describe('<SendXec />', () => {
         // The amount input is disabled because it is set by a bip21 query string
         expect(amountInputEl).toHaveProperty('disabled', true);
 
-        const opReturnRawInput = screen.getByPlaceholderText(
+        const opReturnRawInputs = screen.getAllByPlaceholderText(
             `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
         );
+        const opReturnRawInput = opReturnRawInputs[0];
 
         // The op_return_raw input is populated with this op_return_raw
         expect(opReturnRawInput).toHaveValue(op_return_raw);
@@ -801,7 +788,7 @@ describe('<SendXec />', () => {
 
         // We see expected data in the op_return_raw preview
         expect(
-            screen.getByText('cashtab message with op_return_raw'),
+            screen.getAllByText('cashtab message with op_return_raw')[0],
         ).toBeInTheDocument();
 
         // No addr validation errors on load
@@ -816,12 +803,6 @@ describe('<SendXec />', () => {
         // The Send button is enabled as we have valid address and amount params
         expect(screen.getByRole('button', { name: 'Send' })).not.toHaveStyle(
             'cursor: not-allowed',
-        );
-
-        // The Cashtab Msg switch is disabled because op_return_raw is set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
-            'disabled',
-            true,
         );
 
         // Click Send
@@ -855,20 +836,8 @@ describe('<SendXec />', () => {
             expect(amountInputEl).toHaveValue(null),
         );
 
-        // The "Send to Many" switch is not disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            false,
-        );
-
         // The 'Send To' input field has been cleared
         expect(addressInputEl).toHaveValue('');
-
-        // The Cashtab Msg switch is not disabled because op_return_raw is not set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
-            'disabled',
-            false,
-        );
     });
     it('We can calculate max send amount with and without a cashtab msg, and send a max sat tx with a cashtab msg', async () => {
         // Mock the app with context at the Send screen
@@ -922,8 +891,9 @@ describe('<SendXec />', () => {
         // Amount input is the expected max send for Cashtab's fee and no other outputs
         expect(amountInputEl).toHaveValue(9509.4);
 
-        // Let's add a Cashtab message
-        await user.click(screen.getByTitle('Toggle Cashtab Msg'));
+        // Let's add a Cashtab message (expand Advanced first, then click Message)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'Message' }));
 
         // Confirm that even a msg of blank spaces is added
         await user.type(
@@ -1088,8 +1058,9 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Select multi-send mode
-        await user.click(await screen.findByTitle('Toggle Multisend'));
+        // Select multi-send mode (expand Advanced first, then click Send to many)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'Send to many' }));
 
         const multiSendInputEl = screen.getByPlaceholderText(
             /One address & amount per line/,
@@ -1118,6 +1089,67 @@ describe('<SendXec />', () => {
                 `${explorer.blockExplorerUrl}/tx/${txid}`,
             ),
         );
+    });
+    it('Closing Advanced hides send-to-many controls and op_return_raw preview and clears advanced fields', async () => {
+        const mockedChronik = await initializeCashtabStateForTests(
+            walletWithXecAndTokensActive,
+            localforage,
+        );
+        render(
+            <CashtabTestWrapper
+                chronik={mockedChronik}
+                ecc={ecc}
+                route="/send"
+            />,
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'Send to many' }));
+
+        const multiSendInputEl = screen.getByPlaceholderText(
+            /One address & amount per line/,
+        );
+        const multiSendInput =
+            'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035, 20\necash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6, 22';
+        await user.type(multiSendInputEl, multiSendInput);
+        expect(multiSendInputEl).toHaveValue(multiSendInput);
+
+        await user.click(screen.getByRole('button', { name: 'op_return_raw' }));
+        const opReturnRawInput = screen.getByPlaceholderText(
+            /Enter raw hex to be included with this transaction's OP_RETURN/,
+        );
+        const opReturnHex = '04deadbeef';
+        await user.type(opReturnRawInput, opReturnHex);
+        expect(opReturnRawInput).toHaveValue(opReturnHex);
+
+        expect(screen.getByText('Parsed op_return_raw')).toBeInTheDocument();
+        expect(screen.getByText('Unknown Protocol')).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'op_return_raw' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Parsed op_return_raw'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                /Enter raw hex to be included with this transaction's OP_RETURN/,
+            ),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText(/One address & amount per line/),
+        ).toHaveValue('');
     });
     it('If we type a Cashtab msg, then disable the switch, we send a tx without our typed Cashtab message', async () => {
         // Mock the app with context at the Send screen
@@ -1171,8 +1203,9 @@ describe('<SendXec />', () => {
         // Amount input is the expected max send for Cashtab's fee and no other outputs
         expect(amountInputEl).toHaveValue(9509.4);
 
-        // Let's add a Cashtab message
-        await user.click(screen.getByTitle('Toggle Cashtab Msg'));
+        // Let's add a Cashtab message (expand Advanced first, then click Message)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'Message' }));
 
         // Confirm that even a msg of blank spaces is added
         await user.type(
@@ -1208,8 +1241,8 @@ describe('<SendXec />', () => {
         // Amount input is now the expected max send for Cashtab's fee and a Cashtab Msg output
         expect(amountInputEl).toHaveValue(9508.01);
 
-        // Now we turn the Cashtab Msg switch off without clearing the input field
-        await user.click(screen.getByTitle('Toggle Cashtab Msg'));
+        // Now we turn the Cashtab Msg off without clearing the input field
+        await user.click(screen.getByRole('button', { name: 'Message' }));
 
         // Click max again to recalc max amount
         // Note: for now, it is not expected behavior onMax to recalculate as the tx changes, onMax
@@ -1287,11 +1320,11 @@ describe('<SendXec />', () => {
         // The 'Send To' input field is not disabled
         expect(addressInputEl).toHaveProperty('disabled', false);
 
-        // The "Send to Many" switch is disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // The "Send to many" button is disabled (expand Advanced first to see it)
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        expect(
+            screen.getByRole('button', { name: 'Send to many' }),
+        ).toHaveProperty('disabled', true);
 
         // Because we have multiple outputs, the amount input is not displayed
         expect(screen.queryByPlaceholderText('Amount')).not.toBeInTheDocument();
@@ -1301,9 +1334,10 @@ describe('<SendXec />', () => {
             screen.getByText('BIP21: Sending 1,251.56 XEC to 2 outputs'),
         ).toBeInTheDocument();
 
-        const opReturnRawInput = screen.getByPlaceholderText(
+        const opReturnRawInputs = screen.getAllByPlaceholderText(
             `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
         );
+        const opReturnRawInput = opReturnRawInputs[0];
 
         // The op_return_raw input is populated with this op_return_raw
         expect(opReturnRawInput).toHaveValue(op_return_raw);
@@ -1313,7 +1347,7 @@ describe('<SendXec />', () => {
 
         // We see expected data in the op_return_raw preview
         expect(
-            screen.getByText('cashtab message with op_return_raw'),
+            screen.getAllByText('cashtab message with op_return_raw')[0],
         ).toBeInTheDocument();
 
         // No addr validation errors on load
@@ -1328,12 +1362,6 @@ describe('<SendXec />', () => {
         // The Send button is enabled as we have valid address and amount params
         expect(screen.getByRole('button', { name: 'Send' })).not.toHaveStyle(
             'cursor: not-allowed',
-        );
-
-        // The Cashtab Msg switch is disabled because op_return_raw is set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
-            'disabled',
-            true,
         );
 
         // We see a summary table of addresses and amounts
@@ -1373,20 +1401,8 @@ describe('<SendXec />', () => {
         ).toBeInTheDocument();
         // Amount input is reset
         expect(await screen.findByPlaceholderText('Amount')).toHaveValue(null);
-        // The "Send to Many" switch is not disabled
-        expect(screen.getByTitle('Toggle Multisend')).toHaveProperty(
-            'disabled',
-            false,
-        );
-
         // The 'Send To' input field has been cleared
         expect(addressInputEl).toHaveValue('');
-
-        // The Cashtab Msg switch is not disabled because op_return_raw is not set
-        expect(screen.getByTitle('Toggle Cashtab Msg')).toHaveProperty(
-            'disabled',
-            false,
-        );
     });
     it('Entering a valid bip21 query string for a token send tx does not render a populated token tx and shows a query error if Cashtab is unable to fetch the token info', async () => {
         // Mock the app with context at the Send screen
@@ -1431,21 +1447,17 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: addressInput } });
         fireEvent.change(addressInputEl, { target: { value: addressInput } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(addressInput);
         });
+
+        // The "Send to many" button should not be visible in token mode (XEC form not shown)
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // The token mode 'Send To' input field is not disabled
         expect(tokenAddressInputEl).toHaveProperty('disabled', false);
@@ -1529,21 +1541,17 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: addressInput } });
         fireEvent.change(addressInputEl, { target: { value: addressInput } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(addressInput);
         });
+
+        // The "Send to many" button should not be visible in token mode (XEC form not shown)
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // The token mode 'Send To' input field is not disabled
         expect(tokenAddressInputEl).toHaveProperty('disabled', false);
@@ -1578,10 +1586,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches are not visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -1639,21 +1647,17 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: addressInput } });
         fireEvent.change(addressInputEl, { target: { value: addressInput } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(addressInput);
         });
+
+        // The "Send to many" button should not be visible in token mode (XEC form not shown)
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // The token mode 'Send To' input field is not disabled (user-entered BIP21)
         expect(tokenAddressInputEl).toHaveProperty('disabled', false);
@@ -1744,21 +1748,17 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: addressInput } });
         fireEvent.change(addressInputEl, { target: { value: addressInput } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(addressInput);
         });
+
+        // The "Send to many" button should not be visible in token mode (XEC form not shown)
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // The token mode 'Send To' input field is not disabled
         expect(tokenAddressInputEl).toHaveProperty('disabled', false);
@@ -1793,10 +1793,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches are not visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -1858,28 +1858,28 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -1904,9 +1904,7 @@ describe('<SendXec />', () => {
         // Verify the selected token ticker is displayed in the selected token display
         // The search input should no longer be visible (replaced by SelectedTokenDisplay)
         expect(
-            screen.queryByPlaceholderText(
-                'Start typing a token ticker or name',
-            ),
+            screen.queryByPlaceholderText('Search by token ticker or name'),
         ).not.toBeInTheDocument();
         // The token ticker should be visible in the selected token display
         expect(screen.getByText(tokenTicker)).toBeInTheDocument();
@@ -1929,10 +1927,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches should not be visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -1997,28 +1995,28 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -2043,9 +2041,7 @@ describe('<SendXec />', () => {
         // Verify the selected token ticker is displayed in the selected token display
         // The search input should no longer be visible (replaced by SelectedTokenDisplay)
         expect(
-            screen.queryByPlaceholderText(
-                'Start typing a token ticker or name',
-            ),
+            screen.queryByPlaceholderText('Search by token ticker or name'),
         ).not.toBeInTheDocument();
         // The token ticker should be visible in the selected token display
         expect(screen.getByText(tokenTicker)).toBeInTheDocument();
@@ -2068,16 +2064,18 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches should not be visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
-        // EMPP switches should not be visible for SLP tokens
+        // EMPP buttons should not be visible for SLP tokens (only ALP tokens have them)
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg Token'),
+            screen.queryByRole('button', { name: 'Cashtab Msg' }),
         ).not.toBeInTheDocument();
-        expect(screen.queryByTitle('Toggle empp_raw')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'empp_raw' }),
+        ).not.toBeInTheDocument();
 
         // Click Send
         await user.click(sendButton);
@@ -2177,28 +2175,28 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -2223,9 +2221,7 @@ describe('<SendXec />', () => {
         // Verify the selected token ticker is displayed in the selected token display
         // The search input should no longer be visible (replaced by SelectedTokenDisplay)
         expect(
-            screen.queryByPlaceholderText(
-                'Start typing a token ticker or name',
-            ),
+            screen.queryByPlaceholderText('Search by token ticker or name'),
         ).not.toBeInTheDocument();
         // The token ticker should be visible in the selected token display
         expect(screen.getByText(tokenTicker)).toBeInTheDocument();
@@ -2248,10 +2244,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches should not be visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -2349,28 +2345,28 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -2395,9 +2391,7 @@ describe('<SendXec />', () => {
         // Verify the selected token ticker is displayed in the selected token display
         // The search input should no longer be visible (replaced by SelectedTokenDisplay)
         expect(
-            screen.queryByPlaceholderText(
-                'Start typing a token ticker or name',
-            ),
+            screen.queryByPlaceholderText('Search by token ticker or name'),
         ).not.toBeInTheDocument();
         // The token ticker should be visible in the selected token display
         expect(screen.getByText(tokenTicker)).toBeInTheDocument();
@@ -2420,10 +2414,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches should not be visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -2521,28 +2515,28 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -2567,9 +2561,7 @@ describe('<SendXec />', () => {
         // Verify the selected token ticker is displayed in the selected token display
         // The search input should no longer be visible (replaced by SelectedTokenDisplay)
         expect(
-            screen.queryByPlaceholderText(
-                'Start typing a token ticker or name',
-            ),
+            screen.queryByPlaceholderText('Search by token ticker or name'),
         ).not.toBeInTheDocument();
         // The token ticker should be visible in the selected token display
         expect(screen.getByText(tokenTicker)).toBeInTheDocument();
@@ -2592,10 +2584,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches should not be visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -2677,21 +2669,17 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: addressInput } });
         fireEvent.change(addressInputEl, { target: { value: addressInput } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // The "Send to Many" switch should not be visible in token mode
-        expect(screen.queryByTitle('Toggle Multisend')).not.toBeInTheDocument();
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(addressInput);
         });
+
+        // The "Send to many" button should not be visible in token mode (XEC form not shown)
+        expect(
+            screen.queryByRole('button', { name: 'Send to many' }),
+        ).not.toBeInTheDocument();
 
         // The token mode 'Send To' input field is not disabled
         expect(tokenAddressInputEl).toHaveProperty('disabled', false);
@@ -2726,10 +2714,10 @@ describe('<SendXec />', () => {
 
         // The Cashtab Msg and op_return_raw switches are not visible in token mode
         expect(
-            screen.queryByTitle('Toggle Cashtab Msg'),
+            screen.queryByRole('button', { name: 'Message' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByTitle('Toggle op_return_raw'),
+            screen.queryByRole('button', { name: 'op_return_raw' }),
         ).not.toBeInTheDocument();
 
         // Click Send
@@ -2796,15 +2784,9 @@ describe('<SendXec />', () => {
         fireEvent.input(addressInputEl, { target: { value: bip21Str } });
         fireEvent.change(addressInputEl, { target: { value: bip21Str } });
 
-        // Wait for token mode to be activated (toggle should be on "Tokens")
-        await waitFor(() => {
-            const tokenModeSwitch = screen.getByTitle('Toggle XEC/Token Mode');
-            expect(tokenModeSwitch).toHaveProperty('checked', true);
-        });
-
-        // Get the token mode address input field
-        const tokenAddressInputEl = screen.getByPlaceholderText('Address');
-        // The token mode 'Send To' input field has this bip21 query string as a value
+        // Wait for token mode to be activated (address input populated with bip21)
+        const tokenAddressInputEl =
+            await screen.findByPlaceholderText('Address');
         await waitFor(() => {
             expect(tokenAddressInputEl).toHaveValue(bip21Str);
         });
@@ -2892,25 +2874,23 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -2932,9 +2912,11 @@ describe('<SendXec />', () => {
         // Verify EMPP switches are visible for ALP tokens
         await waitFor(() => {
             expect(
-                screen.getByTitle('Toggle Cashtab Msg Token'),
+                screen.getByRole('button', { name: 'Cashtab Msg' }),
             ).toBeInTheDocument();
-            expect(screen.getByTitle('Toggle empp_raw')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'empp_raw' }),
+            ).toBeInTheDocument();
         });
 
         // Enter address
@@ -2950,8 +2932,10 @@ describe('<SendXec />', () => {
         expect(amountInputEl).toHaveValue(token_decimalized_qty);
 
         // Enable Cashtab Msg switch
-        const cashtabMsgSwitch = screen.getByTitle('Toggle Cashtab Msg Token');
-        await user.click(cashtabMsgSwitch);
+        const cashtabMsgButton = screen.getByRole('button', {
+            name: 'Cashtab Msg',
+        });
+        await user.click(cashtabMsgButton);
 
         // Wait for cashtab msg textarea to appear
         await waitFor(() => {
@@ -3056,25 +3040,23 @@ describe('<SendXec />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Toggle to token mode
-        const tokenModeSwitch = await screen.findByTitle(
-            'Toggle XEC/Token Mode',
-        );
-        expect(tokenModeSwitch).toBeInTheDocument();
-        await user.click(tokenModeSwitch);
+        // Switch to token mode via Send Token link
+        const sendTokenLink = await screen.findByRole('link', {
+            name: /Send Token/i,
+        });
+        expect(sendTokenLink).toBeInTheDocument();
+        await user.click(sendTokenLink);
 
         // Wait for token mode UI to appear
         await waitFor(() => {
             expect(
-                screen.getByPlaceholderText(
-                    'Start typing a token ticker or name',
-                ),
+                screen.getByPlaceholderText('Search by token ticker or name'),
             ).toBeInTheDocument();
         });
 
         // Search for the token by ticker
         const tokenSearchInput = screen.getByPlaceholderText(
-            'Start typing a token ticker or name',
+            'Search by token ticker or name',
         );
         await user.type(tokenSearchInput, tokenTicker);
 
@@ -3106,8 +3088,10 @@ describe('<SendXec />', () => {
         expect(amountInputEl).toHaveValue(token_decimalized_qty);
 
         // Enable empp_raw switch
-        const emppRawSwitch = screen.getByTitle('Toggle empp_raw');
-        await user.click(emppRawSwitch);
+        const emppRawButton = screen.getByRole('button', {
+            name: 'empp_raw',
+        });
+        await user.click(emppRawButton);
 
         // Wait for empp_raw textarea to appear
         await waitFor(() => {

@@ -151,40 +151,29 @@ describe('<Configure />', () => {
             />,
         );
 
-        // Default route is home
+        // Default route is /configure, we are already on Settings screen
         await waitFor(() =>
             expect(
                 screen.queryByTitle('Cashtab Loading'),
             ).not.toBeInTheDocument(),
         );
 
-        // Click the hamburger menu
-        await user.click(screen.queryByTitle('Show Other Screens')!);
+        expect(screen.getByText('Display Currency')).toBeInTheDocument();
 
-        // Navigate to Settings screen
+        // Send confirmations are disabled by default - enable via SegmentedControl
+        await user.click(screen.getByRole('button', { name: 'On' }));
+
+        // Navigate to the Send screen via footer nav
         await user.click(
             screen.getByRole('button', {
-                name: /Settings/i,
-            }),
-        );
-
-        // Now we see the Settings screen
-        expect(screen.getByTitle('Settings')).toBeInTheDocument();
-
-        // Send confirmations are disabled by default
-
-        // Enable send confirmations
-        await user.click(screen.getByTitle('Toggle Send Confirmations'));
-
-        // Navigate to the Send screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Send Screen/i,
+                name: 'Send Screen',
             }),
         );
 
         // Now we see the Send screen
-        expect(screen.getByTitle('Toggle Multisend')).toBeInTheDocument();
+        expect(
+            await screen.findByPlaceholderText('Address'),
+        ).toBeInTheDocument();
 
         // Fill out to and amount
         await user.type(
@@ -288,7 +277,7 @@ describe('<Configure />', () => {
         );
 
         // Now we see the Settings screen
-        expect(screen.getByTitle('Settings')).toBeInTheDocument();
+        expect(screen.getByText('Display Currency')).toBeInTheDocument();
 
         // We DO NOT see VIP settings
         expect(screen.queryByText('VIP Settings')).not.toBeInTheDocument();
@@ -375,7 +364,7 @@ describe('<Configure />', () => {
         );
 
         // Now we see the Settings screen
-        expect(screen.getByTitle('Settings')).toBeInTheDocument();
+        expect(screen.getByText('Display Currency')).toBeInTheDocument();
 
         // We see VIP status
         expect(screen.getByText('Cashtab VIP 🏆')).toBeInTheDocument();

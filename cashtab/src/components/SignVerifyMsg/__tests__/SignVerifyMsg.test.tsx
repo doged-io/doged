@@ -72,8 +72,8 @@ describe('<SignVerifyMsg />', () => {
             'test message',
         );
 
-        // Click the Sign button (the Switch is also found by this identifier, btn is at index 0 here)
-        await user.click(screen.getAllByRole('button', { name: /Sign/ })[0]);
+        // Click the Sign button (SegmentedControl has "✍️ Sign" segment; use exact match for submit button)
+        await user.click(screen.getByRole('button', { name: /^Sign$/ }));
 
         expect(await screen.findByText('Message Signed')).toBeInTheDocument();
 
@@ -103,8 +103,8 @@ describe('<SignVerifyMsg />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Click the switch to show verify forms
-        await user.click(screen.getByTitle('Toggle Sign Verify'));
+        // Click the Verify segment to show verify forms (SegmentedControl replaced Switch)
+        await user.click(screen.getByRole('button', { name: '✅ Verify' }));
 
         // Insert message to be signed
         await user.type(
@@ -124,9 +124,8 @@ describe('<SignVerifyMsg />', () => {
             'H6Rde63iJ93n/I7gUac/xheY3mL1eAt2uIR54fgre6O3Om8ogWe+DASNQGDDBkNY43JIGwAIPq9lmMJjeykYFNQ=',
         );
 
-        // Click the Verify button
-        // react testing library also finds the switch with this, button is at index 0
-        await user.click(screen.getAllByRole('button', { name: /Verify/ })[0]);
+        // Click the Verify submit button (SegmentedControl segment is [0], submit button is [1])
+        await user.click(screen.getAllByRole('button', { name: /Verify/ })[1]);
 
         expect(
             screen.getByText(
@@ -154,8 +153,8 @@ describe('<SignVerifyMsg />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Click the switch to show verify forms
-        await user.click(screen.getByTitle('Toggle Sign Verify'));
+        // Click the Verify segment to show verify forms (SegmentedControl replaced Switch)
+        await user.click(screen.getByRole('button', { name: '✅ Verify' }));
 
         // Insert message to be signed
         await user.type(
@@ -175,9 +174,8 @@ describe('<SignVerifyMsg />', () => {
             'H6Rde63iJ93n/I7gUac/xheY3mL1eAt2uIR54fgre6O3Om8ogWe+DASNQGDDBkNY43JIGwAIPq9lmMJjeykYFNQ=',
         );
 
-        // Click the Verify button
-        // react testing library also finds the switch with this, button is at index 0
-        await user.click(screen.getAllByRole('button', { name: /Verify/ })[0]);
+        // Click the Verify submit button (SegmentedControl segment is [0], submit button is [1])
+        await user.click(screen.getAllByRole('button', { name: /Verify/ })[1]);
 
         expect(
             screen.getByText('Signature does not match address and message'),
@@ -203,8 +201,8 @@ describe('<SignVerifyMsg />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Click the switch to show verify forms
-        await user.click(screen.getByTitle('Toggle Sign Verify'));
+        // Click the Verify segment to show verify forms (SegmentedControl replaced Switch)
+        await user.click(screen.getByRole('button', { name: '✅ Verify' }));
 
         // Insert a valid message
         await user.type(

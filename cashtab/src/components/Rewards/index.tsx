@@ -6,16 +6,16 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
     Wrapper,
     ContentDiv,
+    ButtonContainer,
     GameCardsContainer,
     GameCard,
 } from 'components/Rewards/styled';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 import PrimaryButton from 'components/Common/Buttons';
 import { toast } from 'react-toastify';
 import { token as tokenConfig } from 'config/token';
 import { InlineLoader } from 'components/Common/Spinner';
-import { PageHeader } from 'components/Common/Atoms';
-import { RewardIcon } from 'components/Common/CustomIcons';
 import TokenIcon from 'components/Etokens/TokenIcon';
 import { EDJ_TOKEN_ID, BLITZ_CHIPS_TOKEN_ID } from 'constants/tokens';
 
@@ -186,13 +186,18 @@ const Rewards = () => {
         return () => clearInterval(interval);
     }, [eligibleAgainTimestamp]);
 
+    const showRewardsLink =
+        import.meta.env.VITE_BUILD_ENV !== 'extension' &&
+        import.meta.env.VITE_TESTNET !== 'true';
+
     return (
         <Wrapper title="Rewards">
-            <PageHeader>
-                Rewards <RewardIcon />
-            </PageHeader>
+            <ActionButtonRow
+                variant="tools"
+                activeIndex={showRewardsLink ? 3 : -1}
+            />
             {import.meta.env.VITE_TESTNET !== 'true' ? (
-                <>
+                <ButtonContainer>
                     <PrimaryButton
                         disabled={!isEligible || claimPending}
                         onClick={handleClaim}
@@ -211,7 +216,7 @@ const Rewards = () => {
                             </center>
                         )}
                     </PrimaryButton>
-                </>
+                </ButtonContainer>
             ) : (
                 <p>Token Rewards are not enabled for Testnet</p>
             )}

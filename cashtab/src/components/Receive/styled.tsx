@@ -53,6 +53,9 @@ export const FirmaRow = styled.div<{ qrWidth: number }>`
 
 export const ReceiveCtn = styled.div`
     width: 100%;
+    @media (max-width: 768px) {
+        padding: 0 10px;
+    }
     h2 {
         color: ${props => props.theme.primaryText};
         margin: 0 0 20px;
@@ -60,8 +63,6 @@ export const ReceiveCtn = styled.div`
     }
     ${ReceiveFormFlex} {
         padding-top: 12px;
-        background: ${props => props.theme.primaryBackground};
         padding: 20px;
-        border-radius: 10px;
     }
 `;

@@ -13,7 +13,7 @@ import {
     isValidXecAirdrop,
     isValidAirdropExclusionArray,
 } from 'validation';
-import { SwitchLabel, PageHeader } from 'components/Common/Atoms';
+import { SwitchLabel } from 'components/Common/Atoms';
 import {
     getAirdropTx,
     getEqualAirdropTx,
@@ -24,11 +24,18 @@ import Communist from 'assets/communist.png';
 import { toast } from 'react-toastify';
 import CashtabSwitch from 'components/Common/Switch';
 import { Input, TextArea, InputFlex } from 'components/Common/Inputs';
-import { CopyPasteIcon, AirdropIcon } from 'components/Common/CustomIcons';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
+import { CopyPasteIcon } from 'components/Common/CustomIcons';
 import { getTokenGenesisInfo } from 'chronik';
 import { encodeOutputScript } from 'ecashaddrjs';
 import Spinner from 'components/Common/Spinner';
-import { AirdropForm, FormRow, SwitchHolder, AirdropTitle } from './styled';
+import {
+    AirdropForm,
+    FormRow,
+    SwitchHolder,
+    AirdropTitle,
+    AirdropContainer,
+} from './styled';
 import { CashtabCachedTokenInfo } from 'config/CashtabCache';
 
 const Airdrop = () => {
@@ -411,16 +418,15 @@ const Airdrop = () => {
     }
 
     return (
-        <>
-            <PageHeader>
-                Airdrop <AirdropIcon />
-            </PageHeader>
+        <AirdropContainer>
+            <ActionButtonRow variant="tools" activeIndex={1} />
             {calculatingAirdrop && <Spinner />}
             <AirdropForm>
                 <FormRow>
                     <InputFlex>
                         <Input
                             placeholder="Enter the eToken ID"
+                            label="Token ID"
                             name="tokenId"
                             value={formData.tokenId}
                             handleInput={handleTokenIdInput}
@@ -436,6 +442,7 @@ const Airdrop = () => {
                     <InputFlex>
                         <Input
                             placeholder="Enter the total XEC airdrop"
+                            label="Total XEC airdrop"
                             name="totalAirdrop"
                             type="number"
                             value={formData.totalAirdrop}
@@ -593,7 +600,7 @@ const Airdrop = () => {
                     </>
                 )}
             </AirdropForm>
-        </>
+        </AirdropContainer>
     );
 };
 

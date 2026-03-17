@@ -266,9 +266,9 @@ describe('<Home />', () => {
         );
         await screen.findByText('Do not share your backup with anyone.');
 
-        // Token rewards button is present
+        // Token rewards button is present (multiple wallets)
         const tokenRewardsButton = screen.getByRole('button', {
-            name: /Claim Token Rewards/,
+            name: /You've earned Token Rewards/,
         });
 
         expect(tokenRewardsButton).toBeInTheDocument();
@@ -276,15 +276,17 @@ describe('<Home />', () => {
         // Free XEC button is not present, because the user has more than 1 wallet
         expect(
             screen.queryByRole('button', {
-                name: /Claim Free XEC/,
+                name: /Free XEC Welcome Bonus/,
             }),
         ).not.toBeInTheDocument();
 
         // Token rewards button button is NOT disabled
         expect(tokenRewardsButton).toHaveProperty('disabled', false);
 
-        // Receive QR code is rendered
-        expect(screen.getByTitle('Receive')).toBeInTheDocument();
+        // Receive link is rendered (ActionButtonRow on Home)
+        expect(
+            screen.getByRole('link', { name: /Receive/ }),
+        ).toBeInTheDocument();
 
         // We can claim an airdrop on a new wallet
         await user.click(tokenRewardsButton);
@@ -373,9 +375,9 @@ describe('<Home />', () => {
         // reCAPTCHA component is rendered for XEC airdrop
         expect(screen.getByTestId('mock-recaptcha')).toBeInTheDocument();
 
-        // Airdrop button is present
+        // Airdrop button is present (single wallet)
         const airdropButton = screen.getByRole('button', {
-            name: /Claim Free XEC/,
+            name: /Free XEC Welcome Bonus/,
         });
 
         expect(airdropButton).toBeInTheDocument();
@@ -383,15 +385,17 @@ describe('<Home />', () => {
         // Claim token rewards button is not present, because the user has only 1 wallet
         expect(
             screen.queryByRole('button', {
-                name: /Claim Token Rewards/,
+                name: /You've earned Token Rewards/,
             }),
         ).not.toBeInTheDocument();
 
         // Airdrop button is NOT disabled (reCAPTCHA token is present)
         expect(airdropButton).toHaveProperty('disabled', false);
 
-        // Receive QR code is rendered
-        expect(screen.getByTitle('Receive')).toBeInTheDocument();
+        // Receive link is rendered (ActionButtonRow on Home)
+        expect(
+            screen.getByRole('link', { name: /Receive/ }),
+        ).toBeInTheDocument();
 
         // We can claim an airdrop on a new wallet
         await user.click(airdropButton);

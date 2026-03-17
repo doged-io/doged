@@ -7,11 +7,12 @@ import { Link } from 'react-router';
 import { XecTxType } from 'chronik';
 
 export const TxWrapper = styled.div`
-    background-color: ${props => props.theme.secondaryBackground}B3;
+    background-color: ${props => props.theme.txRowBackground};
     display: flex;
     flex-direction: column;
-    padding: 12px;
-    border-radius: 6px;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
     svg {
         width: 33px;
         height: 33px;
@@ -103,8 +104,8 @@ export const IconCtn = styled.div<{ receive?: boolean }>`
     border-radius: 50%;
     padding: 12px;
     svg {
-        width: 25px;
-        height: 25px;
+        width: 18px;
+        height: 18px;
     }
     @media (max-width: 768px) {
         padding: 8px;
@@ -120,7 +121,11 @@ export const TxDescCol = styled.div`
 `;
 // Top row of TxDescCol
 export const TxDescSendRcvMsg = styled.div`
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: var(--text-base);
+    font-weight: 700;
 `;
 export const TxDesc = styled.div`
     display: flex;
@@ -136,15 +141,13 @@ export const Timestamp = styled.div`
     align-items: center;
     width: 100%;
     text-align: left;
-    font-size: var(--text-sm);
-    line-height: var(--text-sm--line-height);
     color: ${props => props.theme.secondaryText};
-    margin-top: 4px;
-    opacity: 0.8;
+    margin-top: 2px;
+    font-size: 12px;
 `;
 
 export const TimestampSeperator = styled.div`
-    margin: 0 8px;
+    margin: 0 6px;
 `;
 export const Ellipsis = styled.div`
     @keyframes blink {
@@ -180,15 +183,16 @@ export const AmountCol = styled.div`
 `;
 // Top row of TxAmountCol
 export const AmountTop = styled.div`
-    font-weight: 600;
+    font-weight: 700;
+    font-size: var(--text-base);
     :hover {
         text-decoration: underline;
     }
 `;
 export const AmountBottom = styled.div`
     color: ${props => props.theme.secondaryText};
-    font-size: var(--text-sm);
-    line-height: var(--text-sm--line-height);
+    margin-top: 2px;
+    font-size: 12px;
 `;
 export const CashtabMsg = styled.div`
     display: flex;
@@ -241,14 +245,19 @@ export const ReplyLink = styled(PanelLink)`
 `;
 export const AddressLink = styled.a`
     padding: 0 3px;
+    color: ${props => props.theme.accent};
+    &:hover {
+        color: ${props => props.theme.accent};
+    }
 `;
 export const AppAction = styled.div<{ type?: string }>`
     word-break: break-all;
     ${props => props.type === 'Received' && Incoming}
-    background: ${props => props.theme.primaryText}10;
-    background: ${props => props.theme.primaryBackground};
+    /* background: rgba(255, 255, 255, 0.02);
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 6px; */
+    padding: 10px 0 0px 10px;
+    border-top: 1px solid ${props => props.theme.border};
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -287,18 +296,29 @@ export const TokenActionHolder = styled.div``;
 export const TokenInfoCol = styled.div`
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
+    text-align: left;
+    margin-left: 6px;
 `;
 export const UnknownMsgColumn = styled.div`
     display: flex;
     flex-direction: column;
     text-align: left;
 `;
-export const TokenType = styled.div``;
+export const TokenType = styled.div`
+    font-size: var(--text-sm);
+`;
 export const TokenName = styled(PanelLink)`
-    text-decoration: none;
+    font-size: var(--text-sm);
+    :hover {
+        color: ${props => props.theme.secondaryText};
+        text-decoration: underline;
+    }
 `;
 export const TokenTicker = styled.div``;
-export const TokenDesc = styled.div``;
+export const TokenDesc = styled.div`
+    font-size: var(--text-sm);
+`;
 export const ActionLink = styled.a``;
 
 export const TokenAction = styled(AppAction)<{

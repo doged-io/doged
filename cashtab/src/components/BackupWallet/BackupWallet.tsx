@@ -2,36 +2,32 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import styled from 'styled-components';
 import CopyToClipboard from 'components/Common/CopyToClipboard';
 import Seed from 'components/Common/Seed';
 import Switch from 'components/Common/Switch';
 import { getUserLocale } from 'helpers';
-import { Alert, Info, PageHeader } from 'components/Common/Atoms';
-import { WalletIcon } from 'components/Common/CustomIcons';
+import { Alert, Info } from 'components/Common/Atoms';
+import { ReactComponent as WarningIcon } from 'assets/warning.svg';
+import {
+    SettingsPageHeaderLink,
+    BackIcon,
+} from 'components/Configure/Configure';
 
 const BackupFlex = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     color: ${props => props.theme.primaryText};
-    background: ${props => props.theme.primaryBackground};
     padding: 20px;
     padding-bottom: 60px;
-    border-radius: 10px;
-    @media (max-width: 768px) {
-        border-radius: 0px;
-    }
+    width: 100%;
 `;
 const FlexRow = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 40px 0 0px;
-    background: ${props => props.theme.secondaryBackground};
+    background: ${props => props.theme.inputBackground};
     padding: 20px;
     border-radius: 10px;
     border: 1px solid ${props => props.theme.border};
@@ -45,6 +41,20 @@ const SwitchRow = styled.div`
     margin-top: 20px;
 `;
 const SwitchLabel = styled.div``;
+
+const AlertContent = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    svg {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        margin-top: 2px;
+        fill: #d8c705;
+    }
+`;
 
 const BackupWallet = () => {
     const ContextValue = useContext(WalletContext);
@@ -67,25 +77,32 @@ const BackupWallet = () => {
 
     return (
         <BackupFlex>
-            <PageHeader>
-                Wallet Backup <WalletIcon />
-            </PageHeader>
+            <SettingsPageHeaderLink
+                to="/configure"
+                aria-label="Back to settings"
+            >
+                <BackIcon aria-hidden="true" />
+                Wallet Backup
+            </SettingsPageHeaderLink>
             <Info>
                 ℹ️ Your seed phrase is the only way to restore your wallet.
                 Write it down. Keep it safe.
             </Info>
 
             <Alert className="notranslate">
-                <b>
-                    ⚠️ NEVER SHARE YOUR SEED PHRASE
-                    {!userLocale.includes('en-') && (
-                        <>
-                            <br />
-                            <br />
-                            ⚠️ STORE YOUR SEED PHRASE IN ENGLISH
-                        </>
-                    )}
-                </b>
+                <AlertContent>
+                    <WarningIcon title="Warning" aria-hidden="true" />
+                    <b>
+                        NEVER SHARE YOUR SEED PHRASE
+                        {!userLocale.includes('en-') && (
+                            <>
+                                <br />
+                                <br />
+                                STORE YOUR SEED PHRASE IN ENGLISH
+                            </>
+                        )}
+                    </b>
+                </AlertContent>
             </Alert>
 
             <SwitchRow>

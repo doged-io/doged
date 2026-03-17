@@ -75,18 +75,16 @@ export const SwitchLabel = styled.div`
 `;
 
 export const Alert = styled.div<{ noWordBreak?: boolean }>`
-    background-color: #fff2f0;
-    border-radius: 12px;
-    color: red;
+    background-color: #454111;
+    border-radius: 8px;
     padding: 12px;
-    margin: 12px 0;
     ${props =>
         typeof props.noWordBreak === 'undefined' && `word-break: break-all`};
 `;
 export const Info = styled.div`
-    background-color: #fff2f0;
-    border-radius: 12px;
-    color: ${props => props.theme.accent};
+    background-color: ${props => props.theme.secondaryBackground};
+    border-radius: 8px;
+    color: ${props => props.theme.primaryText};
     padding: 12px;
     margin: 12px 0;
 `;

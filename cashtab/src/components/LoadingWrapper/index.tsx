@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 import { HashRouter as Router } from 'react-router';
 import { ChronikClient, ConnectionStrategy } from 'chronik-client';
@@ -26,6 +27,16 @@ const LoadingWrapper: React.FC<LoadingWrapperProps> = ({ ecc }) => {
     const [agora, setAgora] = useState<null | Agora>(null);
     const [error, setError] = useState<null | string>(null);
     const [gaEnabled, setGaEnabled] = useState(false);
+
+    // Set platform for CSS (skip body safe-area on native - MainActivity handles insets)
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            document.body.setAttribute(
+                'data-platform',
+                Capacitor.getPlatform(),
+            );
+        }
+    }, []);
 
     useEffect(() => {
         // Initialize Google Analytics

@@ -8,13 +8,12 @@ import WalletHeaderActions from 'components/Common/WalletHeaderActions';
 import { supportedFiatCurrencies } from 'config/CashtabSettings';
 import { getUserLocale } from 'helpers';
 import appConfig from 'config/app';
-import Cashtab from 'assets/cashtab_xec.png';
 import PopOut from 'assets/popout.png';
 import { toXec } from 'wallet';
 import { FIRMA } from 'constants/tokens';
-import Ecash from 'assets/ecash.png';
-import Staking from 'assets/staking.png';
-import Savings from 'assets/savings.png';
+import { ReactComponent as EcashIcon } from 'assets/ecash-icon.svg';
+import { ReactComponent as StakeIcon } from 'assets/stake.svg';
+import { ReactComponent as SavingsIcon } from 'assets/dollar-sign.svg';
 import { sortWalletsForDisplay } from 'wallet';
 import {
     HeaderCtn,
@@ -22,15 +21,12 @@ import {
     WalletSelectCtn,
     Price,
     LabelCtn,
-    MobilePrice,
-    MobileHeader,
     ExtenstionButton,
     WalletOption,
     BalanceXec,
     BalanceCard,
     BalanceRow,
     BalanceTitle,
-    BackgroundImage,
     BalanceFiat,
     CardWrapper,
 } from './styled';
@@ -156,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
 
     type AssetBalanceCardProps = {
         title: string;
-        logo: string;
+        logo: React.ReactNode;
         logoAlt: string;
         tokenLabel: string;
         balanceAmount: string;
@@ -167,7 +163,6 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
     const AssetBalanceCard = ({
         title,
         logo,
-        logoAlt,
         tokenLabel,
         balanceAmount,
         fiatAmount,
@@ -175,8 +170,10 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
     }: AssetBalanceCardProps) => {
         return (
             <BalanceCard tokenLabel={tokenLabel}>
-                <BackgroundImage src={logo} alt={logoAlt} />
-                <BalanceTitle tokenLabel={tokenLabel}>{title}</BalanceTitle>
+                <BalanceTitle tokenLabel={tokenLabel}>
+                    {logo}
+                    {title}
+                </BalanceTitle>
 
                 <BalanceRow
                     title={`Balance ${tokenLabel}`}
@@ -212,15 +209,6 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
 
     return (
         <HeaderCtn title="Wallet Info">
-            <MobileHeader>
-                <img src={Cashtab} alt="cashtab" />
-                {renderFiatValues && (
-                    <MobilePrice title="Price in Local Currency mobile">
-                        1 {appConfig.ticker} = {formattedExchangeRate}{' '}
-                        {settings.fiatCurrency.toUpperCase()}
-                    </MobilePrice>
-                )}
-            </MobileHeader>
             <LabelCtn>
                 {renderFiatValues ? (
                     <Price title="Price in Local Currency">
@@ -266,7 +254,7 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
                 <BalanceXec>
                     <AssetBalanceCard
                         title="eCash"
-                        logo={Ecash}
+                        logo={<EcashIcon />}
                         logoAlt="eCash"
                         tokenLabel={appConfig.ticker}
                         balanceAmount={formattedBalanceXec}
@@ -274,8 +262,8 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
                         balanceVisible={settings.balanceVisible === false}
                     />
                     <AssetBalanceCard
-                        title="Staking"
-                        logo={Staking}
+                        title="Staked"
+                        logo={<StakeIcon />}
                         logoAlt="eCash Staking"
                         tokenLabel="XECX"
                         balanceAmount={formattedBalanceXecx}
@@ -283,8 +271,8 @@ const Header: React.FC<HeaderProps> = ({ path }) => {
                         balanceVisible={settings.balanceVisible === false}
                     />
                     <AssetBalanceCard
-                        title="Savings"
-                        logo={Savings}
+                        title="USD"
+                        logo={<SavingsIcon />}
                         logoAlt="Savings"
                         tokenLabel="FIRMA"
                         balanceAmount={formattedBalanceFirma}

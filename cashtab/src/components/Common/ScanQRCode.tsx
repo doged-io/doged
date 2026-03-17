@@ -15,9 +15,9 @@ import { Capacitor } from '@capacitor/core';
 
 const StyledScanQRCode = styled.button`
     cursor: pointer;
-    border-radius: 0 9px 9px 0;
-    background-color: ${props => props.theme.secondaryBackground};
-    border-left: none !important;
+    border-radius: 0 10px 10px 0;
+    background-color: ${props => props.theme.inputBackground};
+    border-left-color: ${props => props.theme.primaryBackground} !important;
     padding: 0 12px;
 `;
 

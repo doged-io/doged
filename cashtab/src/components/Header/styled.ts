@@ -10,8 +10,9 @@ export const HeaderCtn = styled.div`
     align-items: center;
     flex-direction: column;
     padding: 20px;
-    background: ${props => props.theme.primaryBackground};
-    border-bottom: 1px solid ${props => props.theme.border};
+    padding-bottom: 10px;
+    background-color: ${props => props.theme.primaryBackground}1A;
+    backdrop-filter: blur(35px);
     position: sticky;
     top: 0;
     z-index: 99;
@@ -19,8 +20,11 @@ export const HeaderCtn = styled.div`
         position: relative;
     }
     @media (max-width: 768px) {
-        padding: 10px;
+        padding: 10px 10px 5px 10px;
         position: relative;
+        /* Solid background on mobile so content doesn't show through (fixes Android overlap) */
+        background-color: ${props => props.theme.primaryBackground};
+        backdrop-filter: none;
     }
 `;
 
@@ -74,10 +78,13 @@ export const WalletSelectCtn = styled.div`
     display: flex;
     align-items: center;
     height: 34px;
-    gap: 5px;
+    gap: 15px;
     @media (max-width: 768px) {
-        height: 30px;
+        height: 32px;
         width: 100%;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        margin: 2px 0 2px 0;
     }
 `;
 
@@ -87,11 +94,19 @@ export const WalletDropdown = styled.select`
     cursor: pointer;
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
-    padding: 0px 10px;
-    color: ${props => props.theme.secondaryText};
+    padding: 0 36px 0 14px;
+    color: ${props => props.theme.primaryText};
+    font-weight: 600;
     border: none;
-    border-radius: 5px;
-    background-color: ${props => props.theme.secondaryBackground};
+    border-radius: 100px;
+    background-color: rgba(255, 255, 255, 0.14);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23fff' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 10px 6px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     text-overflow: ellipsis;
     text-decoration: none !important;
     &:focus-visible {
@@ -99,7 +114,8 @@ export const WalletDropdown = styled.select`
         text-decoration: underline;
     }
     @media (max-width: 768px) {
-        width: 100%;
+        font-size: var(--text-sm);
+        line-height: var(--text-sm--line-height);
     }
 `;
 export const WalletOption = styled.option`
@@ -149,12 +165,12 @@ export const CardWrapper = styled.div`
             position: absolute;
             top: 0;
             right: 0;
-            width: 40px;
+            width: 20px;
             height: 100%;
             pointer-events: none;
             background: linear-gradient(
                 to left,
-                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.4),
                 transparent
             );
         }
@@ -201,26 +217,22 @@ export const BalanceCard = styled.div<{
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    border-radius: 5px;
+    border-radius: 10px;
     overflow-wrap: break-word;
     word-break: break-word;
-    padding: 15px;
+    padding: 14px;
     text-align: left;
     position: relative;
     overflow: hidden;
     color: ${props => props.theme.primaryText};
-    background: linear-gradient(
-        to right,
-        ${props =>
-            (props.tokenLabel === 'FIRMA'
-                ? props.theme.firmaAccent
-                : props.tokenLabel === 'XECX'
-                  ? props.theme.secondaryAccent
-                  : props.theme.accent) + '4D'},
-        ${props => props.theme.secondaryBackground}
-    );
+    background: ${props =>
+        (props.tokenLabel === 'FIRMA'
+            ? props.theme.firmaAccent
+            : props.tokenLabel === 'XECX'
+              ? props.theme.secondaryAccent
+              : props.theme.accent) + '4D'};
     @media (max-width: 1100px) {
-        padding: 6px 10px;
+        padding: 10px 10px;
         width: 88%;
         flex-shrink: 0;
         scroll-snap-align: start;
@@ -244,15 +256,16 @@ export const BalanceTitle = styled.div<{
     tokenLabel?: string;
 }>`
     width: 100%;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
     font-size: var(--text-sm);
-    color: ${props =>
-        props.tokenLabel === 'FIRMA'
-            ? props.theme.firmaAccent
-            : props.tokenLabel === 'XECX'
-              ? props.theme.secondaryAccent
-              : props.theme.accent};
-
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    svg {
+        width: auto;
+        height: 12px;
+        fill: currentColor;
+    }
     @media (max-width: 1100px) {
         margin-bottom: 2px;
         font-size: 12px;
@@ -263,8 +276,8 @@ export const BalanceRow = styled.div<{
     tokenLabel: string;
 }>`
     font-weight: 600;
-    font-size: var(--text-xl);
-    line-height: 1.2em;
+    font-size: var(--text-2xl);
+    line-height: 1em;
     color: ${props =>
         props.hideBalance ? 'transparent' : props.theme.primaryText};
 
@@ -276,12 +289,7 @@ export const BalanceRow = styled.div<{
     a {
         color: ${props => props.theme.primaryText};
         :hover {
-            color: ${props =>
-                props.tokenLabel === 'FIRMA'
-                    ? props.theme.firmaAccent
-                    : props.tokenLabel === 'XECX'
-                      ? props.theme.secondaryAccent
-                      : props.theme.accent};
+            color: ${props => props.theme.accent};
             text-decoration: underline;
         }
     }

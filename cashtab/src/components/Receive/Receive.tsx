@@ -7,6 +7,7 @@ import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import { QRCode } from 'components/Receive/QRCode';
 import useWindowDimensions from 'components/Receive/useWindowDimensions';
 import Switch from 'components/Common/Switch';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 import {
     ReceiveCtn,
     ReceiveFormFlex,
@@ -111,6 +112,7 @@ export const Receive: React.FC = () => {
 
     return (
         <ReceiveCtn title="Receive">
+            <ActionButtonRow variant="sendReceive" activeIndex={0} />
             <ReceiveFormFlex title="QR Code">
                 <Row>
                     <QRCode

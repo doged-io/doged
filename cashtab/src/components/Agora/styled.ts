@@ -4,6 +4,12 @@
 
 import styled from 'styled-components';
 
+export const Wrapper = styled.div`
+    width: 100%;
+    @media (max-width: 768px) {
+        padding: 0 10px;
+    }
+`;
 export const ActiveOffers = styled.div`
     color: ${props => props.theme.primaryText};
     width: 100%;
@@ -130,4 +136,74 @@ export const SortSwitch = styled.div<{ active: boolean; disabled: boolean }>`
         top: 50%;
         transform: translateY(-50%);
     }
+`;
+
+export const SectionTitle = styled.h3`
+    margin: 20px 0 8px;
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-lg);
+    font-weight: 600;
+    text-align: left;
+`;
+
+export const TokenList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    margin-top: 12px;
+    background: ${props => props.theme.secondaryBackground};
+    border-radius: 8px;
+    overflow: hidden;
+`;
+
+export const TokenRow = styled.a`
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: ${props => props.theme.primaryText};
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid ${props => props.theme.primaryBackground};
+
+    :hover {
+        background-color: ${props => props.theme.accent};
+        color: ${props => props.theme.primaryText};
+    }
+
+    img {
+        flex-shrink: 0;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        @media (max-width: 768px) {
+            width: 40px;
+            height: 40px;
+        }
+    }
+`;
+
+export const TokenRowName = styled.span`
+    font-weight: 700;
+    font-size: var(--text-base);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+`;
+
+export const TokenRowTicker = styled.span`
+    color: ${props => props.theme.secondaryText};
+    font-size: var(--text-sm);
+    font-weight: normal;
+`;
+
+export const StatusText = styled.p`
+    color: ${props => props.theme.secondaryText};
 `;

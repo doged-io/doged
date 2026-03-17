@@ -5,16 +5,14 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { TextArea, Input } from 'components/Common/Inputs';
-import Switch from 'components/Common/Switch';
+import SegmentedControl from 'components/Common/SegmentedControl';
 import { WalletContext } from 'wallet/context';
 import CopyToClipboard from 'components/Common/CopyToClipboard';
 import PrimaryButton, { SecondaryButton } from 'components/Common/Buttons';
 import { isValidCashAddress } from 'ecashaddrjs';
 import { toast } from 'react-toastify';
-import { theme } from 'assets/styles/theme';
 import appConfig from 'config/app';
-import { PageHeader } from 'components/Common/Atoms';
-import { ThemedSignAndVerifyMsg } from 'components/Common/CustomIcons';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 import { signMsg, verifyMsg } from 'ecash-lib';
 
 const SignVerifyForm = styled.div`
@@ -33,6 +31,10 @@ const Row = styled.div`
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
+`;
+
+const FormContainer = styled.div`
+    margin-top: 24px;
 `;
 const SignatureLabel = styled.div`
     font-size: var(--text-lg);
@@ -182,28 +184,26 @@ const SignVerifyMsg = () => {
 
     return (
         <SignVerifyForm title="Sign & Verify">
-            <PageHeader>
-                Sign & Verify Msg
-                <ThemedSignAndVerifyMsg />
-            </PageHeader>
+            <ActionButtonRow variant="tools" activeIndex={2} />
             <Row>
-                <Switch
+                <SegmentedControl
                     name="Toggle Sign Verify"
-                    on="✍️ Sign"
-                    off="✅ Verify"
-                    bgColorOff={theme.genesisGreen}
-                    width={110}
-                    right={76}
-                    checked={signMsgMode}
-                    handleToggle={() => setSignMsgMode(!signMsgMode)}
+                    aria-label="Sign or verify message"
+                    options={[
+                        { value: 'sign', label: '✍️ Sign' },
+                        { value: 'verify', label: '✅ Verify' },
+                    ]}
+                    value={signMsgMode ? 'sign' : 'verify'}
+                    onChange={value => setSignMsgMode(value === 'sign')}
                 />
             </Row>
             {signMsgMode ? (
-                <>
+                <FormContainer>
                     <Row>
                         <TextArea
                             placeholder={`Enter message to sign`}
                             name="msgToSign"
+                            label="Message to sign"
                             handleInput={handleInput}
                             value={formData.msgToSign}
                             error={formDataError.msgToSign}
@@ -236,12 +236,13 @@ const SignVerifyMsg = () => {
                             </Row>
                         </>
                     )}
-                </>
+                </FormContainer>
             ) : (
-                <>
+                <FormContainer>
                     <Row>
                         <TextArea
                             placeholder={`Enter message to verify`}
+                            label="Message to verify"
                             name="msgToVerify"
                             handleInput={handleInput}
                             value={formData.msgToVerify}
@@ -252,6 +253,7 @@ const SignVerifyMsg = () => {
                     </Row>
                     <Row>
                         <Input
+                            label="Address of signature to verify"
                             name="addressToVerify"
                             placeholder="Enter address of signature to verify"
                             value={formData.addressToVerify}
@@ -262,6 +264,7 @@ const SignVerifyMsg = () => {
                     <Row>
                         <TextArea
                             placeholder={`Enter signature to verify`}
+                            label="Signature to verify"
                             name="signatureToVerify"
                             handleInput={handleInput}
                             value={formData.signatureToVerify}
@@ -280,7 +283,7 @@ const SignVerifyMsg = () => {
                             Verify
                         </SecondaryButton>
                     </Row>
-                </>
+                </FormContainer>
             )}
         </SignVerifyForm>
     );

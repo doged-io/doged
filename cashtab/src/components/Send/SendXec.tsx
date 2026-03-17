@@ -18,6 +18,7 @@ import PrimaryButton, {
     SecondaryButton,
     CopyIconButton,
 } from 'components/Common/Buttons';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 import {
     toSatoshis,
     toXec,
@@ -35,13 +36,7 @@ import {
     CashtabParsedAddressInfo,
     isValidTokenSendOrBurnAmount,
 } from 'validation';
-import {
-    ConvertAmount,
-    Alert,
-    AlertMsg,
-    Info,
-    TokenIdPreview,
-} from 'components/Common/Atoms';
+import { Alert, AlertMsg, Info } from 'components/Common/Atoms';
 import { getMultisendTargetOutputs } from 'helpers';
 import { ChronikClient } from 'chronik-client';
 import {
@@ -58,7 +53,6 @@ import {
 import ApiError from 'components/Common/ApiError';
 import { formatFiatBalance, formatBalance } from 'formatting';
 import styled from 'styled-components';
-import { theme } from 'assets/styles/theme';
 import { opReturn as opreturnConfig } from 'config/opreturn';
 import { explorer } from 'config/explorer';
 import { supportedFiatCurrencies } from 'config/CashtabSettings';
@@ -73,7 +67,6 @@ import {
     Input,
     TextArea,
 } from 'components/Common/Inputs';
-import Switch from 'components/Common/Switch';
 import { opReturn } from 'config/opreturn';
 import { Script, payment, fromHex, TokenType, strToBytes } from 'ecash-lib';
 import { isValidCashAddress } from 'ecashaddrjs';
@@ -105,16 +98,27 @@ import {
 } from 'constants/tokens';
 import { FirmaIcon, TetherIcon } from 'components/Common/CustomIcons';
 import Burst from 'assets/burst.png';
+import { ReactComponent as DropDownArrowIcon } from 'assets/drop-down-arrow.svg';
 
 const OuterCtn = styled.div`
-    background: ${props => props.theme.primaryBackground};
-    padding: 20px;
-    border-radius: 10px;
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 250px);
     @media (max-width: 768px) {
         min-height: calc(100vh - 300px);
+        padding: 0 12px;
+    }
+`;
+
+const SendContentWrapper = styled.div`
+    width: 100%;
+    padding: 0 16px;
+    margin: 0 auto;
+    margin-top: 40px;
+    box-sizing: border-box;
+    @media (max-width: 768px) {
+        padding: 0 0;
+        margin-top: 10px;
     }
 `;
 
@@ -126,34 +130,114 @@ const SendXecForm = styled.div`
     flex-grow: 1;
 `;
 const SendXecRow = styled.div``;
-const SwitchAndLabel = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-`;
-const SwitchLabel = styled.div`
-    color: ${props => props.theme.primaryText};
-`;
-const SwitchContainer = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    color: ${props => props.theme.primaryText};
-    white-space: nowrap;
+
+const AdvancedSection = styled.div`
     margin: 12px 0;
+    width: 100%;
+`;
+const AdvancedHeader = styled.button`
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    background: none;
+    padding: 12px 0;
+    border: none;
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    cursor: pointer;
+    font-weight: 700;
+    text-align: left;
+    transition: color 0.2s ease;
+    :focus-visible {
+        outline: none;
+    }
+    :hover {
+        color: ${props => props.theme.accent};
+    }
+`;
+const AdvancedButtonsRow = styled.div`
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    @media (max-width: 768px) {
+        gap: 6px;
+    }
+`;
+const AdvancedButton = styled.button<{ $active?: boolean }>`
+    flex: 1;
+    padding: 14px 4px;
+    border-radius: 8px;
+    border: none;
+    background-color: ${props =>
+        props.$active ? props.theme.accent : props.theme.inputBackground};
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-sm);
+    line-height: 1em;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    :hover:not(:disabled) {
+        background-color: ${props =>
+            props.$active ? props.theme.accent : 'rgba(255, 255, 255, 0.2)'};
+    }
+    :disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+`;
+const AdvancedContent = styled.div`
+    margin-top: 0;
+`;
+
+const AdvancedChevron = styled(DropDownArrowIcon)<{ $open?: boolean }>`
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: currentColor;
+    margin-left: 4px;
+    transform: ${props => (props.$open ? 'rotate(180deg)' : 'none')};
+    transition: fill 0.2s ease;
+    path {
+        fill: currentColor;
+    }
 `;
 
 const AmountPreviewCtn = styled.div`
-    margin: 12px;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid ${props => props.theme.border};
+    padding-top: 20px;
+`;
+const AmountPreviewLabel = styled.div`
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-lg);
+    font-weight: 700;
+    flex-shrink: 0;
+`;
+const AmountPreviewValues = styled.div`
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+    min-width: 0;
+`;
+const AmountPreviewFiat = styled.div`
+    color: ${props => props.theme.secondaryText};
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
 `;
 const ParsedBip21InfoRow = styled.div`
     display: flex;
     flex-direction: column;
     word-break: break-word;
+    margin-bottom: 12px;
 `;
 const ParsedBip21InfoLabel = styled.div`
     color: ${props => props.theme.primaryText};
@@ -173,7 +257,7 @@ const LocaleFormattedValue = styled.div`
     font-weight: bold;
     font-size: var(--text-lg);
     line-height: var(--text-lg--line-height);
-    margin-bottom: 0;
+    margin-bottom: 2px;
 `;
 
 const SendToOneHolder = styled.div``;
@@ -192,7 +276,7 @@ const InputModesHolder = styled.div<{ open: boolean }>`
             props.open
                 ? 'max-height 200ms ease-in, opacity 200ms ease-out'
                 : 'max-height 200ms cubic-bezier(0, 1, 0, 1), opacity 200ms ease-in'};
-        max-height: ${props => (props.open ? '0rem' : '12rem')};
+        max-height: ${props => (props.open ? '0rem' : '20rem')};
         opacity: ${props => (props.open ? 0 : 1)};
     }
     ${SendToManyHolder} {
@@ -201,7 +285,7 @@ const InputModesHolder = styled.div<{ open: boolean }>`
             props.open
                 ? 'max-height 200ms ease-in, transform 200ms ease-out, opacity 200ms ease-in'
                 : 'max-height 200ms cubic-bezier(0, 1, 0, 1), transform 200ms ease-out'};
-        max-height: ${props => (props.open ? '12rem' : '0rem')};
+        max-height: ${props => (props.open ? '20rem' : '0rem')};
         transform: ${props =>
             props.open ? 'translateY(0%)' : 'translateY(100%)'};
         opacity: ${props => (props.open ? 1 : 0)};
@@ -245,18 +329,19 @@ const TokenSelectInputWrapper = styled.div`
     position: relative;
     display: flex;
     align-items: center;
+    flex-direction: column;
     width: 100%;
 `;
 
 const TokenSelectClearButton = styled.button`
-    position: absolute;
-    right: 12px;
     background: transparent;
     border: none;
     color: ${props => props.theme.secondaryText};
     cursor: pointer;
     font-size: 20px;
-    padding: 4px 8px;
+    padding: 0 0 0 18px;
+    height: 100%;
+    border-left: 1px solid ${props => props.theme.primaryBackground};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,18 +349,28 @@ const TokenSelectClearButton = styled.button`
     &:hover {
         color: ${props => props.theme.primaryText};
     }
+    @media (max-width: 768px) {
+        font-size: 16px;
+        padding: 0 0 0 12px;
+    }
 `;
 
 const SelectedTokenDisplay = styled.div`
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 12px;
-    background-color: ${props => props.theme.secondaryBackground};
-    border: 1px solid ${props => props.theme.border};
-    border-radius: 9px;
+    padding: 0px 18px 0 12px;
+    background-color: ${props => props.theme.inputBackground};
+    border-radius: 10px;
     width: 100%;
     position: relative;
+    height: 80px;
+    margin-bottom: 18px;
+    @media (max-width: 768px) {
+        height: 70px;
+        margin-bottom: 14px;
+        padding: 0 12px 0 6px;
+    }
 `;
 
 const SelectedTokenInfo = styled.div`
@@ -287,50 +382,59 @@ const SelectedTokenInfo = styled.div`
 
 const SelectedTokenText = styled.div`
     color: ${props => props.theme.primaryText};
-    font-size: var(--text-lg);
-    line-height: var(--text-lg--line-height);
+    font-size: var(--text-base);
+    font-weight: 700;
 `;
 
 const SelectedTokenDetails = styled.div`
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     gap: 4px;
     flex: 1;
+    text-align: left;
 `;
 
 const SelectedTokenBalance = styled.div`
-    color: ${props => props.theme.secondaryText};
-    font-size: var(--text-sm);
-    line-height: var(--text-sm--line-height);
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-base);
+    font-weight: 700;
+    @media (max-width: 768px) {
+        font-size: var(--text-sm);
+    }
+`;
+
+const SendingTokenLabel = styled.div`
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-align: left;
 `;
 
 const SelectedTokenIdWrapper = styled.div`
-    font-size: var(--text-xs);
-    line-height: var(--text-xs--line-height);
+    font-size: 12px;
+    color: ${props => props.theme.secondaryText};
 `;
 
 const TokenDropdownList = styled.div`
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: ${props => props.theme.secondaryBackground};
-    border: 1px solid ${props => props.theme.border};
-    border-radius: 8px;
+    width: 100%;
+    background: ${props => props.theme.inputBackground};
+    border-radius: 10px;
     max-height: 300px;
     overflow-y: auto;
     z-index: 1000;
-    margin-top: 4px;
+    margin-top: 0px;
 `;
 
 const TokenDropdownItem = styled.div`
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 12px;
     cursor: pointer;
-    border-bottom: 1px solid ${props => props.theme.border};
+    border-bottom: 1px solid ${props => props.theme.primaryBackground};
     &:hover {
-        background: ${props => props.theme.primaryBackground};
+        background: ${props => props.theme.accent};
     }
     &:last-child {
         border-bottom: none;
@@ -340,14 +444,16 @@ const TokenDropdownItem = styled.div`
 const TokenDropdownItemContent = styled.div`
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     flex: 1;
 `;
 
 const TokenDropdownItemInfo = styled.div`
     display: flex;
-    flex-direction: column;
     flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
 `;
 
 const TokenDropdownItemTicker = styled.div`
@@ -357,20 +463,19 @@ const TokenDropdownItemTicker = styled.div`
 `;
 
 const TokenDropdownItemBalance = styled.div`
-    color: ${props => props.theme.secondaryText};
-    font-size: var(--text-sm);
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-base);
+    font-weight: 700;
 `;
 
 const TokenDropdownItemTokenId = styled.div`
     color: ${props => props.theme.secondaryText};
-    font-size: var(--text-sm);
-    margin-top: 2px;
+    font-size: 12px;
 `;
 
 const TokenFormContainer = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 12px;
     margin: 12px 0;
 `;
 interface CashtabTxInfo {
@@ -403,13 +508,16 @@ const SendXec: React.FC = () => {
 
     const balanceSats = Number(ecashWallet.balanceSats);
 
-    const [isTokenMode, setIsTokenMode] = useState<boolean>(false);
+    const [isTokenMode, setIsTokenMode] = useState<boolean>(
+        () => new URLSearchParams(location.search).get('mode') === 'token',
+    );
     const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
     const [tokenSearch, setTokenSearch] = useState<string>('');
     const [tokensInWallet, setTokensInWallet] = useState<TokenInfoKv[]>([]);
     const [filteredTokens, setFilteredTokens] = useState<TokenInfoKv[]>([]);
     const [isOneToManyXECSend, setIsOneToManyXECSend] =
         useState<boolean>(false);
+    const [advancedOpen, setAdvancedOpen] = useState<boolean>(false);
     const [sendWithCashtabMsg, setSendWithCashtabMsg] =
         useState<boolean>(false);
     const [sendWithOpReturnRaw, setSendWithOpReturnRaw] =
@@ -749,6 +857,12 @@ const SendXec: React.FC = () => {
 
         setTokensInWallet(walletTokensKeyValueArray);
     }, [tokens, isTokenMode, cashtabCache]);
+
+    // Sync Send vs Send Token view from URL (so /send and /send?mode=token work)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        setIsTokenMode(params.get('mode') === 'token');
+    }, [location.search]);
 
     // Filter tokens based on search
     useEffect(() => {
@@ -1352,7 +1466,15 @@ const SendXec: React.FC = () => {
         const txInfo: CashtabTxInfo = {};
 
         // Set URL-based transaction flag as soon as we detect URL parameters
-        setIsUrlBasedTransaction(true);
+        // (but not when the only param is mode=token, e.g. navigating to Send Token view)
+        const urlParamsForFlag = new URLSearchParams(txInfoStr);
+        const isSendTokenViewOnly =
+            urlParamsForFlag.get('mode') === 'token' &&
+            !urlParamsForFlag.has('address') &&
+            !txInfoStr.startsWith('bip21');
+        if (!isSendTokenViewOnly) {
+            setIsUrlBasedTransaction(true);
+        }
 
         // If bip21 is the first param, parse the whole string as a bip21 param string
         const parseAllAsBip21 = txInfoStr.startsWith('bip21');
@@ -1483,6 +1605,17 @@ const SendXec: React.FC = () => {
                         value: bip21Uri,
                     },
                 } as React.ChangeEvent<HTMLInputElement>);
+                const xecBip21Parsed = parseAddressInput(
+                    bip21Uri,
+                    balanceSats,
+                    userLocale,
+                );
+                if (
+                    typeof xecBip21Parsed.op_return_raw !== 'undefined' &&
+                    typeof xecBip21Parsed.op_return_raw.value === 'string'
+                ) {
+                    setAdvancedOpen(true);
+                }
             }
         } else {
             // Enter address into input field and trigger handleAddressChange for validation
@@ -2178,6 +2311,46 @@ const SendXec: React.FC = () => {
         }));
     };
 
+    const handleAdvancedHeaderClick = () => {
+        if (advancedOpen && txInfoFromUrl === false) {
+            const rehydrateOpReturnFromBip21 =
+                !isTokenMode &&
+                typeof parsedAddressInput.op_return_raw !== 'undefined' &&
+                typeof parsedAddressInput.op_return_raw.value === 'string'
+                    ? parsedAddressInput.op_return_raw.value
+                    : '';
+
+            setIsOneToManyXECSend(false);
+            setSendWithCashtabMsg(false);
+            setSendWithOpReturnRaw(rehydrateOpReturnFromBip21 !== '');
+            setAirdropFlag(false);
+            setFormData(p => ({
+                ...p,
+                multiAddressInput: '',
+                cashtabMsg: '',
+                opReturnRaw: rehydrateOpReturnFromBip21,
+            }));
+            setMultiSendAddressError(false);
+            setCashtabMsgError(false);
+
+            if (rehydrateOpReturnFromBip21 !== '') {
+                const error = getOpReturnRawError(rehydrateOpReturnFromBip21);
+                setOpReturnRawError(error);
+                if (error === false) {
+                    setParsedOpReturnRaw(
+                        parseOpReturnRaw(rehydrateOpReturnFromBip21),
+                    );
+                } else {
+                    setParsedOpReturnRaw({ protocol: '', data: '' });
+                }
+            } else {
+                setOpReturnRawError(false);
+                setParsedOpReturnRaw({ protocol: '', data: '' });
+            }
+        }
+        setAdvancedOpen(prev => !prev);
+    };
+
     const handleTokenCashtabMsgChange = (
         e: React.ChangeEvent<HTMLTextAreaElement>,
     ) => {
@@ -2333,6 +2506,25 @@ const SendXec: React.FC = () => {
                     : formatFiatBalance(0, userLocale)
             } ${appConfig.ticker}`;
         }
+    } else if (
+        fiatPrice !== null &&
+        selectedCurrency === appConfig.ticker &&
+        !isOneToManyXECSend &&
+        !isBip21MultipleOutputsSafe(parsedAddressInput)
+    ) {
+        // Show 0 fiat when amount is empty so amount preview always shows something
+        fiatPriceString = `${
+            settings
+                ? `${supportedFiatCurrencies[settings.fiatCurrency].symbol} `
+                : '$ '
+        }${(0).toLocaleString(userLocale, {
+            minimumFractionDigits: appConfig.cashDecimals,
+            maximumFractionDigits: appConfig.cashDecimals,
+        })} ${
+            settings && settings.fiatCurrency
+                ? settings.fiatCurrency.toUpperCase()
+                : 'USD'
+        }`;
     }
 
     const priceApiError =
@@ -2442,439 +2634,989 @@ const SendXec: React.FC = () => {
     return (
         <>
             <OuterCtn>
-                {showConfirmSendModal && (
-                    <Modal
-                        title={`Send ${decimalizedTokenQty} ${nameAndTicker} to ${addressPreview}?`}
-                        handleOk={sendToken}
-                        handleCancel={() => setShowConfirmSendModal(false)}
-                        showCancelButton
-                    />
-                )}
-                {isModalVisible && (
-                    <Modal
-                        title="Confirm Send"
-                        description={
-                            isTokenMode && selectedTokenId
-                                ? `Send ${tokenFormData.amount} ${
-                                      cashtabCache.tokens.get(selectedTokenId)
-                                          ?.genesisInfo.tokenTicker || 'token'
-                                  } to ${tokenFormData.address}`
-                                : isOneToManyXECSend
-                                  ? `Send
+                <ActionButtonRow
+                    variant="sendReceive"
+                    activeIndex={isTokenMode ? 2 : 1}
+                />
+                <SendContentWrapper>
+                    {showConfirmSendModal && (
+                        <Modal
+                            title={`Send ${decimalizedTokenQty} ${nameAndTicker} to ${addressPreview}?`}
+                            handleOk={sendToken}
+                            handleCancel={() => setShowConfirmSendModal(false)}
+                            showCancelButton
+                        />
+                    )}
+                    {isModalVisible && (
+                        <Modal
+                            title="Confirm Send"
+                            description={
+                                isTokenMode && selectedTokenId
+                                    ? `Send ${tokenFormData.amount} ${
+                                          cashtabCache.tokens.get(
+                                              selectedTokenId,
+                                          )?.genesisInfo.tokenTicker || 'token'
+                                      } to ${tokenFormData.address}`
+                                    : isOneToManyXECSend
+                                      ? `Send
                                 ${multiSendTotal.toLocaleString(userLocale, {
                                     maximumFractionDigits: 2,
                                 })} 
                                 XEC to multiple recipients?`
-                                  : `Send ${formData.amount}${' '}
+                                      : `Send ${formData.amount}${' '}
                   ${selectedCurrency} to ${parsedAddressInput.address.value}`
-                        }
-                        handleOk={
-                            isTokenMode && selectedTokenId
-                                ? handleTokenSendOk
-                                : handleOk
-                        }
-                        handleCancel={handleCancel}
-                        showCancelButton
-                    />
-                )}
-                {showSuccessModal && (
-                    <SuccessModalOverlay
-                        onClick={() => {
-                            // Close the window or navigate home on any click off of the modal
-                            closeOrNavigateFromUrlBasedTransaction();
-                        }}
-                    >
-                        <SuccessModalContent
-                            onClick={e => {
-                                // Close when clicking on the modal content
-                                // (but not on interactive elements like copy button or link)
-                                if (e.target === e.currentTarget) {
-                                    closeOrNavigateFromUrlBasedTransaction();
-                                }
+                            }
+                            handleOk={
+                                isTokenMode && selectedTokenId
+                                    ? handleTokenSendOk
+                                    : handleOk
+                            }
+                            handleCancel={handleCancel}
+                            showCancelButton
+                        />
+                    )}
+                    {showSuccessModal && (
+                        <SuccessModalOverlay
+                            onClick={() => {
+                                // Close the window or navigate home on any click off of the modal
+                                closeOrNavigateFromUrlBasedTransaction();
                             }}
                         >
-                            <SuccessIcon>
-                                <div />
-                                <img src={Burst} alt="Success" />
-                            </SuccessIcon>
-                            <SuccessTitle>Sent!</SuccessTitle>
-
-                            <TransactionIdLink
-                                href={`${explorer.blockExplorerUrl}/tx/${successTxid}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                // Prevent closing the window when clicking on the link
-                                onClick={e => e.stopPropagation()}
-                            >
-                                View Transaction
-                            </TransactionIdLink>
-
-                            <SuccessButton
-                                onClick={() => {
-                                    closeOrNavigateFromUrlBasedTransaction();
+                            <SuccessModalContent
+                                onClick={e => {
+                                    // Close when clicking on the modal content
+                                    // (but not on interactive elements like copy button or link)
+                                    if (e.target === e.currentTarget) {
+                                        closeOrNavigateFromUrlBasedTransaction();
+                                    }
                                 }}
                             >
-                                Close
-                            </SuccessButton>
-                        </SuccessModalContent>
-                    </SuccessModalOverlay>
-                )}
+                                <SuccessIcon>
+                                    <div />
+                                    <img src={Burst} alt="Success" />
+                                </SuccessIcon>
+                                <SuccessTitle>Sent!</SuccessTitle>
 
-                <SwitchContainer>
-                    <Switch
-                        name="Toggle XEC/Token Mode"
-                        on="Tokens"
-                        off="XEC"
-                        width={150}
-                        right={115}
-                        checked={isTokenMode}
-                        bgColorOn={theme.secondaryAccent}
-                        bgColorOff={theme.accent}
-                        handleToggle={() => setIsTokenMode(!isTokenMode)}
-                    />
-                </SwitchContainer>
-                {!isTokenMode && (
-                    <SwitchContainer>
-                        <Switch
-                            name="Toggle Multisend"
-                            on="Send to many"
-                            off="Send to one"
-                            width={150}
-                            right={115}
-                            checked={isOneToManyXECSend}
-                            disabled={
-                                txInfoFromUrl !== false ||
-                                'queryString' in parsedAddressInput
-                            }
-                            handleToggle={() =>
-                                setIsOneToManyXECSend(!isOneToManyXECSend)
-                            }
-                        />
-                    </SwitchContainer>
-                )}
-                {isTokenMode ? (
-                    <TokenFormContainer>
-                        <TokenSelectDropdown>
-                            {selectedTokenId ? (
-                                <SelectedTokenDisplay>
-                                    <SelectedTokenInfo>
-                                        <TokenIcon
-                                            size={32}
-                                            tokenId={selectedTokenId}
-                                        />
-                                        <SelectedTokenDetails>
-                                            <SelectedTokenText>
-                                                {filteredTokens.find(
-                                                    kv =>
-                                                        kv[0] ===
-                                                        selectedTokenId,
-                                                )?.[1].genesisInfo
-                                                    .tokenTicker ||
-                                                    tokensInWallet.find(
-                                                        kv =>
-                                                            kv[0] ===
-                                                            selectedTokenId,
-                                                    )?.[1].genesisInfo
-                                                        .tokenTicker ||
-                                                    ''}
-                                            </SelectedTokenText>
-                                            <SelectedTokenBalance>
-                                                {formatBalance(
-                                                    tokens.get(
-                                                        selectedTokenId,
-                                                    ) || '0',
-                                                    userLocale,
-                                                )}
-                                            </SelectedTokenBalance>
-                                            <SelectedTokenIdWrapper>
-                                                <TokenIdPreview
+                                <TransactionIdLink
+                                    href={`${explorer.blockExplorerUrl}/tx/${successTxid}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    // Prevent closing the window when clicking on the link
+                                    onClick={e => e.stopPropagation()}
+                                >
+                                    View Transaction
+                                </TransactionIdLink>
+
+                                <SuccessButton
+                                    onClick={() => {
+                                        closeOrNavigateFromUrlBasedTransaction();
+                                    }}
+                                >
+                                    Close
+                                </SuccessButton>
+                            </SuccessModalContent>
+                        </SuccessModalOverlay>
+                    )}
+
+                    {isTokenMode ? (
+                        <TokenFormContainer>
+                            <TokenSelectDropdown>
+                                {selectedTokenId ? (
+                                    <>
+                                        <SendingTokenLabel>
+                                            Sending
+                                        </SendingTokenLabel>
+                                        <SelectedTokenDisplay>
+                                            <SelectedTokenInfo>
+                                                <TokenIcon
+                                                    size={32}
                                                     tokenId={selectedTokenId}
                                                 />
-                                            </SelectedTokenIdWrapper>
-                                        </SelectedTokenDetails>
-                                    </SelectedTokenInfo>
-                                    <TokenSelectClearButton
-                                        onClick={() => {
-                                            _clearTokenInputForms();
-                                        }}
-                                        title="Clear token selection"
-                                    >
-                                        ×
-                                    </TokenSelectClearButton>
-                                </SelectedTokenDisplay>
-                            ) : (
-                                <TokenSelectInputWrapper>
-                                    <Input
-                                        placeholder="Start typing a token ticker or name"
-                                        name="tokenSearch"
-                                        value={tokenSearch}
-                                        handleInput={handleTokenSearchInput}
-                                    />
-                                    {filteredTokens.length > 0 && (
-                                        <TokenDropdownList>
-                                            {filteredTokens.map(kv => (
-                                                <TokenDropdownItem
-                                                    key={kv[0]}
-                                                    onClick={() =>
-                                                        handleTokenSelect(kv[0])
-                                                    }
-                                                >
-                                                    <TokenDropdownItemContent>
-                                                        <TokenIcon
-                                                            size={32}
-                                                            tokenId={kv[0]}
-                                                        />
-                                                        <TokenDropdownItemInfo>
-                                                            <TokenDropdownItemTicker>
-                                                                {
-                                                                    kv[1]
-                                                                        .genesisInfo
-                                                                        .tokenTicker
-                                                                }
-                                                            </TokenDropdownItemTicker>
-                                                            <TokenDropdownItemBalance>
-                                                                {formatBalance(
-                                                                    kv[1]
-                                                                        .balance,
-                                                                    userLocale,
-                                                                )}
-                                                            </TokenDropdownItemBalance>
-                                                            <TokenDropdownItemTokenId>
-                                                                {kv[0].slice(
-                                                                    0,
-                                                                    3,
-                                                                )}
-                                                                ...
-                                                                {kv[0].slice(
-                                                                    -3,
-                                                                )}
-                                                            </TokenDropdownItemTokenId>
-                                                        </TokenDropdownItemInfo>
-                                                    </TokenDropdownItemContent>
-                                                </TokenDropdownItem>
-                                            ))}
-                                        </TokenDropdownList>
-                                    )}
-                                </TokenSelectInputWrapper>
+                                                <SelectedTokenDetails>
+                                                    <div>
+                                                        <SelectedTokenText>
+                                                            {filteredTokens.find(
+                                                                kv =>
+                                                                    kv[0] ===
+                                                                    selectedTokenId,
+                                                            )?.[1].genesisInfo
+                                                                .tokenTicker ||
+                                                                tokensInWallet.find(
+                                                                    kv =>
+                                                                        kv[0] ===
+                                                                        selectedTokenId,
+                                                                )?.[1]
+                                                                    .genesisInfo
+                                                                    .tokenTicker ||
+                                                                ''}
+                                                        </SelectedTokenText>
+                                                        <SelectedTokenIdWrapper>
+                                                            {selectedTokenId.slice(
+                                                                0,
+                                                                3,
+                                                            )}
+                                                            ...
+                                                            {selectedTokenId.slice(
+                                                                -3,
+                                                            )}
+                                                        </SelectedTokenIdWrapper>
+                                                    </div>
+                                                    <SelectedTokenBalance>
+                                                        {formatBalance(
+                                                            tokens.get(
+                                                                selectedTokenId,
+                                                            ) || '0',
+                                                            userLocale,
+                                                        )}
+                                                    </SelectedTokenBalance>
+                                                </SelectedTokenDetails>
+                                            </SelectedTokenInfo>
+                                            <TokenSelectClearButton
+                                                onClick={() => {
+                                                    _clearTokenInputForms();
+                                                }}
+                                                title="Clear token selection"
+                                            >
+                                                ×
+                                            </TokenSelectClearButton>
+                                        </SelectedTokenDisplay>
+                                    </>
+                                ) : (
+                                    <TokenSelectInputWrapper>
+                                        <Input
+                                            placeholder="Search by token ticker or name"
+                                            name="tokenSearch"
+                                            value={tokenSearch}
+                                            handleInput={handleTokenSearchInput}
+                                        />
+                                        {filteredTokens.length > 0 && (
+                                            <TokenDropdownList>
+                                                {filteredTokens.map(kv => (
+                                                    <TokenDropdownItem
+                                                        key={kv[0]}
+                                                        onClick={() =>
+                                                            handleTokenSelect(
+                                                                kv[0],
+                                                            )
+                                                        }
+                                                    >
+                                                        <TokenDropdownItemContent>
+                                                            <TokenIcon
+                                                                size={32}
+                                                                tokenId={kv[0]}
+                                                            />
+                                                            <TokenDropdownItemInfo>
+                                                                <div>
+                                                                    <TokenDropdownItemTicker>
+                                                                        {
+                                                                            kv[1]
+                                                                                .genesisInfo
+                                                                                .tokenTicker
+                                                                        }
+                                                                    </TokenDropdownItemTicker>
+                                                                    <TokenDropdownItemTokenId>
+                                                                        {kv[0].slice(
+                                                                            0,
+                                                                            3,
+                                                                        )}
+                                                                        ...
+                                                                        {kv[0].slice(
+                                                                            -3,
+                                                                        )}
+                                                                    </TokenDropdownItemTokenId>
+                                                                </div>
+                                                                <TokenDropdownItemBalance>
+                                                                    {formatBalance(
+                                                                        kv[1]
+                                                                            .balance,
+                                                                        userLocale,
+                                                                    )}
+                                                                </TokenDropdownItemBalance>
+                                                            </TokenDropdownItemInfo>
+                                                        </TokenDropdownItemContent>
+                                                    </TokenDropdownItem>
+                                                ))}
+                                            </TokenDropdownList>
+                                        )}
+                                    </TokenSelectInputWrapper>
+                                )}
+                            </TokenSelectDropdown>
+                            {selectedTokenId && (
+                                <InputWithScanner
+                                    label="Address"
+                                    placeholder="Address"
+                                    name="address"
+                                    value={tokenFormData.address}
+                                    disabled={
+                                        txInfoFromUrl !== false &&
+                                        isBip21TokenSendWithTokenId(
+                                            parsedAddressInput,
+                                        ) &&
+                                        selectedTokenId !== null &&
+                                        parsedAddressInput.token_id?.value ===
+                                            selectedTokenId
+                                    }
+                                    handleInput={e => {
+                                        const parsed = parseAddressInput(
+                                            e.target.value,
+                                            balanceSats,
+                                            userLocale,
+                                        );
+                                        handleTokenModeAddressChange(e, parsed);
+                                    }}
+                                    error={sendAddressError}
+                                />
                             )}
-                        </TokenSelectDropdown>
-                        {selectedTokenId && (
-                            <InputWithScanner
-                                placeholder="Address"
-                                name="address"
-                                value={tokenFormData.address}
-                                disabled={
-                                    txInfoFromUrl !== false &&
-                                    isBip21TokenSendWithTokenId(
-                                        parsedAddressInput,
-                                    ) &&
-                                    selectedTokenId !== null &&
-                                    parsedAddressInput.token_id?.value ===
-                                        selectedTokenId
-                                }
-                                handleInput={e => {
-                                    const parsed = parseAddressInput(
-                                        e.target.value,
-                                        balanceSats,
-                                        userLocale,
-                                    );
-                                    handleTokenModeAddressChange(e, parsed);
-                                }}
-                                error={sendAddressError}
-                            />
-                        )}
-                        {/* Show token amount input */}
-                        {selectedTokenId && (
-                            <SendTokenInput
-                                name="amount"
-                                placeholder="Amount"
-                                value={tokenFormData.amount}
-                                inputDisabled={
-                                    isBip21TokenSendWithTokenId(
-                                        parsedAddressInput,
-                                    ) &&
-                                    selectedTokenId !== null &&
-                                    parsedAddressInput.token_id?.value ===
-                                        selectedTokenId &&
-                                    typeof parsedAddressInput.token_decimalized_qty !==
-                                        'undefined' &&
-                                    typeof parsedAddressInput
-                                        .token_decimalized_qty.value ===
-                                        'string' &&
-                                    parsedAddressInput.token_decimalized_qty
-                                        .value !== null &&
-                                    parsedAddressInput.token_decimalized_qty
-                                        .error === false
-                                }
-                                error={sendTokenAmountError}
-                                handleInput={handleTokenAmountChange}
-                                handleOnMax={onTokenMax}
-                            />
-                        )}
-                        {/* Show error if empp_raw is present but token is not ALP */}
-                        {shouldShowSlpErrorForEmppRaw && (
-                            <SendXecRow>
-                                <Alert>
-                                    <AlertMsg>
-                                        empp_raw is only supported for ALP token
-                                        txs
-                                    </AlertMsg>
-                                </Alert>
-                            </SendXecRow>
-                        )}
-                        {/* Show EMPP options for ALP tokens */}
-                        {selectedTokenId &&
-                            typeof cashtabCache.tokens.get(selectedTokenId) !==
-                                'undefined' &&
-                            cashtabCache.tokens.get(selectedTokenId)?.tokenType
-                                .type === 'ALP_TOKEN_TYPE_STANDARD' && (
-                                <>
-                                    <SendXecRow>
-                                        <SwitchAndLabel>
-                                            <Switch
-                                                name="Toggle Cashtab Msg Token"
-                                                on="✉️"
-                                                off="✉️"
-                                                checked={
-                                                    sendWithCashtabMsgToken
-                                                }
-                                                disabled={
-                                                    txInfoFromUrl !== false ||
-                                                    'queryString' in
-                                                        parsedAddressInput
-                                                }
-                                                handleToggle={() => {
-                                                    // If we are sending a Cashtab msg, toggle off empp_raw
-                                                    if (
-                                                        !sendWithCashtabMsgToken &&
-                                                        sendWithEmppRaw
-                                                    ) {
-                                                        setSendWithEmppRaw(
-                                                            false,
-                                                        );
-                                                    }
-                                                    setSendWithCashtabMsgToken(
-                                                        !sendWithCashtabMsgToken,
-                                                    );
-                                                }}
-                                            />
-                                            <SwitchLabel>
-                                                Cashtab Msg
-                                            </SwitchLabel>
-                                        </SwitchAndLabel>
-                                    </SendXecRow>
-                                    {sendWithCashtabMsgToken && (
-                                        <SendXecRow>
-                                            <TextArea
-                                                name="tokenCashtabMsg"
-                                                height={62}
-                                                placeholder={`Include a Cashtab msg EMPP push with this token tx (max 100 bytes)`}
-                                                value={
-                                                    tokenFormData.tokenCashtabMsg
-                                                }
-                                                error={tokenCashtabMsgError}
-                                                showCount
-                                                customCount={
-                                                    strToBytes(
-                                                        tokenFormData.tokenCashtabMsg,
-                                                    ).length
-                                                }
-                                                max={100}
-                                                handleInput={
-                                                    handleTokenCashtabMsgChange
-                                                }
-                                            />
-                                        </SendXecRow>
-                                    )}
-                                    <SendXecRow>
-                                        <SwitchAndLabel>
-                                            <Switch
-                                                name="Toggle empp_raw"
-                                                checked={sendWithEmppRaw}
-                                                disabled={
-                                                    txInfoFromUrl !== false ||
-                                                    'queryString' in
-                                                        parsedAddressInput
-                                                }
-                                                handleToggle={() => {
-                                                    // If we are sending with empp_raw, toggle off CashtabMsg
-                                                    if (
-                                                        !sendWithEmppRaw &&
-                                                        sendWithCashtabMsgToken
-                                                    ) {
-                                                        setSendWithCashtabMsgToken(
-                                                            false,
-                                                        );
-                                                    }
-                                                    setSendWithEmppRaw(
-                                                        !sendWithEmppRaw,
-                                                    );
-                                                }}
-                                            />
-                                            <SwitchLabel>empp_raw</SwitchLabel>
-                                        </SwitchAndLabel>
-                                    </SendXecRow>
-                                    {(sendWithEmppRaw ||
-                                        (typeof parsedAddressInput.empp_raw !==
+                            {/* Show token amount input */}
+                            {selectedTokenId && (
+                                <SendTokenInput
+                                    label="Amount"
+                                    name="amount"
+                                    placeholder="Amount"
+                                    value={tokenFormData.amount}
+                                    inputDisabled={
+                                        isBip21TokenSendWithTokenId(
+                                            parsedAddressInput,
+                                        ) &&
+                                        selectedTokenId !== null &&
+                                        parsedAddressInput.token_id?.value ===
+                                            selectedTokenId &&
+                                        typeof parsedAddressInput.token_decimalized_qty !==
                                             'undefined' &&
-                                            parsedAddressInput.empp_raw
-                                                .error === false)) && (
-                                        <>
-                                            <SendXecRow>
-                                                <TextArea
-                                                    name="emppRaw"
-                                                    height={62}
-                                                    placeholder={`(Advanced) Enter raw hex EMPP push (max 100 bytes)`}
-                                                    value={
-                                                        tokenFormData.emppRaw
+                                        typeof parsedAddressInput
+                                            .token_decimalized_qty.value ===
+                                            'string' &&
+                                        parsedAddressInput.token_decimalized_qty
+                                            .value !== null &&
+                                        parsedAddressInput.token_decimalized_qty
+                                            .error === false
+                                    }
+                                    error={sendTokenAmountError}
+                                    handleInput={handleTokenAmountChange}
+                                    handleOnMax={onTokenMax}
+                                />
+                            )}
+                            {/* Show error if empp_raw is present but token is not ALP */}
+                            {shouldShowSlpErrorForEmppRaw && (
+                                <SendXecRow>
+                                    <Alert>
+                                        <AlertMsg>
+                                            empp_raw is only supported for ALP
+                                            token txs
+                                        </AlertMsg>
+                                    </Alert>
+                                </SendXecRow>
+                            )}
+                            {/* Show EMPP options for ALP tokens */}
+                            {selectedTokenId &&
+                                typeof cashtabCache.tokens.get(
+                                    selectedTokenId,
+                                ) !== 'undefined' &&
+                                cashtabCache.tokens.get(selectedTokenId)
+                                    ?.tokenType.type ===
+                                    'ALP_TOKEN_TYPE_STANDARD' && (
+                                    <>
+                                        <SendXecRow>
+                                            <AdvancedButtonsRow>
+                                                <AdvancedButton
+                                                    type="button"
+                                                    $active={
+                                                        sendWithCashtabMsgToken
                                                     }
-                                                    error={emppRawError}
+                                                    onClick={() => {
+                                                        if (
+                                                            !sendWithCashtabMsgToken &&
+                                                            sendWithEmppRaw
+                                                        ) {
+                                                            setSendWithEmppRaw(
+                                                                false,
+                                                            );
+                                                        }
+                                                        setSendWithCashtabMsgToken(
+                                                            !sendWithCashtabMsgToken,
+                                                        );
+                                                    }}
                                                     disabled={
                                                         txInfoFromUrl !==
                                                             false ||
                                                         'queryString' in
                                                             parsedAddressInput
                                                     }
-                                                    showCount
-                                                    max={200}
-                                                    customCount={
-                                                        tokenFormData.emppRaw
-                                                            .length / 2
+                                                >
+                                                    Cashtab Msg
+                                                </AdvancedButton>
+                                                <AdvancedButton
+                                                    type="button"
+                                                    $active={sendWithEmppRaw}
+                                                    onClick={() => {
+                                                        if (
+                                                            !sendWithEmppRaw &&
+                                                            sendWithCashtabMsgToken
+                                                        ) {
+                                                            setSendWithCashtabMsgToken(
+                                                                false,
+                                                            );
+                                                        }
+                                                        setSendWithEmppRaw(
+                                                            !sendWithEmppRaw,
+                                                        );
+                                                    }}
+                                                    disabled={
+                                                        txInfoFromUrl !==
+                                                            false ||
+                                                        'queryString' in
+                                                            parsedAddressInput
                                                     }
+                                                >
+                                                    empp_raw
+                                                </AdvancedButton>
+                                            </AdvancedButtonsRow>
+                                        </SendXecRow>
+                                        {sendWithCashtabMsgToken && (
+                                            <SendXecRow>
+                                                <TextArea
+                                                    name="tokenCashtabMsg"
+                                                    height={62}
+                                                    placeholder={`Include a Cashtab msg EMPP push with this token tx (max 100 bytes)`}
+                                                    value={
+                                                        tokenFormData.tokenCashtabMsg
+                                                    }
+                                                    error={tokenCashtabMsgError}
+                                                    showCount
+                                                    customCount={
+                                                        strToBytes(
+                                                            tokenFormData.tokenCashtabMsg,
+                                                        ).length
+                                                    }
+                                                    max={100}
                                                     handleInput={
-                                                        handleEmppRawInput
+                                                        handleTokenCashtabMsgChange
                                                     }
                                                 />
                                             </SendXecRow>
-                                            {emppRawError === false &&
-                                                tokenFormData.emppRaw !==
-                                                    '' && (
-                                                    <SendXecRow>
-                                                        <ParsedBip21InfoRow>
-                                                            <ParsedBip21InfoLabel>
-                                                                Parsed empp_raw
-                                                            </ParsedBip21InfoLabel>
-                                                            <ParsedBip21Info>
-                                                                <b>
+                                        )}
+                                        {(sendWithEmppRaw ||
+                                            (typeof parsedAddressInput.empp_raw !==
+                                                'undefined' &&
+                                                parsedAddressInput.empp_raw
+                                                    .error === false)) && (
+                                            <>
+                                                <SendXecRow>
+                                                    <TextArea
+                                                        name="emppRaw"
+                                                        height={62}
+                                                        placeholder={`(Advanced) Enter raw hex EMPP push (max 100 bytes)`}
+                                                        value={
+                                                            tokenFormData.emppRaw
+                                                        }
+                                                        error={emppRawError}
+                                                        disabled={
+                                                            txInfoFromUrl !==
+                                                                false ||
+                                                            'queryString' in
+                                                                parsedAddressInput
+                                                        }
+                                                        showCount
+                                                        max={200}
+                                                        customCount={
+                                                            tokenFormData
+                                                                .emppRaw
+                                                                .length / 2
+                                                        }
+                                                        handleInput={
+                                                            handleEmppRawInput
+                                                        }
+                                                    />
+                                                </SendXecRow>
+                                                {emppRawError === false &&
+                                                    tokenFormData.emppRaw !==
+                                                        '' && (
+                                                        <SendXecRow>
+                                                            <ParsedBip21InfoRow>
+                                                                <ParsedBip21InfoLabel>
+                                                                    Parsed
+                                                                    empp_raw
+                                                                </ParsedBip21InfoLabel>
+                                                                <ParsedBip21Info>
+                                                                    <b>
+                                                                        {
+                                                                            parsedEmppRaw.protocol
+                                                                        }
+                                                                    </b>
+                                                                    <br />
                                                                     {
-                                                                        parsedEmppRaw.protocol
+                                                                        parsedEmppRaw.data
                                                                     }
-                                                                </b>
-                                                                <br />
+                                                                </ParsedBip21Info>
+                                                            </ParsedBip21InfoRow>
+                                                        </SendXecRow>
+                                                    )}
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            {/* Parsed input_data_raw when present in BIP21 (token mode) */}
+                            {selectedTokenId &&
+                                (parsedInputDataRaw.protocol !== '' ||
+                                    parsedInputDataRaw.data !== '') && (
+                                    <SendXecRow>
+                                        <ParsedBip21InfoRow>
+                                            <ParsedBip21InfoLabel>
+                                                Parsed input_data_raw
+                                            </ParsedBip21InfoLabel>
+                                            <ParsedBip21Info>
+                                                <b>
+                                                    {
+                                                        parsedInputDataRaw.protocol
+                                                    }
+                                                </b>
+                                                <br />
+                                                {parsedInputDataRaw.data}
+                                            </ParsedBip21Info>
+                                        </ParsedBip21InfoRow>
+                                    </SendXecRow>
+                                )}
+                            {/* Show BIP21 token send info in token mode (only if token_decimalized_qty is present) */}
+                            {isBip21TokenSend(parsedAddressInput) &&
+                                selectedTokenId !== null &&
+                                selectedTokenId ===
+                                    parsedAddressInput.token_id.value &&
+                                tokenIdQueryError === false && (
+                                    <>
+                                        {typeof cashtabCache.tokens.get(
+                                            parsedAddressInput.token_id.value,
+                                        ) !== 'undefined' ? (
+                                            <>
+                                                {/* Show parsed token send info */}
+                                                {isValidFirmaRedeemTx(
+                                                    parsedAddressInput,
+                                                ) ? (
+                                                    <ParsedTokenSend
+                                                        style={{
+                                                            marginBottom:
+                                                                '12px',
+                                                        }}
+                                                    >
+                                                        <FirmaRedeemLogoWrapper>
+                                                            <FirmaIcon />
+                                                            <TetherIcon />
+                                                        </FirmaRedeemLogoWrapper>
+                                                        <FirmaRedeemTextAndCopy>
+                                                            On tx finalized,{' '}
+                                                            {(
+                                                                Number(
+                                                                    parsedAddressInput
+                                                                        .token_decimalized_qty
+                                                                        .value,
+                                                                ) -
+                                                                getFirmaRedeemFee(
+                                                                    Number(
+                                                                        parsedAddressInput
+                                                                            .token_decimalized_qty
+                                                                            .value,
+                                                                    ),
+                                                                )
+                                                            ).toLocaleString(
+                                                                userLocale,
                                                                 {
-                                                                    parsedEmppRaw.data
+                                                                    maximumFractionDigits: 4,
+                                                                    minimumFractionDigits: 4,
+                                                                },
+                                                            )}{' '}
+                                                            USDT will be sent to{' '}
+                                                            {parsedFirma.data.slice(
+                                                                0,
+                                                                3,
+                                                            )}
+                                                            ...
+                                                            {parsedFirma.data.slice(
+                                                                -3,
+                                                            )}{' '}
+                                                            <CopyIconButton
+                                                                name="Copy SOL addr"
+                                                                data={
+                                                                    parsedFirma.data
                                                                 }
-                                                            </ParsedBip21Info>
-                                                        </ParsedBip21InfoRow>
-                                                    </SendXecRow>
+                                                                showToast
+                                                            />
+                                                        </FirmaRedeemTextAndCopy>
+                                                    </ParsedTokenSend>
+                                                ) : (
+                                                    <ParsedTokenSend
+                                                        style={{
+                                                            marginBottom:
+                                                                '12px',
+                                                        }}
+                                                    >
+                                                        <TokenIcon
+                                                            size={64}
+                                                            tokenId={
+                                                                parsedAddressInput
+                                                                    .token_id
+                                                                    .value
+                                                            }
+                                                        />
+                                                        Sending{' '}
+                                                        {decimalizedTokenQty}{' '}
+                                                        {nameAndTicker} to{' '}
+                                                        {addressPreview}
+                                                    </ParsedTokenSend>
                                                 )}
-                                        </>
+                                            </>
+                                        ) : (
+                                            <InlineLoader />
+                                        )}
+                                    </>
+                                )}
+                            {/* Show parsed firma info in token mode when firma is present but not a redeem tx */}
+                            {isBip21TokenSend(parsedAddressInput) &&
+                                !isValidFirmaRedeemTx(parsedAddressInput) &&
+                                selectedTokenId !== null &&
+                                selectedTokenId ===
+                                    parsedAddressInput.token_id.value &&
+                                typeof parsedAddressInput.firma?.value ===
+                                    'string' &&
+                                parsedAddressInput.firma.error === false &&
+                                parsedFirma.protocol !== '' &&
+                                parsedFirma.data !== '' && (
+                                    <div style={{ margin: '12px 0' }}>
+                                        <ParsedBip21InfoRow>
+                                            <ParsedBip21InfoLabel>
+                                                Parsed firma
+                                            </ParsedBip21InfoLabel>
+                                            <ParsedBip21Info>
+                                                <b>{parsedFirma.protocol}</b>
+                                                <br />
+                                                {parsedFirma.data}
+                                            </ParsedBip21Info>
+                                        </ParsedBip21InfoRow>
+                                    </div>
+                                )}
+                            {(isBip21TokenSend(parsedAddressInput) ||
+                                isBip21TokenSendWithTokenId(
+                                    parsedAddressInput,
+                                )) &&
+                                selectedTokenId !== null &&
+                                parsedAddressInput.token_id?.value ===
+                                    selectedTokenId &&
+                                tokenIdQueryError && (
+                                    <Alert>
+                                        Error querying token info for{' '}
+                                        {parsedAddressInput.token_id?.value ||
+                                            'unknown token'}
+                                    </Alert>
+                                )}
+                        </TokenFormContainer>
+                    ) : (
+                        <InputModesHolder open={isOneToManyXECSend}>
+                            <SendToOneHolder>
+                                <SendToOneInputForm>
+                                    <InputWithScanner
+                                        label="Send to"
+                                        placeholder={'Address'}
+                                        name="address"
+                                        value={formData.address}
+                                        disabled={txInfoFromUrl !== false}
+                                        handleInput={handleAddressChange}
+                                        error={sendAddressError}
+                                    />
+                                    {isBip21MultipleOutputsSafe(
+                                        parsedAddressInput,
+                                    ) ? (
+                                        <Info>
+                                            <b>
+                                                BIP21: Sending{' '}
+                                                {bip21MultipleOutputsFormattedTotalSendXec.toLocaleString(
+                                                    userLocale,
+                                                    {
+                                                        maximumFractionDigits: 2,
+                                                        minimumFractionDigits: 2,
+                                                    },
+                                                )}{' '}
+                                                XEC to{' '}
+                                                {parsedAddressInput
+                                                    .parsedAdditionalXecOutputs
+                                                    .value.length + 1}{' '}
+                                                outputs
+                                            </b>
+                                        </Info>
+                                    ) : (
+                                        <SendXecInput
+                                            label="Amount"
+                                            name="amount"
+                                            value={formData.amount}
+                                            selectValue={selectedCurrency}
+                                            selectDisabled={
+                                                'amount' in
+                                                    parsedAddressInput ||
+                                                txInfoFromUrl !== false
+                                            }
+                                            inputDisabled={
+                                                priceApiError ||
+                                                (txInfoFromUrl !== false &&
+                                                    'value' in txInfoFromUrl &&
+                                                    txInfoFromUrl.value !==
+                                                        'null' &&
+                                                    txInfoFromUrl.value !==
+                                                        'undefined') ||
+                                                'amount' in parsedAddressInput
+                                            }
+                                            fiatCode={settings.fiatCurrency.toUpperCase()}
+                                            error={sendAmountError}
+                                            handleInput={handleAmountChange}
+                                            handleSelect={
+                                                handleSelectedCurrencyChange
+                                            }
+                                            handleOnMax={onMax}
+                                        />
                                     )}
+                                </SendToOneInputForm>
+                            </SendToOneHolder>
+                            {isBip21TokenSend(parsedAddressInput) &&
+                                tokenIdQueryError && (
+                                    <Alert>
+                                        Error querying token info for{' '}
+                                        {parsedAddressInput.token_id.value}
+                                    </Alert>
+                                )}
+                            {priceApiError && (
+                                <AlertMsg>
+                                    Error fetching fiat price. Setting send by{' '}
+                                    {supportedFiatCurrencies[
+                                        settings.fiatCurrency
+                                    ].slug.toUpperCase()}{' '}
+                                    disabled
+                                </AlertMsg>
+                            )}
+                            <SendToManyHolder>
+                                <TextArea
+                                    label="Send to many"
+                                    placeholder={`One address & amount per line, separated by comma \ne.g. \necash:qpatql05s9jfavnu0tv6lkjjk25n6tmj9gkpyrlwu8,500 \necash:qzvydd4n3lm3xv62cx078nu9rg0e3srmqq0knykfed,700`}
+                                    name="multiAddressInput"
+                                    handleInput={e =>
+                                        handleMultiAddressChange(e)
+                                    }
+                                    value={formData.multiAddressInput}
+                                    error={multiSendAddressError}
+                                />
+                            </SendToManyHolder>
+                        </InputModesHolder>
+                    )}
+                    {!isTokenMode && (
+                        <SendXecForm>
+                            <AdvancedSection>
+                                <AdvancedHeader
+                                    type="button"
+                                    onClick={handleAdvancedHeaderClick}
+                                >
+                                    Advanced{' '}
+                                    <AdvancedChevron $open={advancedOpen} />
+                                </AdvancedHeader>
+                                {advancedOpen && (
+                                    <>
+                                        <AdvancedButtonsRow>
+                                            <AdvancedButton
+                                                type="button"
+                                                $active={isOneToManyXECSend}
+                                                onClick={() =>
+                                                    setIsOneToManyXECSend(
+                                                        !isOneToManyXECSend,
+                                                    )
+                                                }
+                                                disabled={
+                                                    txInfoFromUrl !== false ||
+                                                    'queryString' in
+                                                        parsedAddressInput
+                                                }
+                                            >
+                                                Send to many
+                                            </AdvancedButton>
+                                            <AdvancedButton
+                                                type="button"
+                                                $active={sendWithCashtabMsg}
+                                                onClick={() => {
+                                                    if (
+                                                        !sendWithCashtabMsg &&
+                                                        sendWithOpReturnRaw
+                                                    ) {
+                                                        setSendWithOpReturnRaw(
+                                                            false,
+                                                        );
+                                                    }
+                                                    setSendWithCashtabMsg(
+                                                        !sendWithCashtabMsg,
+                                                    );
+                                                }}
+                                                disabled={
+                                                    txInfoFromUrl !== false ||
+                                                    'queryString' in
+                                                        parsedAddressInput
+                                                }
+                                            >
+                                                Message
+                                            </AdvancedButton>
+                                            <AdvancedButton
+                                                type="button"
+                                                $active={sendWithOpReturnRaw}
+                                                onClick={() => {
+                                                    if (
+                                                        !sendWithOpReturnRaw &&
+                                                        sendWithCashtabMsg
+                                                    ) {
+                                                        setSendWithCashtabMsg(
+                                                            false,
+                                                        );
+                                                    }
+                                                    setSendWithOpReturnRaw(
+                                                        !sendWithOpReturnRaw,
+                                                    );
+                                                }}
+                                                disabled={
+                                                    txInfoFromUrl !== false ||
+                                                    'queryString' in
+                                                        parsedAddressInput
+                                                }
+                                            >
+                                                op_return_raw
+                                            </AdvancedButton>
+                                        </AdvancedButtonsRow>
+                                        <AdvancedContent>
+                                            {sendWithCashtabMsg && (
+                                                <SendXecRow>
+                                                    <TextArea
+                                                        name="cashtabMsg"
+                                                        height={62}
+                                                        placeholder={`Include a public Cashtab msg with this tx ${
+                                                            location &&
+                                                            location.state &&
+                                                            location.state
+                                                                .airdropTokenId
+                                                                ? `(max ${
+                                                                      opreturnConfig.cashtabMsgByteLimit -
+                                                                      localAirdropTxAddedBytes
+                                                                  } bytes)`
+                                                                : `(max ${opreturnConfig.cashtabMsgByteLimit} bytes)`
+                                                        }`}
+                                                        value={
+                                                            formData.cashtabMsg
+                                                        }
+                                                        error={cashtabMsgError}
+                                                        showCount
+                                                        customCount={getCashtabMsgByteCount(
+                                                            formData.cashtabMsg,
+                                                        )}
+                                                        max={
+                                                            location &&
+                                                            location.state &&
+                                                            location.state
+                                                                .airdropTokenId
+                                                                ? opreturnConfig.cashtabMsgByteLimit -
+                                                                  localAirdropTxAddedBytes
+                                                                : opreturnConfig.cashtabMsgByteLimit
+                                                        }
+                                                        handleInput={e =>
+                                                            handleCashtabMsgChange(
+                                                                e,
+                                                            )
+                                                        }
+                                                    />
+                                                </SendXecRow>
+                                            )}
+                                        </AdvancedContent>
+                                    </>
+                                )}
+                            </AdvancedSection>
+                            {isBip21TokenSend(parsedAddressInput) &&
+                                tokenIdQueryError === false && (
+                                    <>
+                                        {isValidFirmaRedeemTx(
+                                            parsedAddressInput,
+                                        ) ? (
+                                            <ParsedTokenSend
+                                                /** make sure the bottom is not stuck behind SEND button */
+                                                style={{ marginBottom: '48px' }}
+                                            >
+                                                <FirmaRedeemLogoWrapper>
+                                                    <FirmaIcon />
+                                                    <TetherIcon />
+                                                </FirmaRedeemLogoWrapper>
+                                                <FirmaRedeemTextAndCopy>
+                                                    On tx finalized,{' '}
+                                                    {(
+                                                        Number(
+                                                            parsedAddressInput
+                                                                .token_decimalized_qty
+                                                                .value,
+                                                        ) -
+                                                        getFirmaRedeemFee(
+                                                            Number(
+                                                                parsedAddressInput
+                                                                    .token_decimalized_qty
+                                                                    .value,
+                                                            ),
+                                                        )
+                                                    ).toLocaleString(
+                                                        userLocale,
+                                                        {
+                                                            maximumFractionDigits: 4,
+                                                            minimumFractionDigits: 4,
+                                                        },
+                                                    )}{' '}
+                                                    USDT will be sent to{' '}
+                                                    {parsedFirma.data.slice(
+                                                        0,
+                                                        3,
+                                                    )}
+                                                    ...
+                                                    {parsedFirma.data.slice(
+                                                        -3,
+                                                    )}{' '}
+                                                    <CopyIconButton
+                                                        name="Copy SOL addr"
+                                                        data={parsedFirma.data}
+                                                        showToast
+                                                    />
+                                                </FirmaRedeemTextAndCopy>
+                                            </ParsedTokenSend>
+                                        ) : (
+                                            <ParsedTokenSend>
+                                                <TokenIcon
+                                                    size={64}
+                                                    tokenId={
+                                                        parsedAddressInput
+                                                            .token_id.value
+                                                    }
+                                                />
+                                                Sending {decimalizedTokenQty}{' '}
+                                                {nameAndTicker} to{' '}
+                                                {addressPreview}
+                                            </ParsedTokenSend>
+                                        )}
+                                    </>
+                                )}
+
+                            {isBip21TokenSend(parsedAddressInput) &&
+                                !isValidFirmaRedeemTx(parsedAddressInput) &&
+                                typeof parsedAddressInput.firma?.value ===
+                                    'string' &&
+                                parsedAddressInput.firma.error === false && (
+                                    <SendXecRow>
+                                        <ParsedBip21InfoRow>
+                                            <ParsedBip21InfoLabel>
+                                                Parsed firma
+                                            </ParsedBip21InfoLabel>
+                                            <ParsedBip21Info>
+                                                <b>{parsedFirma.protocol}</b>
+                                                <br />
+                                                {parsedFirma.data}
+                                            </ParsedBip21Info>
+                                        </ParsedBip21InfoRow>
+                                    </SendXecRow>
+                                )}
+                            {isBip21MultipleOutputsSafe(parsedAddressInput) && (
+                                <SendXecRow>
+                                    <ParsedBip21InfoRow>
+                                        <ParsedBip21InfoLabel>
+                                            Parsed BIP21 outputs
+                                        </ParsedBip21InfoLabel>
+                                        <ParsedBip21Info>
+                                            <ol>
+                                                <li
+                                                    title={
+                                                        parsedAddressInput
+                                                            .address
+                                                            .value as string
+                                                    }
+                                                >{`${(
+                                                    parsedAddressInput.address
+                                                        .value as string
+                                                ).slice(6, 12)}...${(
+                                                    parsedAddressInput.address
+                                                        .value as string
+                                                ).slice(-6)}, ${parseFloat(
+                                                    parsedAddressInput.amount
+                                                        .value,
+                                                ).toLocaleString(userLocale, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })} XEC`}</li>
+                                                {Array.from(
+                                                    parsedAddressInput
+                                                        .parsedAdditionalXecOutputs
+                                                        .value,
+                                                ).map(
+                                                    ([addr, amount], index) => {
+                                                        return (
+                                                            <li
+                                                                key={index}
+                                                                title={addr}
+                                                            >{`${addr.slice(
+                                                                6,
+                                                                12,
+                                                            )}...${addr.slice(
+                                                                -6,
+                                                            )}, ${parseFloat(
+                                                                amount,
+                                                            ).toLocaleString(
+                                                                userLocale,
+                                                                {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                },
+                                                            )} XEC`}</li>
+                                                        );
+                                                    },
+                                                )}
+                                            </ol>
+                                        </ParsedBip21Info>
+                                    </ParsedBip21InfoRow>
+                                </SendXecRow>
+                            )}
+                            {advancedOpen && sendWithOpReturnRaw && (
+                                <>
+                                    <SendXecRow>
+                                        <TextArea
+                                            name="opReturnRaw"
+                                            height={62}
+                                            placeholder={`(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`}
+                                            value={formData.opReturnRaw}
+                                            error={opReturnRawError}
+                                            disabled={
+                                                txInfoFromUrl !== false ||
+                                                'queryString' in
+                                                    parsedAddressInput
+                                            }
+                                            showCount
+                                            max={
+                                                2 *
+                                                opReturn.opreturnParamByteLimit
+                                            }
+                                            handleInput={handleOpReturnRawInput}
+                                        />
+                                    </SendXecRow>
+                                    {opReturnRawError === false &&
+                                        formData.opReturnRaw !== '' && (
+                                            <SendXecRow>
+                                                <ParsedBip21InfoRow>
+                                                    <ParsedBip21InfoLabel>
+                                                        Parsed op_return_raw
+                                                    </ParsedBip21InfoLabel>
+                                                    <ParsedBip21Info>
+                                                        <b>
+                                                            {
+                                                                parsedOpReturnRaw.protocol
+                                                            }
+                                                        </b>
+                                                        <br />
+                                                        {parsedOpReturnRaw.data}
+                                                    </ParsedBip21Info>
+                                                </ParsedBip21InfoRow>
+                                            </SendXecRow>
+                                        )}
                                 </>
                             )}
-                        {/* Parsed input_data_raw when present in BIP21 (token mode) */}
-                        {selectedTokenId &&
-                            (parsedInputDataRaw.protocol !== '' ||
+                            {/* Parsed input_data_raw when present in BIP21 (XEC mode) */}
+                            {(parsedInputDataRaw.protocol !== '' ||
                                 parsedInputDataRaw.data !== '') && (
                                 <SendXecRow>
                                     <ParsedBip21InfoRow>
@@ -2889,564 +3631,118 @@ const SendXec: React.FC = () => {
                                     </ParsedBip21InfoRow>
                                 </SendXecRow>
                             )}
-                        {/* Show BIP21 token send info in token mode (only if token_decimalized_qty is present) */}
-                        {isBip21TokenSend(parsedAddressInput) &&
-                            selectedTokenId !== null &&
-                            selectedTokenId ===
-                                parsedAddressInput.token_id.value &&
-                            tokenIdQueryError === false && (
-                                <>
-                                    {typeof cashtabCache.tokens.get(
-                                        parsedAddressInput.token_id.value,
-                                    ) !== 'undefined' ? (
-                                        <>
-                                            {/* Show parsed token send info */}
-                                            {isValidFirmaRedeemTx(
-                                                parsedAddressInput,
-                                            ) ? (
-                                                <ParsedTokenSend
-                                                    style={{
-                                                        marginBottom: '12px',
-                                                    }}
-                                                >
-                                                    <FirmaRedeemLogoWrapper>
-                                                        <FirmaIcon />
-                                                        <TetherIcon />
-                                                    </FirmaRedeemLogoWrapper>
-                                                    <FirmaRedeemTextAndCopy>
-                                                        On tx finalized,{' '}
-                                                        {(
-                                                            Number(
-                                                                parsedAddressInput
-                                                                    .token_decimalized_qty
-                                                                    .value,
-                                                            ) -
-                                                            getFirmaRedeemFee(
-                                                                Number(
-                                                                    parsedAddressInput
-                                                                        .token_decimalized_qty
-                                                                        .value,
-                                                                ),
-                                                            )
-                                                        ).toLocaleString(
-                                                            userLocale,
-                                                            {
-                                                                maximumFractionDigits: 4,
-                                                                minimumFractionDigits: 4,
-                                                            },
-                                                        )}{' '}
-                                                        USDT will be sent to{' '}
-                                                        {parsedFirma.data.slice(
-                                                            0,
-                                                            3,
-                                                        )}
-                                                        ...
-                                                        {parsedFirma.data.slice(
-                                                            -3,
-                                                        )}{' '}
-                                                        <CopyIconButton
-                                                            name="Copy SOL addr"
-                                                            data={
-                                                                parsedFirma.data
-                                                            }
-                                                            showToast
-                                                        />
-                                                    </FirmaRedeemTextAndCopy>
-                                                </ParsedTokenSend>
-                                            ) : (
-                                                <ParsedTokenSend
-                                                    style={{
-                                                        marginBottom: '12px',
-                                                    }}
-                                                >
-                                                    <TokenIcon
-                                                        size={64}
-                                                        tokenId={
-                                                            parsedAddressInput
-                                                                .token_id.value
-                                                        }
-                                                    />
-                                                    Sending{' '}
-                                                    {decimalizedTokenQty}{' '}
-                                                    {nameAndTicker} to{' '}
-                                                    {addressPreview}
-                                                </ParsedTokenSend>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <InlineLoader />
-                                    )}
-                                </>
-                            )}
-                        {/* Show parsed firma info in token mode when firma is present but not a redeem tx */}
-                        {isBip21TokenSend(parsedAddressInput) &&
-                            !isValidFirmaRedeemTx(parsedAddressInput) &&
-                            selectedTokenId !== null &&
-                            selectedTokenId ===
-                                parsedAddressInput.token_id.value &&
-                            typeof parsedAddressInput.firma?.value ===
-                                'string' &&
-                            parsedAddressInput.firma.error === false &&
-                            parsedFirma.protocol !== '' &&
-                            parsedFirma.data !== '' && (
-                                <div style={{ margin: '12px 0' }}>
-                                    <ParsedBip21InfoRow>
-                                        <ParsedBip21InfoLabel>
-                                            Parsed firma
-                                        </ParsedBip21InfoLabel>
-                                        <ParsedBip21Info>
-                                            <b>{parsedFirma.protocol}</b>
-                                            <br />
-                                            {parsedFirma.data}
-                                        </ParsedBip21Info>
-                                    </ParsedBip21InfoRow>
-                                </div>
-                            )}
-                        {(isBip21TokenSend(parsedAddressInput) ||
-                            isBip21TokenSendWithTokenId(parsedAddressInput)) &&
-                            selectedTokenId !== null &&
-                            parsedAddressInput.token_id?.value ===
-                                selectedTokenId &&
-                            tokenIdQueryError && (
-                                <Alert>
-                                    Error querying token info for{' '}
-                                    {parsedAddressInput.token_id?.value ||
-                                        'unknown token'}
-                                </Alert>
-                            )}
-                    </TokenFormContainer>
-                ) : (
-                    <InputModesHolder open={isOneToManyXECSend}>
-                        <SendToOneHolder>
-                            <SendToOneInputForm>
-                                <InputWithScanner
-                                    placeholder={'Address'}
-                                    name="address"
-                                    value={formData.address}
-                                    disabled={txInfoFromUrl !== false}
-                                    handleInput={handleAddressChange}
-                                    error={sendAddressError}
-                                />
-                                {isBip21MultipleOutputsSafe(
-                                    parsedAddressInput,
-                                ) ? (
-                                    <Info>
-                                        <b>
-                                            BIP21: Sending{' '}
-                                            {bip21MultipleOutputsFormattedTotalSendXec.toLocaleString(
-                                                userLocale,
-                                                {
-                                                    maximumFractionDigits: 2,
-                                                    minimumFractionDigits: 2,
-                                                },
-                                            )}{' '}
-                                            XEC to{' '}
-                                            {parsedAddressInput
-                                                .parsedAdditionalXecOutputs
-                                                .value.length + 1}{' '}
-                                            outputs
-                                        </b>
-                                    </Info>
-                                ) : (
-                                    <SendXecInput
-                                        name="amount"
-                                        value={formData.amount}
-                                        selectValue={selectedCurrency}
-                                        selectDisabled={
-                                            'amount' in parsedAddressInput ||
-                                            txInfoFromUrl !== false
-                                        }
-                                        inputDisabled={
-                                            priceApiError ||
-                                            (txInfoFromUrl !== false &&
-                                                'value' in txInfoFromUrl &&
-                                                txInfoFromUrl.value !==
-                                                    'null' &&
-                                                txInfoFromUrl.value !==
-                                                    'undefined') ||
-                                            'amount' in parsedAddressInput
-                                        }
-                                        fiatCode={settings.fiatCurrency.toUpperCase()}
-                                        error={sendAmountError}
-                                        handleInput={handleAmountChange}
-                                        handleSelect={
-                                            handleSelectedCurrencyChange
-                                        }
-                                        handleOnMax={onMax}
-                                    />
-                                )}
-                            </SendToOneInputForm>
-                        </SendToOneHolder>
-                        {isBip21TokenSend(parsedAddressInput) &&
-                            tokenIdQueryError && (
-                                <Alert>
-                                    Error querying token info for{' '}
-                                    {parsedAddressInput.token_id.value}
-                                </Alert>
-                            )}
-                        {priceApiError && (
-                            <AlertMsg>
-                                Error fetching fiat price. Setting send by{' '}
-                                {supportedFiatCurrencies[
-                                    settings.fiatCurrency
-                                ].slug.toUpperCase()}{' '}
-                                disabled
-                            </AlertMsg>
-                        )}
-                        <SendToManyHolder>
-                            <TextArea
-                                placeholder={`One address & amount per line, separated by comma \ne.g. \necash:qpatql05s9jfavnu0tv6lkjjk25n6tmj9gkpyrlwu8,500 \necash:qzvydd4n3lm3xv62cx078nu9rg0e3srmqq0knykfed,700`}
-                                name="multiAddressInput"
-                                handleInput={e => handleMultiAddressChange(e)}
-                                value={formData.multiAddressInput}
-                                error={multiSendAddressError}
-                            />
-                        </SendToManyHolder>
-                    </InputModesHolder>
-                )}
-                {!isTokenMode && (
-                    <SendXecForm>
-                        <SendXecRow>
-                            <SwitchAndLabel>
-                                <Switch
-                                    name="Toggle Cashtab Msg"
-                                    on="✉️"
-                                    off="✉️"
-                                    checked={sendWithCashtabMsg}
-                                    disabled={
-                                        txInfoFromUrl !== false ||
-                                        'queryString' in parsedAddressInput
-                                    }
-                                    handleToggle={() => {
-                                        // If we are sending a Cashtab msg, toggle off op_return_raw
-                                        if (
-                                            !sendWithCashtabMsg &&
-                                            sendWithOpReturnRaw
-                                        ) {
-                                            setSendWithOpReturnRaw(false);
-                                        }
-                                        setSendWithCashtabMsg(
-                                            !sendWithCashtabMsg,
-                                        );
-                                    }}
-                                />
-                                <SwitchLabel>Cashtab Msg </SwitchLabel>
-                            </SwitchAndLabel>
-                        </SendXecRow>
-                        {sendWithCashtabMsg && (
-                            <SendXecRow>
-                                <TextArea
-                                    name="cashtabMsg"
-                                    height={62}
-                                    placeholder={`Include a public Cashtab msg with this tx ${
-                                        location &&
-                                        location.state &&
-                                        location.state.airdropTokenId
-                                            ? `(max ${
-                                                  opreturnConfig.cashtabMsgByteLimit -
-                                                  localAirdropTxAddedBytes
-                                              } bytes)`
-                                            : `(max ${opreturnConfig.cashtabMsgByteLimit} bytes)`
-                                    }`}
-                                    value={formData.cashtabMsg}
-                                    error={cashtabMsgError}
-                                    showCount
-                                    customCount={getCashtabMsgByteCount(
-                                        formData.cashtabMsg,
-                                    )}
-                                    max={
-                                        location &&
-                                        location.state &&
-                                        location.state.airdropTokenId
-                                            ? opreturnConfig.cashtabMsgByteLimit -
-                                              localAirdropTxAddedBytes
-                                            : opreturnConfig.cashtabMsgByteLimit
-                                    }
-                                    handleInput={e => handleCashtabMsgChange(e)}
-                                />
-                            </SendXecRow>
-                        )}
-                        <SendXecRow>
-                            <SwitchAndLabel>
-                                <Switch
-                                    name="Toggle op_return_raw"
-                                    checked={sendWithOpReturnRaw}
-                                    disabled={
-                                        txInfoFromUrl !== false ||
-                                        'queryString' in parsedAddressInput
-                                    }
-                                    handleToggle={() => {
-                                        // If we are sending with op_return_raw, toggle off CashtabMsg
-                                        if (
-                                            !sendWithOpReturnRaw &&
-                                            sendWithCashtabMsg
-                                        ) {
-                                            setSendWithCashtabMsg(false);
-                                        }
-                                        setSendWithOpReturnRaw(
-                                            !sendWithOpReturnRaw,
-                                        );
-                                    }}
-                                />
-                                <SwitchLabel>op_return_raw</SwitchLabel>
-                            </SwitchAndLabel>
-                        </SendXecRow>
-                        {isBip21TokenSend(parsedAddressInput) &&
-                            tokenIdQueryError === false && (
-                                <>
-                                    {isValidFirmaRedeemTx(
-                                        parsedAddressInput,
-                                    ) ? (
-                                        <ParsedTokenSend
-                                            /** make sure the bottom is not stuck behind SEND button */
-                                            style={{ marginBottom: '48px' }}
-                                        >
-                                            <FirmaRedeemLogoWrapper>
-                                                <FirmaIcon />
-                                                <TetherIcon />
-                                            </FirmaRedeemLogoWrapper>
-                                            <FirmaRedeemTextAndCopy>
-                                                On tx finalized,{' '}
-                                                {(
-                                                    Number(
-                                                        parsedAddressInput
-                                                            .token_decimalized_qty
-                                                            .value,
-                                                    ) -
-                                                    getFirmaRedeemFee(
-                                                        Number(
-                                                            parsedAddressInput
-                                                                .token_decimalized_qty
-                                                                .value,
-                                                        ),
-                                                    )
-                                                ).toLocaleString(userLocale, {
-                                                    maximumFractionDigits: 4,
-                                                    minimumFractionDigits: 4,
-                                                })}{' '}
-                                                USDT will be sent to{' '}
-                                                {parsedFirma.data.slice(0, 3)}
-                                                ...
-                                                {parsedFirma.data.slice(
-                                                    -3,
-                                                )}{' '}
-                                                <CopyIconButton
-                                                    name="Copy SOL addr"
-                                                    data={parsedFirma.data}
-                                                    showToast
-                                                />
-                                            </FirmaRedeemTextAndCopy>
-                                        </ParsedTokenSend>
-                                    ) : (
-                                        <ParsedTokenSend>
-                                            <TokenIcon
-                                                size={64}
-                                                tokenId={
-                                                    parsedAddressInput.token_id
-                                                        .value
-                                                }
-                                            />
-                                            Sending {decimalizedTokenQty}{' '}
-                                            {nameAndTicker} to {addressPreview}
-                                        </ParsedTokenSend>
-                                    )}
-                                </>
-                            )}
-
-                        {isBip21TokenSend(parsedAddressInput) &&
-                            !isValidFirmaRedeemTx(parsedAddressInput) &&
-                            typeof parsedAddressInput.firma?.value ===
-                                'string' &&
-                            parsedAddressInput.firma.error === false && (
-                                <SendXecRow>
-                                    <ParsedBip21InfoRow>
-                                        <ParsedBip21InfoLabel>
-                                            Parsed firma
-                                        </ParsedBip21InfoLabel>
-                                        <ParsedBip21Info>
-                                            <b>{parsedFirma.protocol}</b>
-                                            <br />
-                                            {parsedFirma.data}
-                                        </ParsedBip21Info>
-                                    </ParsedBip21InfoRow>
-                                </SendXecRow>
-                            )}
-                        {sendWithOpReturnRaw && (
-                            <>
-                                <SendXecRow>
-                                    <TextArea
-                                        name="opReturnRaw"
-                                        height={62}
-                                        placeholder={`(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`}
-                                        value={formData.opReturnRaw}
-                                        error={opReturnRawError}
-                                        disabled={
-                                            txInfoFromUrl !== false ||
-                                            'queryString' in parsedAddressInput
-                                        }
-                                        showCount
-                                        max={
-                                            2 * opReturn.opreturnParamByteLimit
-                                        }
-                                        handleInput={handleOpReturnRawInput}
-                                    />
-                                </SendXecRow>
-                                {opReturnRawError === false &&
-                                    formData.opReturnRaw !== '' && (
-                                        <SendXecRow>
-                                            <ParsedBip21InfoRow>
-                                                <ParsedBip21InfoLabel>
-                                                    Parsed op_return_raw
-                                                </ParsedBip21InfoLabel>
-                                                <ParsedBip21Info>
-                                                    <b>
-                                                        {
-                                                            parsedOpReturnRaw.protocol
-                                                        }
-                                                    </b>
-                                                    <br />
-                                                    {parsedOpReturnRaw.data}
-                                                </ParsedBip21Info>
-                                            </ParsedBip21InfoRow>
-                                        </SendXecRow>
-                                    )}
-                            </>
-                        )}
-                        {/* Parsed input_data_raw when present in BIP21 (XEC mode) */}
-                        {(parsedInputDataRaw.protocol !== '' ||
-                            parsedInputDataRaw.data !== '') && (
-                            <SendXecRow>
-                                <ParsedBip21InfoRow>
-                                    <ParsedBip21InfoLabel>
-                                        Parsed input_data_raw
-                                    </ParsedBip21InfoLabel>
-                                    <ParsedBip21Info>
-                                        <b>{parsedInputDataRaw.protocol}</b>
-                                        <br />
-                                        {parsedInputDataRaw.data}
-                                    </ParsedBip21Info>
-                                </ParsedBip21InfoRow>
-                            </SendXecRow>
-                        )}
-                        {isBip21MultipleOutputsSafe(parsedAddressInput) && (
-                            <SendXecRow>
-                                <ParsedBip21InfoRow>
-                                    <ParsedBip21InfoLabel>
-                                        Parsed BIP21 outputs
-                                    </ParsedBip21InfoLabel>
-                                    <ParsedBip21Info>
-                                        <ol>
-                                            <li
-                                                title={
-                                                    parsedAddressInput.address
-                                                        .value as string
-                                                }
-                                            >{`${(
-                                                parsedAddressInput.address
-                                                    .value as string
-                                            ).slice(6, 12)}...${(
-                                                parsedAddressInput.address
-                                                    .value as string
-                                            ).slice(-6)}, ${parseFloat(
-                                                parsedAddressInput.amount.value,
-                                            ).toLocaleString(userLocale, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })} XEC`}</li>
-                                            {Array.from(
-                                                parsedAddressInput
-                                                    .parsedAdditionalXecOutputs
-                                                    .value,
-                                            ).map(([addr, amount], index) => {
-                                                return (
-                                                    <li
-                                                        key={index}
-                                                        title={addr}
-                                                    >{`${addr.slice(
-                                                        6,
-                                                        12,
-                                                    )}...${addr.slice(
-                                                        -6,
-                                                    )}, ${parseFloat(
-                                                        amount,
-                                                    ).toLocaleString(
-                                                        userLocale,
-                                                        {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        },
-                                                    )} XEC`}</li>
-                                                );
-                                            })}
-                                        </ol>
-                                    </ParsedBip21Info>
-                                </ParsedBip21InfoRow>
-                            </SendXecRow>
-                        )}
-                    </SendXecForm>
-                )}
-
-                <AmountPreviewCtn>
-                    {!priceApiError && (
-                        <>
-                            {isOneToManyXECSend ? (
-                                <LocaleFormattedValue>
-                                    {formatBalance(
-                                        multiSendTotal.toString(),
-                                        userLocale,
-                                    ) +
-                                        ' ' +
-                                        selectedCurrency}
-                                </LocaleFormattedValue>
-                            ) : isBip21MultipleOutputsSafe(
-                                  parsedAddressInput,
-                              ) ? (
-                                <LocaleFormattedValue>
-                                    {bip21MultipleOutputsFormattedTotalSendXec.toLocaleString(
-                                        userLocale,
-                                        {
-                                            maximumFractionDigits: 2,
-                                            minimumFractionDigits: 2,
-                                        },
-                                    )}{' '}
-                                    XEC
-                                </LocaleFormattedValue>
-                            ) : (
-                                <LocaleFormattedValue>
-                                    {!isNaN(parseFloat(formData.amount))
-                                        ? formatBalance(
-                                              formData.amount,
-                                              userLocale,
-                                          ) +
-                                          ' ' +
-                                          selectedCurrency
-                                        : ''}
-                                </LocaleFormattedValue>
-                            )}
-                            <ConvertAmount>
-                                {fiatPriceString !== '' && '='}{' '}
-                                {fiatPriceString}
-                            </ConvertAmount>
-                        </>
+                        </SendXecForm>
                     )}
-                </AmountPreviewCtn>
-                <SendButtonContainer>
-                    {isUrlBasedTransaction ? (
-                        <>
+
+                    {!priceApiError && !isTokenMode && (
+                        <AmountPreviewCtn>
+                            <AmountPreviewLabel>Sending</AmountPreviewLabel>
+                            <AmountPreviewValues>
+                                {isOneToManyXECSend ? (
+                                    <LocaleFormattedValue>
+                                        {formatBalance(
+                                            multiSendTotal.toString(),
+                                            userLocale,
+                                        ) +
+                                            ' ' +
+                                            selectedCurrency}
+                                    </LocaleFormattedValue>
+                                ) : isBip21MultipleOutputsSafe(
+                                      parsedAddressInput,
+                                  ) ? (
+                                    <LocaleFormattedValue>
+                                        {bip21MultipleOutputsFormattedTotalSendXec.toLocaleString(
+                                            userLocale,
+                                            {
+                                                maximumFractionDigits: 2,
+                                                minimumFractionDigits: 2,
+                                            },
+                                        )}{' '}
+                                        XEC
+                                    </LocaleFormattedValue>
+                                ) : (
+                                    <LocaleFormattedValue>
+                                        {!isNaN(parseFloat(formData.amount))
+                                            ? formatBalance(
+                                                  formData.amount,
+                                                  userLocale,
+                                              ) +
+                                              ' ' +
+                                              selectedCurrency
+                                            : `0 ${selectedCurrency}`}
+                                    </LocaleFormattedValue>
+                                )}
+                                <AmountPreviewFiat>
+                                    {fiatPriceString !== '' && '= '}
+                                    {fiatPriceString}
+                                </AmountPreviewFiat>
+                            </AmountPreviewValues>
+                        </AmountPreviewCtn>
+                    )}
+                    <SendButtonContainer>
+                        {isUrlBasedTransaction ? (
+                            <>
+                                <PrimaryButton
+                                    disabled={
+                                        isTokenMode
+                                            ? isBip21TokenSend(
+                                                  parsedAddressInput,
+                                              ) &&
+                                              selectedTokenId !== null &&
+                                              selectedTokenId ===
+                                                  parsedAddressInput.token_id
+                                                      .value
+                                                ? tokenError !== false ||
+                                                  tokenIdQueryError ||
+                                                  shouldShowSlpErrorForEmppRaw ||
+                                                  isSending
+                                                : disableTokenSendButton
+                                            : (!isBip21TokenSend(
+                                                  parsedAddressInput,
+                                              ) &&
+                                                  disableSendButton) ||
+                                              (isBip21TokenSend(
+                                                  parsedAddressInput,
+                                              ) &&
+                                                  tokenError !== false) ||
+                                              tokenIdQueryError ||
+                                              isSending
+                                    }
+                                    onClick={
+                                        isTokenMode
+                                            ? isBip21TokenSend(
+                                                  parsedAddressInput,
+                                              ) &&
+                                              selectedTokenId !== null &&
+                                              selectedTokenId ===
+                                                  parsedAddressInput.token_id
+                                                      .value
+                                                ? checkForConfirmationBeforeBip21TokenSend
+                                                : checkForConfirmationBeforeSendToken
+                                            : isBip21TokenSend(
+                                                    parsedAddressInput,
+                                                )
+                                              ? checkForConfirmationBeforeBip21TokenSend
+                                              : checkForConfirmationBeforeSendXec
+                                    }
+                                >
+                                    {isSending ? <InlineLoader /> : 'Accept'}
+                                </PrimaryButton>
+                                <SecondaryButton
+                                    disabled={isSending}
+                                    onClick={() => handleTransactionRejection()}
+                                    style={{
+                                        marginLeft: '10px',
+                                    }}
+                                >
+                                    Reject
+                                </SecondaryButton>
+                            </>
+                        ) : (
                             <PrimaryButton
                                 disabled={
                                     isTokenMode
-                                        ? isBip21TokenSend(
-                                              parsedAddressInput,
-                                          ) &&
-                                          selectedTokenId !== null &&
-                                          selectedTokenId ===
-                                              parsedAddressInput.token_id.value
-                                            ? tokenError !== false ||
-                                              tokenIdQueryError ||
-                                              shouldShowSlpErrorForEmppRaw ||
-                                              isSending
-                                            : disableTokenSendButton
+                                        ? disableTokenSendButton
                                         : (!isBip21TokenSend(
                                               parsedAddressInput,
                                           ) &&
@@ -3455,60 +3751,22 @@ const SendXec: React.FC = () => {
                                               parsedAddressInput,
                                           ) &&
                                               tokenError !== false) ||
-                                          tokenIdQueryError ||
-                                          isSending
+                                          tokenIdQueryError
                                 }
                                 onClick={
                                     isTokenMode
-                                        ? isBip21TokenSend(
-                                              parsedAddressInput,
-                                          ) &&
-                                          selectedTokenId !== null &&
-                                          selectedTokenId ===
-                                              parsedAddressInput.token_id.value
-                                            ? checkForConfirmationBeforeBip21TokenSend
-                                            : checkForConfirmationBeforeSendToken
+                                        ? checkForConfirmationBeforeSendToken
                                         : isBip21TokenSend(parsedAddressInput)
                                           ? checkForConfirmationBeforeBip21TokenSend
                                           : checkForConfirmationBeforeSendXec
                                 }
                             >
-                                {isSending ? <InlineLoader /> : 'Accept'}
+                                {isSending ? <InlineLoader /> : 'Send'}
                             </PrimaryButton>
-                            <SecondaryButton
-                                disabled={isSending}
-                                onClick={() => handleTransactionRejection()}
-                                style={{
-                                    marginLeft: '10px',
-                                }}
-                            >
-                                Reject
-                            </SecondaryButton>
-                        </>
-                    ) : (
-                        <PrimaryButton
-                            disabled={
-                                isTokenMode
-                                    ? disableTokenSendButton
-                                    : (!isBip21TokenSend(parsedAddressInput) &&
-                                          disableSendButton) ||
-                                      (isBip21TokenSend(parsedAddressInput) &&
-                                          tokenError !== false) ||
-                                      tokenIdQueryError
-                            }
-                            onClick={
-                                isTokenMode
-                                    ? checkForConfirmationBeforeSendToken
-                                    : isBip21TokenSend(parsedAddressInput)
-                                      ? checkForConfirmationBeforeBip21TokenSend
-                                      : checkForConfirmationBeforeSendXec
-                            }
-                        >
-                            {isSending ? <InlineLoader /> : 'Send'}
-                        </PrimaryButton>
-                    )}
-                </SendButtonContainer>
-                {apiError && <ApiError />}
+                        )}
+                    </SendButtonContainer>
+                    {apiError && <ApiError />}
+                </SendContentWrapper>
             </OuterCtn>
         </>
     );

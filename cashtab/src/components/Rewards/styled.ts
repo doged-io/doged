@@ -6,10 +6,14 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
     width: 100%;
-    margin-top: 24px;
-    h2 {
-        margin-bottom: 30px;
+    @media (max-width: 768px) {
+        padding: 0 10px;
     }
+`;
+
+export const ButtonContainer = styled.div`
+    width: 100%;
+    margin-top: 50px;
 `;
 
 export const ContentDiv = styled.div`

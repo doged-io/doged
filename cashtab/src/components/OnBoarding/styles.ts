@@ -5,11 +5,28 @@
 import styled from 'styled-components';
 
 export const WelcomeCtn = styled.div`
-    margin-top: 20px;
-    padding: 0px 30px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 100%;
     color: ${props => props.theme.primaryText};
     h2 {
         color: ${props => props.theme.primaryText};
+    }
+    img {
+        width: 80%;
+        max-width: 300px;
+        margin-bottom: 28px;
+        @media (min-width: 769px) {
+            margin-bottom: 40px;
+        }
+    }
+    > div {
+        width: 100%;
+        max-width: 300px;
     }
 `;
 
@@ -17,8 +34,8 @@ export const WelcomeText = styled.p`
     width: 100%;
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
-    margin-bottom: 60px;
-    text-align: left;
+    text-align: center;
+    margin-bottom: 20px;
 `;
 
 export const WelcomeLink = styled.a`

@@ -59,10 +59,15 @@ import {
     OfferTitleLink,
     OfferDetailsCtn,
     BuyOrderCtn,
+    BuyOrderSummaryRow,
+    BuyOrderSummaryLabel,
+    BuyOrderSummaryValue,
+    BuyOrderSummaryValueEmphasis,
     MintIconSpotWrapper,
     DeltaSpan,
     AgoraWarningParagraph,
     OfferHeaderRow,
+    QuantityLabel,
     SliderContainer,
     SliderInputRow,
     PercentageButton,
@@ -1406,25 +1411,7 @@ const OrderBook: React.FC<OrderBookProps> = ({
                                 </SliderContainer>
                             ) : (
                                 <SliderContainer>
-                                    <SliderInputRow>
-                                        <Slider
-                                            name={`Select buy qty ${tokenId}`}
-                                            value={takeTokenDecimalizedQty}
-                                            error={takeTokenDecimalizedQtyError}
-                                            handleSlide={
-                                                handleTakeTokenDecimalizedQtySlide
-                                            }
-                                            // Note that we can only be here if canRenderOrderbook
-                                            min={
-                                                decimalizedTokenQtyMin as string
-                                            }
-                                            max={
-                                                decimalizedTokenQtyMax as string
-                                            }
-                                            step={parseFloat(`1e-${decimals}`)}
-                                            allowTypedInput
-                                        />
-                                    </SliderInputRow>
+                                    <QuantityLabel>Quantity</QuantityLabel>
                                     {!isMaker && (
                                         <PercentageButtonsRow>
                                             <PercentageButton
@@ -1538,34 +1525,66 @@ const OrderBook: React.FC<OrderBookProps> = ({
                                             </PercentageButton>
                                         </PercentageButtonsRow>
                                     )}
+                                    <SliderInputRow>
+                                        <Slider
+                                            name={`Select buy qty ${tokenId}`}
+                                            value={takeTokenDecimalizedQty}
+                                            error={takeTokenDecimalizedQtyError}
+                                            handleSlide={
+                                                handleTakeTokenDecimalizedQtySlide
+                                            }
+                                            // Note that we can only be here if canRenderOrderbook
+                                            min={
+                                                decimalizedTokenQtyMin as string
+                                            }
+                                            max={
+                                                decimalizedTokenQtyMax as string
+                                            }
+                                            step={parseFloat(`1e-${decimals}`)}
+                                            allowTypedInput
+                                        />
+                                    </SliderInputRow>
                                 </SliderContainer>
                             )}
                             <BuyOrderCtn>
-                                <div>
-                                    {decimalizedTokenQtyToLocaleFormat(
-                                        takeTokenDecimalizedQty,
-                                        userLocale,
-                                    )}{' '}
-                                    {tokenTicker !== ''
-                                        ? `${tokenTicker}`
-                                        : `${tokenName}`}
-                                </div>
-                                {!displaySpotPricesInFiat ||
-                                fiatPrice === null ? (
-                                    <h3>
-                                        {toFormattedXec(askedSats, userLocale)}{' '}
-                                        XEC
-                                    </h3>
-                                ) : (
-                                    <h3>
-                                        {getFormattedFiatPrice(
-                                            settings.fiatCurrency,
+                                <BuyOrderSummaryRow>
+                                    <BuyOrderSummaryLabel>
+                                        Buying
+                                    </BuyOrderSummaryLabel>
+                                    <BuyOrderSummaryValue>
+                                        {decimalizedTokenQtyToLocaleFormat(
+                                            takeTokenDecimalizedQty,
                                             userLocale,
-                                            toXec(askedSats),
-                                            fiatPrice,
-                                        )}
-                                    </h3>
-                                )}
+                                        )}{' '}
+                                        {tokenTicker !== ''
+                                            ? `${tokenTicker}`
+                                            : `${tokenName}`}
+                                    </BuyOrderSummaryValue>
+                                </BuyOrderSummaryRow>
+                                <BuyOrderSummaryRow>
+                                    <BuyOrderSummaryLabel>
+                                        For
+                                    </BuyOrderSummaryLabel>
+                                    {!displaySpotPricesInFiat ||
+                                    fiatPrice === null ? (
+                                        <BuyOrderSummaryValueEmphasis>
+                                            {toFormattedXec(
+                                                askedSats,
+                                                userLocale,
+                                            )}{' '}
+                                            XEC
+                                        </BuyOrderSummaryValueEmphasis>
+                                    ) : (
+                                        <BuyOrderSummaryValueEmphasis>
+                                            {getFormattedFiatPrice(
+                                                settings.fiatCurrency,
+                                                userLocale,
+                                                toXec(askedSats),
+                                                fiatPrice,
+                                            )}
+                                        </BuyOrderSummaryValueEmphasis>
+                                    )}
+                                </BuyOrderSummaryRow>
                                 {isMaker ? (
                                     <SecondaryButton
                                         onClick={() =>

@@ -50,12 +50,8 @@ export const token = {
         '0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0',
         // BVE
         '96704added2310ba79cddecc7e192c56a8aa29542b7187539fc0327acddc8ac6',
-        // Star crystals
-        'ac31bb0bccf33de1683efce4da64f1cb6d8e8d6e098bc01c51d5864deb0e783f',
         // XECX
         'c67bf5c2b6d91cfb46a5c1772582eff80d88686887be10aa63b0945479cf4ed4',
-        // Star Shard
-        'd1131675cb62b65909fb45ba53b022da0bd0f34aaa71fc61770115472b186ffb',
         // POW
         'f36e1b3d9a2aaf74f132fef3834e9743b945a667a4204e761b85f2e7b65fd41a',
     ],

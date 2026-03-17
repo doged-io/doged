@@ -119,8 +119,32 @@ describe('<Token />', () => {
         });
         // Set up userEvent
         user = userEvent.setup();
-        // Mock the fetch call for Cashtab's price API
-        global.fetch = jest.fn();
+        // Mock fetch for price API and blacklist (blacklisted test overrides via when())
+        global.fetch = jest.fn((input: RequestInfo | URL) => {
+            const url =
+                typeof input === 'string'
+                    ? input
+                    : input instanceof URL
+                      ? input.href
+                      : (input as Request).url;
+            if (url.includes(`${tokenConfig.blacklistServerUrl}/blacklist/`)) {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ isBlacklisted: false }),
+                } as Response);
+            }
+            if (url.includes('api.coingecko.com')) {
+                return Promise.resolve({
+                    json: () =>
+                        Promise.resolve({
+                            ecash: {
+                                usd: 0.00003,
+                                last_updated_at: 1706644626,
+                            },
+                        }),
+                } as Response);
+            }
+            return undefined as unknown as Promise<Response>;
+        });
         mockPrice(0.00003);
     });
 
@@ -132,15 +156,6 @@ describe('<Token />', () => {
     it('For a fungible SLP token, renders the Token screen with sale by default and expected inputs', async () => {
         // No active offers
         mockedAgora.setActiveOffersByTokenId(SEND_TOKEN_TOKENID, []);
-
-        // Mock not blacklisted
-        when(fetch)
-            .calledWith(
-                `${tokenConfig.blacklistServerUrl}/blacklist/${SEND_TOKEN_TOKENID}`,
-            )
-            .mockResolvedValue({
-                json: () => Promise.resolve({ isBlacklisted: false }),
-            } as Response);
 
         render(
             <TokenTestWrapper
@@ -155,13 +170,13 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
+        // Switch to Sell mode (UI now uses buttons instead of Switch)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
 
-        const totalQtyInput = screen.getByPlaceholderText('Offered qty');
+        // Sell form uses Slider with name as placeholder (agoraPartialTokenQty), Min qty has label
+        const totalQtyInput = await screen.findByPlaceholderText(
+            'agoraPartialTokenQty',
+        );
         const minQtyInput = screen.getByPlaceholderText('Min qty');
 
         // Input fields are rendered
@@ -182,8 +197,9 @@ describe('<Token />', () => {
             screen.getByRole('button', { name: /List BearNip/ }),
         ).toHaveProperty('disabled', true);
 
-        // OrderBook is rendered
-        // NB OrderBook behavior is tested independently, we only test that it appears as expected here
+        // OrderBook is in Buy mode; in Sell mode we see the Sell form (mutually exclusive in new UI)
+        // Switch to Buy to verify OrderBook
+        await user.click(screen.getByRole('button', { name: /Buy/ }));
         expect(
             await screen.findByText('No active offers for this token'),
         ).toBeInTheDocument();
@@ -215,40 +231,23 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        const totalQtyInput = screen.getByPlaceholderText('Offered qty');
-        const minQtyInput = screen.getByPlaceholderText('Min qty');
-
-        // Input fields are rendered
-        expect(totalQtyInput).toBeInTheDocument();
-        expect(minQtyInput).toBeInTheDocument();
-
-        // Only total qty input is enabled
-        expect(totalQtyInput).toBeEnabled();
-        expect(minQtyInput).toBeDisabled();
-
-        // Price input is disabled as qty inputs are at 0 value
-        expect(
-            screen.getByPlaceholderText('Enter list price (per token)'),
-        ).toHaveProperty('disabled', true);
-
-        // List button is present and disabled
-        expect(
-            screen.getByRole('button', { name: /List BearNip/ }),
-        ).toHaveProperty('disabled', true);
-
-        // OrderBook is NOT rendered
+        // For blacklisted tokens, Buy/Sell buttons and OrderBook are NOT rendered
         // We show expected blacklist notice
         expect(
             await screen.findByText(
                 'Cashtab does not support trading this token',
             ),
         ).toBeInTheDocument();
+
+        // OrderBook is NOT rendered (no "No active offers" text)
+        expect(
+            screen.queryByText('No active offers for this token'),
+        ).not.toBeInTheDocument();
+
+        // Sell form is NOT rendered (action bar hidden for blacklisted tokens)
+        expect(
+            screen.queryByPlaceholderText('agoraPartialTokenQty'),
+        ).not.toBeInTheDocument();
     });
 
     it('Accepts a valid ecash: prefixed address', async () => {
@@ -265,14 +264,10 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // Click Send
-        await user.click(await screen.findByTitle('Toggle Send'));
+        // Switch to Sell mode, then to Send (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
+        await user.click(screen.getByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Send'));
 
         const addressInputEl = screen.getByPlaceholderText(/Address/);
 
@@ -307,14 +302,10 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // Click Send
-        await user.click(await screen.findByTitle('Toggle Send'));
+        // Switch to Sell mode, then to Send (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
+        await user.click(screen.getByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Send'));
 
         const addressInputEl = screen.getByPlaceholderText(/Address/);
 
@@ -350,14 +341,10 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // Click Send
-        await user.click(await screen.findByTitle('Toggle Send'));
+        // Switch to Sell mode, then to Send (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
+        await user.click(screen.getByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Send'));
 
         const addressInputEl = screen.getByPlaceholderText(/Address/);
 
@@ -386,14 +373,10 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // Click Send
-        await user.click(await screen.findByTitle('Toggle Send'));
+        // Switch to Sell mode, then to Send (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
+        await user.click(screen.getByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Send'));
 
         const addressInputEl = screen.getByPlaceholderText(/Address/);
 
@@ -432,14 +415,10 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // Click Send
-        await user.click(await screen.findByTitle('Toggle Send'));
+        // Switch to Sell mode, then to Send (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: /Sell/ }));
+        await user.click(screen.getByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Send'));
 
         // The user enters a valid address and send amount
         const addressInputEl = screen.getByPlaceholderText(/Address/);
@@ -483,32 +462,14 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // The sell switch is turned on by default
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
+        // Open dropdown and click Burn (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Burn'));
 
-        // The send switch is present
-        expect(screen.getByTitle('Toggle Send')).toBeInTheDocument();
-
-        // Click the burn switch to show the burn interface
-        await user.click(screen.getByTitle('Toggle Burn'));
-
-        // The burn switch is turned on
-        expect(screen.getByTitle('Toggle Burn')).toHaveProperty(
-            'checked',
-            true,
-        );
-        // Confirm that turning Burn on turns all other switches off
-        expect(screen.getByTitle('Toggle Send')).toHaveProperty(
-            'checked',
-            false,
-        );
-        expect(screen.getByTitle('Toggle Airdrop')).toHaveProperty(
-            'checked',
-            false,
-        );
+        // Burn form is visible
+        expect(
+            await screen.findByPlaceholderText('Burn Amount'),
+        ).toBeInTheDocument();
 
         await user.type(screen.getByPlaceholderText('Burn Amount'), '1');
 
@@ -619,8 +580,9 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/CACHET/))[0]).toBeInTheDocument();
 
-        // Click the burn switch to show the burn interface
-        await user.click(screen.getByTitle('Toggle Burn'));
+        // Open dropdown and click Burn (UI now uses buttons + dropdown)
+        await user.click(await screen.findByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Burn'));
 
         // Enter burn amount of 50.00 (5000 atoms with 2 decimals)
         // This doesn't match our UTXO of 10000 atoms, so it requires a chained tx
@@ -665,14 +627,9 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/BEAR/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // The mint switch is not rendered
-        expect(screen.queryByTitle('Toggle Mint')).not.toBeInTheDocument();
+        // Open dropdown - Mint option not present for tokens without mint batons
+        await user.click(await screen.findByRole('button', { name: '⋯' }));
+        expect(screen.queryByText('Mint')).not.toBeInTheDocument();
     });
 
     it('We can mint an slpv1 token if we have a mint baton', async () => {
@@ -786,18 +743,9 @@ describe('<Token />', () => {
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/CACHET/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // The mint switch is rendered
-        const mintSwitch = screen.getByTitle('Toggle Mint');
-        expect(mintSwitch).toBeInTheDocument();
-
-        // Click the mint switch
-        await user.click(mintSwitch);
+        // Open dropdown and click Mint (CACHET has mint baton)
+        await user.click(await screen.findByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Mint'));
 
         // Fill out the form
         await user.type(screen.getByPlaceholderText('Mint Amount'), '100.33');
@@ -923,44 +871,25 @@ describe('<Token />', () => {
         // Default route is home
         await screen.findByTestId('tx-history');
 
-        // Click the hamburger menu
-        const hamburgerMenu = screen.getByTitle('Show Other Screens');
-        await user.click(hamburgerMenu);
-
-        // Navigate to Settings screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Settings/i,
-            }),
-        );
+        // Navigate to Settings via footer (hamburger menu commented out)
+        await user.click(screen.getByRole('button', { name: 'Settings' }));
 
         // Now we see the Settings screen
-        expect(screen.getByTitle('Settings')).toBeInTheDocument();
+        expect(screen.getByText('Display Currency')).toBeInTheDocument();
 
-        // Send confirmations are disabled by default
+        // Enable send confirmations (SegmentedControl: click On)
+        await user.click(screen.getByRole('button', { name: 'On' }));
 
-        // Enable send confirmations
-        await user.click(screen.getByTitle('Toggle Send Confirmations'));
-
-        // Navigate to the Tokens screen
-        await user.click(screen.getByText('Tokens'));
+        // Navigate to the Tokens screen via footer
+        await user.click(screen.getByRole('button', { name: 'Tokens' }));
         // Navigate to the CACHET screen
         await user.click(screen.getByText('CACHET'));
         // Wait for element to get token info and load
         expect((await screen.findAllByText(/CACHET/))[0]).toBeInTheDocument();
 
-        // Wait for Cashtab to recognize this is an SLP1 fungible token and enable Sale
-        expect(await screen.findByTitle('Toggle Sell Token')).toHaveProperty(
-            'checked',
-            true,
-        );
-
-        // The mint switch is rendered
-        const mintSwitch = screen.getByTitle('Toggle Mint');
-        expect(mintSwitch).toBeInTheDocument();
-
-        // Click the mint switch
-        await user.click(mintSwitch);
+        // Open dropdown and click Mint (CACHET has mint baton)
+        await user.click(await screen.findByRole('button', { name: '⋯' }));
+        await user.click(screen.getByText('Mint'));
 
         // Fill out the form
         await user.type(screen.getByPlaceholderText('Mint Amount'), '100.33');
@@ -1012,19 +941,14 @@ describe('<Token />', () => {
         // Cashtab pings chronik to build token cache info and displays token summary table
         expect((await screen.findAllByText(/CACHET/))[0]).toBeInTheDocument();
 
-        // We see the token supply
-        expect(screen.getByText('Supply')).toBeInTheDocument();
+        // We see a notice that we do not hold this token (appears when token loads)
         expect(
-            await screen.findByText('29,999,987,980,000,000.00 (fixed)'),
+            await screen.findByText('You do not hold this token.', {
+                timeout: 5000,
+            }),
         ).toBeInTheDocument();
 
-        // We see a notice that we do not hold this token
-        expect(
-            screen.getByText('You do not hold this token.'),
-        ).toBeInTheDocument();
-
-        // We do not see token actions
-        expect(screen.queryByTitle('Token Actions')).not.toBeInTheDocument();
+        // Action bar is shown (Buy/Sell/⋯) but Sell is disabled when no balance
     });
 
     it('For an uncached token with no balance, we show a chronik query error if we are unable to fetch the token info', async () => {
@@ -1061,8 +985,10 @@ describe('<Token />', () => {
             screen.getByText('You do not hold this token.'),
         ).toBeInTheDocument();
 
-        // We do not see token actions
-        expect(screen.queryByTitle('Token Actions')).not.toBeInTheDocument();
+        // We do not see token actions (action bar not rendered on chronik error)
+        expect(
+            screen.queryByRole('button', { name: /Buy/ }),
+        ).not.toBeInTheDocument();
     });
 
     it('For an invalid tokenId, we do not query chronik, and we show an invalid tokenId notice', async () => {
@@ -1088,7 +1014,9 @@ describe('<Token />', () => {
             screen.queryByText('You do not hold this token.'),
         ).not.toBeInTheDocument();
 
-        // We do not see token actions
-        expect(screen.queryByTitle('Token Actions')).not.toBeInTheDocument();
+        // We do not see token actions (action bar not rendered for invalid tokenId)
+        expect(
+            screen.queryByRole('button', { name: /Buy/ }),
+        ).not.toBeInTheDocument();
     });
 });

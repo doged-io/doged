@@ -6,7 +6,6 @@ import styled from 'styled-components';
 
 export const WalletsList = styled.div`
     margin-top: 24px;
-    padding: 12px;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -24,59 +23,77 @@ export const WalletsList = styled.div`
 export const WalletsPanel = styled.div`
     display: flex;
     flex-direction: column;
-    padding: 12px;
     width: 100%;
-    background-color: ${props => props.theme.primaryBackground};
-    border-radius: 9px;
     margin-bottom: 12px;
 `;
 export const Wallet = styled.div`
     display: flex;
-    flex-direction: column;
-    border-top: 0.5px solid ${props => props.theme.border};
-    gap: 0 12px;
-    padding: 6px 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 14px 12px;
+    background: ${props => props.theme.secondaryBackground};
+    border-radius: 10px;
 `;
+
+export const WalletLeftColumn = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+`;
+
 export const WalletRow = styled.div`
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: space-between;
 `;
-export const ActionsRow = styled.div``;
 
 export const WalletName = styled.div`
     display: flex;
     text-align: left;
     word-break: break-word;
+    color: ${props => props.theme.primaryText};
+    font-weight: bold;
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
 `;
 
 export const ActiveWalletName = styled(WalletName)`
-    font-weight: bold;
-    color: ${props => props.theme.accent};
+    color: inherit;
 `;
 
 export const SvgButtonPanel = styled.div`
     display: flex;
-    align-items: baseline;
-`;
-export const ButtonPanel = styled.div`
-    display: flex;
-    gap: 9px;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
+    flex-shrink: 0;
 `;
 
-export const ActivateButton = styled.button`
+export const ActivateButton = styled.button<{ $active?: boolean }>`
     cursor: pointer;
-    color: ${props => props.theme.accent};
-    border-radius: 9px;
-    border: 2px solid ${props => props.theme.accent};
-    background: transparent;
-    :hover {
-        background-color: ${props => props.theme.accent};
-        color: ${props => props.theme.primaryText};
-    }
+    border-radius: 8px;
+    border: none;
+    padding: 6px 14px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    ${props =>
+        props.$active
+            ? `
+        background: ${props.theme.accent};
+        color: ${props.theme.primaryText};
+        cursor: default;
+    `
+            : `
+        background: ${props.theme.inputBackground};
+        color: ${props.theme.primaryText};
+        :hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    `}
 `;
 
 export const AddressShareModal = styled.div`

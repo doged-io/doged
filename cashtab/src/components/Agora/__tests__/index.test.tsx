@@ -177,15 +177,9 @@ describe('<Agora />', () => {
         // Wait for element to get token info and load
         expect(await screen.findByTitle('Active Offers')).toBeInTheDocument();
 
-        // We see sort switches from "Manage my offers"
-        expect(screen.getByTitle('Sort by TokenId')).toBeInTheDocument();
-        expect(screen.getByTitle('Sort by Offer Count')).toBeInTheDocument();
-
-        // But we have no offers
+        // User listings load in the background and should resolve to empty state
         expect(
-            await screen.findByText(
-                'No whitelisted tokens are currently listed for sale. Try loading all offers.',
-            ),
+            await screen.findByText('You have no active listings.'),
         ).toBeInTheDocument();
 
         // We try to load all the offers
@@ -194,10 +188,10 @@ describe('<Agora />', () => {
         );
 
         // We see a confirmation modal
-        // Note this is a silly msg, but we do not expect to ever have 0 offers in prod, so we do not handle it in the app
+        expect(screen.getByText('Load all offers?')).toBeInTheDocument();
         expect(
             screen.getByText(
-                'We have 0 listings. This will take a long time and the screen will be slow.',
+                'This will query and render a large marketplace list and may be slow. Continue?',
             ),
         ).toBeInTheDocument();
 
@@ -208,23 +202,6 @@ describe('<Agora />', () => {
         expect(
             await screen.findByText('No tokens are currently listed for sale.'),
         ).toBeInTheDocument();
-
-        // We switch to see our created offers
-        await userEvent.click(screen.getByTitle('Toggle Active Offers'));
-
-        // We have made no offers
-        // This is always empty if active offers is empty, as for partials, active offers will render both
-        // public offers and offers created by your wallet
-        // Your offers you can only cancel, not buy
-        expect(
-            screen.getByText('You do not have any listed tokens'),
-        ).toBeInTheDocument();
-
-        // We do not see sort switches from "Manage my offers"
-        expect(screen.queryByTitle('Sort by TokenId')).not.toBeInTheDocument();
-        expect(
-            screen.queryByTitle('Sort by Offer Count'),
-        ).not.toBeInTheDocument();
     });
 
     it('A chronik error notice is rendered if there is some error in querying listings', async () => {
@@ -280,6 +257,12 @@ describe('<Agora />', () => {
                 screen.queryByTitle('Loading active offers'),
             ).not.toBeInTheDocument(),
         );
+
+        // Error is only surfaced after user opts into loading all offers
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Load all offers' }),
+        );
+        await userEvent.click(screen.getByText('OK'));
 
         // A chronik error notice is rendered
         expect(
@@ -369,6 +352,10 @@ describe('<Agora />', () => {
         ).toBeGreaterThan(0);
         expect(await screen.findAllByText('XECX')).toHaveLength(2);
 
+        // In the new design, offer details live on the token page. Click XECX to open OrderBook.
+        await userEvent.click(
+            screen.getByRole('link', { name: /icon for.*Staked XEC.*XECX/ }),
+        );
         // Because this offer was created by this wallet, we have the option to cancel it
         expect(
             await screen.findByRole('button', { name: 'Cancel your offer' }),
@@ -443,10 +430,10 @@ describe('<Agora />', () => {
 
         expect(await screen.findByText('Token Offers')).toBeInTheDocument();
 
-        // We should see "No whitelisted tokens are currently listed for sale" since Cachet is not whitelisted
+        // Whitelisted list is rendered by default
         expect(
-            screen.getByText(
-                'No whitelisted tokens are currently listed for sale. Try loading all offers.',
+            await screen.findByText((content, _element) =>
+                content.includes('Staked XEC'),
             ),
         ).toBeInTheDocument();
 
@@ -456,16 +443,12 @@ describe('<Agora />', () => {
         );
 
         // We see a confirmation modal
-        expect(
-            screen.getByText(
-                'We have 1 listings. This will take a long time and the screen will be slow.',
-            ),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Load all offers?')).toBeInTheDocument();
 
         // Loading 1 offer sounds reasonable
         await userEvent.click(screen.getByText('OK'));
 
-        // We see the token name and ticker above its PartialOffer after OrderBooks load
+        // We see the token name and ticker in Your Listings after OrderBooks load
         expect(
             (
                 await screen.findAllByText((content, _element) =>
@@ -474,6 +457,10 @@ describe('<Agora />', () => {
             ).length,
         ).toBeGreaterThan(0);
 
+        // In the new design, offer details live on the token page. Click Cachet to open OrderBook.
+        await userEvent.click(
+            screen.getByRole('link', { name: /icon for.*Cachet.*CACHET/ }),
+        );
         // Because this offer was created by this wallet, we have the option to cancel it
         expect(
             await screen.findByRole('button', { name: 'Cancel your offer' }),
@@ -557,24 +544,16 @@ describe('<Agora />', () => {
             />,
         );
 
-        // No whitelisted offers
-        expect(
-            await screen.findByText(
-                'No whitelisted tokens are currently listed for sale. Try loading all offers.',
-            ),
-        ).toBeInTheDocument();
+        // Whitelisted list is rendered by default
+        expect(await screen.findByText('Token Offers')).toBeInTheDocument();
 
         // We try to load all the offers
         await userEvent.click(
             screen.getByRole('button', { name: 'Load all offers' }),
         );
 
-        // We see a confirmation modal showing 0 offers, as expected
-        expect(
-            screen.getByText(
-                'We have 0 listings. This will take a long time and the screen will be slow.',
-            ),
-        ).toBeInTheDocument();
+        // We see a confirmation modal
+        expect(screen.getByText('Load all offers?')).toBeInTheDocument();
 
         // Loading 1 offer sounds reasonable
         await userEvent.click(screen.getByText('OK'));
@@ -706,47 +685,32 @@ describe('<Agora />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // No whitelisted offers
-        expect(
-            await screen.findByText(
-                'No whitelisted tokens are currently listed for sale. Try loading all offers.',
-            ),
-        ).toBeInTheDocument();
+        // Whitelisted list is rendered by default
+        expect(await screen.findByText('Token Offers')).toBeInTheDocument();
 
         // We try to load all the offers
         await userEvent.click(
             screen.getByRole('button', { name: 'Load all offers' }),
         );
 
-        // We see a confirmation modal showing 0 offers, as expected
-        expect(
-            screen.getByText(
-                'We have 0 listings. This will take a long time and the screen will be slow.',
-            ),
-        ).toBeInTheDocument();
+        // We see a confirmation modal
+        expect(screen.getByText('Load all offers?')).toBeInTheDocument();
 
-        // Close the modal
-        await userEvent.click(screen.getByText('X'));
+        // Close the modal (new Modal uses SVG with title="Close", not text "X")
+        await userEvent.click(screen.getByTitle('Close'));
 
-        // We switch to see our created offers
-        await userEvent.click(screen.getByTitle('Toggle Active Offers'));
-
-        expect(screen.getByText('Manage your listings')).toBeInTheDocument();
-
-        // Wait for token info to load (wait for loading to disappear and token name to appear)
-
-        // Wait for the token to be rendered (either as a whitelisted token or after loading all offers)
-
+        // In the new design, Your Listings and Token Offers are always shown together.
+        // The blacklisted BUX offer appears in Your Listings (our offers).
+        expect(screen.getByText('Your Listings')).toBeInTheDocument();
         expect(await screen.findByText('Token Offers')).toBeInTheDocument();
 
-        // Wait for the Agora component to finish its initialization and load the whitelisted tokens
         await waitFor(() =>
             expect(
                 screen.queryByTitle('Loading active offers'),
             ).not.toBeInTheDocument(),
         );
 
-        // We see the token name and ticker above its PartialOffer
+        // We see the token name and ticker in Your Listings
         expect(
             (
                 await screen.findAllByText((content, _element) =>
@@ -756,9 +720,14 @@ describe('<Agora />', () => {
         ).toBeGreaterThan(0);
         expect(screen.getByText('BUX')).toBeInTheDocument();
 
-        // Because this offer was created by this wallet, we have the option to cancel it
+        // Click BUX to open OrderBook; our offer shows cancel button
+        await userEvent.click(
+            screen.getByRole('link', {
+                name: /icon for.*Badger Universal Token.*BUX/,
+            }),
+        );
         expect(
-            screen.getByRole('button', { name: 'Cancel your offer' }),
+            await screen.findByRole('button', { name: 'Cancel your offer' }),
         ).toBeInTheDocument();
     });
 
@@ -851,13 +820,8 @@ describe('<Agora />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // We have no whitelisted tokens, so we see expected msg
-
-        expect(
-            await screen.findByText(
-                'No whitelisted tokens are currently listed for sale. Try loading all offers.',
-            ),
-        ).toBeInTheDocument();
+        // Whitelisted list is rendered by default
+        expect(await screen.findByText('Token Offers')).toBeInTheDocument();
 
         // We try to load all the offers
         await userEvent.click(
@@ -865,115 +829,47 @@ describe('<Agora />', () => {
         );
 
         // We see a confirmation modal
-        expect(
-            screen.getByText(
-                'We have 2 listings. This will take a long time and the screen will be slow.',
-            ),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Load all offers?')).toBeInTheDocument();
 
         // Load them
         await userEvent.click(screen.getByText('OK'));
 
-        // Wait for Agora to load all orderBookInfo
-        await waitFor(
-            () =>
-                expect(
-                    screen.queryByTitle('Loading OrderBook info...'),
-                ).not.toBeInTheDocument(),
-            // This can take some time
-            // May need to adjust if experience flakiness
-            { timeout: 10000 },
-        );
-
-        // When orderbook info has loaded, we see a switch to sort by offer count
+        // Wait for all tokens to be loaded
         expect(
-            await screen.findByTitle('Sort by Offer Count'),
+            await screen.findByText('All 2 tokens with offers loaded'),
         ).toBeInTheDocument();
 
-        // On load, a switch indicates that the OrderBooks are sorted by tokenId
-        expect(
-            window.getComputedStyle(screen.getByTitle('Sort by TokenId'))
-                .backgroundColor,
-        ).toBe('rgb(42, 46, 46)');
+        // Token rows are links with href="/token/{tokenId}". Extract tokenId from href.
+        const getTokenOrder = () =>
+            screen
+                .getAllByRole('link', { name: /icon for/ })
+                .map(
+                    el =>
+                        el
+                            .getAttribute('href')
+                            ?.match(/\/token\/([^/#]+)/)?.[1] ?? '',
+                );
 
-        // On load, OrderBooks are sorted by token id
+        // On load, Your Listings shows tokens sorted by token id
         // Bull tokenId starts with 01d...; Cachet with aed...; so we expect Bull to be first
-        const initialOrder = screen
-            .getAllByRole('button', { name: /View larger icon for/ })
-            .map(el => el.getAttribute('title'));
+        const initialOrder = getTokenOrder();
         expect(initialOrder).toEqual([BULL_TOKEN_ID, CACHET_TOKEN_ID]);
-
-        // Let's sort by offer count
-        await userEvent.click(screen.getByTitle('Sort by Offer Count'));
-
-        // Now we expect to see CACHET first, since there are 2 CACHET offers and 1 Bull offer
-        const sortedOrder = screen
-            .getAllByRole('button', { name: /View larger icon for/ })
-            .map(el => el.getAttribute('title'));
-        expect(sortedOrder).toEqual([CACHET_TOKEN_ID, BULL_TOKEN_ID]);
-
-        // We can revert to sorting by tokenId
-        await userEvent.click(screen.getByTitle('Sort by TokenId'));
-
-        // Now we are back to the initial ordering
-        const initialOrderAgain = screen
-            .getAllByRole('button', { name: /View larger icon for/ })
-            .map(el => el.getAttribute('title'));
-        expect(initialOrderAgain).toEqual([BULL_TOKEN_ID, CACHET_TOKEN_ID]);
 
         // Wait for element to get token info and load
         expect(await screen.findByTitle('Active Offers')).toBeInTheDocument();
-
-        // We have an offer
         expect(screen.getByText('Token Offers')).toBeInTheDocument();
 
-        // Wait for the token to be rendered (either as a whitelisted token or after loading all offers)
-        expect(await screen.findByText('Token Offers')).toBeInTheDocument();
-
-        // Wait for the Agora component to finish its initialization and load the whitelisted tokens
-        await waitFor(() =>
-            expect(
-                screen.queryByTitle('Loading active offers'),
-            ).not.toBeInTheDocument(),
+        // In the new design, offer details live on the token page. Click Bull to open OrderBook.
+        await userEvent.click(
+            screen.getByRole('link', { name: /icon for.*Bull.*BULL/ }),
         );
-
-        // We see all token names and tickers above their PartialOffers
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('Cachet'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('CACHET'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('Bull'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('BULL'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
 
         // For BULL, there is only one offer, so that offer is the spot price
         const BULL_SPOT_MIN_QTY = '8';
         const BULL_SPOT_PRICE_MIN_BUY = '400.42k XEC';
         const BULL_SPOT_PRICE_FIAT_MIN_BUY = '$12.01 USD';
 
-        // We await this as the component will load and render token info before
-        // the offers have finished loading
+        // Wait for OrderBook to load on the token page
         expect(
             (
                 await screen.findAllByText((content, _element) =>
@@ -981,34 +877,20 @@ describe('<Agora />', () => {
                 )
             ).length,
         ).toBeGreaterThan(0);
-        expect(screen.getByText(BULL_SPOT_PRICE_MIN_BUY)).toBeInTheDocument();
+        expect(
+            await screen.findByText(BULL_SPOT_PRICE_MIN_BUY),
+        ).toBeInTheDocument();
         expect(
             screen.queryByText(BULL_SPOT_PRICE_FIAT_MIN_BUY),
         ).not.toBeInTheDocument();
 
-        // For tokens with multiple partial offers available, the lowest-priced
-        // offer is selected by default ("spot price")
-        const CACHET_SPOT_MIN_QTY = '.20';
-        const CACHET_SPOT_PRICE_MIN_BUY = '240.64 XEC';
-        const CACHET_SPOT_PRICE_FIAT_MIN_BUY = '$0.0072 USD';
-        // Quantities are not displayed until they load, so we await
+        // Bull has one offer, created by Alpha, so we see one cancel button
         expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes(`${CACHET_SPOT_MIN_QTY} CACHET`),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(screen.getByText(CACHET_SPOT_PRICE_MIN_BUY)).toBeInTheDocument();
-        expect(
-            screen.queryByText(CACHET_SPOT_PRICE_FIAT_MIN_BUY),
-        ).not.toBeInTheDocument();
-
-        // Because both spot offers were created by the active Alpha wallet,
-        // we see two cancel buttons
-        expect(
-            screen.getAllByRole('button', { name: 'Cancel your offer' })[1],
+            screen.getByRole('button', { name: 'Cancel your offer' }),
         ).toBeInTheDocument();
+
+        // Navigate back to Agora
+        await userEvent.click(screen.getByRole('button', { name: 'Agora' }));
 
         // Change wallets using the dropdown menu at the top of the screen
         // NB you cannot have the Date() function mocked if you want to test changing wallets
@@ -1034,53 +916,17 @@ describe('<Agora />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // Wait for active offers to load
         expect(await screen.findByTitle('Active Offers')).toBeInTheDocument();
 
-        // Switching wallets triggers a refresh of the offers
-        expect(
-            await screen.findByRole('button', { name: 'Buy CACHET' }),
-        ).toBeInTheDocument();
-
-        // Hit the switch to show listings created by the active wallet (now Beta)
-        const toggleAllVsMyOffersSwitch = screen.getByTitle(
-            'Toggle Active Offers',
+        // With Beta: Your Listings has Cachet only, Token Offers has Bull.
+        // Click Cachet to open its OrderBook.
+        await userEvent.click(
+            screen.getByRole('link', { name: /icon for.*Cachet.*CACHET/ }),
         );
-        await userEvent.click(toggleAllVsMyOffersSwitch);
 
-        // we see only the beta-created Cachet offer
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('Cachet'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes('CACHET'),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
+        const CACHET_SPOT_MIN_QTY = '.20';
 
-        // We do not see any offers for Bull, this was created by alpha
-        expect(
-            screen.queryAllByText((content, _element) =>
-                content.includes('Bull'),
-            ),
-        ).toHaveLength(0);
-        expect(
-            screen.queryAllByText((content, _element) =>
-                content.includes('BULL'),
-            ),
-        ).toHaveLength(0);
-
-        // Note that we only see orderbooks that we have offers for
-        // But we see all offers for these orderbooks
-
-        // The spot price offer is rendered by default
-        // This happens to not be our offer
+        // We see all offers for Cachet. The spot price (Alpha's offer) is default.
         expect(
             (
                 await screen.findAllByText((content, _element) =>
@@ -1088,12 +934,11 @@ describe('<Agora />', () => {
                 )
             ).length,
         ).toBeGreaterThan(0);
-        // We can buy this offer from the Manage screen
         expect(
             screen.getByRole('button', { name: 'Buy CACHET' }),
         ).toBeInTheDocument();
 
-        // Select our offer
+        // Select our offer (Beta's)
         await userEvent.click(screen.getByText('12,000.66 XEC'));
         // Now we can only cancel our offer
         expect(
@@ -1103,12 +948,8 @@ describe('<Agora />', () => {
             screen.queryByRole('button', { name: 'Buy CACHET' }),
         ).not.toBeInTheDocument();
 
-        // OK go back to all offers
-        await userEvent.click(toggleAllVsMyOffersSwitch);
-
-        // Nice but let's go back to the first wallet
-        // Change wallets using the dropdown menu at the top of the screen
-        // NB you cannot have the Date() function mocked if you want to test changing wallets
+        // Navigate back to Agora, then switch to first wallet
+        await userEvent.click(screen.getByRole('button', { name: 'Agora' }));
         await userEvent.selectOptions(
             screen.getByTestId('wallet-select'),
             screen.getByText('Agora Partial Alpha'),
@@ -1117,14 +958,11 @@ describe('<Agora />', () => {
         await waitFor(
             () =>
                 expect(screen.queryByTitle('Loading')).not.toBeInTheDocument(),
-            // This can take some time
-            // May need to adjust if experience flakiness
             { timeout: 3000 },
         );
 
         expect(await screen.findByText('4,200.00 XEC')).toBeInTheDocument();
 
-        // Wait for tokens to re-load (triggered by wallet change)
         await waitFor(() =>
             expect(
                 screen.queryByTitle('Loading active offers'),
@@ -1133,44 +971,14 @@ describe('<Agora />', () => {
 
         expect(await screen.findByTitle('Active Offers')).toBeInTheDocument();
 
-        // Now we see cancel buttons again
-        expect(
-            (
-                await screen.findAllByRole('button', {
-                    name: 'Cancel your offer',
-                })
-            )[1],
-        ).toBeInTheDocument();
+        // Open Bull's OrderBook to cancel our offer
+        await userEvent.click(
+            screen.getByRole('link', { name: /icon for.*Bull.*BULL/ }),
+        );
 
-        // If we select the offer created by the Beta wallet, we see a buy button
-        await userEvent.click(screen.getByText('12,000.66 XEC'));
-
-        // We also see updates to the rendered spot details
-        const UPDATED_CACHET_SPOT_MIN_QTY = '.30';
-        const UPDATED_CACHET_SPOT_PRICE_MIN_BUY = '3.6k XEC';
-        const UPDATED_CACHET_SPOT_PRICE_FIAT_MIN_BUY = '$0.1081 USD';
+        // We see our Bull offer with cancel button (wait for OrderBook to load)
         expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes(`${UPDATED_CACHET_SPOT_MIN_QTY} CACHET`),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            (
-                await screen.findAllByText((content, _element) =>
-                    content.includes(UPDATED_CACHET_SPOT_PRICE_MIN_BUY),
-                )
-            ).length,
-        ).toBeGreaterThan(0);
-        expect(
-            screen.queryAllByText((content, _element) =>
-                content.includes(UPDATED_CACHET_SPOT_PRICE_FIAT_MIN_BUY),
-            ),
-        ).toHaveLength(0);
-
-        expect(
-            screen.getByRole('button', { name: 'Buy CACHET' }),
+            await screen.findByRole('button', { name: 'Cancel your offer' }),
         ).toBeInTheDocument();
 
         // Let's cancel the BULL offer

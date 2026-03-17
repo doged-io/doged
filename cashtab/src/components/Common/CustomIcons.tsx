@@ -11,7 +11,7 @@ import TetherSrc from 'assets/tether.png';
 import FirmaSrc from 'assets/firma-icon.png';
 import { ReactComponent as QRCode } from 'assets/qrcode.svg';
 import { ReactComponent as Send } from 'assets/send.svg';
-import { ReactComponent as CopyPaste } from 'assets/copypaste.svg';
+import { ReactComponent as CopyPaste } from 'assets/copy.svg';
 import { ReactComponent as AddContact } from 'assets/addcontact.svg';
 import { ReactComponent as Unknown } from 'assets/unknown.svg';
 import { ReactComponent as Reply } from 'assets/reply.svg';
@@ -106,9 +106,9 @@ export const SocialLink = styled.a`
     @media (hover: hover) {
         :hover {
             svg {
-                fill: ${props => props.theme.secondaryAccent};
+                fill: ${props => props.theme.accent};
                 path:not(#F) {
-                    fill: ${props => props.theme.secondaryAccent};
+                    fill: ${props => props.theme.accent};
                 }
             }
         }

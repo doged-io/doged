@@ -98,6 +98,12 @@ export const WalletBody = styled.div`
 export const WalletCtn = styled.div<{ showFooter?: boolean }>`
     width: 100%;
     background: ${props => props.theme.primaryBackground};
+    background: linear-gradient(
+        -165deg,
+        #1e0b3b 0%,
+        ${props => props.theme.primaryBackground} 50%,
+        ${props => props.theme.primaryBackground} 100%
+    );
     position: relative;
     min-height: 100vh;
     max-height: 100vh;
@@ -111,7 +117,6 @@ export const WalletCtn = styled.div<{ showFooter?: boolean }>`
         padding: 0 0 100px;
         min-height: ${props =>
             props.showFooter ? 'calc(100vh - 70px)' : '100vh'};
-        background: ${props => props.theme.primaryBackground};
     }
 `;
 
@@ -120,16 +125,16 @@ export const Footer = styled.div`
     background: ${props => props.theme.primaryBackground};
     display: flex;
     flex-direction: column;
+    border-right: 1px solid ${props => props.theme.border};
     height: 100vh;
     overflow-y: auto;
     ${CashtabScroll}
     padding: 0 10px;
-    border-right: 1px solid ${props => props.theme.border};
     @media (max-width: 768px) {
         width: 100%;
         z-index: 100;
         height: 70px;
-        border-top: 1px solid ${props => props.theme.border};
+        /* border-top: 1px solid ${props => props.theme.border}; */
         align-items: center;
         justify-content: space-between;
         padding: 0;
@@ -137,8 +142,11 @@ export const Footer = styled.div`
         flex-direction: row;
         bottom: 0;
         overflow: visible;
-        box-shadow: 0px 0px 24px 1px ${props => props.theme.menuGlow};
         border-right: none;
+        /* Hide Settings nav button on mobile */
+        & > button:last-of-type {
+            display: none;
+        }
     }
 `;
 
@@ -240,9 +248,9 @@ const NavButtonDesktop = css<{ active?: boolean }>`
     justify-content: flex-start;
     text-align: left;
     color: ${props => props.theme.secondaryText};
-    border-radius: 5px;
+    border-radius: 8px;
     font-weight: normal;
-    font-family: 'Poppins';
+    font-family: 'Space Grotesk', sans-serif;
 
     span,
     p {
@@ -250,19 +258,13 @@ const NavButtonDesktop = css<{ active?: boolean }>`
     }
 
     :hover {
-        color: ${props => props.theme.secondaryAccent};
-        svg,
-        g,
-        path {
-            fill: ${props => props.theme.secondaryAccent};
-        }
         background: ${props => props.theme.secondaryBackground};
     }
 
     svg {
         fill: ${props => props.theme.secondaryText};
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         margin-right: 8px;
         @media (max-width: 768px) {
             margin-right: 0;
@@ -275,10 +277,10 @@ const NavButtonDesktop = css<{ active?: boolean }>`
     ${({ active, ...props }) =>
         active &&
         `    
-        color: ${props.theme.primaryBackground} !important;
+        color: ${props.theme.primaryText} !important;
         background: ${props.theme.accent} !important;
         svg, g, path {
-            fill: ${props.theme.primaryBackground} !important;
+            fill: ${props.theme.primaryText} !important;
         }
         font-weight: 700;
   `}
@@ -331,8 +333,8 @@ export const NavItem = styled.button`
 `;
 
 export const ScreenWrapper = styled.div`
-    padding: 20px;
-    background: ${props => props.theme.primaryBackground};
+    padding: 0 20px;
+    position: relative;
     @media (max-width: 768px) {
         padding: 0px;
         max-height: unset;
@@ -349,7 +351,6 @@ export const HeaderCtn = styled.div`
         width: 100%;
         padding: 10px 0;
         gap: 6px;
-        background: ${props => props.theme.primaryBackground};
         border-bottom: 1px solid ${props => props.theme.border};
     }
 `;
@@ -398,7 +399,6 @@ export const HeaderInfoCtn = styled.div`
     align-items: center;
     flex-direction: row-reverse;
     padding: 20px;
-    background: ${props => props.theme.primaryBackground};
     border-bottom: 1px solid ${props => props.theme.border};
     position: relative;
     position: sticky;

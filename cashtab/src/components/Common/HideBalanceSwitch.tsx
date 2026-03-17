@@ -3,10 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import React from 'react';
-import Eye from 'assets/eye.png';
-import EyeInvisible from 'assets/eye-invisible.png';
 import styled from 'styled-components';
 import CashtabSettings from 'config/CashtabSettings';
+import { ReactComponent as EyeIcon } from 'assets/visible.svg';
+import { ReactComponent as EyeInvisibleIcon } from 'assets/hidden.svg';
 
 interface HideBalanceSwitchProps {
     settings: CashtabSettings;
@@ -32,7 +32,6 @@ const HideBalanceSwitch: React.FC<HideBalanceSwitchProps> = ({
     };
 
     const SwitchInputWrapper = styled.label`
-        width: 38px;
         height: 100%;
         flex-shrink: 0;
         display: inline-block;
@@ -47,20 +46,22 @@ const HideBalanceSwitch: React.FC<HideBalanceSwitchProps> = ({
     const CustomCheckbox = styled.div<{ checked: boolean }>`
         width: 100%;
         height: 100%;
-        background-color: ${({ checked }) =>
+        color: ${({ checked }) =>
             checked
-                ? props => props.theme.secondaryBackground
+                ? props => props.theme.primaryText
                 : props => props.theme.accent};
-        border-radius: 5px;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background-color 0.2s;
+        transition: color 0.2s;
 
-        img {
-            width: 20px;
-            height: 20px;
-            opacity: ${({ checked }) => (checked ? '0.5' : '1')};
+        svg {
+            width: 25px;
+            height: 25px;
+        }
+        :hover {
+            color: ${props => props.theme.accent};
         }
     `;
 
@@ -71,10 +72,11 @@ const HideBalanceSwitch: React.FC<HideBalanceSwitchProps> = ({
                 onChange={handleShowHideBalance}
             />
             <CustomCheckbox checked={settings.balanceVisible}>
-                <img
-                    src={settings.balanceVisible ? Eye : EyeInvisible}
-                    alt="toggle icon"
-                />
+                {settings.balanceVisible ? (
+                    <EyeIcon title="Visible" fill="currentColor" />
+                ) : (
+                    <EyeInvisibleIcon title="Hidden" fill="currentColor" />
+                )}
             </CustomCheckbox>
         </SwitchInputWrapper>
     );

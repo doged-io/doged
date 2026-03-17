@@ -4,21 +4,10 @@
 
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
-import {
-    HomeIcon,
-    SendIcon,
-    ReceiveIcon,
-    SettingsIcon,
-    AirdropIcon,
-    BankIcon,
-    WalletIcon,
-    ContactsIcon,
-    ThemedSignAndVerifyMsg,
-    TokensIcon,
-    RewardIcon,
-    NftIcon,
-    DogeIcon,
-} from 'components/Common/CustomIcons';
+import { DogeIcon, HomeIcon, TokensIcon } from 'components/Common/CustomIcons';
+import { ReactComponent as ToolsIcon } from 'assets/tools.svg';
+import { ReactComponent as SettingsIcon } from 'assets/settings-icon.svg';
+import { ReactComponent as SendReceiveIcon } from 'assets/send-receive.svg';
 import Spinner from 'components/Common/Spinner';
 import { ThemeProvider } from 'styled-components';
 import { theme } from 'assets/styles/theme';
@@ -62,10 +51,6 @@ import {
     GlobalStyle,
     CustomApp,
     Footer,
-    NavWrapper,
-    NavItem,
-    NavIcon,
-    NavMenu,
     NavButton,
     WalletBody,
     ScreenWrapper,
@@ -94,7 +79,6 @@ const App = () => {
     const { wallets, tokens } = cashtabState;
     const hasWallet = ecashWallet !== null;
     const [navMenuClicked, setNavMenuClicked] = useState(false);
-    const handleNavMenuClick = () => setNavMenuClicked(!navMenuClicked);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -412,29 +396,58 @@ const App = () => {
 
                             <NavButton
                                 aria-label="Send Screen"
-                                active={location.pathname === '/send'}
+                                active={
+                                    location.pathname === '/send' ||
+                                    location.pathname === '/receive'
+                                }
                                 onClick={() => navigate('/send')}
                             >
-                                <span>Send</span>
-                                <SendIcon />
+                                <span>Send / Receive</span>
+                                <SendReceiveIcon />
                             </NavButton>
                             <NavButton
                                 aria-label="Tokens"
-                                active={location.pathname === '/etokens'}
+                                active={
+                                    location.pathname === '/etokens' ||
+                                    location.pathname === '/create-token' ||
+                                    location.pathname ===
+                                        '/create-nft-collection'
+                                }
                                 onClick={() => navigate('/etokens')}
                             >
                                 <span>Tokens</span>
                                 <TokensIcon />
                             </NavButton>
                             <NavButton
-                                aria-label="Receive"
-                                active={location.pathname === '/receive'}
-                                onClick={() => navigate('receive')}
+                                aria-label="Agora"
+                                active={location.pathname === '/agora'}
+                                onClick={() => navigate('/agora')}
                             >
-                                <span>Receive</span>
-                                <ReceiveIcon />
+                                <span>Agora</span>
+                                <DogeIcon />
                             </NavButton>
-                            <NavWrapper
+                            <NavButton
+                                aria-label="Tools"
+                                active={
+                                    location.pathname === '/contacts' ||
+                                    location.pathname === '/signverifymsg' ||
+                                    location.pathname === '/airdrop' ||
+                                    location.pathname === '/rewards'
+                                }
+                                onClick={() => navigate('/contacts')}
+                            >
+                                <span>Tools</span>
+                                <ToolsIcon />
+                            </NavButton>
+                            <NavButton
+                                aria-label="Settings"
+                                active={location.pathname === '/configure'}
+                                onClick={() => navigate('/configure')}
+                            >
+                                <span>Settings</span>
+                                <SettingsIcon />
+                            </NavButton>
+                            {/* <NavWrapper
                                 className="nav-menu-container"
                                 title="Show Other Screens"
                                 onClick={() => {
@@ -542,7 +555,7 @@ const App = () => {
                                         <SettingsIcon />
                                     </NavItem>
                                 </NavMenu>
-                            </NavWrapper>
+                            </NavWrapper> */}
                         </Footer>
                     )}
                 </WalletBody>

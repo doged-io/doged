@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
-import { SwitchLabel, Alert, PageHeader } from 'components/Common/Atoms';
+import { SwitchLabel, Alert } from 'components/Common/Atoms';
 import Spinner from 'components/Common/Spinner';
 import { AgoraOffer } from 'ecash-agora';
 import { toHex } from 'ecash-lib';
@@ -16,7 +16,7 @@ import Collection, {
     OneshotSwiper,
     OneshotOffer,
 } from 'components/Agora/Collection';
-import { NftIcon } from 'components/Common/CustomIcons';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
 
 const Nfts: React.FC = () => {
     const ContextValue = useContext(WalletContext);
@@ -93,9 +93,7 @@ const Nfts: React.FC = () => {
 
     return (
         <NftsCtn>
-            <PageHeader>
-                Listed NFTs <NftIcon />
-            </PageHeader>
+            <ActionButtonRow variant="agora" activeIndex={1} />
             {offeredCollections === null && chronikQueryError === null && (
                 <Spinner />
             )}

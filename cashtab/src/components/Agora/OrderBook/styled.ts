@@ -15,22 +15,15 @@ export const OrderBookLoading = styled.div`
 
 export const OfferWrapper = styled.div<{ borderRadius: boolean }>`
     border-radius: ${props => (props.borderRadius ? '20px' : '0 0 20px 20px')};
-    border: 1px solid ${props => props.theme.border};
     width: 100%;
     min-width: 0;
     max-width: 100%;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    background: ${props =>
-        !props.borderRadius
-            ? props.theme.primaryBackground
-            : `linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 100%
-    )`};
-    border-top: ${props => (!props.borderRadius ? 'none' : '')};
+    background: ${props => props.theme.secondaryBackground};
+    padding-top: 20px;
+    border-top: 1px solid ${props => props.theme.primaryBackground};
     @media (max-width: 768px) {
         margin-bottom: 20px;
         width: 100%;
@@ -191,6 +184,16 @@ export const TentativeAcceptBar = styled.div<{ acceptPercent: number }>`
     width: ${props => props.acceptPercent}%;
 `;
 
+export const QuantityLabel = styled.span`
+    display: block;
+    font-size: var(--text-lg);
+    line-height: var(--text-lg--line-height);
+    font-weight: 600;
+    color: ${props => props.theme.primaryText};
+    margin-bottom: 10px;
+    text-align: left;
+`;
+
 export const BuyOrderCtn = styled.div`
     display: flex;
     flex-direction: column;
@@ -221,6 +224,37 @@ export const BuyOrderCtn = styled.div`
         margin-top: auto;
     }
 `;
+
+export const BuyOrderSummaryRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    &:last-of-type {
+        margin-bottom: 20px;
+    }
+`;
+
+export const BuyOrderSummaryLabel = styled.span`
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    color: ${props => props.theme.secondaryText};
+`;
+
+export const BuyOrderSummaryValue = styled.span`
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    color: ${props => props.theme.primaryText};
+    font-weight: bold;
+`;
+
+export const BuyOrderSummaryValueEmphasis = styled.span`
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    color: ${props => props.theme.primaryText};
+    font-weight: bold;
+`;
 export const MintIconSpotWrapper = styled.div`
     svg {
         height: 24px;
@@ -245,11 +279,8 @@ export const PercentageButton = styled.button<{ isActive?: boolean }>`
         props.isActive
             ? props.theme.primaryBackground
             : props.theme.primaryText};
-    border: 1px solid
-        ${props =>
-            props.isActive
-                ? props.theme.genesisGreen
-                : 'rgba(255, 255, 255, 0.2)'};
+    border: none;
+    margin-bottom: 10px !important;
     border-radius: 4px;
     padding: 6px 10px;
     font-size: var(--text-sm);

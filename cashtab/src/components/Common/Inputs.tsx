@@ -18,6 +18,17 @@ const CashtabInputWrapper = styled.div`
     width: 100%;
 `;
 
+const InputLabel = styled.div`
+    color: ${props => props.theme.primaryText};
+    margin-bottom: 6px;
+    font-weight: 700;
+    text-align: left;
+    font-size: var(--text-lg);
+    @media (max-width: 768px) {
+        font-size: var(--text-base);
+    }
+`;
+
 const InputRow = styled.div<{ invalid?: boolean }>`
     position: relative;
     display: flex;
@@ -28,7 +39,7 @@ const InputRow = styled.div<{ invalid?: boolean }>`
         border: ${props =>
             props.invalid
                 ? `1px solid ${props.theme.formError}`
-                : `1px solid ${props.theme.border}`};
+                : `1px solid transparent`};
     }
     button,
     select {
@@ -39,17 +50,20 @@ const InputRow = styled.div<{ invalid?: boolean }>`
 
 const CashtabInput = styled.input<{ invalid?: boolean }>`
     ${props => props.disabled && `cursor: not-allowed`};
-    background-color: ${props => props.theme.secondaryBackground};
-    font-size: var(--text-lg);
-    line-height: var(--text-lg--line-height);
-    padding: 16px 12px;
-    border-radius: 9px;
+    background: ${props => props.theme.inputBackground};
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    padding: 18px 12px;
+    border-radius: 10px;
     width: 100%;
     color: ${props => props.theme.primaryText};
     :focus-visible {
         outline: none;
     }
     ${props => props.invalid && `border: 1px solid ${props.theme.formError}`};
+    @media (max-width: 768px) {
+        padding: 12px 12px;
+    }
 `;
 
 const ModalInputField = styled(CashtabInput)<{ invalid?: boolean }>`
@@ -60,20 +74,27 @@ const ModalInputField = styled(CashtabInput)<{ invalid?: boolean }>`
             : `1px solid ${props.theme.accent} !important`};
 `;
 
-const CashtabTextArea = styled.textarea<{ height: number }>`
-    background-color: ${props => props.theme.secondaryBackground};
+const CashtabTextArea = styled.textarea<{
+    height: number;
+    invalid?: boolean;
+}>`
+    ${props => props.disabled && `cursor: not-allowed`};
+    background: ${props => props.theme.inputBackground};
     font-size: var(--text-sm);
     line-height: var(--text-sm--line-height);
-    padding: 16px 12px;
-    border-radius: 9px;
+    padding: 12px 12px;
+    border-radius: 10px;
     width: 100%;
     color: ${props => props.theme.primaryText};
+    border: ${props =>
+        props.invalid
+            ? `1px solid ${props.theme.formError}`
+            : `1px solid transparent`};
     :focus-visible {
         outline: none;
     }
     height: ${props => props.height}px;
     resize: none;
-    ${props => props.disabled && `cursor: not-allowed`};
     &::-webkit-scrollbar {
         width: 12px;
     }
@@ -106,12 +127,12 @@ const OnMaxBtn = styled.button<{ invalid?: boolean }>`
     cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
     color: ${props =>
         props.invalid ? props.theme.formError : props.theme.primaryText};
-    border-radius: 0 9px 9px 0;
-    background-color: ${props => props.theme.secondaryBackground};
-    border-left: none !important;
-    font-size: var(--text-lg);
-    line-height: var(--text-lg--line-height);
-    padding: 16px;
+    border-radius: 0 10px 10px 0;
+    background-color: ${props => props.theme.inputBackground};
+    border-left-color: ${props => props.theme.primaryBackground} !important;
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    padding: 0 12px;
 `;
 
 const OnMaxBtnToken = styled(OnMaxBtn)`
@@ -125,19 +146,22 @@ const AliasSuffixHolder = styled(OnMaxBtn)`
 
 const CurrencyDropdown = styled.select<{ invalid?: boolean }>`
     cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
-    font-size: var(--text-lg);
-    line-height: var(--text-lg--line-height);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
     padding: 6px;
     color: ${props =>
         props.invalid ? props.theme.formError : props.theme.primaryText};
-    background-color: ${props => props.theme.secondaryBackground};
-    border-color: ${props => props.theme.border};
+    background-color: ${props => props.theme.inputBackground};
+    border: none;
+    border-radius: 8px;
     :focus-visible {
         outline: none;
     }
 `;
 const SendXecDropdown = styled(CurrencyDropdown)`
     width: 100px;
+    border-left: 1px solid ${props => props.theme.primaryBackground}!important;
+    border-radius: 0;
 `;
 
 const SellPriceDropdown = styled(CurrencyDropdown)`
@@ -207,6 +231,7 @@ interface InputProps {
     style?: React.CSSProperties;
     prefix?: InputLogoPrefixProps;
     suffix?: string;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -223,6 +248,7 @@ export const Input: React.FC<InputProps> = ({
     style,
     prefix,
     suffix,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -230,6 +256,7 @@ export const Input: React.FC<InputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 {typeof prefix !== 'undefined' && (
                     <InputLogoPrefix src={prefix.src} alt={prefix.alt} />
@@ -267,6 +294,7 @@ interface ModalInputProps {
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
     error: string | boolean;
     type?: string;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -279,6 +307,7 @@ export const ModalInput: React.FC<ModalInputProps> = ({
     handleInput,
     error = false,
     type = 'text',
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -286,6 +315,7 @@ export const ModalInput: React.FC<ModalInputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <ModalInputField
                     name={name}
@@ -337,6 +367,7 @@ interface TextAreaProps {
     showCount?: boolean;
     customCount?: boolean | number;
     max?: string | number;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -353,6 +384,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
     showCount = false,
     customCount = false,
     max = '',
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -360,12 +392,14 @@ export const TextArea: React.FC<TextAreaProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <CashtabTextArea
                 placeholder={placeholder}
                 name={name}
                 value={value === null ? '' : value}
                 height={height}
                 disabled={disabled}
+                invalid={typeof error === 'string'}
                 onChange={handleInput}
                 autoComplete={autocomplete}
                 spellCheck={spellCheck}
@@ -401,6 +435,7 @@ interface ModalTextAreaProps {
     disabled?: boolean;
     height?: number;
     error?: string | boolean;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -414,6 +449,7 @@ export const ModalTextArea: React.FC<ModalTextAreaProps> = ({
     disabled = false,
     height = 142,
     error = false,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -421,6 +457,7 @@ export const ModalTextArea: React.FC<ModalTextAreaProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <ModalTextAreaField
                 placeholder={placeholder}
                 name={name}
@@ -450,6 +487,7 @@ interface InputWithScannerProps {
     disabled?: boolean;
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
     error: false | string;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -462,6 +500,7 @@ export const InputWithScanner: React.FC<InputWithScannerProps> = ({
     disabled = false,
     handleInput,
     error = false,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -469,6 +508,7 @@ export const InputWithScanner: React.FC<InputWithScannerProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <LeftInput
                     name={name}
@@ -509,6 +549,7 @@ interface SendXecInputProps {
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
     handleSelect: React.ChangeEventHandler<HTMLSelectElement>;
     handleOnMax: () => void;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -525,6 +566,7 @@ export const SendXecInput: React.FC<SendXecInputProps> = ({
     handleInput,
     handleSelect,
     handleOnMax,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -532,6 +574,7 @@ export const SendXecInput: React.FC<SendXecInputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <LeftInput
                     placeholder="Amount"
@@ -580,6 +623,7 @@ interface SendTokenInputProps {
     error: false | string;
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
     handleOnMax: () => void;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -593,6 +637,7 @@ export const SendTokenInput: React.FC<SendTokenInputProps> = ({
     error = false,
     handleInput,
     handleOnMax,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -600,6 +645,7 @@ export const SendTokenInput: React.FC<SendTokenInputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <LeftInput
                     placeholder={placeholder}
@@ -630,6 +676,7 @@ interface ListPriceInputProps {
     error: false | string;
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
     handleSelect: React.ChangeEventHandler<HTMLSelectElement>;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -646,6 +693,7 @@ export const ListPriceInput: React.FC<ListPriceInputProps> = ({
     error = false,
     handleInput,
     handleSelect,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -653,6 +701,7 @@ export const ListPriceInput: React.FC<ListPriceInputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <LeftInput
                     name={name}
@@ -696,6 +745,7 @@ interface AliasInputProps {
     inputDisabled: boolean;
     error: false | string;
     handleInput: React.ChangeEventHandler<HTMLInputElement>;
+    label?: string;
     autocomplete?: string;
     spellCheck?: boolean;
     autoCorrect?: string;
@@ -708,6 +758,7 @@ export const AliasInput: React.FC<AliasInputProps> = ({
     inputDisabled = false,
     error = false,
     handleInput,
+    label,
     autocomplete = 'off',
     spellCheck = false,
     autoCorrect = 'off',
@@ -715,6 +766,7 @@ export const AliasInput: React.FC<AliasInputProps> = ({
 }) => {
     return (
         <CashtabInputWrapper>
+            {label && <InputLabel>{label}</InputLabel>}
             <InputRow invalid={typeof error === 'string'}>
                 <LeftInput
                     placeholder={placeholder}
@@ -745,7 +797,7 @@ const CashtabSlider = styled.input<{
 `;
 const SliderInput = styled.input<{ invalid?: boolean }>`
     ${props => props.disabled && `cursor: not-allowed`};
-    background-color: ${props => props.theme.secondaryBackground};
+    background-color: ${props => props.theme.inputBackground};
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
     padding: 6px;

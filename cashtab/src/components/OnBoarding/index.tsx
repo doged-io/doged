@@ -12,6 +12,7 @@ import { createCashtabWallet, generateMnemonic } from 'wallet';
 import { WelcomeCtn, WelcomeLink, WelcomeText } from './styles';
 import Modal from 'components/Common/Modal';
 import { ModalTextArea } from 'components/Common/Inputs';
+import CashtabLogo from 'assets/cashtab_xec.png';
 
 const OnBoarding = () => {
     const ContextValue = React.useContext(WalletContext);
@@ -110,26 +111,31 @@ const OnBoarding = () => {
             )}
 
             <WelcomeCtn>
-                <h2>Welcome to Cashtab!</h2>
-                <WelcomeText>
-                    Cashtab is an{' '}
-                    <WelcomeLink
-                        href="https://github.com/bitcoin-abc/bitcoin-abc"
-                        target="_blank"
-                        rel="noreferrer"
+                <img src={CashtabLogo} alt="cashtab" />
+                <div>
+                    <WelcomeText>
+                        Welcome to Cashtab! The{' '}
+                        <WelcomeLink
+                            href="https://github.com/bitcoin-abc/bitcoin-abc"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            open source,
+                        </WelcomeLink>{' '}
+                        non-custodial web wallet for {appConfig.name}.
+                    </WelcomeText>
+
+                    <PrimaryButton onClick={() => createNewWallet()}>
+                        New Wallet
+                    </PrimaryButton>
+
+                    <SecondaryButton
+                        type="button"
+                        onClick={() => setShowImportWalletModal(true)}
                     >
-                        open source,
-                    </WelcomeLink>{' '}
-                    non-custodial web wallet for {appConfig.name}.
-                </WelcomeText>
-
-                <PrimaryButton onClick={() => createNewWallet()}>
-                    New Wallet
-                </PrimaryButton>
-
-                <SecondaryButton onClick={() => setShowImportWalletModal(true)}>
-                    Import Wallet
-                </SecondaryButton>
+                        Import Wallet
+                    </SecondaryButton>
+                </div>
             </WelcomeCtn>
         </>
     );

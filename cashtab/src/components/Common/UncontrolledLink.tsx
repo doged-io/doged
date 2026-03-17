@@ -22,8 +22,8 @@ const LinkButton = styled.button`
     background: none;
     border: none;
     padding: 0;
-    color: ${props => props.theme.secondaryText};
-    font-size: 16px;
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-sm);
     text-decoration: underline;
     cursor: pointer;
     transition: color 0.2s ease;

@@ -435,10 +435,7 @@ describe('<Tx />', () => {
             screen.getByText('Covid19 Lifetime Immunity'),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NOCOVID)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Received 12 NOCOVID')).toBeInTheDocument();
     });
     it('Received slpv1 fungible token with no token info in cache', async () => {
@@ -492,10 +489,7 @@ describe('<Tx />', () => {
             screen.queryByText('Covid19 Lifetime Immunity'),
         ).not.toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(NOCOVID)')).not.toBeInTheDocument();
-
-        // We see the expected token action with no quantity
+        // We see the expected token action with no quantity or ticker (no cache)
         expect(screen.getByText('Received')).toBeInTheDocument();
     });
     it('Sent slpv1 fungible token', async () => {
@@ -550,10 +544,7 @@ describe('<Tx />', () => {
             screen.getByText('Covid19 Lifetime Immunity'),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NOCOVID)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Sent 17 NOCOVID')).toBeInTheDocument();
     });
     it('Sent slpv1 fungible token with no token info in cache', async () => {
@@ -607,10 +598,7 @@ describe('<Tx />', () => {
             screen.queryByText('Covid19 Lifetime Immunity'),
         ).not.toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(NOCOVID)')).not.toBeInTheDocument();
-
-        // We see the expected token action with no amount
+        // We see the expected token action with no amount or ticker (no cache)
         expect(screen.getByText('Sent')).toBeInTheDocument();
     });
     it('slpv1 fungible token GENESIS', async () => {
@@ -664,10 +652,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('UpdateTest')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(UDT)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Created 777.7777777 UDT')).toBeInTheDocument();
     });
     it('slpv1 fungible token GENESIS with no token info in cache', async () => {
@@ -720,10 +705,7 @@ describe('<Tx />', () => {
         // We do not see the token name
         expect(screen.queryByText('UpdateTest')).not.toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(UDT)')).not.toBeInTheDocument();
-
-        // We see the expected token action presented without quantity or other token info
+        // We see the expected token action without quantity or ticker (no cache)
         expect(screen.getByText('Created')).toBeInTheDocument();
     });
     it('Received slpv1 fungible token amount less than 1 with 9 decimals', async () => {
@@ -777,10 +759,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('CashTabBits')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(CTB)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Received .123456789 CTB')).toBeInTheDocument();
     });
     it('Received slpv1 fungible token with 9 decimals with no token info in cache', async () => {
@@ -833,10 +812,7 @@ describe('<Tx />', () => {
         // We do not see the token name
         expect(screen.queryByText('CashTabBits')).not.toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(CTB)')).not.toBeInTheDocument();
-
-        // We see the expected token action text without quantity or ticker
+        // We see the expected token action without quantity or ticker (no cache)
         expect(screen.getByText('Received')).toBeInTheDocument();
     });
     it('Received airdrop with msg (legacy push) with no token info in cache', async () => {
@@ -1169,10 +1145,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Lambda Variant Variants')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(LVV)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Burned 12 LVV')).toBeInTheDocument();
     });
     it('Burn slpv1 fungible token with no token info in cache', async () => {
@@ -1227,10 +1200,7 @@ describe('<Tx />', () => {
             screen.queryByText('Lambda Variant Variants'),
         ).not.toBeInTheDocument();
 
-        // We do notsee the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(LVV)')).not.toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action without ticker (no cache)
         expect(screen.getByText('Burned')).toBeInTheDocument();
     });
     it('Burn slpv1 fungible token with 9 decimals', async () => {
@@ -1291,10 +1261,7 @@ describe('<Tx />', () => {
             ),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(WDT)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Burned .1234567 WDT')).toBeInTheDocument();
     });
     it('Swap tx', async () => {
@@ -1858,10 +1825,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Cachet')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(CACHET)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Minted 1.00 CACHET')).toBeInTheDocument();
     });
     it('slpv1 fungible token MINT with no token info in cache', async () => {
@@ -1910,10 +1874,7 @@ describe('<Tx />', () => {
         // We do not see the token name
         expect(screen.queryByText('Cachet')).not.toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(CACHET)')).not.toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action without ticker (no cache)
         expect(screen.getByText('Minted')).toBeInTheDocument();
     });
     it('Msg sent by ElectrumABC', async () => {
@@ -2065,10 +2026,8 @@ describe('<Tx />', () => {
         ).toBeInTheDocument();
         // We see the token name
         expect(screen.getByText('Credo In Unum Deo')).toBeInTheDocument();
-        // We see the token ticker
-        expect(screen.getByText('(CRD)')).toBeInTheDocument();
 
-        // We see the expected token action text for a received ALP fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Received 0.0650 CRD')).toBeInTheDocument();
     });
     it('Received ALP tx with token not in cache', async () => {
@@ -2261,9 +2220,6 @@ describe('<Tx />', () => {
             screen.getByText('The Four Half-Coins of Jin-qua'),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(4HC)')).toBeInTheDocument();
-
         // We see the Fan Out icon
         expect(screen.getByTitle('Fan Out')).toBeInTheDocument();
 
@@ -2323,10 +2279,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Wu Fang Choi')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(WFC)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Minted 1 WFC')).toBeInTheDocument();
 
         // We see a second token action for burning the NFT Mint Input
@@ -2390,10 +2343,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('The Heisman')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(HSM)')).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(screen.getByText('Created 89 HSM')).toBeInTheDocument();
     });
     it('Sent paywall payment tx', async () => {
@@ -2715,10 +2665,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Nile Kinnick')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NK)')).toBeInTheDocument();
-
-        // We see the expected token action for listing this NFT
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(screen.getByText('Listed 1 NK')).toBeInTheDocument();
     });
     it('Ad setup tx for an SLP1 NFT Agora offer (uncached)', async () => {
@@ -2772,10 +2719,7 @@ describe('<Tx />', () => {
         // We see SEND but not the token name (uncached)
         expect(screen.getByText('Agora Offer')).toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(screen.queryByText('(NK)')).not.toBeInTheDocument();
-
-        // We see the expected token action text for a listed SLPv1 fungible token tx, but no quantity
+        // We see the expected token action without ticker (no cache)
         expect(screen.getByText('Listed')).toBeInTheDocument();
     });
     it('Agora one-shot buy tx (token info available in cache)', async () => {
@@ -2830,10 +2774,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Nile Kinnick')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NK)')).toBeInTheDocument();
-
-        // We see the expected token action for buying this NFT
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(screen.getByText('Bought 1 NK')).toBeInTheDocument();
     });
     it('Agora one-shot buy tx (uncached)', async () => {
@@ -2935,10 +2876,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Nile Kinnick')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NK)')).toBeInTheDocument();
-
-        // We see the expected token action for selling this NFT
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(screen.getByText('Sold 1 NK')).toBeInTheDocument();
     });
     it('Agora one-shot sell tx (uncached)', async () => {
@@ -3040,10 +2978,7 @@ describe('<Tx />', () => {
         // We see the token name
         expect(screen.getByText('Nile Kinnick')).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(screen.getByText('(NK)')).toBeInTheDocument();
-
-        // We see the expected token action for canceling this NFT listing
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(screen.getByText('Canceled offer of 1 NK')).toBeInTheDocument();
     });
     it('Agora one-shot cancel tx (uncached)', async () => {
@@ -3137,14 +3072,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(
             screen.getByText(
                 `Canceled offer of 855.738679296 ${thisMock.cache[0][1].genesisInfo.tokenTicker}`,
@@ -3242,14 +3170,7 @@ describe('<Tx />', () => {
             ),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${agoraPartialBuxBuyTx.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         const BOUGHT_AMOUNT = '14.0667';
         expect(
             screen.getByText(
@@ -3361,14 +3282,7 @@ describe('<Tx />', () => {
             ),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${agoraPartialBuxBuyTx.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         const SOLD_AMOUNT = '14.0667';
         expect(
             screen.getByText(
@@ -3427,14 +3341,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         const SOLD_AMOUNT = '375';
         expect(
             screen.getByText(
@@ -3500,14 +3407,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         const AMOUNT = '495';
         expect(
             screen.getByText(
@@ -3622,14 +3522,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(
             screen.getByText(
                 `Minted 1 ${thisMock.cache[0][1].genesisInfo.tokenTicker}`,
@@ -3736,14 +3629,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action text for a received SLPv1 fungible token tx
+        // We see the expected token action text (ticker in combined TokenDesc)
         expect(
             screen.getByText(
                 `Burned 1 ${thisMock.cache[0][1].genesisInfo.tokenTicker}`,
@@ -3800,14 +3686,7 @@ describe('<Tx />', () => {
             screen.getByText(thisMock.cache[0][1].genesisInfo.tokenName),
         ).toBeInTheDocument();
 
-        // We see the token ticker in parenthesis in the summary column
-        expect(
-            screen.getByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).toBeInTheDocument();
-
-        // We see the expected token action for listing this NFT
+        // We see the expected token action (ticker in combined TokenDesc)
         expect(
             screen.getByText(
                 `Listed 99,106 ${thisMock.cache[0][1].genesisInfo.tokenTicker}`,
@@ -3862,14 +3741,7 @@ describe('<Tx />', () => {
         // We see 'Agora Offer' as the rendered tx type but not the token name (uncached)
         expect(screen.getByText('Agora Offer')).toBeInTheDocument();
 
-        // We do not see the token ticker in parenthesis in the summary column
-        expect(
-            screen.queryByText(
-                `(${thisMock.cache[0][1].genesisInfo.tokenTicker})`,
-            ),
-        ).not.toBeInTheDocument();
-
-        // We see the expected token action text for a listed ALP fungible token tx, but no quantity
+        // We see the expected token action without ticker (no cache)
         expect(screen.getByText('Listed')).toBeInTheDocument();
     });
     it('Valid XECX tx', async () => {

@@ -8,8 +8,7 @@ import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import { Link } from 'react-router';
 import TxHistory from './TxHistory';
 import ApiError from 'components/Common/ApiError';
-import Receive from 'components/Receive/Receive';
-import { Alert, Info } from 'components/Common/Atoms';
+import { Info } from 'components/Common/Atoms';
 import PrimaryButton, {
     SecondaryButton,
     PrimaryLink,
@@ -19,6 +18,9 @@ import { toast } from 'react-toastify';
 import { token as tokenConfig } from 'config/token';
 import { InlineLoader } from 'components/Common/Spinner';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { ReactComponent as WarningIcon } from 'assets/warning.svg';
+import ActionButtonRow from 'components/Common/ActionButtonRow';
+import { ReactComponent as GiftIcon } from 'assets/gift-icon.svg';
 
 export const Tabs = styled.div`
     margin: auto;
@@ -31,21 +33,69 @@ export const Tabs = styled.div`
 export const TxHistoryCtn = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 6px;
     color: ${props => props.theme.primaryText};
-    background-color: ${props => props.theme.primaryBackground};
-    padding: 20px;
-    border-radius: 10px;
     @media (max-width: 768px) {
-        border-radius: 0;
-        padding: 10px;
+        padding: 0 10px;
     }
 `;
 
-export const AlertLink = styled(Link)`
-    color: red;
+const BackupWalletAlert = styled(Link)`
+    text-decoration: none;
+    background-color: #454111;
+    color: ${props => props.theme.primaryText};
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    svg {
+        flex-shrink: 0;
+        width: 50px;
+        height: 50px;
+        fill: #ffc400;
+    }
+    > div {
+        text-align: left;
+        > p {
+            margin: 0;
+        }
+    }
+    em {
+        font-weight: 700;
+        color: #ffc400;
+    }
     :hover {
-        color: #000;
+        background-color: #8d7f0f;
+        color: ${props => props.theme.primaryText};
+    }
+    @media (max-width: 768px) {
+        padding: 10px;
+        gap: 5px;
+        svg {
+            width: 30px;
+            height: 30px;
+        }
+        > div {
+            > p {
+                font-size: var(--text-sm);
+                line-height: var(--text-sm--line-height);
+            }
+        }
+    }
+`;
+
+export const AlertHeader = styled.h2`
+    color: ${props => props.theme.primaryText};
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: var(--text-lg--line-height);
+    margin: 0;
+    text-decoration: underline;
+    @media (max-width: 768px) {
+        font-size: var(--text-base);
     }
 `;
 
@@ -64,6 +114,64 @@ export const TokenRewardButton = styled(SecondaryButton)`
     margin-bottom: 0;
     div {
         margin: auto;
+    }
+`;
+
+export const ClaimRewardsButton = styled.button<{ disabled?: boolean }>`
+    width: 100%;
+    display: flex;
+    border: none;
+    outline: none;
+    color: ${props => props.theme.primaryText};
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    opacity: ${props => (props.disabled ? 0.5 : 1)};
+    padding: 30px 20px;
+    background: linear-gradient(180deg, #764aa7, #4f178c);
+    border-radius: 10px;
+    cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+    margin: 0 auto;
+    :hover {
+        background-color: #8d7f0f;
+    }
+    @media (max-width: 768px) {
+        padding: 15px 10px;
+    }
+    > div {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        gap: 14px;
+        font-size: var(--text-lg);
+        font-weight: 700;
+        line-height: 1.2em;
+        @media (max-width: 768px) {
+            font-size: var(--text-base);
+            gap: 10px;
+        }
+    }
+    svg {
+        width: 30px;
+        height: 30px;
+        @media (max-width: 768px) {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+    }
+    span {
+        background: #fff;
+        color: ${props => props.theme.primaryBackground};
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        opacity: ${props => (props.disabled ? 0.5 : 1)};
+        @media (max-width: 768px) {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
     }
 `;
 
@@ -202,6 +310,7 @@ const Home: React.FC = () => {
                     </div>
                 ) : (
                     <>
+                        <ActionButtonRow variant="homepage" />
                         <TxHistory />
                         {isNewishWallet && (
                             <>
@@ -229,30 +338,78 @@ const Home: React.FC = () => {
                         )}
                         {!hasHistory && (
                             <>
-                                <Alert>
-                                    <p>
-                                        <b>
-                                            <AlertLink to="/backup">
-                                                Backup your wallet
-                                            </AlertLink>
-                                        </b>
-                                    </p>
-                                    <p>
-                                        Write down your 12-word seed and keep it
-                                        in a safe place.{' '}
-                                        <em>
-                                            Do not share your backup with
-                                            anyone.
-                                        </em>
-                                    </p>
-                                </Alert>
+                                <BackupWalletAlert to="/backup">
+                                    <WarningIcon
+                                        title="Warning"
+                                        aria-hidden="true"
+                                    />
+                                    <div>
+                                        <AlertHeader>
+                                            Backup your wallet
+                                        </AlertHeader>
+                                        <p>
+                                            Write down your 12-word seed and
+                                            keep it in a safe place.
+                                            <br />
+                                            <em>
+                                                Do not share your backup with
+                                                anyone.
+                                            </em>
+                                        </p>
+                                    </div>
+                                </BackupWalletAlert>
                                 {import.meta.env.VITE_BUILD_ENV !==
                                     'extension' &&
                                     import.meta.env.VITE_TESTNET !== 'true' && (
                                         <>
+                                            {cashtabState.wallets.length ===
+                                            1 ? (
+                                                <ClaimRewardsButton
+                                                    onClick={
+                                                        claimAirdropForNewWallet
+                                                    }
+                                                    disabled={
+                                                        airdropPending ||
+                                                        !recaptchaToken
+                                                    }
+                                                >
+                                                    <div>
+                                                        <GiftIcon /> Free XEC
+                                                        Welcome Bonus!
+                                                    </div>
+                                                    <span>
+                                                        {airdropPending ? (
+                                                            <InlineLoader />
+                                                        ) : (
+                                                            'Claim Now!'
+                                                        )}
+                                                    </span>
+                                                </ClaimRewardsButton>
+                                            ) : (
+                                                <ClaimRewardsButton
+                                                    onClick={
+                                                        claimTokenRewardsForNewWallet
+                                                    }
+                                                    disabled={
+                                                        tokenRewardsPending
+                                                    }
+                                                >
+                                                    <div>
+                                                        <GiftIcon /> You've
+                                                        earned Token Rewards!
+                                                    </div>
+                                                    <span>
+                                                        {tokenRewardsPending ? (
+                                                            <InlineLoader />
+                                                        ) : (
+                                                            'Claim Now!'
+                                                        )}
+                                                    </span>
+                                                </ClaimRewardsButton>
+                                            )}
                                             <div
                                                 style={{
-                                                    marginBottom: '12px',
+                                                    marginTop: '12px',
                                                     display: 'flex',
                                                     justifyContent: 'center',
                                                 }}
@@ -269,43 +426,8 @@ const Home: React.FC = () => {
                                                     }
                                                 />
                                             </div>
-                                            {cashtabState.wallets.length ===
-                                            1 ? (
-                                                <AirdropButton
-                                                    onClick={
-                                                        claimAirdropForNewWallet
-                                                    }
-                                                    disabled={
-                                                        airdropPending ||
-                                                        !recaptchaToken
-                                                    }
-                                                >
-                                                    {airdropPending ? (
-                                                        <InlineLoader />
-                                                    ) : (
-                                                        'Claim Free XEC'
-                                                    )}
-                                                </AirdropButton>
-                                            ) : (
-                                                <TokenRewardButton
-                                                    onClick={
-                                                        claimTokenRewardsForNewWallet
-                                                    }
-                                                    disabled={
-                                                        tokenRewardsPending
-                                                    }
-                                                >
-                                                    {tokenRewardsPending ? (
-                                                        <InlineLoader />
-                                                    ) : (
-                                                        'Claim Token Rewards'
-                                                    )}
-                                                </TokenRewardButton>
-                                            )}
                                         </>
                                     )}
-
-                                <Receive />
                             </>
                         )}
                     </>

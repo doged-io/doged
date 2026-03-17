@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link, useParams } from 'react-router';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import PrimaryButton, {
@@ -10,7 +10,7 @@ import PrimaryButton, {
     IconButton,
     CopyIconButton,
 } from 'components/Common/Buttons';
-import { SwitchLabel, Info, Alert } from 'components/Common/Atoms';
+import { Info, Alert } from 'components/Common/Atoms';
 import Spinner from 'components/Common/Spinner';
 import { Event } from 'components/Common/GoogleAnalytics';
 import ApiError from 'components/Common/ApiError';
@@ -63,19 +63,21 @@ import {
     SliderLabel,
 } from 'components/Common/Inputs';
 import { QuestionIcon } from 'components/Common/CustomIcons';
-import Switch from 'components/Common/Switch';
+import { ReactComponent as DownArrow } from 'assets/drop-down-arrow.svg';
 import {
     DataAndQuestionButton,
     TokenIconExpandButton,
     SendTokenForm,
     SendTokenFormRow,
     InputRow,
+    SectionCtn,
+    SectionLabel,
     TokenStatsTable,
     TokenStatsRow,
     TokenStatsCol,
     TokenUrlCol,
     TokenStatsTableRow,
-    SwitchHolder,
+    TokenInfoRow,
     NftTitle,
     NftTable,
     NftRow,
@@ -93,6 +95,11 @@ import {
     NftOfferWrapper,
     OuterCtn,
     TokenStatsRowCtn,
+    TokenActionBar,
+    TokenActionBtn,
+    TokenActionMoreWrap,
+    TokenActionDropdown,
+    TokenActionDropdownItem,
 } from 'components/Etokens/Token/styled';
 import CreateTokenForm from 'components/Etokens/CreateTokenForm';
 import {
@@ -322,6 +329,8 @@ const Token: React.FC = () => {
     const [nftOfferAgoraQueryError, setNftOfferAgoraQueryError] =
         useState<boolean>(false);
     const [firmaBidPrice, setFirmaBidPrice] = useState<null | number>(null);
+    const [tokenDetailsExpanded, setTokenDetailsExpanded] =
+        useState<boolean>(false);
 
     // By default, we load the app with all switches disabled
     // For SLP v1 tokens, we want showSend to be enabled by default
@@ -349,6 +358,44 @@ const Token: React.FC = () => {
         showSellSlp: false,
     };
     const [switches, setSwitches] = useState<TokenScreenSwitches>(switchesOff);
+
+    type TokenActionType =
+        | 'buy'
+        | 'sell'
+        | 'send'
+        | 'airdrop'
+        | 'burn'
+        | 'redeemXecx'
+        | 'redeemFirma'
+        | 'sellNft'
+        | 'sellSlp'
+        | 'mintNft'
+        | 'mint';
+    const [activeTokenAction, setActiveTokenAction] =
+        useState<TokenActionType>('buy');
+    const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+    const moreDropdownRef = useRef<HTMLDivElement>(null);
+
+    const setAction = (action: TokenActionType) => {
+        setActiveTokenAction(action);
+        setMoreDropdownOpen(false);
+        if (action === 'buy') {
+            setSwitches(switchesOff);
+            return;
+        }
+        setSwitches({
+            ...switchesOff,
+            ...(action === 'redeemXecx' && { showRedeemXecx: true }),
+            ...(action === 'redeemFirma' && { showRedeemFirma: true }),
+            ...(action === 'send' && { showSend: true }),
+            ...(action === 'airdrop' && { showAirdrop: true }),
+            ...(action === 'burn' && { showBurn: true }),
+            ...(action === 'sellNft' && { showSellNft: true }),
+            ...(action === 'sellSlp' && { showSellSlp: true }),
+            ...(action === 'mintNft' && { showMintNft: true }),
+            ...(action === 'mint' && { showMint: true }),
+        });
+    };
     const [showLargeIconModal, setShowLargeIconModal] =
         useState<boolean>(false);
     const [showLargeNftIcon, setShowLargeNftIcon] = useState<string>('');
@@ -797,39 +844,27 @@ const Token: React.FC = () => {
 
     useEffect(() => {
         if (!isSupportedToken || typeof tokenType === 'undefined') {
-            // Do nothing for unsupported tokens
-            // Do nothing if we haven't loaded the cached info yet
             return;
         }
-        // This useEffect block works as a de-facto "on load" block,
-        // for after we have the tokenId from the url params of this page
-        if (!isNftParent) {
-            if (tokenId === appConfig.vipTokens.xecx.tokenId) {
-                // If this is the XECX token page, default option is redeeming XECX
-                // i.e. selling XECX for XEC, 1:1
-                setSwitches({ ...switchesOff, showRedeemXecx: true });
-            } else if (tokenId === FIRMA.tokenId) {
-                // If this is the Firma token page, default option is redeeming Firma
-                // i.e. selling Firma for XEC at the Firma bid price
-                setSwitches({ ...switchesOff, showRedeemFirma: true });
-            } else if (isNftChild) {
-                // Default action is list
-                setSwitches({ ...switchesOff, showSellNft: true });
-                // Check if it is listed
-                getNftOffer();
-            } else if (
-                tokenType.type === 'SLP_TOKEN_TYPE_FUNGIBLE' ||
-                tokenType.type === 'SLP_TOKEN_TYPE_MINT_VAULT' ||
-                isAlp
-            ) {
-                // Default action is List for non-NFT tokens
-                setSwitches({ ...switchesOff, showSellSlp: true });
-            } else {
-                // Default action is send
-                setSwitches({ ...switchesOff, showSend: true });
-            }
+        // Load NFT offer data when viewing an NFT child token (for sell UI)
+        if (isNftChild) {
+            getNftOffer();
         }
     }, [isSupportedToken, isNftParent, isNftChild]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                moreDropdownRef.current &&
+                !moreDropdownRef.current.contains(e.target as Node)
+            ) {
+                setMoreDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (switches.showRedeemXecx) {
@@ -2544,142 +2579,183 @@ const Token: React.FC = () => {
                                 <TokenIcon size={128} tokenId={tokenId} />
                             </TokenIconExpandButton>
                             {renderedTokenType !== 'NFT' && (
-                                <>
+                                <div>
                                     {tokenName !== undefined && (
                                         <h2>{tokenName}</h2>
                                     )}
                                     {tokenTicker !== undefined && (
                                         <span>{tokenTicker}</span>
                                     )}
-                                </>
+                                </div>
                             )}
                         </TokenStatsCol>
                         <TokenStatsRowCtn>
-                            {typeof tokenBalance === 'string' && (
-                                <TokenStatsTableRow balance>
-                                    <label>Your Balance</label>
-                                    <div>
-                                        {decimalizedTokenQtyToLocaleFormat(
-                                            tokenBalance,
-                                            userLocale,
-                                        )}
-                                        {tokenTicker !== undefined &&
-                                            tokenTicker !== '' &&
-                                            ` ${tokenTicker}`}
-                                    </div>
-                                </TokenStatsTableRow>
-                            )}
-                            <TokenStatsTableRow>
-                                <label>Type</label>
+                            <TokenInfoRow>
+                                <label>Your Balance</label>
                                 <div>
-                                    <DataAndQuestionButton>
-                                        {renderedTokenType}{' '}
-                                        <IconButton
-                                            name={`Click for more info about this token type`}
-                                            icon={<QuestionIcon />}
-                                            onClick={() =>
-                                                setShowTokenTypeInfo(true)
-                                            }
-                                        />
-                                    </DataAndQuestionButton>
+                                    {decimalizedTokenQtyToLocaleFormat(
+                                        typeof tokenBalance === 'string'
+                                            ? tokenBalance
+                                            : '0',
+                                        userLocale,
+                                    )}
+                                    {tokenTicker !== undefined &&
+                                        tokenTicker !== '' &&
+                                        ` ${tokenTicker}`}
                                 </div>
-                            </TokenStatsTableRow>
-                            <TokenStatsTableRow>
-                                <label>Token Id</label>
-                                <div>
-                                    <a
-                                        href={`${explorer.blockExplorerUrl}/tx/${tokenId}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                            </TokenInfoRow>
+                            <TokenInfoRow
+                                expand
+                                role="button"
+                                onClick={() =>
+                                    setTokenDetailsExpanded(prev => !prev)
+                                }
+                                aria-expanded={tokenDetailsExpanded}
+                            >
+                                <label>Token Details</label>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transform: tokenDetailsExpanded
+                                            ? 'rotate(180deg)'
+                                            : 'none',
+                                    }}
+                                >
+                                    <DownArrow />
+                                </div>
+                            </TokenInfoRow>
+                            {tokenDetailsExpanded && (
+                                <>
+                                    <TokenStatsTableRow
+                                        style={{ marginTop: '10px' }}
                                     >
-                                        {(tokenId as string).slice(0, 3)}...
-                                        {(tokenId as string).slice(-3)}
-                                    </a>
-                                    <CopyIconButton
-                                        name={`Copy Token ID`}
-                                        data={tokenId as string}
-                                        showToast
-                                        customMsg={`Token ID "${tokenId}" copied to clipboard`}
-                                    />
-                                </div>
-                            </TokenStatsTableRow>
-                            {renderedTokenType !== 'NFT' &&
-                                renderedTokenType !== 'NFT Collection' && (
-                                    <TokenStatsTableRow>
-                                        <label>Decimals</label>
-                                        <div>{decimals}</div>
+                                        <label>Type</label>
+                                        <div>
+                                            <DataAndQuestionButton>
+                                                {renderedTokenType}{' '}
+                                                <IconButton
+                                                    name={`Click for more info about this token type`}
+                                                    icon={<QuestionIcon />}
+                                                    onClick={() =>
+                                                        setShowTokenTypeInfo(
+                                                            true,
+                                                        )
+                                                    }
+                                                />
+                                            </DataAndQuestionButton>
+                                        </div>
                                     </TokenStatsTableRow>
-                                )}
-                            {url !== '' && (
-                                <TokenStatsTableRow>
-                                    <label>URL</label>
-                                    <TokenUrlCol>
-                                        <UncontrolledLink
-                                            url={
-                                                url?.startsWith('https://') ||
-                                                url?.startsWith('http://')
-                                                    ? url
-                                                    : `https://${url}`
-                                            }
-                                        />
-                                    </TokenUrlCol>
-                                </TokenStatsTableRow>
-                            )}
-                            <TokenStatsTableRow>
-                                <label>Created</label>
-                                <div>
-                                    {typeof cachedInfo?.block !== 'undefined'
-                                        ? formatDate(
-                                              cachedInfo.block.timestamp.toString(),
-                                              navigator.language,
-                                          )
-                                        : formatDate(
-                                              (
-                                                  cachedInfo?.timeFirstSeen as number
-                                              ).toString(),
-                                              navigator.language,
-                                          )}
-                                </div>
-                            </TokenStatsTableRow>
-                            {renderedTokenType !== 'NFT' && (
-                                <TokenStatsTableRow>
-                                    <label>Genesis Qty</label>
-                                    <div>
-                                        {typeof genesisSupply === 'string' ? (
-                                            decimalizedTokenQtyToLocaleFormat(
-                                                genesisSupply,
-                                                userLocale,
-                                            )
-                                        ) : (
-                                            <InlineLoader />
+                                    <TokenStatsTableRow>
+                                        <label>Token Id</label>
+                                        <div>
+                                            <a
+                                                href={`${explorer.blockExplorerUrl}/tx/${tokenId}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {(tokenId as string).slice(
+                                                    0,
+                                                    3,
+                                                )}
+                                                ...
+                                                {(tokenId as string).slice(-3)}
+                                            </a>
+                                            <CopyIconButton
+                                                name={`Copy Token ID`}
+                                                data={tokenId as string}
+                                                showToast
+                                                customMsg={`Token ID "${tokenId}" copied to clipboard`}
+                                            />
+                                        </div>
+                                    </TokenStatsTableRow>
+                                    {renderedTokenType !== 'NFT' &&
+                                        renderedTokenType !==
+                                            'NFT Collection' && (
+                                            <TokenStatsTableRow>
+                                                <label>Decimals</label>
+                                                <div>{decimals}</div>
+                                            </TokenStatsTableRow>
                                         )}
-                                    </div>
-                                </TokenStatsTableRow>
-                            )}
-                            {renderedTokenType !== 'NFT' && (
-                                <TokenStatsTableRow>
-                                    <label>Supply</label>
-                                    <div>
-                                        {typeof uncachedTokenInfo.circulatingSupply ===
-                                        'string' ? (
-                                            `${decimalizedTokenQtyToLocaleFormat(
-                                                uncachedTokenInfo.circulatingSupply,
-                                                userLocale,
-                                            )}${
-                                                uncachedTokenInfo.mintBatons ===
-                                                    0 &&
-                                                tokenType!.type !==
-                                                    'SLP_TOKEN_TYPE_MINT_VAULT'
-                                                    ? ' (fixed)'
-                                                    : ' (var.)'
-                                            }`
-                                        ) : uncachedTokenInfoError ? (
-                                            'Error fetching supply'
-                                        ) : (
-                                            <InlineLoader />
-                                        )}
-                                    </div>
-                                </TokenStatsTableRow>
+                                    {url !== '' && (
+                                        <TokenStatsTableRow>
+                                            <label>URL</label>
+                                            <TokenUrlCol>
+                                                <UncontrolledLink
+                                                    url={
+                                                        url?.startsWith(
+                                                            'https://',
+                                                        ) ||
+                                                        url?.startsWith(
+                                                            'http://',
+                                                        )
+                                                            ? url
+                                                            : `https://${url}`
+                                                    }
+                                                />
+                                            </TokenUrlCol>
+                                        </TokenStatsTableRow>
+                                    )}
+                                    <TokenStatsTableRow>
+                                        <label>Created</label>
+                                        <div>
+                                            {typeof cachedInfo?.block !==
+                                            'undefined'
+                                                ? formatDate(
+                                                      cachedInfo.block.timestamp.toString(),
+                                                      navigator.language,
+                                                  )
+                                                : formatDate(
+                                                      (
+                                                          cachedInfo?.timeFirstSeen as number
+                                                      ).toString(),
+                                                      navigator.language,
+                                                  )}
+                                        </div>
+                                    </TokenStatsTableRow>
+                                    {renderedTokenType !== 'NFT' && (
+                                        <TokenStatsTableRow>
+                                            <label>Genesis Qty</label>
+                                            <div>
+                                                {typeof genesisSupply ===
+                                                'string' ? (
+                                                    decimalizedTokenQtyToLocaleFormat(
+                                                        genesisSupply,
+                                                        userLocale,
+                                                    )
+                                                ) : (
+                                                    <InlineLoader />
+                                                )}
+                                            </div>
+                                        </TokenStatsTableRow>
+                                    )}
+                                    {renderedTokenType !== 'NFT' && (
+                                        <TokenStatsTableRow>
+                                            <label>Supply</label>
+                                            <div>
+                                                {typeof uncachedTokenInfo.circulatingSupply ===
+                                                'string' ? (
+                                                    `${decimalizedTokenQtyToLocaleFormat(
+                                                        uncachedTokenInfo.circulatingSupply,
+                                                        userLocale,
+                                                    )}${
+                                                        uncachedTokenInfo.mintBatons ===
+                                                            0 &&
+                                                        tokenType!.type !==
+                                                            'SLP_TOKEN_TYPE_MINT_VAULT'
+                                                            ? ' (fixed)'
+                                                            : ' (var.)'
+                                                    }`
+                                                ) : uncachedTokenInfoError ? (
+                                                    'Error fetching supply'
+                                                ) : (
+                                                    <InlineLoader />
+                                                )}
+                                            </div>
+                                        </TokenStatsTableRow>
+                                    )}
+                                </>
                             )}
                             {typeof hash !== 'undefined' && hash !== '' && (
                                 <TokenStatsTableRow>
@@ -2738,15 +2814,189 @@ const Token: React.FC = () => {
                         )}
                     {isSupportedToken &&
                         isBlacklisted !== null &&
-                        !isBlacklisted &&
-                        !isNftParent &&
-                        !isNftChild && (
-                            <OrderBook
-                                tokenId={tokenId as string}
-                                noIcon
-                                userLocale={userLocale}
-                                priceInFiat={tokenId === FIRMA.tokenId}
-                            />
+                        !isBlacklisted && (
+                            <>
+                                <TokenActionBar>
+                                    <TokenActionBtn
+                                        $active={activeTokenAction === 'buy'}
+                                        disabled={isNftParent || isNftChild}
+                                        onClick={() => setAction('buy')}
+                                    >
+                                        + Buy
+                                    </TokenActionBtn>
+                                    <TokenActionBtn
+                                        $active={
+                                            tokenId ===
+                                                appConfig.vipTokens.xecx
+                                                    .tokenId ||
+                                            tokenId === FIRMA.tokenId
+                                                ? activeTokenAction ===
+                                                      'redeemXecx' ||
+                                                  activeTokenAction ===
+                                                      'redeemFirma'
+                                                : [
+                                                      'sellSlp',
+                                                      'sellNft',
+                                                  ].includes(activeTokenAction)
+                                        }
+                                        disabled={
+                                            typeof tokenBalance === 'undefined'
+                                        }
+                                        onClick={() => {
+                                            if (
+                                                typeof tokenBalance ===
+                                                'undefined'
+                                            )
+                                                return;
+                                            if (
+                                                tokenId ===
+                                                appConfig.vipTokens.xecx.tokenId
+                                            )
+                                                setAction('redeemXecx');
+                                            else if (tokenId === FIRMA.tokenId)
+                                                setAction('redeemFirma');
+                                            else if (isNftChild)
+                                                setAction('sellNft');
+                                            else if (
+                                                tokenType?.type ===
+                                                    'SLP_TOKEN_TYPE_FUNGIBLE' ||
+                                                tokenType?.type ===
+                                                    'SLP_TOKEN_TYPE_MINT_VAULT' ||
+                                                isAlp
+                                            )
+                                                setAction('sellSlp');
+                                        }}
+                                    >
+                                        {tokenId ===
+                                            appConfig.vipTokens.xecx.tokenId ||
+                                        tokenId === FIRMA.tokenId
+                                            ? '− Redeem'
+                                            : '− Sell'}
+                                    </TokenActionBtn>
+                                    <TokenActionMoreWrap ref={moreDropdownRef}>
+                                        <TokenActionBtn
+                                            $active={[
+                                                'send',
+                                                'airdrop',
+                                                'burn',
+                                                'mint',
+                                                'mintNft',
+                                            ].includes(activeTokenAction)}
+                                            onClick={() =>
+                                                setMoreDropdownOpen(o => !o)
+                                            }
+                                        >
+                                            ⋯
+                                        </TokenActionBtn>
+                                        <TokenActionDropdown
+                                            $open={moreDropdownOpen}
+                                        >
+                                            {!isNftParent && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('send')
+                                                    }
+                                                >
+                                                    Send
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {isNftParent && (
+                                                <TokenActionDropdownItem
+                                                    onClick={() =>
+                                                        setAction('mintNft')
+                                                    }
+                                                >
+                                                    Mint NFT
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {!isNftChild && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('airdrop')
+                                                    }
+                                                >
+                                                    Airdrop
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {!isNftParent && !isNftChild && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('burn')
+                                                    }
+                                                >
+                                                    Burn
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {mintBatons.length > 0 && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('mint')
+                                                    }
+                                                >
+                                                    Mint
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {isNftChild && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('sellNft')
+                                                    }
+                                                >
+                                                    Sell NFT
+                                                </TokenActionDropdownItem>
+                                            )}
+                                            {(tokenId ===
+                                                appConfig.vipTokens.xecx
+                                                    .tokenId ||
+                                                tokenId === FIRMA.tokenId) && (
+                                                <TokenActionDropdownItem
+                                                    $disabled={
+                                                        typeof tokenBalance ===
+                                                        'undefined'
+                                                    }
+                                                    onClick={() =>
+                                                        setAction('sellSlp')
+                                                    }
+                                                >
+                                                    List token
+                                                </TokenActionDropdownItem>
+                                            )}
+                                        </TokenActionDropdown>
+                                    </TokenActionMoreWrap>
+                                </TokenActionBar>
+                                {activeTokenAction === 'buy' &&
+                                    !isNftParent &&
+                                    !isNftChild && (
+                                        <OrderBook
+                                            tokenId={tokenId as string}
+                                            noIcon
+                                            userLocale={userLocale}
+                                            priceInFiat={
+                                                tokenId === FIRMA.tokenId
+                                            }
+                                        />
+                                    )}
+                            </>
                         )}
                     {isNftParent && nftTokenIds.length > 0 && (
                         <>
@@ -2833,273 +3083,206 @@ const Token: React.FC = () => {
                         </>
                     )}
                     {apiError && <ApiError />}
-                    {typeof tokenBalance === 'undefined' ? (
+                    {typeof tokenBalance === 'undefined' && (
                         <Info>You do not hold this token.</Info>
-                    ) : (
-                        <>
-                            {isSupportedToken && (
-                                <SendTokenForm title="Token Actions">
-                                    {tokenId ===
-                                        appConfig.vipTokens.xecx.tokenId && (
+                    )}
+                    {isSupportedToken && activeTokenAction !== 'buy' && (
+                        <SendTokenForm>
+                            {tokenId === appConfig.vipTokens.xecx.tokenId && (
+                                <>
+                                    {switches.showRedeemXecx && (
                                         <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Redeem XECX"
-                                                    on="🤳"
-                                                    off="🤳"
-                                                    checked={
-                                                        switches.showRedeemXecx
-                                                    }
-                                                    handleToggle={() => {
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showRedeemXecx:
-                                                                !switches.showRedeemXecx,
-                                                        });
-                                                    }}
-                                                />
-                                                <SwitchLabel>
-                                                    Redeem {tokenName} (
-                                                    {tokenTicker}) 1:1 for XEC
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showRedeemXecx && (
-                                                <>
-                                                    <SendTokenFormRow>
-                                                        <InputRow>
-                                                            <Slider
-                                                                name={
-                                                                    'agoraPartialTokenQty'
-                                                                }
-                                                                label={`Offered qty`}
-                                                                value={
-                                                                    agoraPartialTokenQty
-                                                                }
-                                                                handleSlide={
-                                                                    handleTokenOfferedSlide
-                                                                }
-                                                                error={
-                                                                    agoraPartialTokenQtyError
-                                                                }
-                                                                min={0}
-                                                                max={
-                                                                    tokenBalance
-                                                                }
-                                                                step={parseFloat(
-                                                                    `1e-${decimals}`,
-                                                                )}
-                                                                allowTypedInput
-                                                            />
-                                                        </InputRow>
-                                                    </SendTokenFormRow>
-
-                                                    {!tokenListPriceError &&
-                                                        formData.tokenListPrice !==
-                                                            '' &&
-                                                        formData.tokenListPrice !==
-                                                            null &&
-                                                        fiatPrice !== null && (
-                                                            <ListPricePreview title="Token List Price">
-                                                                {getAgoraPartialPricePreview()}
-                                                            </ListPricePreview>
-                                                        )}
-                                                    <SendTokenFormRow>
-                                                        <PrimaryButton
-                                                            style={{
-                                                                marginTop:
-                                                                    '12px',
-                                                            }}
-                                                            disabled={
-                                                                apiError ||
-                                                                agoraPartialTokenQtyError !==
-                                                                    false ||
-                                                                agoraPartialMinError !==
-                                                                    false ||
-                                                                tokenListPriceError !==
-                                                                    false ||
-                                                                formData.tokenListPrice ===
-                                                                    '' ||
-                                                                formData.tokenListPrice ===
-                                                                    null ||
-                                                                agoraPartialTokenQty ===
-                                                                    '' ||
-                                                                agoraPartialMin ===
-                                                                    ''
+                                            <SectionCtn>
+                                                <SectionLabel>
+                                                    Quantity
+                                                </SectionLabel>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <Slider
+                                                            name={
+                                                                'agoraPartialTokenQty'
                                                             }
-                                                            onClick={
-                                                                previewAgoraPartial
+                                                            value={
+                                                                agoraPartialTokenQty
                                                             }
-                                                        >
-                                                            Redeem XECX for XEC
-                                                        </PrimaryButton>
-                                                    </SendTokenFormRow>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                    {tokenId === FIRMA.tokenId && (
-                                        <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Redeem FIRMA"
-                                                    on="🤳"
-                                                    off="🤳"
-                                                    checked={
-                                                        switches.showRedeemFirma
-                                                    }
-                                                    handleToggle={() => {
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showRedeemFirma:
-                                                                !switches.showRedeemFirma,
-                                                        });
-                                                    }}
-                                                />
-                                                <SwitchLabel>
-                                                    Redeem {tokenName}
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showRedeemFirma && (
-                                                <>
-                                                    <SendTokenFormRow>
-                                                        <InputRow>
-                                                            <Slider
-                                                                name={
-                                                                    'agoraPartialTokenQty'
-                                                                }
-                                                                label={`Offered qty`}
-                                                                value={
-                                                                    agoraPartialTokenQty
-                                                                }
-                                                                handleSlide={
-                                                                    handleTokenOfferedSlide
-                                                                }
-                                                                error={
-                                                                    agoraPartialTokenQtyError
-                                                                }
-                                                                min={0}
-                                                                max={
-                                                                    tokenBalance
-                                                                }
-                                                                step={parseFloat(
-                                                                    `1e-${decimals}`,
-                                                                )}
-                                                                allowTypedInput
-                                                            />
-                                                        </InputRow>
-                                                    </SendTokenFormRow>
-
-                                                    {!tokenListPriceError &&
-                                                        formData.tokenListPrice !==
-                                                            '' &&
-                                                        formData.tokenListPrice !==
-                                                            null &&
-                                                        fiatPrice !== null && (
-                                                            <ListPricePreview title="Token List Price">
-                                                                {getAgoraPartialPricePreview()}
-                                                            </ListPricePreview>
-                                                        )}
-                                                    <SendTokenFormRow>
-                                                        <PrimaryButton
-                                                            style={{
-                                                                marginTop:
-                                                                    '12px',
-                                                            }}
-                                                            disabled={
-                                                                apiError ||
-                                                                agoraPartialTokenQtyError !==
-                                                                    false ||
-                                                                agoraPartialTokenQty ===
-                                                                    '0' ||
-                                                                agoraPartialTokenQty ===
-                                                                    '' ||
-                                                                isCalculatingRedeemFirma
+                                                            handleSlide={
+                                                                handleTokenOfferedSlide
                                                             }
-                                                            onClick={
-                                                                previewFirmaPartial
+                                                            error={
+                                                                agoraPartialTokenQtyError
                                                             }
-                                                        >
-                                                            {isCalculatingRedeemFirma ? (
-                                                                <InlineLoader />
-                                                            ) : (
-                                                                `Redeem FIRMA for XEC`
+                                                            min={0}
+                                                            max={tokenBalance}
+                                                            step={parseFloat(
+                                                                `1e-${decimals}`,
                                                             )}
-                                                        </PrimaryButton>
-                                                    </SendTokenFormRow>
-                                                </>
-                                            )}
+                                                            allowTypedInput
+                                                        />
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+
+                                                {!tokenListPriceError &&
+                                                    formData.tokenListPrice !==
+                                                        '' &&
+                                                    formData.tokenListPrice !==
+                                                        null &&
+                                                    fiatPrice !== null && (
+                                                        <ListPricePreview title="Token List Price">
+                                                            {getAgoraPartialPricePreview()}
+                                                        </ListPricePreview>
+                                                    )}
+                                                <SendTokenFormRow>
+                                                    <PrimaryButton
+                                                        style={{
+                                                            marginTop: '12px',
+                                                        }}
+                                                        disabled={
+                                                            apiError ||
+                                                            agoraPartialTokenQtyError !==
+                                                                false ||
+                                                            agoraPartialMinError !==
+                                                                false ||
+                                                            tokenListPriceError !==
+                                                                false ||
+                                                            formData.tokenListPrice ===
+                                                                '' ||
+                                                            formData.tokenListPrice ===
+                                                                null ||
+                                                            agoraPartialTokenQty ===
+                                                                '' ||
+                                                            agoraPartialMin ===
+                                                                ''
+                                                        }
+                                                        onClick={
+                                                            previewAgoraPartial
+                                                        }
+                                                    >
+                                                        Redeem XECX for XEC
+                                                    </PrimaryButton>
+                                                </SendTokenFormRow>
+                                            </SectionCtn>
                                         </>
                                     )}
-                                    {isNftChild ? (
+                                </>
+                            )}
+                            {tokenId === FIRMA.tokenId && (
+                                <>
+                                    {switches.showRedeemFirma && (
                                         <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Sell NFT"
-                                                    on="💰"
-                                                    off="💰"
-                                                    checked={
-                                                        switches.showSellNft
-                                                    }
-                                                    handleToggle={() => {
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showSellNft:
-                                                                !switches.showSellNft,
-                                                        });
-                                                    }}
-                                                />
-                                                <SwitchLabel>
-                                                    Sell {tokenName} (
-                                                    {tokenTicker})
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showSellNft && (
-                                                <>
-                                                    <SendTokenFormRow>
-                                                        <InputRow>
-                                                            <ListPriceInput
-                                                                name="nftListPrice"
-                                                                placeholder="Enter NFT list price"
-                                                                value={
-                                                                    formData.nftListPrice
-                                                                }
-                                                                selectValue={
-                                                                    selectedCurrency
-                                                                }
-                                                                selectDisabled={
-                                                                    fiatPrice ===
-                                                                    null
-                                                                }
-                                                                fiatCode={settings.fiatCurrency.toUpperCase()}
-                                                                error={
-                                                                    nftListPriceError
-                                                                }
-                                                                handleInput={
-                                                                    handleNftListPriceChange
-                                                                }
-                                                                handleSelect={
-                                                                    handleSelectedCurrencyChange
-                                                                }
-                                                            ></ListPriceInput>
-                                                        </InputRow>
-                                                    </SendTokenFormRow>
-                                                    {!nftListPriceError &&
-                                                        formData.nftListPrice !==
-                                                            '' &&
-                                                        formData.nftListPrice !==
-                                                            null &&
-                                                        fiatPrice !== null && (
-                                                            <ListPricePreview title="NFT List Price">
-                                                                {selectedCurrency ===
-                                                                appConfig.ticker
-                                                                    ? `${parseFloat(
-                                                                          formData.nftListPrice,
-                                                                      ).toLocaleString(
-                                                                          userLocale,
-                                                                      )}
+                                            <SectionCtn>
+                                                <SectionLabel>
+                                                    Quantity
+                                                </SectionLabel>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <Slider
+                                                            name={
+                                                                'agoraPartialTokenQty'
+                                                            }
+                                                            value={
+                                                                agoraPartialTokenQty
+                                                            }
+                                                            handleSlide={
+                                                                handleTokenOfferedSlide
+                                                            }
+                                                            error={
+                                                                agoraPartialTokenQtyError
+                                                            }
+                                                            min={0}
+                                                            max={tokenBalance}
+                                                            step={parseFloat(
+                                                                `1e-${decimals}`,
+                                                            )}
+                                                            allowTypedInput
+                                                        />
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+
+                                                {!tokenListPriceError &&
+                                                    formData.tokenListPrice !==
+                                                        '' &&
+                                                    formData.tokenListPrice !==
+                                                        null &&
+                                                    fiatPrice !== null && (
+                                                        <ListPricePreview title="Token List Price">
+                                                            {getAgoraPartialPricePreview()}
+                                                        </ListPricePreview>
+                                                    )}
+                                                <SendTokenFormRow>
+                                                    <PrimaryButton
+                                                        style={{
+                                                            marginTop: '12px',
+                                                        }}
+                                                        disabled={
+                                                            apiError ||
+                                                            agoraPartialTokenQtyError !==
+                                                                false ||
+                                                            agoraPartialTokenQty ===
+                                                                '0' ||
+                                                            agoraPartialTokenQty ===
+                                                                '' ||
+                                                            isCalculatingRedeemFirma
+                                                        }
+                                                        onClick={
+                                                            previewFirmaPartial
+                                                        }
+                                                    >
+                                                        {isCalculatingRedeemFirma ? (
+                                                            <InlineLoader />
+                                                        ) : (
+                                                            `Redeem FIRMA for XEC`
+                                                        )}
+                                                    </PrimaryButton>
+                                                </SendTokenFormRow>
+                                            </SectionCtn>
+                                        </>
+                                    )}
+                                </>
+                            )}
+                            {isNftChild ? (
+                                <>
+                                    {switches.showSellNft && (
+                                        <SectionCtn>
+                                            <SendTokenFormRow>
+                                                <InputRow>
+                                                    <ListPriceInput
+                                                        name="nftListPrice"
+                                                        placeholder="Enter NFT list price"
+                                                        value={
+                                                            formData.nftListPrice
+                                                        }
+                                                        selectValue={
+                                                            selectedCurrency
+                                                        }
+                                                        selectDisabled={
+                                                            fiatPrice === null
+                                                        }
+                                                        fiatCode={settings.fiatCurrency.toUpperCase()}
+                                                        error={
+                                                            nftListPriceError
+                                                        }
+                                                        handleInput={
+                                                            handleNftListPriceChange
+                                                        }
+                                                        handleSelect={
+                                                            handleSelectedCurrencyChange
+                                                        }
+                                                    ></ListPriceInput>
+                                                </InputRow>
+                                            </SendTokenFormRow>
+                                            {!nftListPriceError &&
+                                                formData.nftListPrice !== '' &&
+                                                formData.nftListPrice !==
+                                                    null &&
+                                                fiatPrice !== null && (
+                                                    <ListPricePreview title="NFT List Price">
+                                                        {selectedCurrency ===
+                                                        appConfig.ticker
+                                                            ? `${parseFloat(
+                                                                  formData.nftListPrice,
+                                                              ).toLocaleString(
+                                                                  userLocale,
+                                                              )}
                                                         XEC = ${
                                                             settings
                                                                 ? `${
@@ -3127,530 +3310,382 @@ const Token: React.FC = () => {
                                                                 ? settings.fiatCurrency.toUpperCase()
                                                                 : 'USD'
                                                         }`
-                                                                    : `${
-                                                                          settings
-                                                                              ? `${
-                                                                                    supportedFiatCurrencies[
-                                                                                        settings
-                                                                                            .fiatCurrency
-                                                                                    ]
-                                                                                        .symbol
-                                                                                } `
-                                                                              : '$ '
-                                                                      }${parseFloat(
-                                                                          formData.nftListPrice,
-                                                                      ).toLocaleString(
-                                                                          userLocale,
-                                                                      )} ${
-                                                                          settings &&
-                                                                          settings.fiatCurrency
-                                                                              ? settings.fiatCurrency.toUpperCase()
-                                                                              : 'USD'
-                                                                      } = ${(
-                                                                          parseFloat(
-                                                                              formData.nftListPrice,
-                                                                          ) /
-                                                                          fiatPrice
-                                                                      ).toLocaleString(
-                                                                          userLocale,
-                                                                          {
-                                                                              minimumFractionDigits:
-                                                                                  appConfig.cashDecimals,
-                                                                              maximumFractionDigits:
-                                                                                  appConfig.cashDecimals,
-                                                                          },
-                                                                      )}
+                                                            : `${
+                                                                  settings
+                                                                      ? `${
+                                                                            supportedFiatCurrencies[
+                                                                                settings
+                                                                                    .fiatCurrency
+                                                                            ]
+                                                                                .symbol
+                                                                        } `
+                                                                      : '$ '
+                                                              }${parseFloat(
+                                                                  formData.nftListPrice,
+                                                              ).toLocaleString(
+                                                                  userLocale,
+                                                              )} ${
+                                                                  settings &&
+                                                                  settings.fiatCurrency
+                                                                      ? settings.fiatCurrency.toUpperCase()
+                                                                      : 'USD'
+                                                              } = ${(
+                                                                  parseFloat(
+                                                                      formData.nftListPrice,
+                                                                  ) / fiatPrice
+                                                              ).toLocaleString(
+                                                                  userLocale,
+                                                                  {
+                                                                      minimumFractionDigits:
+                                                                          appConfig.cashDecimals,
+                                                                      maximumFractionDigits:
+                                                                          appConfig.cashDecimals,
+                                                                  },
+                                                              )}
                                                         XEC`}
-                                                            </ListPricePreview>
-                                                        )}
-                                                    <SendTokenFormRow>
-                                                        <PrimaryButton
-                                                            style={{
-                                                                marginTop:
-                                                                    '12px',
-                                                            }}
-                                                            disabled={
-                                                                apiError ||
-                                                                nftListPriceError !==
-                                                                    false ||
-                                                                formData.nftListPrice ===
-                                                                    ''
-                                                            }
-                                                            onClick={() =>
-                                                                setShowConfirmListNft(
-                                                                    true,
-                                                                )
-                                                            }
-                                                        >
-                                                            List {tokenName}
-                                                        </PrimaryButton>
-                                                    </SendTokenFormRow>
-                                                </>
-                                            )}
-                                        </>
-                                    ) : (
-                                        (tokenType?.type ===
-                                            'SLP_TOKEN_TYPE_FUNGIBLE' ||
-                                            tokenType?.type ===
-                                                'SLP_TOKEN_TYPE_MINT_VAULT' ||
-                                            isAlp) && (
-                                            <>
-                                                <SwitchHolder>
-                                                    <Switch
-                                                        name="Toggle Sell Token"
-                                                        on="💰"
-                                                        off="💰"
-                                                        checked={
-                                                            switches.showSellSlp
-                                                        }
-                                                        handleToggle={() => {
-                                                            // We turn everything else off, whether we are turning this one on or off
-                                                            setSwitches({
-                                                                ...switchesOff,
-                                                                showSellSlp:
-                                                                    !switches.showSellSlp,
-                                                            });
-                                                        }}
-                                                    />
-                                                    <SwitchLabel>
-                                                        Sell {tokenName} (
-                                                        {tokenTicker})
-                                                    </SwitchLabel>
-                                                    <IconButton
-                                                        name={`Click for more info about agora partial sales`}
-                                                        icon={<QuestionIcon />}
-                                                        onClick={() =>
-                                                            setShowAgoraPartialInfo(
-                                                                true,
-                                                            )
-                                                        }
-                                                    />
-                                                </SwitchHolder>
-
-                                                {switches.showSellSlp && (
-                                                    <>
-                                                        <SendTokenFormRow>
-                                                            <InputRow>
-                                                                <Slider
-                                                                    name={
-                                                                        'agoraPartialTokenQty'
-                                                                    }
-                                                                    label={`Offered qty`}
-                                                                    value={
-                                                                        agoraPartialTokenQty
-                                                                    }
-                                                                    handleSlide={
-                                                                        handleTokenOfferedSlide
-                                                                    }
-                                                                    error={
-                                                                        agoraPartialTokenQtyError
-                                                                    }
-                                                                    min={0}
-                                                                    max={
-                                                                        tokenBalance
-                                                                    }
-                                                                    // Step is 1 smallets supported decimal point of the given token
-                                                                    step={parseFloat(
-                                                                        `1e-${decimals}`,
-                                                                    )}
-                                                                    allowTypedInput
-                                                                />
-                                                            </InputRow>
-                                                        </SendTokenFormRow>
-                                                        <SendTokenFormRow>
-                                                            <InputRow>
-                                                                <LabelAndInputFlex>
-                                                                    <SliderLabel>
-                                                                        Price:
-                                                                    </SliderLabel>
-                                                                    <ListPriceInput
-                                                                        name="tokenListPrice"
-                                                                        placeholder="Enter list price (per token)"
-                                                                        inputDisabled={
-                                                                            agoraPartialTokenQty ===
-                                                                            ''
-                                                                        }
-                                                                        value={
-                                                                            formData.tokenListPrice
-                                                                        }
-                                                                        selectValue={
-                                                                            selectedCurrency
-                                                                        }
-                                                                        selectDisabled={
-                                                                            fiatPrice ===
-                                                                            null
-                                                                        }
-                                                                        fiatCode={settings.fiatCurrency.toUpperCase()}
-                                                                        error={
-                                                                            tokenListPriceError
-                                                                        }
-                                                                        handleInput={
-                                                                            handleTokenListPriceChange
-                                                                        }
-                                                                        handleSelect={
-                                                                            handleSelectedCurrencyChange
-                                                                        }
-                                                                    ></ListPriceInput>
-                                                                </LabelAndInputFlex>
-                                                            </InputRow>
-                                                        </SendTokenFormRow>
-                                                        <SendTokenFormRow>
-                                                            <InputRow>
-                                                                <Slider
-                                                                    name={
-                                                                        'agoraPartialMin'
-                                                                    }
-                                                                    disabled={
-                                                                        formData.tokenListPrice ===
-                                                                            '' ||
-                                                                        tokenListPriceError !==
-                                                                            false
-                                                                    }
-                                                                    label={`Min qty`}
-                                                                    value={
-                                                                        agoraPartialMin
-                                                                    }
-                                                                    handleSlide={
-                                                                        handleTokenMinSlide
-                                                                    }
-                                                                    error={
-                                                                        agoraPartialMinError
-                                                                    }
-                                                                    min={0}
-                                                                    max={
-                                                                        agoraPartialTokenQty
-                                                                    }
-                                                                    // Step is 1 smallets supported decimal point of the given token
-                                                                    step={parseFloat(
-                                                                        `1e-${decimals}`,
-                                                                    )}
-                                                                    allowTypedInput
-                                                                />
-                                                            </InputRow>
-                                                        </SendTokenFormRow>
-
-                                                        {!tokenListPriceError &&
-                                                            formData.tokenListPrice !==
-                                                                '' &&
-                                                            formData.tokenListPrice !==
-                                                                null &&
-                                                            fiatPrice !==
-                                                                null && (
-                                                                <ListPricePreview title="Token List Price">
-                                                                    {getAgoraPartialPricePreview()}
-                                                                </ListPricePreview>
-                                                            )}
-                                                        <SendTokenFormRow>
-                                                            <PrimaryButton
-                                                                style={{
-                                                                    marginTop:
-                                                                        '12px',
-                                                                }}
-                                                                disabled={
-                                                                    apiError ||
-                                                                    agoraPartialTokenQtyError !==
-                                                                        false ||
-                                                                    agoraPartialMinError !==
-                                                                        false ||
-                                                                    tokenListPriceError !==
-                                                                        false ||
-                                                                    formData.tokenListPrice ===
-                                                                        '' ||
-                                                                    agoraPartialTokenQty ===
-                                                                        '' ||
-                                                                    agoraPartialMin ===
-                                                                        ''
-                                                                }
-                                                                onClick={
-                                                                    previewAgoraPartial
-                                                                }
-                                                            >
-                                                                List {tokenName}
-                                                            </PrimaryButton>
-                                                        </SendTokenFormRow>
-                                                    </>
+                                                    </ListPricePreview>
                                                 )}
-                                            </>
-                                        )
-                                    )}
-                                    {!isNftParent && (
-                                        <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Send"
-                                                    on="➡️"
-                                                    off="➡️"
-                                                    checked={switches.showSend}
-                                                    handleToggle={() => {
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showSend:
-                                                                !switches.showSend,
-                                                        });
+                                            <SendTokenFormRow>
+                                                <PrimaryButton
+                                                    style={{
+                                                        marginTop: '12px',
                                                     }}
-                                                />
-                                                <SwitchLabel>
-                                                    Send {tokenName} (
-                                                    {tokenTicker})
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showSend && (
-                                                <>
-                                                    <SendTokenFormRow>
-                                                        <InputRow>
-                                                            <InputWithScanner
-                                                                placeholder={`Address`}
-                                                                name="address"
-                                                                value={
-                                                                    formData.address
-                                                                }
-                                                                handleInput={
-                                                                    handleTokenAddressChange
-                                                                }
-                                                                error={
-                                                                    sendTokenAddressError
-                                                                }
-                                                            />
-                                                        </InputRow>
-                                                    </SendTokenFormRow>
-                                                    {!isNftChild && (
-                                                        <SendTokenFormRow>
-                                                            <SendTokenInput
-                                                                name="amount"
-                                                                value={
-                                                                    formData.amount
-                                                                }
-                                                                error={
-                                                                    sendTokenAmountError
-                                                                }
-                                                                placeholder="Amount"
-                                                                handleInput={
-                                                                    handleTokenAmountChange
-                                                                }
-                                                                handleOnMax={
-                                                                    onMax
-                                                                }
-                                                            />
-                                                        </SendTokenFormRow>
-                                                    )}
-                                                    <SendTokenFormRow>
-                                                        <PrimaryButton
-                                                            style={{
-                                                                marginTop:
-                                                                    '12px',
-                                                            }}
-                                                            disabled={
-                                                                apiError ||
-                                                                sendTokenAmountError !==
-                                                                    false ||
-                                                                sendTokenAddressError !==
-                                                                    false ||
-                                                                formData.address ===
-                                                                    '' ||
-                                                                (!isNftChild &&
-                                                                    formData.amount ===
-                                                                        '')
+                                                    disabled={
+                                                        apiError ||
+                                                        nftListPriceError !==
+                                                            false ||
+                                                        formData.nftListPrice ===
+                                                            ''
+                                                    }
+                                                    onClick={() =>
+                                                        setShowConfirmListNft(
+                                                            true,
+                                                        )
+                                                    }
+                                                >
+                                                    List {tokenName}
+                                                </PrimaryButton>
+                                            </SendTokenFormRow>
+                                        </SectionCtn>
+                                    )}
+                                </>
+                            ) : (
+                                (tokenType?.type ===
+                                    'SLP_TOKEN_TYPE_FUNGIBLE' ||
+                                    tokenType?.type ===
+                                        'SLP_TOKEN_TYPE_MINT_VAULT' ||
+                                    isAlp) && (
+                                    <>
+                                        {switches.showSellSlp && (
+                                            <SectionCtn>
+                                                <SectionLabel>
+                                                    Quantity
+                                                </SectionLabel>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <Slider
+                                                            name={
+                                                                'agoraPartialTokenQty'
                                                             }
-                                                            onClick={() =>
-                                                                checkForConfirmationBeforeSendEtoken()
-                                                            }
-                                                        >
-                                                            Send {tokenTicker}
-                                                        </PrimaryButton>
-                                                    </SendTokenFormRow>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                    {isNftParent && (
-                                        <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Mint NFT"
-                                                    checked={
-                                                        switches.showMintNft
-                                                    }
-                                                    handleToggle={() =>
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showMintNft:
-                                                                !switches.showMintNft,
-                                                        })
-                                                    }
-                                                />
-                                                <SwitchLabel>
-                                                    Mint NFT
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showMintNft && (
-                                                <CreateTokenForm
-                                                    groupTokenId={tokenId}
-                                                />
-                                            )}
-                                        </>
-                                    )}
-                                    {!isNftChild && (
-                                        <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Airdrop"
-                                                    on="🪂"
-                                                    off="🪂"
-                                                    checked={
-                                                        switches.showAirdrop
-                                                    }
-                                                    handleToggle={() =>
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showAirdrop:
-                                                                !switches.showAirdrop,
-                                                        })
-                                                    }
-                                                />
-                                                <SwitchLabel>
-                                                    Airdrop XEC to {tokenTicker}{' '}
-                                                    holders
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showAirdrop && (
-                                                <TokenStatsRow>
-                                                    <Link
-                                                        style={{
-                                                            width: '100%',
-                                                        }}
-                                                        to="/airdrop"
-                                                        state={{
-                                                            airdropEtokenId:
-                                                                tokenId,
-                                                        }}
-                                                    >
-                                                        <SecondaryButton
-                                                            style={{
-                                                                marginTop:
-                                                                    '12px',
-                                                            }}
-                                                        >
-                                                            Airdrop Calculator
-                                                        </SecondaryButton>
-                                                    </Link>
-                                                </TokenStatsRow>
-                                            )}
-                                        </>
-                                    )}
-                                    {!isNftParent && !isNftChild && (
-                                        <>
-                                            <SwitchHolder>
-                                                <Switch
-                                                    name="Toggle Burn"
-                                                    on="🔥"
-                                                    off="🔥"
-                                                    checked={switches.showBurn}
-                                                    handleToggle={() =>
-                                                        // We turn everything else off, whether we are turning this one on or off
-                                                        setSwitches({
-                                                            ...switchesOff,
-                                                            showBurn:
-                                                                !switches.showBurn,
-                                                        })
-                                                    }
-                                                />
-                                                <SwitchLabel>
-                                                    Burn {tokenTicker}
-                                                </SwitchLabel>
-                                            </SwitchHolder>
-                                            {switches.showBurn && (
-                                                <TokenStatsRow>
-                                                    <InputFlex>
-                                                        <SendTokenInput
-                                                            name="burnAmount"
                                                             value={
-                                                                formData.burnAmount
+                                                                agoraPartialTokenQty
+                                                            }
+                                                            handleSlide={
+                                                                handleTokenOfferedSlide
                                                             }
                                                             error={
-                                                                burnTokenAmountError
+                                                                agoraPartialTokenQtyError
                                                             }
-                                                            placeholder="Burn Amount"
-                                                            handleInput={
-                                                                handleEtokenBurnAmountChange
-                                                            }
-                                                            handleOnMax={
-                                                                onMaxBurn
-                                                            }
+                                                            min={0}
+                                                            max={tokenBalance}
+                                                            // Step is 1 smallets supported decimal point of the given token
+                                                            step={parseFloat(
+                                                                `1e-${decimals}`,
+                                                            )}
+                                                            allowTypedInput
                                                         />
-
-                                                        <SecondaryButton
-                                                            onClick={
-                                                                handleBurnAmountInput
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <LabelAndInputFlex>
+                                                            <SliderLabel>
+                                                                Price:
+                                                            </SliderLabel>
+                                                            <ListPriceInput
+                                                                name="tokenListPrice"
+                                                                placeholder="Enter list price (per token)"
+                                                                inputDisabled={
+                                                                    agoraPartialTokenQty ===
+                                                                    ''
+                                                                }
+                                                                value={
+                                                                    formData.tokenListPrice
+                                                                }
+                                                                selectValue={
+                                                                    selectedCurrency
+                                                                }
+                                                                selectDisabled={
+                                                                    fiatPrice ===
+                                                                    null
+                                                                }
+                                                                fiatCode={settings.fiatCurrency.toUpperCase()}
+                                                                error={
+                                                                    tokenListPriceError
+                                                                }
+                                                                handleInput={
+                                                                    handleTokenListPriceChange
+                                                                }
+                                                                handleSelect={
+                                                                    handleSelectedCurrencyChange
+                                                                }
+                                                            ></ListPriceInput>
+                                                        </LabelAndInputFlex>
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <Slider
+                                                            name={
+                                                                'agoraPartialMin'
                                                             }
                                                             disabled={
-                                                                burnTokenAmountError !==
-                                                                    false ||
-                                                                formData.burnAmount ===
-                                                                    ''
+                                                                formData.tokenListPrice ===
+                                                                    '' ||
+                                                                tokenListPriceError !==
+                                                                    false
                                                             }
-                                                        >
-                                                            Burn {tokenTicker}
-                                                        </SecondaryButton>
-                                                    </InputFlex>
-                                                </TokenStatsRow>
-                                            )}
+                                                            label="Min qty"
+                                                            value={
+                                                                agoraPartialMin
+                                                            }
+                                                            handleSlide={
+                                                                handleTokenMinSlide
+                                                            }
+                                                            error={
+                                                                agoraPartialMinError
+                                                            }
+                                                            min={0}
+                                                            max={
+                                                                agoraPartialTokenQty
+                                                            }
+                                                            // Step is 1 smallets supported decimal point of the given token
+                                                            step={parseFloat(
+                                                                `1e-${decimals}`,
+                                                            )}
+                                                            allowTypedInput
+                                                        />
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+
+                                                {!tokenListPriceError &&
+                                                    formData.tokenListPrice !==
+                                                        '' &&
+                                                    formData.tokenListPrice !==
+                                                        null &&
+                                                    fiatPrice !== null && (
+                                                        <ListPricePreview title="Token List Price">
+                                                            {getAgoraPartialPricePreview()}
+                                                        </ListPricePreview>
+                                                    )}
+                                                <SendTokenFormRow>
+                                                    <PrimaryButton
+                                                        style={{
+                                                            marginTop: '12px',
+                                                        }}
+                                                        disabled={
+                                                            apiError ||
+                                                            agoraPartialTokenQtyError !==
+                                                                false ||
+                                                            agoraPartialMinError !==
+                                                                false ||
+                                                            tokenListPriceError !==
+                                                                false ||
+                                                            formData.tokenListPrice ===
+                                                                '' ||
+                                                            agoraPartialTokenQty ===
+                                                                '' ||
+                                                            agoraPartialMin ===
+                                                                ''
+                                                        }
+                                                        onClick={
+                                                            previewAgoraPartial
+                                                        }
+                                                    >
+                                                        List {tokenName}
+                                                    </PrimaryButton>
+                                                </SendTokenFormRow>
+                                            </SectionCtn>
+                                        )}
+                                    </>
+                                )
+                            )}
+                            {!isNftParent && (
+                                <>
+                                    {switches.showSend && (
+                                        <>
+                                            <SectionCtn>
+                                                <SendTokenFormRow>
+                                                    <InputRow>
+                                                        <InputWithScanner
+                                                            label="Address"
+                                                            placeholder={`Address`}
+                                                            name="address"
+                                                            value={
+                                                                formData.address
+                                                            }
+                                                            handleInput={
+                                                                handleTokenAddressChange
+                                                            }
+                                                            error={
+                                                                sendTokenAddressError
+                                                            }
+                                                        />
+                                                    </InputRow>
+                                                </SendTokenFormRow>
+                                                {!isNftChild && (
+                                                    <SendTokenFormRow>
+                                                        <SendTokenInput
+                                                            label="Amount"
+                                                            name="amount"
+                                                            value={
+                                                                formData.amount
+                                                            }
+                                                            error={
+                                                                sendTokenAmountError
+                                                            }
+                                                            placeholder="Amount"
+                                                            handleInput={
+                                                                handleTokenAmountChange
+                                                            }
+                                                            handleOnMax={onMax}
+                                                        />
+                                                    </SendTokenFormRow>
+                                                )}
+                                                <SendTokenFormRow>
+                                                    <PrimaryButton
+                                                        style={{
+                                                            marginTop: '12px',
+                                                        }}
+                                                        disabled={
+                                                            apiError ||
+                                                            sendTokenAmountError !==
+                                                                false ||
+                                                            sendTokenAddressError !==
+                                                                false ||
+                                                            formData.address ===
+                                                                '' ||
+                                                            (!isNftChild &&
+                                                                formData.amount ===
+                                                                    '')
+                                                        }
+                                                        onClick={() =>
+                                                            checkForConfirmationBeforeSendEtoken()
+                                                        }
+                                                    >
+                                                        Send {tokenTicker}
+                                                    </PrimaryButton>
+                                                </SendTokenFormRow>
+                                            </SectionCtn>
                                         </>
                                     )}
-                                    {mintBatons.length > 0 && (
-                                        <SwitchHolder>
-                                            <Switch
-                                                name="Toggle Mint"
-                                                on="⚗️"
-                                                off="⚗️"
-                                                checked={switches.showMint}
-                                                handleToggle={() =>
-                                                    // We turn everything else off, whether we are turning this one on or off
-                                                    setSwitches({
-                                                        ...switchesOff,
-                                                        showMint:
-                                                            !switches.showMint,
-                                                    })
-                                                }
-                                            />
-                                            <SwitchLabel>Mint</SwitchLabel>
-                                        </SwitchHolder>
-                                    )}
-                                    {switches.showMint && (
+                                </>
+                            )}
+                            {isNftParent && switches.showMintNft && (
+                                <SectionCtn>
+                                    <CreateTokenForm groupTokenId={tokenId} />
+                                </SectionCtn>
+                            )}
+                            {!isNftChild && switches.showAirdrop && (
+                                <SectionCtn>
+                                    <TokenStatsRow>
+                                        <Link
+                                            style={{
+                                                width: '100%',
+                                            }}
+                                            to="/airdrop"
+                                            state={{
+                                                airdropEtokenId: tokenId,
+                                            }}
+                                        >
+                                            <SecondaryButton
+                                                style={{
+                                                    marginTop: '12px',
+                                                }}
+                                            >
+                                                Airdrop Calculator
+                                            </SecondaryButton>
+                                        </Link>
+                                    </TokenStatsRow>
+                                </SectionCtn>
+                            )}
+                            {!isNftParent &&
+                                !isNftChild &&
+                                switches.showBurn && (
+                                    <SectionCtn>
                                         <TokenStatsRow>
                                             <InputFlex>
                                                 <SendTokenInput
-                                                    name="mintAmount"
-                                                    value={formData.mintAmount}
-                                                    error={mintAmountError}
-                                                    placeholder="Mint Amount"
+                                                    label="Amount"
+                                                    name="burnAmount"
+                                                    value={formData.burnAmount}
+                                                    error={burnTokenAmountError}
+                                                    placeholder="Burn Amount"
                                                     handleInput={
-                                                        handleMintAmountChange
+                                                        handleEtokenBurnAmountChange
                                                     }
-                                                    handleOnMax={onMaxMint}
+                                                    handleOnMax={onMaxBurn}
                                                 />
 
                                                 <SecondaryButton
                                                     onClick={
-                                                        mintOrShowConfirmationModal
+                                                        handleBurnAmountInput
                                                     }
                                                     disabled={
-                                                        mintAmountError !==
+                                                        burnTokenAmountError !==
                                                             false ||
-                                                        formData.mintAmount ===
+                                                        formData.burnAmount ===
                                                             ''
                                                     }
                                                 >
-                                                    Mint {tokenTicker}
+                                                    Burn {tokenTicker}
                                                 </SecondaryButton>
                                             </InputFlex>
                                         </TokenStatsRow>
-                                    )}
-                                </SendTokenForm>
+                                    </SectionCtn>
+                                )}
+                            {mintBatons.length > 0 && switches.showMint && (
+                                <SectionCtn>
+                                    <TokenStatsRow>
+                                        <InputFlex>
+                                            <SendTokenInput
+                                                label="Amount"
+                                                name="mintAmount"
+                                                value={formData.mintAmount}
+                                                error={mintAmountError}
+                                                placeholder="Mint Amount"
+                                                handleInput={
+                                                    handleMintAmountChange
+                                                }
+                                                handleOnMax={onMaxMint}
+                                            />
+
+                                            <SecondaryButton
+                                                onClick={
+                                                    mintOrShowConfirmationModal
+                                                }
+                                                disabled={
+                                                    mintAmountError !== false ||
+                                                    formData.mintAmount === ''
+                                                }
+                                            >
+                                                Mint {tokenTicker}
+                                            </SecondaryButton>
+                                        </InputFlex>
+                                    </TokenStatsRow>
+                                </SectionCtn>
                             )}
-                        </>
+                        </SendTokenForm>
                     )}
                 </>
             )}

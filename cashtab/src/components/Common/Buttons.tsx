@@ -9,16 +9,18 @@ import { CopyPasteIcon } from 'components/Common/CustomIcons';
 import { toast } from 'react-toastify';
 
 const BaseButtonOrLinkCss = css<{ disabled?: boolean }>`
-    font-size: var(--text-xl);
-    line-height: var(--text-xl--line-height);
-    padding: 20px 12px;
-    border-radius: 9px;
-    transition: all 0.5s ease;
+    font-size: var(--text-lg);
+    line-height: var(--text-lg--line-height);
+    padding: 10px 0;
+    border-radius: 8px;
+    transition:
+        box-shadow 0.15s ease-out,
+        border-color 0.15s ease-out,
+        color 0.15s ease-out;
     width: 100%;
     margin-bottom: 20px;
     cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
     :hover {
-        background-position: right center;
         -webkit-box-shadow: ${props => props.theme.buttons.primary.hoverShadow};
         -moz-box-shadow: ${props => props.theme.buttons.primary.hoverShadow};
         box-shadow: ${props => props.theme.buttons.primary.hoverShadow};
@@ -44,15 +46,30 @@ const PrimaryButtonOrLinkCss = css<{ disabled?: boolean }>`
         props.disabled
             ? props.theme.buttons.disabled.color
             : props.theme.buttons.primary.color};
-    border: ${props =>
-        props.disabled ? 'none' : `1px solid ${props.theme.accent}`};
+    ${props =>
+        props.disabled
+            ? 'border: none;'
+            : `
+        border-top: 1px solid ${props.theme.buttons.primary.borderTop};
+        border-left: 1px solid ${props.theme.buttons.primary.borderTop};
+        border-right: 1px solid ${props.theme.buttons.primary.borderBottom};
+        border-bottom: 1px solid ${props.theme.buttons.primary.borderBottom};
+    `};
     ${props =>
         props.disabled
             ? `background: ${props.theme.buttons.disabled.background};`
-            : `background-image: ${props.theme.buttons.primary.backgroundImage}; `};
-    background-size: 200% auto;
+            : `
+        background: ${props.theme.buttons.primary.background};
+     
+   
+    `};
     svg {
         fill: ${props => props.theme.buttons.primary.color};
+    }
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+        }
     }
 `;
 
@@ -107,17 +124,21 @@ const SvgButtonOrLinkCss = css`
     background: none;
     cursor: pointer;
     svg {
-        height: 24px;
-        width: 24px;
-        fill: ${props => props.theme.accent};
+        height: 22px;
+        width: 22px;
+        fill: ${props => props.theme.primaryText};
+
+        path {
+            stroke: ${props => props.theme.primaryText};
+        }
     }
     @media (hover: hover) {
         &:hover {
             svg {
-                fill: ${props => props.theme.secondaryAccent};
-                stroke: ${props => props.theme.secondaryAccent};
+                fill: ${props => props.theme.accent};
+                stroke: ${props => props.theme.accent};
                 path {
-                    fill: ${props => props.theme.secondaryAccent};
+                    stroke: ${props => props.theme.accent};
                 }
             }
         }
@@ -125,28 +146,26 @@ const SvgButtonOrLinkCss = css`
 `;
 const HeaderCopyButtonCss = css`
     border: none;
-    background: ${props => props.theme.secondaryBackground};
-    width: 38px;
     flex-shrink: 0;
     height: 100%;
-    border-radius: 5px;
+    padding: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: none;
     svg {
-        height: 18px;
-        width: 18px;
+        height: 20px;
+        width: 25px;
         path {
-            fill: ${props => props.theme.secondaryText};
+            fill: ${props => props.theme.primaryText};
         }
     }
     @media (hover: hover) {
         &:hover {
-            background: ${props => props.theme.accent};
             svg {
                 path {
-                    fill: ${props => props.theme.primaryText};
+                    fill: ${props => props.theme.accent};
                 }
             }
         }

@@ -4,6 +4,13 @@
 
 import styled from 'styled-components';
 
+export const AirdropContainer = styled.div`
+    width: 100%;
+    @media (max-width: 768px) {
+        padding: 0 10px;
+    }
+`;
+
 export const AirdropForm = styled.div`
     margin-top: 24px;
     display: flex;

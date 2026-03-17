@@ -122,9 +122,9 @@ describe('<App />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // We get the Onboarding screen
+        // We get the Onboarding screen (text may be split across elements)
         expect(
-            await screen.findByText('Welcome to Cashtab!'),
+            await screen.findByText(/Welcome to Cashtab!/),
         ).toBeInTheDocument();
     });
     it('Renders onboarding screen at Receive route if user has no wallet', async () => {
@@ -148,9 +148,9 @@ describe('<App />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // We get the Onboarding screen
+        // We get the Onboarding screen (text may be split across elements)
         expect(
-            await screen.findByText('Welcome to Cashtab!'),
+            await screen.findByText(/Welcome to Cashtab!/),
         ).toBeInTheDocument();
     });
     it('Renders onboarding screen even on a bad route if user has no wallet', async () => {
@@ -170,9 +170,9 @@ describe('<App />', () => {
             ).not.toBeInTheDocument(),
         );
 
-        // We get the Onboarding screen
+        // We get the Onboarding screen (text may be split across elements)
         expect(
-            await screen.findByText('Welcome to Cashtab!'),
+            await screen.findByText(/Welcome to Cashtab!/),
         ).toBeInTheDocument();
     });
     it('Renders 404 at bad route if user has a wallet', async () => {
@@ -234,8 +234,8 @@ describe('<App />', () => {
             }),
         );
 
-        // Now we see the Send screen (we check by confirming presence of the send to many switch)
-        expect(screen.getByTitle('Toggle Multisend')).toBeInTheDocument();
+        // Now we see the Send screen (Toggle Multisend was removed; verify Address input)
+        expect(screen.getByPlaceholderText('Address')).toBeInTheDocument();
 
         // Navigate to eTokens screen
         await user.click(
@@ -247,37 +247,25 @@ describe('<App />', () => {
         // Now we see the eTokens screen
         expect(screen.getByTitle('Wallet Tokens')).toBeInTheDocument();
 
-        // Navigate to Receive screen
+        // Navigate to Agora screen (footer nav changed; hamburger menu commented out)
         await user.click(
             screen.getByRole('button', {
-                name: /Receive/i,
+                name: /Agora/i,
             }),
         );
 
-        // Now we see the Receive screen
-        expect(screen.getByTitle('Receive')).toBeInTheDocument();
+        // Now we see the Agora screen (ActionButtonRow has "Token Market Place")
+        expect(screen.getByText('Token Market Place')).toBeInTheDocument();
 
-        // Navigate to Airdrop screen
+        // Navigate to Tools (Contacts) screen
         await user.click(
             screen.getByRole('button', {
-                name: /Airdrop/i,
+                name: /Tools/i,
             }),
         );
 
-        // Now we see the Airdrop screen
-        expect(
-            screen.getByText('Airdrop scaled to token balance'),
-        ).toBeInTheDocument();
-
-        // Navigate to SignVerifyMsg screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Sign & Verify/i,
-            }),
-        );
-
-        // Now we see the SignVerifyMsg screen
-        expect(screen.getByTitle('Sign & Verify')).toBeInTheDocument();
+        // Now we see the Contacts screen
+        expect(screen.getByTitle('Contacts')).toBeInTheDocument();
 
         // Navigate to Settings screen
         await user.click(
@@ -286,76 +274,11 @@ describe('<App />', () => {
             }),
         );
 
-        // Now we see the Settings screen
-        expect(screen.getByTitle('Settings')).toBeInTheDocument();
+        // Now we see the Settings screen (use Display Currency to avoid multiple Settings matches)
+        expect(screen.getByText('Display Currency')).toBeInTheDocument();
 
-        // Navigate to Backup screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Wallet Backup/i,
-            }),
-        );
-
-        // Now we see the Backup screen
-        expect(
-            screen.getByText(
-                `ℹ️ Your seed phrase is the only way to restore your wallet. Write it down. Keep it safe.`,
-            ),
-        ).toBeInTheDocument();
-
-        // Navigate to Contacts screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Contacts/i,
-            }),
-        );
-
-        // Now we see the Contacts screen
-        expect(screen.getByTitle('Contacts')).toBeInTheDocument();
-
-        // Navigate to Wallets screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Wallets/i,
-            }),
-        );
-
-        // Now we see the Wallets screen
-        expect(screen.getByTitle('Wallets')).toBeInTheDocument();
-
-        // Navigate to Rewards screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Rewards/i,
-            }),
-        );
-
-        // Now we see the Rewards screen
-        expect(screen.getByTitle('Rewards')).toBeInTheDocument();
-
-        // Navigate to NFTs screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /NFTs/i,
-            }),
-        );
-
-        // Now we see the NFTs screen
-        expect(
-            await screen.findByText(/Error querying listed NFTs/),
-        ).toBeInTheDocument();
-
-        // Navigate to Agora screen
-        await user.click(
-            screen.getByRole('button', {
-                name: /Agora/i,
-            }),
-        );
-
-        // We did not set all the mocks we need but this error confirms our nav destination
-        expect(
-            await screen.findByText(/Error querying listed tokens/),
-        ).toBeInTheDocument();
+        // Footer nav verified: Transactions, Send, Tokens, Agora, Tools, Settings
+        // (Receive, Airdrop, Sign & Verify, Backup, Wallets, Rewards, NFTs are in commented-out hamburger)
     });
     it('Adding a contact to to a new contactList by clicking on tx history adds it to localforage and wallet context', async () => {
         const mockedChronik = await initializeCashtabStateForTests(
@@ -525,15 +448,15 @@ describe('<App />', () => {
         // We do not see the send screen before clicking the button
         await waitFor(() =>
             expect(
-                screen.queryByTitle('Toggle Multisend'),
+                screen.queryByPlaceholderText('Address'),
             ).not.toBeInTheDocument(),
         );
 
         await user.click(screen.getByTitle('reply'));
 
-        // Now we see the Send screen
+        // Now we see the Send screen (Toggle Multisend was removed; verify Address input)
         expect(
-            await screen.findByTitle('Toggle Multisend'),
+            await screen.findByPlaceholderText('Address'),
         ).toBeInTheDocument();
 
         // The SendXec send address input is rendered and has expected value
