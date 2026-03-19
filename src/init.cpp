@@ -3024,7 +3024,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             InitWarning(strprintf(
                 _("More than one onion bind address is provided. Using %s "
                   "for the automatically created Tor onion service."),
-                onion_service_target.ToStringIPPort()));
+                onion_service_target.ToStringAddrPort()));
         }
         StartTorControl(onion_service_target);
     }
