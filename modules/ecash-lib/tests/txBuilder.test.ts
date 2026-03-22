@@ -34,10 +34,10 @@ import { TestRunner } from '../src/test/testRunner.js';
 import {
     P2PKHSignatory,
     P2PKSignatory,
-    TxBuilder,
     flagSignature,
     signWithSigHash,
-} from '../src/txBuilder.js';
+} from '../src/signatories.js';
+import { TxBuilder } from '../src/txBuilder.js';
 import { UnsignedTxInput } from '../src/unsignedTx.js';
 import { encodeCashAddress } from 'ecashaddrjs';
 import '../src/initNodeJs.js';
