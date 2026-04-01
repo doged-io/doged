@@ -234,7 +234,7 @@ bool CheckSequenceLocksAtTip(CBlockIndex *tip, const LockPoints &lock_points) {
 static bool IsReplayProtectionEnabled(const Consensus::Params &params,
                                       int64_t nMedianTimePast) {
     return nMedianTimePast >= gArgs.GetIntArg("-replayprotectionactivationtime",
-                                              params.obolenskyActivationTime);
+                                              params.mengerActivationTime);
 }
 
 static bool IsReplayProtectionEnabled(const Consensus::Params &params,
