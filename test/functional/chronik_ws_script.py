@@ -43,6 +43,7 @@ class ChronikWsScriptTest(BitcoinTestFramework):
                 "-avaminquorumstake=0",
                 "-avaminavaproofsnodecount=0",
                 "-avalanchepreconsensus=1",
+                "-avalanchestakingpreconsensus=0",
                 "-chronik",
                 f"-shibusawaactivationtime={THE_FUTURE}",
                 f"-replayprotectionactivationtime={REPLAY_PROTECTION}",
@@ -77,9 +78,9 @@ class ChronikWsScriptTest(BitcoinTestFramework):
                 get_ava_p2p_interface(self, node) for _ in range(0, QUORUM_NODE_COUNT)
             ]
 
-        def has_finalized_tip(tip_expected):
+        def has_finalized_tip(tip_expected, other_response=AvalancheVoteError.ACCEPTED):
             hash_tip_final = int(tip_expected, 16)
-            can_find_inv_in_poll(quorum, hash_tip_final)
+            can_find_inv_in_poll(quorum, hash_tip_final, other_response=other_response)
             return node.isfinalblock(tip_expected)
 
         quorum = get_quorum()
@@ -226,22 +227,25 @@ class ChronikWsScriptTest(BitcoinTestFramework):
         check_tx_msgs(ws1, pb.TX_ADDED_TO_MEMPOOL, [txid, tx3_conflict.txid_hex])
         check_tx_msgs(ws2, pb.TX_ADDED_TO_MEMPOOL, [txid, txid2])
 
-        # Let's get rid of the proofs vote
+        tip = node.getbestblockhash()
+
+        # Let's get rid of the proofs and blocks votes
         def finalize_proofs(quorum):
             proofids = [q.proof.proofid for q in quorum]
-            for proofid in proofids:
-                can_find_inv_in_poll(quorum, proofid)
+            can_find_inv_in_poll(
+                quorum, proofids + [tip], other_response=AvalancheVoteError.UNKNOWN
+            )
             return all(
                 node.getrawavalancheproof(uint256_hex(proofid))["finalized"]
                 for proofid in proofids
             )
 
         self.wait_until(lambda: finalize_proofs(quorum))
+        self.wait_until(
+            lambda: has_finalized_tip(tip, other_response=AvalancheVoteError.UNKNOWN)
+        )
 
-        # Test Avalanche finalization
-        tip = node.getbestblockhash()
-        self.wait_until(lambda: has_finalized_tip(tip))
-
+        # Test Avalanche tx finalization
         def finalize_tx(txid):
             def vote_until_final():
                 can_find_inv_in_poll(
@@ -266,6 +270,8 @@ class ChronikWsScriptTest(BitcoinTestFramework):
             sorted([txid]),
             pb.TX_FINALIZATION_REASON_PRE_CONSENSUS,
         )
+
+        print(f"txid: {txid}, tx3_conflict: {tx3_conflict.txid_hex}, txid2: {txid2}")
 
         # Mine txs in a block -> sends CONFIRMED
         tip = self.generate(node, 1)[-1]
