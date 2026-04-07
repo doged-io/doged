@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import PayButton from 'assets/paybutton.webp';
 import XecxSrc from 'assets/xecx-logomark.png';
 import SolSrc from 'assets/solanaLogoMark.png';
-import TetherSrc from 'assets/tether.png';
 import FirmaSrc from 'assets/firma-icon.png';
 import { ReactComponent as QRCode } from 'assets/qrcode.svg';
 import { ReactComponent as Send } from 'assets/send.svg';
@@ -62,6 +61,8 @@ import { ReactComponent as Dice } from 'assets/dice.svg';
 import { ReactComponent as PayoutWin } from 'assets/payout-win.svg';
 import { ReactComponent as BlitsPayout } from 'assets/blits-payout.svg';
 import { ReactComponent as Edj } from 'assets/edj.svg';
+/** `<img>` not SVGR: `TokenAction` paints `IconAndLabel` SVGs white; USDC needs true colors. `?url` is Vite asset URL; Jest `*.svg` mock default is still a string. */
+import usdcSrc from 'assets/usdc.svg?url';
 
 import appConfig from 'config/app';
 
@@ -166,9 +167,7 @@ export const FirmaIcon: React.FC = () => (
     <img src={FirmaSrc} alt="Firma reward" />
 );
 export const SolIcon: React.FC = () => <img src={SolSrc} alt="SOL logo" />;
-export const TetherIcon: React.FC = () => (
-    <img src={TetherSrc} alt="USDT Tether logo" />
-);
+export const UsdcIcon: React.FC = () => <img src={usdcSrc} alt="USDC logo" />;
 
 const PaywallPaymentIconWrapper = styled.div`
     svg,

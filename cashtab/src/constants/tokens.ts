@@ -41,21 +41,6 @@ export const EDJ_COM_GAME_ADDRESSES = [
     'ecash:qzqcq9p5lxa3jhc5lhwaefua9cjfhfjvcvsj887fg5',
 ];
 
-/** firma.cash min fee for redemptions */
-export const FIRMA_REDEEM_FEE_MIN = 2;
-
-/** firma.cash charges 1% for redemptions */
-export const FIRMA_REDEEM_FEE_PCT = 0.01;
-
-/**
- * Amounts >  FIRMA_REDEEM_AMOUNT_THRESHOLD are charged (FIRMA_REDEEM_FEE_PCT*redeemAmountFirma)
- * Amounts <= FIRMA_REDEEM_AMOUNT_THRESHOLD are charged FIRMA_REDEEM_FEE_MIN
- *
- * Calc here as useful for getFirmaRedeemFee and depends on the above constants
- */
-export const FIRMA_REDEEM_AMOUNT_THRESHOLD =
-    FIRMA_REDEEM_FEE_MIN / FIRMA_REDEEM_FEE_PCT;
-
 // 8-char lokad + 64-char for 32-byte sol pk
 export const FIRMA_REDEEM_EMPP_RAW_LENGTH = 72;
 

@@ -2734,7 +2734,7 @@ describe('<SendXec />', () => {
         // After sending, the form is cleared - token mode may be reset or amount input may not be visible
         // This is expected behavior after a successful transaction
     });
-    it('We can parse a valid FIRMA-USDT redeem tx from bip21 and broadcast the tx', async () => {
+    it('We can parse a valid FIRMA-USDC redeem tx from bip21 and broadcast the tx', async () => {
         const destinationAddress = FIRMA_REDEEM_ADDRESS;
         const token_id = FIRMA.tokenId;
         const token_decimalized_qty = '5';
@@ -2805,13 +2805,12 @@ describe('<SendXec />', () => {
 
         // We see the valid firma redeem tx info
         expect(screen.getByAltText('Firma reward')).toBeInTheDocument();
-        expect(screen.getByAltText('USDT Tether logo')).toBeInTheDocument();
+        expect(screen.getByAltText('USDC logo')).toBeInTheDocument();
 
-        // We see the msg parsed including the const $2 fee
         await waitFor(() => {
             expect(
                 screen.getByText(
-                    'On tx finalized, 3.0000 USDT will be sent to 6JK...EQ4',
+                    'On tx finalized, 5.0000 USDC will be sent to 6JK...EQ4',
                 ),
             ).toBeInTheDocument();
         });

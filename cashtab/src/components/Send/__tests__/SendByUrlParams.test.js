@@ -974,7 +974,7 @@ describe('<SendXec /> rendered with params in URL', () => {
             screen.queryByTitle('Toggle op_return_raw'),
         ).not.toBeInTheDocument();
     });
-    it('bip21 - valid FIRMA-USDT redeem tx', async () => {
+    it('bip21 - valid FIRMA-USDC redeem tx', async () => {
         const destinationAddress = FIRMA_REDEEM_ADDRESS;
         const token_id = FIRMA.tokenId;
         const token_decimalized_qty = '5';
@@ -1013,9 +1013,7 @@ describe('<SendXec /> rendered with params in URL', () => {
         await waitFor(
             () => {
                 expect(screen.getByAltText('Firma reward')).toBeInTheDocument();
-                expect(
-                    screen.getByAltText('USDT Tether logo'),
-                ).toBeInTheDocument();
+                expect(screen.getByAltText('USDC logo')).toBeInTheDocument();
             },
             { timeout: 5000 },
         );
@@ -1040,13 +1038,13 @@ describe('<SendXec /> rendered with params in URL', () => {
             screen.queryByText(`Error querying token info for ${token_id}`),
         ).not.toBeInTheDocument();
 
-        // We see the valid firma redeem tx info, accounting for the fee
+        // We see the valid firma redeem tx info (full redeem qty as USDC)
         expect(screen.getByAltText('Firma reward')).toBeInTheDocument();
-        expect(screen.getByAltText('USDT Tether logo')).toBeInTheDocument();
+        expect(screen.getByAltText('USDC logo')).toBeInTheDocument();
         // The text is split across multiple elements, so we check for parts of it
         expect(screen.getByText(/On tx finalized/)).toBeInTheDocument();
-        expect(screen.getByText(/3\.0000/)).toBeInTheDocument();
-        expect(screen.getByText(/USDT will be sent to/)).toBeInTheDocument();
+        expect(screen.getByText(/5\.0000/)).toBeInTheDocument();
+        expect(screen.getByText(/USDC will be sent to/)).toBeInTheDocument();
 
         // The send button is enabled as we have valid bip21 token send for a token qty supported
         // by the wallet

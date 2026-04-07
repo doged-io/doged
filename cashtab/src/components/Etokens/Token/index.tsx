@@ -472,7 +472,7 @@ const Token: React.FC = () => {
               ).toLocaleString(userLocale, {
                   maximumFractionDigits: 2,
                   minimumFractionDigits: 2,
-              })} XEC worth of $FIRMA. Visit firma.cash to redeem for $USDT.`;
+              })} XEC worth of $FIRMA. Visit firma.cash to redeem for $USDC.`;
 
     /**
      * Convenience method to compartmentalize comparison of state

@@ -3923,7 +3923,7 @@ describe('<Tx />', () => {
         // We see Firma yield app action
         expect(screen.getByText(`Firma yield payment`)).toBeInTheDocument();
     });
-    it('Outgoing FIRMA-USDT conversion tx', async () => {
+    it('Outgoing FIRMA-USDC conversion tx', async () => {
         const thisMock = firmaRedeemTx;
         render(
             <MemoryRouter>
@@ -3963,14 +3963,14 @@ describe('<Tx />', () => {
         // We see Firma icon
         expect(screen.getByAltText(`Firma reward`)).toBeInTheDocument();
 
-        // We see the USDT icon
-        expect(screen.getByAltText(`USDT Tether logo`)).toBeInTheDocument();
+        // We see the USDC icon
+        expect(screen.getByAltText(`USDC logo`)).toBeInTheDocument();
 
         // We see the SOL logo
         expect(screen.getByAltText(`SOL logo`)).toBeInTheDocument();
 
         // We see Firma redeem app action
-        expect(screen.getByText(`Firma USDT conversion`)).toBeInTheDocument();
+        expect(screen.getByText(`Firma USDC conversion`)).toBeInTheDocument();
     });
     it('CACHET send to P2SH (parsed as Blitz play - 829 sats)', () => {
         const thisMock = cachetSendWithP2shInputDataTx;

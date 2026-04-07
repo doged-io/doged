@@ -25,7 +25,7 @@ import {
     SlpDecimals,
     undecimalizeTokenAmount,
 } from 'wallet';
-import { sumOneToManyXec, confirmRawTx, getFirmaRedeemFee } from './helpers';
+import { sumOneToManyXec, confirmRawTx } from './helpers';
 import { Event } from 'components/Common/GoogleAnalytics';
 import {
     isValidMultiSendUserInput,
@@ -96,7 +96,7 @@ import {
     FIRMA_REDEEM_ADDRESS,
     FIRMA_REDEEM_EMPP_RAW_LENGTH,
 } from 'constants/tokens';
-import { FirmaIcon, TetherIcon } from 'components/Common/CustomIcons';
+import { FirmaIcon, UsdcIcon } from 'components/Common/CustomIcons';
 import Burst from 'assets/burst.png';
 import { ReactComponent as DropDownArrowIcon } from 'assets/drop-down-arrow.svg';
 
@@ -306,12 +306,14 @@ export const FirmaRedeemLogoWrapper = styled.div`
     display: flex;
     gap: 3px;
     flex-wrap: wrap;
-    img {
+    img,
+    svg {
         width: 64px;
         height: 64px;
     }
     @media (max-width: 768px) {
-        img {
+        img,
+        svg {
             width: 32px;
             height: 32px;
         }
@@ -3099,23 +3101,14 @@ const SendXec: React.FC = () => {
                                                     >
                                                         <FirmaRedeemLogoWrapper>
                                                             <FirmaIcon />
-                                                            <TetherIcon />
+                                                            <UsdcIcon />
                                                         </FirmaRedeemLogoWrapper>
                                                         <FirmaRedeemTextAndCopy>
                                                             On tx finalized,{' '}
-                                                            {(
-                                                                Number(
-                                                                    parsedAddressInput
-                                                                        .token_decimalized_qty
-                                                                        .value,
-                                                                ) -
-                                                                getFirmaRedeemFee(
-                                                                    Number(
-                                                                        parsedAddressInput
-                                                                            .token_decimalized_qty
-                                                                            .value,
-                                                                    ),
-                                                                )
+                                                            {Number(
+                                                                parsedAddressInput
+                                                                    .token_decimalized_qty
+                                                                    .value,
                                                             ).toLocaleString(
                                                                 userLocale,
                                                                 {
@@ -3123,7 +3116,7 @@ const SendXec: React.FC = () => {
                                                                     minimumFractionDigits: 4,
                                                                 },
                                                             )}{' '}
-                                                            USDT will be sent to{' '}
+                                                            USDC will be sent to{' '}
                                                             {parsedFirma.data.slice(
                                                                 0,
                                                                 3,
@@ -3438,23 +3431,14 @@ const SendXec: React.FC = () => {
                                             >
                                                 <FirmaRedeemLogoWrapper>
                                                     <FirmaIcon />
-                                                    <TetherIcon />
+                                                    <UsdcIcon />
                                                 </FirmaRedeemLogoWrapper>
                                                 <FirmaRedeemTextAndCopy>
                                                     On tx finalized,{' '}
-                                                    {(
-                                                        Number(
-                                                            parsedAddressInput
-                                                                .token_decimalized_qty
-                                                                .value,
-                                                        ) -
-                                                        getFirmaRedeemFee(
-                                                            Number(
-                                                                parsedAddressInput
-                                                                    .token_decimalized_qty
-                                                                    .value,
-                                                            ),
-                                                        )
+                                                    {Number(
+                                                        parsedAddressInput
+                                                            .token_decimalized_qty
+                                                            .value,
                                                     ).toLocaleString(
                                                         userLocale,
                                                         {
@@ -3462,7 +3446,7 @@ const SendXec: React.FC = () => {
                                                             minimumFractionDigits: 4,
                                                         },
                                                     )}{' '}
-                                                    USDT will be sent to{' '}
+                                                    USDC will be sent to{' '}
                                                     {parsedFirma.data.slice(
                                                         0,
                                                         3,

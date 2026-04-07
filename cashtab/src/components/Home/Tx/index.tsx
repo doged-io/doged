@@ -64,7 +64,7 @@ import {
     XecxIcon,
     FirmaIcon,
     SolIcon,
-    TetherIcon,
+    UsdcIcon,
     QuestionIcon,
     NFToaIcon,
     DiceIcon,
@@ -222,8 +222,8 @@ const Tx: React.FC<TxProps> = ({
         renderedAppActions.push(
             <IconAndLabel>
                 <FirmaIcon />
-                <TetherIcon />
-                <AppDescLabel noWordBreak>Firma USDT conversion</AppDescLabel>
+                <UsdcIcon />
+                <AppDescLabel noWordBreak>Firma USDC conversion</AppDescLabel>
             </IconAndLabel>,
         );
     }
