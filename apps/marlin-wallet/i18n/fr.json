@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Une erreur s'est produite",
+        "amountTooSmall": "Le montant est trop faible",
         "failedToLoadWallet": "Échec du chargement du portefeuille",
         "failedToSendTransaction": "Échec de l'envoi de la transaction",
         "insufficientFunds": "Fonds insuffisants",
@@ -74,7 +75,8 @@
         "send": "Envoyer",
         "sending": "Envoi en cours...",
         "title": "Envoyer",
-        "total": "Total"
+        "total": "Total",
+        "transactionDetails": "Détails de la transaction"
     },
     "settings": {
         "editMnemonic": "Modifier",

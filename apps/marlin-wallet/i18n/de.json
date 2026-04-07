@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Ein Fehler ist aufgetreten",
+        "amountTooSmall": "Betrag zu klein",
         "failedToLoadWallet": "Wallet konnte nicht geladen werden",
         "failedToSendTransaction": "Transaktion konnte nicht gesendet werden",
         "insufficientFunds": "Unzureichende Mittel",
@@ -74,7 +75,8 @@
         "send": "Senden",
         "sending": "Wird gesendet...",
         "title": "Senden",
-        "total": "Gesamt"
+        "total": "Gesamt",
+        "transactionDetails": "Transaktionsdetails"
     },
     "settings": {
         "editMnemonic": "Mnemonic bearbeiten",

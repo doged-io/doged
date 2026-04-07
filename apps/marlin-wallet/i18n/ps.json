@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "یوه تېروتنه رامنځته شوه",
+        "amountTooSmall": "مقدار ډېر لږ دی",
         "failedToLoadWallet": "د بټوی د راخلاصولو په وخت کی ستونزه رامنځته شوه",
         "failedToSendTransaction": "د پیسو لیږدول بریالی نشول",
         "insufficientFunds": "په کافی اندازه پیسی شتون نلری",
@@ -74,7 +75,8 @@
         "send": "لیږل",
         "sending": "لیږل کېږي...",
         "title": "د پیسو لیږل",
-        "total": "ټول"
+        "total": "ټول",
+        "transactionDetails": "د معاملې جزئیات"
     },
     "settings": {
         "editMnemonic": "د بټوی د کوډ سمول",

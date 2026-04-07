@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Error don occur",
+        "amountTooSmall": "Amount too small",
         "failedToLoadWallet": "E no gree load wallet",
         "failedToSendTransaction": "E no gree send transaction",
         "insufficientFunds": "Ur money no reach",
@@ -74,7 +75,8 @@
         "send": "Send",
         "sending": "Dey send...",
         "title": "Send",
-        "total": "Total"
+        "total": "Total",
+        "transactionDetails": "Transaction details"
     },
     "settings": {
         "editMnemonic": "Edit Mnemonic",

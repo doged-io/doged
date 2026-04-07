@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Error accidit",
+        "amountTooSmall": "Summa nimis parva est",
         "failedToLoadWallet": "Crumēna onerāre nōn potuit",
         "failedToSendTransaction": "Trānsāctiōnem mittere nōn potuit",
         "insufficientFunds": "Pecūnia nōn sufficit",
@@ -74,7 +75,8 @@
         "send": "Mittere",
         "sending": "Mittēns...",
         "title": "Mittere",
-        "total": "Summa"
+        "total": "Summa",
+        "transactionDetails": "Particularia transactionis"
     },
     "settings": {
         "editMnemonic": "Mnemonicum Ēmendāre",

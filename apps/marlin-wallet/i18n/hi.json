@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "कुछ गलत हुआ",
+        "amountTooSmall": "रकम बहुत कम है",
         "failedToLoadWallet": "वॉलेट नहीं खुला",
         "failedToSendTransaction": "लेनदेन नहीं हुआ",
         "insufficientFunds": "बैलेंस कम है",
@@ -74,7 +75,8 @@
         "send": "भेजें",
         "sending": "भेजा जा रहा है…",
         "title": "भेजें",
-        "total": "कुल"
+        "total": "कुल",
+        "transactionDetails": "लेनदेन विवरण"
     },
     "settings": {
         "editMnemonic": "रिकवरी बदलें",

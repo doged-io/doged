@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Произошла ошибка",
+        "amountTooSmall": "Сумма слишком мала",
         "failedToLoadWallet": "Не удалось загрузить кошелек",
         "failedToSendTransaction": "Не удалось отправить транзакцию",
         "insufficientFunds": "Недостаточно средств",
@@ -74,7 +75,8 @@
         "send": "Отправить",
         "sending": "Отправка...",
         "title": "Отправить",
-        "total": "Итого"
+        "total": "Итого",
+        "transactionDetails": "Детали транзакции"
     },
     "settings": {
         "editMnemonic": "Редактировать мнемоническую фразу",

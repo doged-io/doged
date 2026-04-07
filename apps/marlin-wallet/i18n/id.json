@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Terjadi eror",
+        "amountTooSmall": "Jumlah terlalu kecil",
         "failedToLoadWallet": "Gagal memuat dompet",
         "failedToSendTransaction": "Gagal mengirim transaksi",
         "insufficientFunds": "Dana tidak mencukupi",
@@ -74,7 +75,8 @@
         "send": "Kirim",
         "sending": "Mengirim...",
         "title": "Kirim",
-        "total": "Total"
+        "total": "Total",
+        "transactionDetails": "Rincian transaksi"
     },
     "settings": {
         "editMnemonic": "Edit Mnemonik",

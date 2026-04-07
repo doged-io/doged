@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "خطایی رخ داد",
+        "amountTooSmall": "مبلغ بسیار کم است",
         "failedToLoadWallet": "بارگذاری کیف پول ناموفق بود",
         "failedToSendTransaction": "ارسال تراکنش ناموفق بود",
         "insufficientFunds": "موجودی ناکافی",
@@ -74,7 +75,8 @@
         "send": "ارسال",
         "sending": "در حال ارسال...",
         "title": "ارسال",
-        "total": "مجموع"
+        "total": "مجموع",
+        "transactionDetails": "جزئیات تراکنش"
     },
     "settings": {
         "editMnemonic": "ویرایش یادگاری",

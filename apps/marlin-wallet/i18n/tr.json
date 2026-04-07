@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Bir hata oluştu",
+        "amountTooSmall": "Tutar çok küçük",
         "failedToLoadWallet": "Cüzdan yüklenemedi",
         "failedToSendTransaction": "İşlem gönderilemedi",
         "insufficientFunds": "Yetersiz bakiye",
@@ -74,7 +75,8 @@
         "send": "Gönder",
         "sending": "Gönderiliyor...",
         "title": "Gönder",
-        "total": "Toplam"
+        "total": "Toplam",
+        "transactionDetails": "İşlem ayrıntıları"
     },
     "settings": {
         "editMnemonic": "Anımsatıcıyı Düzenle",

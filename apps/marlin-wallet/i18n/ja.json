@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "エラーが発生しました",
+        "amountTooSmall": "金額が小さすぎます",
         "failedToLoadWallet": "ウォレットの読み込みが失敗しました",
         "failedToSendTransaction": "トランザクションの送信が失敗しました",
         "insufficientFunds": "残高不足",
@@ -74,7 +75,8 @@
         "send": "送信",
         "sending": "送信中...",
         "title": "送信",
-        "total": "合計"
+        "total": "合計",
+        "transactionDetails": "取引の詳細"
     },
     "settings": {
         "editMnemonic": "ニーモニックを編集",

@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "发生错误",
+        "amountTooSmall": "金额过小",
         "failedToLoadWallet": "加载钱包失败",
         "failedToSendTransaction": "发送交易失败",
         "insufficientFunds": "资金不足",
@@ -74,7 +75,8 @@
         "send": "发送",
         "sending": "发送中...",
         "title": "发送",
-        "total": "总计"
+        "total": "总计",
+        "transactionDetails": "交易详情"
     },
     "settings": {
         "editMnemonic": "编辑助记词",

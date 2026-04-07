@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "حدث خطأ",
+        "amountTooSmall": "المبلغ صغير جدًا",
         "failedToLoadWallet": "فشل تحميل المحفظة",
         "failedToSendTransaction": "فشل إرسال المعاملة",
         "insufficientFunds": "رصيد غير كافٍ",
@@ -74,7 +75,8 @@
         "send": "إرسال",
         "sending": "جاري الإرسال...",
         "title": "إرسال",
-        "total": "الإجمالي"
+        "total": "الإجمالي",
+        "transactionDetails": "تفاصيل المعاملة"
     },
     "settings": {
         "editMnemonic": "تعديل العبارة الاستردادية",

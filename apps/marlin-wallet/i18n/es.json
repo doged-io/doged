@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "Ocurrió un error",
+        "amountTooSmall": "La cantidad es demasiado pequeña",
         "failedToLoadWallet": "Error al cargar la billetera",
         "failedToSendTransaction": "Error al enviar la transacción",
         "insufficientFunds": "Fondos insuficientes",
@@ -74,7 +75,8 @@
         "send": "Enviar",
         "sending": "Enviando...",
         "title": "Enviar",
-        "total": "Total"
+        "total": "Total",
+        "transactionDetails": "Detalles de la transacción"
     },
     "settings": {
         "editMnemonic": "Editar Frase de Recuperación",

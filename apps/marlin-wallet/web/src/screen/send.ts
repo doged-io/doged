@@ -429,7 +429,7 @@ export class SendScreen {
 
         // Check for dust threshold
         if (amountXec < MIN_AMOUNT_XEC) {
-            errorMessage = `Amount is too small`;
+            errorMessage = t('errors.amountTooSmall');
         }
 
         // Try to estimate fee for the requested amount (include OP_RETURN if present)
@@ -450,11 +450,11 @@ export class SendScreen {
                 amountXec,
                 this.sendOpReturnRaw,
             );
-            errorMessage = `Insufficient balance`;
+            errorMessage = t('errors.insufficientFunds');
         }
 
         // Build the html fee block heading depending on the error condition
-        let feeBlockHeading = 'Transaction Details';
+        let feeBlockHeading = t('send.transactionDetails');
         let feeBlockHeadingClasses = 'title';
         if (errorMessage) {
             this.ui.feeDisplay.classList.add('error');
@@ -486,7 +486,7 @@ export class SendScreen {
                 ${feeBlockHeading}
             </div>
             <div class="fee-item">
-                <span class="fee-label">Amount:</span>
+                <span class="fee-label">${t('send.amount')}:</span>
                 <div class="fee-value">
                     <span class="fee-value-primary">${amountPrimaryFormatted}</span>${
                         amountSecondaryFormatted
@@ -496,7 +496,7 @@ export class SendScreen {
                 </div>
             </div>
             <div class="fee-item">
-                <span class="fee-label">Network Fee:</span>
+                <span class="fee-label">${t('send.networkFee')}:</span>
                 <div class="fee-value">
                     <span class="fee-value-primary">${feePrimaryFormatted}</span>${
                         feeSecondaryFormatted
@@ -506,7 +506,7 @@ export class SendScreen {
                 </div>
             </div>
             <div class="fee-item total">
-                <span class="fee-label">Total:</span>
+                <span class="fee-label">${t('send.total')}:</span>
                 <div class="fee-value">
                     <span class="fee-value-primary">${totalPrimaryFormatted}</span>${
                         totalSecondaryFormatted

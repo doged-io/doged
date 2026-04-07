@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "오류가 발생했습니다",
+        "amountTooSmall": "금액이 너무 작습니다",
         "failedToLoadWallet": "지갑을 로드하지 못했습니다",
         "failedToSendTransaction": "거래 전송에 실패했습니다",
         "insufficientFunds": "잔액 부족",
@@ -73,7 +74,8 @@
         "send": "보내기",
         "sending": "전송 중...",
         "title": "보내기",
-        "total": "총액"
+        "total": "총액",
+        "transactionDetails": "거래 세부정보"
     },
     "settings": {
         "editMnemonic": "니모닉 편집",

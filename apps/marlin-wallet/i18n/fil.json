@@ -17,6 +17,7 @@
     },
     "errors": {
         "anErrorOccurred": "May naganap na error",
+        "amountTooSmall": "Masyadong maliit ang halaga",
         "failedToLoadWallet": "Nabigo na i-load ang wallet",
         "failedToSendTransaction": "Nabigo na magpadala ng transaction",
         "insufficientFunds": "Kulang ang pondo",
@@ -74,7 +75,8 @@
         "send": "Magpadala",
         "sending": "Nagpapadala...",
         "title": "Magpadala",
-        "total": "Kabuuan"
+        "total": "Kabuuan",
+        "transactionDetails": "Mga detalye ng transaksyon"
     },
     "settings": {
         "editMnemonic": "I-edit ang Mnemonic",
