@@ -316,10 +316,7 @@ describe('<Token /> available actions rendered', () => {
         expect(minQtyInput).toBeDisabled();
 
         // Enter token balance as offered qty (Slider uses name as placeholder when no label)
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '111',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '111');
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -357,7 +354,7 @@ describe('<Token /> available actions rendered', () => {
         expect(listButton).toBeEnabled();
 
         // Lets bump the offered qty below the min qty using the slider
-        // get the agoraPartialTokenQty slider
+        // get the total qty (Agora partial offer) slider
         const sliders = screen.getAllByRole('slider');
         const agoraPartialTotalOfferedSlider = sliders[0];
 
@@ -1866,10 +1863,7 @@ describe('<Token /> available actions rendered', () => {
         expect(priceInput).toBeDisabled();
 
         // Enter token balance as offered qty
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '100',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '100');
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -2084,10 +2078,7 @@ describe('<Token /> available actions rendered', () => {
         ).not.toBeInTheDocument();
 
         // Enter amount to redeem
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '5.45',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '5.45');
 
         // This is below dust so we get an error
         expect(
@@ -2097,18 +2088,11 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-        );
+        await userEvent.clear(screen.getByPlaceholderText('Total qty'));
 
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10000',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10000');
 
-        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
-            10000,
-        );
+        expect(screen.getByPlaceholderText('Total qty')).toHaveValue(10000);
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2214,14 +2198,9 @@ describe('<Token /> available actions rendered', () => {
         await waitFor(() => expect(redeemButton).toBeDisabled());
 
         // We redeem 10k XECX
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10000',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10000');
 
-        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
-            10000,
-        );
+        expect(screen.getByPlaceholderText('Total qty')).toHaveValue(10000);
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2312,14 +2291,9 @@ describe('<Token /> available actions rendered', () => {
         await waitFor(() => expect(redeemButton).toBeDisabled());
 
         // We redeem 10k XECX
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10000',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10000');
 
-        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
-            10000,
-        );
+        expect(screen.getByPlaceholderText('Total qty')).toHaveValue(10000);
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2438,10 +2412,7 @@ describe('<Token /> available actions rendered', () => {
         ).not.toBeInTheDocument();
 
         // Enter amount to redeem
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '0.009',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '0.009');
 
         // This is below firma min redemption so we get an error
         expect(
@@ -2452,18 +2423,11 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-        );
+        await userEvent.clear(screen.getByPlaceholderText('Total qty'));
 
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10');
 
-        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
-            10,
-        );
+        expect(screen.getByPlaceholderText('Total qty')).toHaveValue(10);
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2601,10 +2565,7 @@ describe('<Token /> available actions rendered', () => {
         ).not.toBeInTheDocument();
 
         // Enter amount to redeem
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10');
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2712,10 +2673,7 @@ describe('<Token /> available actions rendered', () => {
         ).not.toBeInTheDocument();
 
         // Enter amount to redeem
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '0.009',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '0.009');
 
         // This is below firma min redemption so we get an error
         expect(
@@ -2726,18 +2684,11 @@ describe('<Token /> available actions rendered', () => {
         expect(redeemButton).toBeDisabled();
 
         // OK we redeem more than dust
-        await userEvent.clear(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-        );
+        await userEvent.clear(screen.getByPlaceholderText('Total qty'));
 
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '10',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '10');
 
-        expect(screen.getByPlaceholderText('agoraPartialTokenQty')).toHaveValue(
-            10,
-        );
+        expect(screen.getByPlaceholderText('Total qty')).toHaveValue(10);
 
         // The redeem button is now enabled
         expect(redeemButton).toBeEnabled();
@@ -2978,10 +2929,7 @@ describe('<Token /> available actions rendered', () => {
         expect(priceInput).toBeDisabled();
 
         // Enter token balance as offered qty
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '100',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '100');
 
         // The price input is no longer disabled
         expect(priceInput).toBeEnabled();
@@ -3098,10 +3046,7 @@ describe('<Token /> available actions rendered', () => {
         );
 
         // We can try to list for less than $1
-        await userEvent.type(
-            screen.getByPlaceholderText('agoraPartialTokenQty'),
-            '1',
-        );
+        await userEvent.type(screen.getByPlaceholderText('Total qty'), '1');
         // List for 1,000 XEC
         await userEvent.type(
             screen.getByPlaceholderText('Enter list price (per token)'),

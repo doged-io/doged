@@ -3099,9 +3099,7 @@ const Token: React.FC = () => {
                                                 <SendTokenFormRow>
                                                     <InputRow>
                                                         <Slider
-                                                            name={
-                                                                'agoraPartialTokenQty'
-                                                            }
+                                                            name={'Total qty'}
                                                             value={
                                                                 agoraPartialTokenQty
                                                             }
@@ -3176,9 +3174,7 @@ const Token: React.FC = () => {
                                                 <SendTokenFormRow>
                                                     <InputRow>
                                                         <Slider
-                                                            name={
-                                                                'agoraPartialTokenQty'
-                                                            }
+                                                            name={'Total qty'}
                                                             value={
                                                                 agoraPartialTokenQty
                                                             }
@@ -3384,9 +3380,7 @@ const Token: React.FC = () => {
                                                 <SendTokenFormRow>
                                                     <InputRow>
                                                         <Slider
-                                                            name={
-                                                                'agoraPartialTokenQty'
-                                                            }
+                                                            name={'Total qty'}
                                                             value={
                                                                 agoraPartialTokenQty
                                                             }

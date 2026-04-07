@@ -173,10 +173,8 @@ describe('<Token />', () => {
         // Switch to Sell mode (UI now uses buttons instead of Switch)
         await user.click(await screen.findByRole('button', { name: /Sell/ }));
 
-        // Sell form uses Slider with name as placeholder (agoraPartialTokenQty), Min qty has label
-        const totalQtyInput = await screen.findByPlaceholderText(
-            'agoraPartialTokenQty',
-        );
+        // Sell form uses Slider with name as placeholder (Total qty), Min qty has label
+        const totalQtyInput = await screen.findByPlaceholderText('Total qty');
         const minQtyInput = screen.getByPlaceholderText('Min qty');
 
         // Input fields are rendered
@@ -246,7 +244,7 @@ describe('<Token />', () => {
 
         // Sell form is NOT rendered (action bar hidden for blacklisted tokens)
         expect(
-            screen.queryByPlaceholderText('agoraPartialTokenQty'),
+            screen.queryByPlaceholderText('Total qty'),
         ).not.toBeInTheDocument();
     });
 
