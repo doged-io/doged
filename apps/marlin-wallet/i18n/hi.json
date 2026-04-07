@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "कुछ गलत हुआ",
         "amountTooSmall": "रकम बहुत कम है",
+        "cannotCoverFee": "नेटवर्क शुल्क के लिए अपर्याप्त XEC",
         "failedToLoadWallet": "वॉलेट नहीं खुला",
         "failedToSendTransaction": "लेनदेन नहीं हुआ",
         "insufficientFunds": "बैलेंस कम है",

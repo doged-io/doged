@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Si è verificato un errore",
         "amountTooSmall": "Importo troppo basso",
+        "cannotCoverFee": "XEC insufficiente per la commissione di rete",
         "failedToLoadWallet": "Impossibile caricare il portafoglio",
         "failedToSendTransaction": "Impossibile inviare la transazione",
         "insufficientFunds": "Fondi insufficienti",

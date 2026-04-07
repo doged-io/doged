@@ -58,6 +58,22 @@ file COPYING or http://www.opensource.org/licenses/mit-license.php.
                     <h1 data-i18n="main.title">Marlin Wallet</h1>
                 </div>
                 <div class="header-buttons">
+                    <div class="asset-picker-wrap">
+                        <button
+                            type="button"
+                            id="asset-picker-btn"
+                            class="asset-picker-btn"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                        >
+                            XEC
+                        </button>
+                        <div
+                            id="asset-picker-menu"
+                            class="asset-picker-menu"
+                            role="listbox"
+                        ></div>
+                    </div>
                     <div class="history-btn">
                         <button class="history-button" onclick="openHistory()">
                             <img

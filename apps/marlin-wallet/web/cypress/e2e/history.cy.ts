@@ -5,6 +5,7 @@
 import {
     normalizeBalanceText,
     openSettingsFromMain,
+    selectFirmaAsset,
     visitWithWalletMnemonic,
     waitForMainLoaded,
 } from '../fixture/common';
@@ -15,6 +16,12 @@ import { runWithChronik, stubCoingeckoXecFiatPrices } from '../fixture/stubs';
 const TEST_MNEMONIC =
     'beauty shoe decline spend still weird slot snack coach flee between paper';
 const CHRONIK_STUB = 'qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g.json';
+
+/** Matches `cypress/fixture/chronik/qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json`. */
+const FIRMA_WALLET_MNEMONIC =
+    'load quality private purchase cream pony powder stairs edit fashion until earn';
+const CHRONIK_STUB_FIRMA_WALLET =
+    'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json';
 
 function openHistoryFromMain(): void {
     cy.get('#main-screen').should('be.visible');
@@ -206,6 +213,107 @@ describe('Transaction history', () => {
                 .should($el => {
                     expect(normalizeBalanceText($el.text())).to.eq(
                         '+0,000345 €',
+                    );
+                });
+        });
+    });
+
+    it('shows Firma amounts in history when Firma is selected', () => {
+        runWithChronik(CHRONIK_STUB_FIRMA_WALLET, () => {
+            visitWithWalletMnemonic(FIRMA_WALLET_MNEMONIC);
+            waitForMainLoaded();
+
+            selectFirmaAsset();
+
+            cy.get('#primary-balance').should($el => {
+                expect(normalizeBalanceText($el.text())).to.eq('0.5000 FIRMA');
+            });
+
+            openHistoryFromMain();
+
+            cy.get('#transaction-list').should($el => {
+                expect($el.html()).to.not.include('loading-transactions');
+            });
+
+            // Stub has two XEC txs but only one Firma token movement for this wallet.
+            cy.get('#transaction-list .transaction-item').should(
+                'have.length',
+                1,
+            );
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-primary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq(
+                        '+0.5000 FIRMA',
+                    );
+                });
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-secondary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq('+$0.50');
+                });
+        });
+    });
+
+    it('inverts Firma vs fiat amount columns in history when fiat is primary', () => {
+        runWithChronik(CHRONIK_STUB_FIRMA_WALLET, () => {
+            visitWithWalletMnemonic(FIRMA_WALLET_MNEMONIC);
+            waitForMainLoaded();
+
+            selectFirmaAsset();
+
+            cy.get('#primary-balance').should($el => {
+                expect(normalizeBalanceText($el.text())).to.eq('0.5000 FIRMA');
+            });
+
+            openHistoryFromMain();
+
+            cy.get('#transaction-list').should($el => {
+                expect($el.html()).to.not.include('loading-transactions');
+            });
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-primary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq(
+                        '+0.5000 FIRMA',
+                    );
+                });
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-secondary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq('+$0.50');
+                });
+
+            cy.get('#history-back-btn').click();
+            cy.get('#main-screen').should('be.visible');
+
+            openSettingsFromMain();
+            cy.get('#primary-balance-toggle').check({ force: true });
+            cy.get('#primary-balance-toggle').should('be.checked');
+            cy.get('#settings-back-btn').click();
+            cy.get('#main-screen').should('be.visible');
+
+            openHistoryFromMain();
+
+            cy.get('#transaction-list').should($el => {
+                expect($el.html()).to.not.include('loading-transactions');
+            });
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-primary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq('+$0.50');
+                });
+            cy.get('#transaction-list .transaction-item')
+                .first()
+                .find('.transaction-amount-secondary')
+                .should($el => {
+                    expect(normalizeBalanceText($el.text())).to.eq(
+                        '+0.5000 FIRMA',
                     );
                 });
         });

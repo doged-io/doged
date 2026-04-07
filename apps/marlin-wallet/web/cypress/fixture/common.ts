@@ -90,6 +90,16 @@ export function waitForMainLoaded(): void {
 }
 
 /**
+ * Select the Firma asset from the main screen asset picker (closes the menu).
+ */
+export function selectFirmaAsset(): void {
+    cy.get('#asset-picker-btn').click();
+    cy.get('#asset-picker-menu').should('have.class', 'open');
+    cy.get('#asset-picker-menu [data-asset="firma"]').click();
+    cy.get('#asset-picker-menu').should('not.have.class', 'open');
+}
+
+/**
  * Normalize balance / fiat strings from the DOM for assertions (NBSP → space,
  * trim).
  */

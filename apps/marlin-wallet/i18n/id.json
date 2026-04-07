@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Terjadi eror",
         "amountTooSmall": "Jumlah terlalu kecil",
+        "cannotCoverFee": "XEC tidak mencukupi untuk biaya jaringan",
         "failedToLoadWallet": "Gagal memuat dompet",
         "failedToSendTransaction": "Gagal mengirim transaksi",
         "insufficientFunds": "Dana tidak mencukupi",

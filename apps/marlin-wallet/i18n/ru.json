@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Произошла ошибка",
         "amountTooSmall": "Сумма слишком мала",
+        "cannotCoverFee": "Недостаточно XEC для оплаты комиссии сети",
         "failedToLoadWallet": "Не удалось загрузить кошелек",
         "failedToSendTransaction": "Не удалось отправить транзакцию",
         "insufficientFunds": "Недостаточно средств",

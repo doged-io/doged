@@ -10,10 +10,12 @@ import { fromHexRev } from '../../../../../modules/chronik-client/src/hex';
 import { CryptoTicker, Fiat, formatPrice } from 'ecash-price';
 
 import { DEFAULT_LOCALE } from '../../../i18n/locales';
-import { satsToXec } from '../../src/amount';
+import { atomsToUnit, unitToAtoms } from '../../src/amount';
+import { FIRMA_TOKEN, XEC_ASSET } from '../../src/supported-assets';
 import {
     normalizeBalanceText,
     openSettingsFromMain,
+    selectFirmaAsset,
     visitWithWalletMnemonic,
     waitForMainLoaded,
 } from '../fixture/common';
@@ -34,6 +36,8 @@ const CHRONIK_STUB = 'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json';
  * (10_000_000 sats).
  */
 const STUB_AVAILABLE_XEC = 100_000;
+/** Firma token atoms available from `qzrfaek...json` (final UTXO) before synthetic receives. */
+const STUB_AVAILABLE_FIRMA_ATOMS = 5_000;
 /** output script for `ecash:qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2` */
 const STUB_WALLET_OUTPUT_SCRIPT = 'dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA==';
 /** USD per 1 XEC from {@link stubCoingeckoXecFiatPrices} (`ecash.usd`). */
@@ -84,6 +88,52 @@ function receiveTx(txid: string, amountSats: number): Record<string, unknown> {
         ],
         timeFirstSeen: '1775830000',
         size: 220,
+        isFinal: false,
+    };
+}
+
+/** Mempool receive of Firma (ALP) to the stub wallet, with XEC change to the synthetic input script. */
+function receiveFirmaTx(
+    txid: string,
+    tokenAtoms: string,
+): Record<string, unknown> {
+    const walletOutputSats = 546;
+    return {
+        txid: uint8ToBase64(fromHexRev(txid)),
+        version: 2,
+        inputs: [
+            {
+                prevOut: {
+                    txid: 'AjDfkdKeKxRdAbhT2r38Jwb2tjzMR/q4DyrP57ptVBE=',
+                },
+                inputScript:
+                    'QdJXs/BT7P1rhj6gCazJk6zsCOLajy76fy5IQLNbAyL9CRr5qQph1Gfm8QP6k2uxGXOg+qIDzaSG6tK+u2ZPg0FBIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==',
+                outputScript: SYNTHETIC_P2PKH_OUTPUT_SCRIPT,
+                sats: String(SYNTHETIC_INPUT_SATS),
+                sequenceNo: 4294967295,
+            },
+        ],
+        outputs: [
+            {
+                sats: String(walletOutputSats),
+                outputScript: STUB_WALLET_OUTPUT_SCRIPT,
+                token: {
+                    tokenId: FIRMA_TOKEN.tokenId as string,
+                    tokenType: { alp: 'ALP_TOKEN_TYPE_STANDARD' },
+                    atoms: tokenAtoms,
+                },
+            },
+            {
+                sats: String(
+                    SYNTHETIC_INPUT_SATS -
+                        walletOutputSats -
+                        SYNTHETIC_FEE_SATS,
+                ),
+                outputScript: SYNTHETIC_P2PKH_OUTPUT_SCRIPT,
+            },
+        ],
+        timeFirstSeen: '1775830000',
+        size: 280,
         isFinal: false,
     };
 }
@@ -156,7 +206,10 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc1';
             const amountXec = 10_000;
-            const mempoolTx = receiveTx(syntheticTxid, amountXec * 100);
+            const mempoolTx = receiveTx(
+                syntheticTxid,
+                unitToAtoms(amountXec, XEC_ASSET.decimals),
+            );
 
             cy.window().then(win => {
                 const stub = ensureWebsocketStub(win);
@@ -204,6 +257,96 @@ describe('Transitional balance', () => {
         });
     });
 
+    it('shows receive transitional in Firma then available balance after mempool and finalization WS', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, undefined, {
+                beforeAppLoad(win) {
+                    installChronikWebSocketStub(
+                        win as WindowWithChronikWebSocketStub,
+                    );
+                },
+            });
+            waitForMainLoaded();
+
+            selectFirmaAsset();
+
+            cy.get('#primary-balance').should($el => {
+                const t = normalizeBalanceText($el.text());
+                expect(t).to.equal(
+                    formatPrice(
+                        atomsToUnit(
+                            STUB_AVAILABLE_FIRMA_ATOMS,
+                            FIRMA_TOKEN.decimals,
+                        ),
+                        new CryptoTicker(FIRMA_TOKEN.ticker.toLowerCase()),
+                        {
+                            locale: DEFAULT_LOCALE,
+                            decimals: FIRMA_TOKEN.decimals,
+                        },
+                    ),
+                );
+            });
+
+            const syntheticTxid =
+                'e2e000000000000000000000000000000000000000000000000000000000f1ea';
+            const receiveAtoms = 10_000;
+            const mempoolTx = receiveFirmaTx(
+                syntheticTxid,
+                String(receiveAtoms),
+            );
+            const expectedTransitionalFirma = formatPrice(
+                atomsToUnit(receiveAtoms, FIRMA_TOKEN.decimals),
+                new CryptoTicker(FIRMA_TOKEN.ticker.toLowerCase()),
+                {
+                    locale: DEFAULT_LOCALE,
+                    decimals: FIRMA_TOKEN.decimals,
+                    alwaysShowSign: true,
+                },
+            );
+
+            cy.window().then(win => {
+                const stub = ensureWebsocketStub(win);
+                stub.emitTxWebsocket(TxMsgType.TX_ADDED_TO_MEMPOOL, mempoolTx);
+            });
+
+            cy.get('#transitional-balance')
+                .should('be.visible')
+                .and('have.class', 'receive')
+                .and($el => {
+                    const t = normalizeBalanceText($el.text());
+                    expect(t).to.equal(expectedTransitionalFirma);
+                });
+
+            cy.window().then(win => {
+                const stub = ensureWebsocketStub(win);
+                stub.emitTxWebsocket(
+                    TxMsgType.TX_FINALIZED,
+                    mempoolTx,
+                    TxFinalizationReasonType.TX_FINALIZATION_REASON_PRE_CONSENSUS,
+                );
+            });
+
+            cy.get('#transitional-balance').should('have.class', 'hidden');
+
+            cy.get('#primary-balance').should($el => {
+                const t = normalizeBalanceText($el.text());
+                expect(t).to.equal(
+                    formatPrice(
+                        atomsToUnit(
+                            STUB_AVAILABLE_FIRMA_ATOMS + receiveAtoms,
+                            FIRMA_TOKEN.decimals,
+                        ),
+                        new CryptoTicker(FIRMA_TOKEN.ticker.toLowerCase()),
+                        {
+                            locale: DEFAULT_LOCALE,
+                            decimals: FIRMA_TOKEN.decimals,
+                        },
+                    ),
+                );
+            });
+        });
+    });
+
     it('shows spend transitional then available balance after mempool and finalization WS', () => {
         runWithChronik(CHRONIK_STUB, () => {
             visitWithWalletMnemonic(TEST_MNEMONIC, undefined, {
@@ -218,7 +361,7 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc2';
             const amountXec = 10_000;
-            const sendAmountSats = amountXec * 100;
+            const sendAmountSats = unitToAtoms(amountXec, XEC_ASSET.decimals);
             const mempoolTx = sendTx(
                 syntheticTxid,
                 sendAmountSats,
@@ -238,7 +381,7 @@ describe('Transitional balance', () => {
                     const t = normalizeBalanceText($el.text());
                     expect(t).to.equal(
                         formatPrice(
-                            satsToXec(sendDeltaSats),
+                            atomsToUnit(sendDeltaSats, XEC_ASSET.decimals),
                             CryptoTicker.XEC,
                             {
                                 locale: DEFAULT_LOCALE,
@@ -264,7 +407,8 @@ describe('Transitional balance', () => {
                 const t = normalizeBalanceText($el.text());
                 expect(t).to.equal(
                     formatPrice(
-                        STUB_AVAILABLE_XEC + satsToXec(sendDeltaSats),
+                        STUB_AVAILABLE_XEC +
+                            atomsToUnit(sendDeltaSats, XEC_ASSET.decimals),
                         CryptoTicker.XEC,
                         { locale: DEFAULT_LOCALE, decimals: 2 },
                     ),
@@ -305,14 +449,17 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc9';
             const amountXec = 10_000;
-            const sendAmountSats = amountXec * 100;
+            const sendAmountSats = unitToAtoms(amountXec, XEC_ASSET.decimals);
             const mempoolTx = sendTx(
                 syntheticTxid,
                 sendAmountSats,
                 SYNTHETIC_INPUT_SATS,
             );
             const sendDeltaSats = -(sendAmountSats + SYNTHETIC_FEE_SATS);
-            const transitionalXec = satsToXec(sendDeltaSats);
+            const transitionalXec = atomsToUnit(
+                sendDeltaSats,
+                XEC_ASSET.decimals,
+            );
             const expectedTransitionalUsd = formatPrice(
                 transitionalXec * STUB_USD_PER_XEC,
                 Fiat.USD,
@@ -346,7 +493,8 @@ describe('Transitional balance', () => {
             cy.get('#primary-balance').should($el => {
                 const t = normalizeBalanceText($el.text());
                 const availableXecAfter =
-                    STUB_AVAILABLE_XEC + satsToXec(sendDeltaSats);
+                    STUB_AVAILABLE_XEC +
+                    atomsToUnit(sendDeltaSats, XEC_ASSET.decimals);
                 expect(t).to.equal(
                     formatPrice(
                         availableXecAfter * STUB_USD_PER_XEC,
@@ -372,7 +520,10 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc5';
             const amountXec = 2500;
-            const mempoolTx = receiveTx(syntheticTxid, amountXec * 100);
+            const mempoolTx = receiveTx(
+                syntheticTxid,
+                unitToAtoms(amountXec, XEC_ASSET.decimals),
+            );
 
             cy.window().then(win => {
                 const stub = ensureWebsocketStub(win);
@@ -472,7 +623,10 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc6';
             const amountXec = 1800;
-            const confirmedTx = receiveTx(syntheticTxid, amountXec * 100);
+            const confirmedTx = receiveTx(
+                syntheticTxid,
+                unitToAtoms(amountXec, XEC_ASSET.decimals),
+            );
 
             cy.window().then(win => {
                 const stub = ensureWebsocketStub(win);
@@ -542,7 +696,10 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc7';
             const amountXec = 2200;
-            const mempoolTx = receiveTx(syntheticTxid, amountXec * 100);
+            const mempoolTx = receiveTx(
+                syntheticTxid,
+                unitToAtoms(amountXec, XEC_ASSET.decimals),
+            );
 
             cy.window().then(win => {
                 const stub = ensureWebsocketStub(win);
@@ -623,7 +780,10 @@ describe('Transitional balance', () => {
             const syntheticTxid =
                 'e2e000000000000000000000000000000000000000000000000000000000abc8';
             const amountXec = 900;
-            const finalizedTx = receiveTx(syntheticTxid, amountXec * 100);
+            const finalizedTx = receiveTx(
+                syntheticTxid,
+                unitToAtoms(amountXec, XEC_ASSET.decimals),
+            );
 
             cy.get('#transitional-balance').should('have.class', 'hidden');
             cy.get('#primary-balance').should($el => {
@@ -680,11 +840,11 @@ describe('Transitional balance', () => {
             const amountXec2 = 4000;
             const mempoolTx1 = receiveTx(
                 'e2e000000000000000000000000000000000000000000000000000000000abc3',
-                amountXec1 * 100,
+                unitToAtoms(amountXec1, XEC_ASSET.decimals),
             );
             const mempoolTx2 = receiveTx(
                 'e2e000000000000000000000000000000000000000000000000000000000abc4',
-                amountXec2 * 100,
+                unitToAtoms(amountXec2, XEC_ASSET.decimals),
             );
 
             cy.window().then(win => {

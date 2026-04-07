@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Error accidit",
         "amountTooSmall": "Summa nimis parva est",
+        "cannotCoverFee": "XEC nōn sufficit ad mercēdem rētis",
         "failedToLoadWallet": "Crumēna onerāre nōn potuit",
         "failedToSendTransaction": "Trānsāctiōnem mittere nōn potuit",
         "insufficientFunds": "Pecūnia nōn sufficit",

@@ -43,6 +43,8 @@ function _toCoingeckoId(ticker: CryptoTicker): string {
             return 'monero';
         case CryptoTicker.SOL.toString():
             return 'solana';
+        case CryptoTicker.USDT.toString():
+            return 'tether';
     }
 
     throw new Error(`Unsupported crypto ticker: ${ticker}`);

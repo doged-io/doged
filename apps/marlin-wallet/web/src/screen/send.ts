@@ -6,23 +6,39 @@ import { Navigation, Screen } from '../navigation';
 import { AppSettings } from '../settings';
 import { DEFAULT_DUST_SATS } from 'ecash-lib';
 import { ChronikClient } from 'chronik-client';
-import { Wallet } from 'ecash-wallet';
+import { BuiltAction, Wallet } from 'ecash-wallet';
 import { CryptoTicker, formatPrice } from 'ecash-price';
 import type { MarlinPriceFetcher } from '../price';
 import {
+    atomsToUnit,
     calculateMaxSpendableAmount,
+    calculateMaxSpendableTokenDisplay,
     estimateTransactionFee,
-    satsToXec,
+    estimateTokenSendFeeAndGas,
+    unitToAtoms,
 } from '../amount';
-import { buildAction } from '../wallet';
+import { buildAction, buildTokenSendAction } from '../wallet';
+import {
+    activeAssetDefinition,
+    activeAssetTicker,
+    activeCryptoTicker,
+    activeAssetDecimals,
+    activeTokenId,
+    allowFiatForActiveAsset,
+    activeQuoteCurrency,
+} from '../active-asset';
 import { isValidECashAddress } from '../address';
 import { parseBip21Uri, Bip21ParseResult } from '../bip21';
 import { isPayButtonTransaction } from '../paybutton';
 import { config } from '../config';
+import { XEC_ASSET } from '../supported-assets';
 import { sendMessageToBackend, webViewLog, webViewError } from '../common';
 import { t } from '../i18n';
 
-const MIN_AMOUNT_XEC = satsToXec(Number(DEFAULT_DUST_SATS));
+const MIN_AMOUNT_XEC = atomsToUnit(
+    Number(DEFAULT_DUST_SATS),
+    XEC_ASSET.decimals,
+);
 
 export interface SendScreenParams {
     ecashWallet: Wallet;
@@ -36,8 +52,9 @@ export class SendScreen {
     private params: SendScreenParams;
     private returnToBrowser: boolean = false;
     private sendOpReturnRaw: string | undefined = undefined;
-    private currentPricePerXec: number | null = null;
-    private useXecPrimary: boolean = true;
+    private currentActiveAssetPrice: number | null = null;
+    private currentXecPrice: number | null = null;
+    private useActiveAssetPrimary: boolean = true;
     private amountDigits: number = 2;
     private minSpendablePrimary: number = MIN_AMOUNT_XEC;
     private maxSpendablePrimary: number = MIN_AMOUNT_XEC;
@@ -77,37 +94,58 @@ export class SendScreen {
         // Always refresh the available utxos before showing the send screen
         await this.params.syncWallet();
 
+        const decimals = activeAssetDecimals();
+        const tokenId = activeTokenId();
+
+        if (tokenId !== null) {
+            // Not supported for now
+            this.sendOpReturnRaw = undefined;
+        }
+
         // Fetch current price once upon screen opening
-        this.currentPricePerXec =
-            (await this.params.priceFetcher?.current({
-                source: CryptoTicker.XEC,
-                quote: this.params.appSettings.fiatCurrency,
-            })) ?? null;
+        this.currentActiveAssetPrice = allowFiatForActiveAsset()
+            ? await this.params.priceFetcher?.current({
+                  source: activeQuoteCurrency(),
+                  quote: this.params.appSettings.fiatCurrency,
+              })
+            : null;
+        this.currentXecPrice = await this.params.priceFetcher?.current({
+            source: CryptoTicker.XEC,
+            quote: this.params.appSettings.fiatCurrency,
+        });
+
         // Since the price and the settings won't change during the lifetime of
         // the screen, we can cache some parameters for simplicity.
-        this.useXecPrimary =
+        this.useActiveAssetPrimary =
             this.params.appSettings.primaryBalanceType === 'XEC' ||
-            this.currentPricePerXec === null;
-        this.ui.sendAmountInput.step = this.useXecPrimary
-            ? '0.01'
+            this.currentActiveAssetPrice === null;
+        this.ui.sendAmountInput.step = this.useActiveAssetPrimary
+            ? decimals > 0
+                ? `0.${'0'.repeat(Math.max(0, decimals - 1))}1`
+                : '1'
             : '0.00000001';
         this.ui.amountSlider.step = this.ui.sendAmountInput.step;
-        this.amountDigits = this.useXecPrimary ? 2 : 8;
+        this.amountDigits = this.useActiveAssetPrimary ? decimals : 8;
 
-        this.ui.tickerLabel.textContent = this.useXecPrimary
-            ? config.ticker
+        this.ui.tickerLabel.textContent = this.useActiveAssetPrimary
+            ? activeAssetTicker()
             : this.params.appSettings.fiatCurrency.toString().toUpperCase();
 
-        // Compute the min and max spendable amounts, update the ui accordingly
         this.minSpendablePrimary =
             Math.ceil(
-                this.xecToPrimary(MIN_AMOUNT_XEC) *
-                    Math.pow(10, this.amountDigits),
+                this.xecToPrimary(
+                    !tokenId ? MIN_AMOUNT_XEC : 1 / Math.pow(10, decimals),
+                ) * Math.pow(10, this.amountDigits),
             ) / Math.pow(10, this.amountDigits);
         this.maxSpendablePrimary =
             Math.floor(
                 this.xecToPrimary(
-                    calculateMaxSpendableAmount(this.params.ecashWallet),
+                    tokenId
+                        ? calculateMaxSpendableTokenDisplay(
+                              this.params.ecashWallet,
+                              tokenId,
+                          )
+                        : calculateMaxSpendableAmount(this.params.ecashWallet),
                 ) * Math.pow(10, this.amountDigits),
             ) / Math.pow(10, this.amountDigits);
 
@@ -144,10 +182,13 @@ export class SendScreen {
             this.ui.recipientInput.removeAttribute('readonly'); // Allow editing for manual entry
         }
 
-        // Initialize amount field
-        if (prefillOptions?.sats !== undefined && prefillOptions.sats > 0) {
+        if (
+            !tokenId &&
+            prefillOptions?.sats !== undefined &&
+            prefillOptions.sats > 0
+        ) {
             const amountPrimary = this.xecToPrimary(
-                satsToXec(prefillOptions.sats),
+                atomsToUnit(prefillOptions.sats, XEC_ASSET.decimals),
             );
             this.ui.sendAmountInput.value = amountPrimary.toFixed(
                 this.amountDigits,
@@ -168,12 +209,14 @@ export class SendScreen {
             this.ui.amountSlider.disabled = false;
         }
 
-        // Store opReturnRaw for use when sending transaction, only for paybutton transactions
-        this.sendOpReturnRaw =
-            prefillOptions?.opReturnRaw &&
-            isPayButtonTransaction(prefillOptions.opReturnRaw)
-                ? prefillOptions.opReturnRaw
-                : undefined;
+        if (!tokenId) {
+            // Store opReturnRaw for use when sending transaction, only for paybutton transactions
+            this.sendOpReturnRaw =
+                prefillOptions?.opReturnRaw &&
+                isPayButtonTransaction(prefillOptions.opReturnRaw)
+                    ? prefillOptions.opReturnRaw
+                    : undefined;
+        }
 
         // Setup with current behavior
         this.setupHoldToSend();
@@ -340,7 +383,7 @@ export class SendScreen {
             bip21Result.sats !== undefined &&
             bip21Result.sats >= DEFAULT_DUST_SATS
         ) {
-            const amountXec = satsToXec(bip21Result.sats);
+            const amountXec = atomsToUnit(bip21Result.sats, XEC_ASSET.decimals);
             const amountPrimary = this.xecToPrimary(amountXec);
 
             this.ui.sendAmountInput.value = amountPrimary.toFixed(
@@ -361,39 +404,82 @@ export class SendScreen {
 
     // Helper methods for primary/secondary balance conversion
     private xecToPrimary(xec: number): number {
-        return this.useXecPrimary ? xec : xec * this.currentPricePerXec;
+        return this.useActiveAssetPrimary
+            ? xec
+            : xec * this.currentActiveAssetPrice;
     }
 
     private primaryToXec(primary: number): number {
-        return this.useXecPrimary ? primary : primary / this.currentPricePerXec;
+        return this.useActiveAssetPrimary
+            ? primary
+            : primary / this.currentActiveAssetPrice;
     }
 
     private formatPrimary(primary: number): string {
-        return this.useXecPrimary
-            ? formatPrice(primary, CryptoTicker.XEC, {
+        const cryptoDecimals = activeAssetDecimals();
+        return this.useActiveAssetPrimary
+            ? formatPrice(primary, activeCryptoTicker(), {
                   locale: this.params.appSettings.locale,
-                  decimals: 2,
+                  decimals: cryptoDecimals,
               })
             : formatPrice(primary, this.params.appSettings.fiatCurrency, {
                   locale: this.params.appSettings.locale,
               });
     }
 
-    private formatSecondary(xec: number): string | null {
-        if (this.currentPricePerXec === null) {
+    private formatSecondary(cryptoAmount: number): string | null {
+        if (this.currentActiveAssetPrice === null) {
             return null;
         }
 
-        return this.useXecPrimary
+        const cryptoDecimals = activeAssetDecimals();
+        return this.useActiveAssetPrimary
             ? formatPrice(
-                  xec * this.currentPricePerXec,
+                  cryptoAmount * this.currentActiveAssetPrice,
                   this.params.appSettings.fiatCurrency,
                   { locale: this.params.appSettings.locale },
               )
-            : formatPrice(xec, CryptoTicker.XEC, {
+            : formatPrice(cryptoAmount, activeCryptoTicker(), {
                   locale: this.params.appSettings.locale,
-                  decimals: 2,
+                  decimals: cryptoDecimals,
               });
+    }
+
+    private formatSecondaryXec(xecAmount: number): string | null {
+        if (this.currentXecPrice === null) {
+            return null;
+        }
+
+        return this.useActiveAssetPrimary
+            ? formatPrice(
+                  xecAmount * this.currentXecPrice,
+                  this.params.appSettings.fiatCurrency,
+                  { locale: this.params.appSettings.locale },
+              )
+            : formatPrice(xecAmount, CryptoTicker.XEC, {
+                  locale: this.params.appSettings.locale,
+                  decimals: XEC_ASSET.decimals,
+              });
+    }
+
+    private formatPrimaryXec(xecAmount: number): string {
+        if (this.useActiveAssetPrimary) {
+            return formatPrice(xecAmount, CryptoTicker.XEC, {
+                locale: this.params.appSettings.locale,
+                decimals: XEC_ASSET.decimals,
+            });
+        }
+        if (this.currentXecPrice === null) {
+            return formatPrice(xecAmount, CryptoTicker.XEC, {
+                locale: this.params.appSettings.locale,
+                decimals: XEC_ASSET.decimals,
+            });
+        }
+        return formatPrice(
+            xecAmount * this.currentXecPrice,
+            this.params.appSettings.fiatCurrency,
+            { locale: this.params.appSettings.locale },
+        );
     }
 
     // Update fee display
@@ -422,10 +508,14 @@ export class SendScreen {
             return;
         }
 
-        // Convert from primary currency to XEC for fee estimation
-        let amountXec = this.primaryToXec(amountPrimary);
-
         let errorMessage: string | null = null;
+
+        if (activeTokenId() !== null) {
+            this.updateFeeDisplayToken(recipientAddress, amountPrimary);
+            return;
+        }
+
+        let amountXec = this.primaryToXec(amountPrimary);
 
         // Check for dust threshold
         if (amountXec < MIN_AMOUNT_XEC) {
@@ -517,6 +607,93 @@ export class SendScreen {
             </div>
         </div>
     `;
+
+        this.ui.feeDisplay.innerHTML = html;
+        this.ui.feeDisplay.style.display = 'block';
+    }
+
+    private updateFeeDisplayToken(
+        recipientAddress: string,
+        amountPrimary: number,
+    ): void {
+        const tokenId = activeTokenId();
+        if (!tokenId) {
+            this.ui.feeDisplay.style.display = 'none';
+            return;
+        }
+
+        let errorMessage: string | null = null;
+        let displayAmountPrimary = amountPrimary;
+
+        if (displayAmountPrimary < this.minSpendablePrimary) {
+            errorMessage = t('errors.amountTooSmall');
+        }
+
+        if (displayAmountPrimary > this.maxSpendablePrimary) {
+            displayAmountPrimary = this.maxSpendablePrimary;
+            errorMessage = t('errors.insufficientFunds');
+        }
+
+        const feeEstimate = estimateTokenSendFeeAndGas(
+            this.params.ecashWallet,
+            recipientAddress,
+            displayAmountPrimary,
+            activeAssetDefinition(),
+        );
+
+        if (!feeEstimate && !errorMessage) {
+            errorMessage = t('errors.cannotCoverFee');
+        }
+
+        let feeBlockHeading = t('send.transactionDetails');
+        let feeBlockHeadingClasses = 'title';
+        if (errorMessage) {
+            this.ui.feeDisplay.classList.add('error');
+            feeBlockHeading = errorMessage;
+            feeBlockHeadingClasses += ' error';
+        } else {
+            this.ui.feeDisplay.classList.remove('error');
+        }
+
+        const amountPrimaryFormatted = this.formatPrimary(displayAmountPrimary);
+        const amountSecondaryFormatted = this.formatSecondary(
+            this.primaryToXec(displayAmountPrimary),
+        );
+
+        const feePrimaryFormatted =
+            feeEstimate !== null
+                ? this.formatPrimaryXec(feeEstimate.feeXEC)
+                : '—';
+        const feeSecondaryFormatted =
+            feeEstimate !== null
+                ? this.formatSecondaryXec(feeEstimate.feeXEC)
+                : null;
+
+        const html = `<div class="fee-info">
+            <div class="fee-item ${feeBlockHeadingClasses}">
+                ${feeBlockHeading}
+            </div>
+            <div class="fee-item">
+                <span class="fee-label">${t('send.amount')}:</span>
+                <div class="fee-value">
+                    <span class="fee-value-primary">${amountPrimaryFormatted}</span>${
+                        amountSecondaryFormatted
+                            ? `<span class="fee-value-secondary">${amountSecondaryFormatted}</span>`
+                            : ''
+                    }
+                </div>
+            </div>
+            <div class="fee-item">
+                <span class="fee-label">${t('send.networkFee')} (${config.ticker}):</span>
+                <div class="fee-value">
+                    <span class="fee-value-primary">${feePrimaryFormatted}</span>${
+                        feeSecondaryFormatted
+                            ? `<span class="fee-value-secondary">${feeSecondaryFormatted}</span>`
+                            : ''
+                    }
+                </div>
+            </div>
+        </div>`;
 
         this.ui.feeDisplay.innerHTML = html;
         this.ui.feeDisplay.style.display = 'block';
@@ -783,26 +960,48 @@ export class SendScreen {
 
         // All validations passed, proceed with sending
         try {
-            // Input is in primary currency, convert to XEC for sending
             const amountPrimary = parseFloat(this.ui.sendAmountInput.value);
-            const amountXec = this.primaryToXec(amountPrimary);
-            // Convert XEC to satoshis (1 XEC = 100 satoshis)
-            const sats = Math.round(amountXec * 100);
-            const action = buildAction(
-                this.params.ecashWallet,
-                address,
-                sats,
-                this.sendOpReturnRaw,
-            );
-            const builtAction = action.build();
+
+            let builtAction: BuiltAction;
+            let sendMessage: string;
+
+            const tokenId = activeTokenId();
+            if (tokenId !== null) {
+                let atoms: bigint;
+                try {
+                    atoms = BigInt(
+                        unitToAtoms(amountPrimary, activeAssetDecimals()),
+                    );
+                } catch {
+                    return;
+                }
+                if (atoms <= 0n) {
+                    return;
+                }
+                builtAction = buildTokenSendAction(
+                    this.params.ecashWallet,
+                    address,
+                    atoms,
+                    activeAssetDefinition(),
+                ).build();
+                sendMessage = `Sent ${amountPrimary} ${activeAssetTicker()} to ${address}`;
+            } else {
+                const amountXec = this.primaryToXec(amountPrimary);
+                const sats = unitToAtoms(amountXec, activeAssetDecimals());
+                const action = buildAction(
+                    this.params.ecashWallet,
+                    address,
+                    sats,
+                    this.sendOpReturnRaw,
+                );
+                builtAction = action.build();
+                sendMessage = `Sent ${amountXec} ${config.ticker} to ${address}`;
+            }
 
             if (
                 this.sendOpReturnRaw &&
                 isPayButtonTransaction(this.sendOpReturnRaw)
             ) {
-                // For PayButton transactions, we broadcast to the PayButton node first
-                // to reduce the latency. Then we attempt to broadcast to the main node
-                // as well which may fail because the tx might have been relayed already.
                 try {
                     const paybuttonChronik = new ChronikClient([
                         'https://xec.paybutton.io',
@@ -811,16 +1010,14 @@ export class SendScreen {
                         tx.toHex(),
                     );
                     await paybuttonChronik.broadcastTxs(txsToBroadcast);
-                    webViewLog(
-                        `Sent ${amountXec} ${config.ticker} to ${address} via PayButton`,
-                    );
+                    webViewLog(`${sendMessage} via PayButton`);
                 } catch (error) {
                     webViewError('PayButton broadcast failed,:', error);
                 }
             }
 
             await builtAction.broadcast();
-            webViewLog(`Sent ${amountXec} ${config.ticker} to ${address}`);
+            webViewLog(sendMessage);
         } catch (error) {
             webViewError('Failed to send transaction:', error);
         } finally {

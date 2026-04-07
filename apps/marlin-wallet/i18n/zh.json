@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "发生错误",
         "amountTooSmall": "金额过小",
+        "cannotCoverFee": "XEC 不足以支付网络手续费",
         "failedToLoadWallet": "加载钱包失败",
         "failedToSendTransaction": "发送交易失败",
         "insufficientFunds": "资金不足",

@@ -4,11 +4,13 @@
 
 import {
     normalizeBalanceText,
+    selectFirmaAsset,
     visitWithWalletMnemonic,
     waitForMainLoaded,
 } from '../fixture/common';
 import { DEFAULT_DUST_SATS } from 'ecash-lib';
-import { satsToXec } from '../../src/amount';
+import { atomsToUnit } from '../../src/amount';
+import { FIRMA_TOKEN, XEC_ASSET } from '../../src/supported-assets';
 import { createBip21Uri } from '../../src/bip21';
 import {
     runWithChronik,
@@ -22,11 +24,28 @@ const TEST_MNEMONIC =
 
 const WALLET_ADDRESS = 'ecash:qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2';
 
+/** Valid payout address, not the Firma stub wallet (`WALLET_ADDRESS`). */
+const OTHER_RECIPIENT_ADDRESS =
+    'ecash:qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g';
+
 const CHRONIK_STUB = 'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json';
+
+/**
+ * Same wallet as `CHRONIK_STUB`; history is only the Firma receive tx; `scriptUtxos`
+ * has no native XEC UTXO.
+ */
+const CHRONIK_STUB_NO_XEC =
+    'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2-no-xec.json';
 
 const STUB_EXPECTED_TOTAL_XEC = 100_000.0;
 
-const DUST_AMOUNT_XEC = satsToXec(Number(DEFAULT_DUST_SATS));
+const DUST_AMOUNT_XEC = atomsToUnit(
+    Number(DEFAULT_DUST_SATS),
+    XEC_ASSET.decimals,
+);
+
+/** Smallest Firma primary step on the send slider (`1 / 10^decimals`). */
+const MIN_FIRMA_SLIDER_PRIMARY = 1 / Math.pow(10, FIRMA_TOKEN.decimals);
 
 /**
  * Parse the leading number from a primary `formatPrice(..., XEC)` cell (e.g. `1,234.56 XEC`).
@@ -46,14 +65,15 @@ function primaryForSliderFraction(
     min: number,
     max: number,
     frac: number,
+    decimals: number = 2,
 ): string {
     if (frac <= 0) {
-        return min.toFixed(2);
+        return min.toFixed(decimals);
     }
     if (frac >= 1) {
-        return max.toFixed(2);
+        return max.toFixed(decimals);
     }
-    return (min + (max - min) * frac).toFixed(2);
+    return (min + (max - min) * frac).toFixed(decimals);
 }
 
 describe('Send', () => {
@@ -255,6 +275,89 @@ describe('Send', () => {
         });
     });
 
+    it('slider samples update amount input and fee rows when Firma is selected', () => {
+        const sampleFracs = [0, 0.25, 0.5, 0.75, 1];
+        const firmaDecimals = FIRMA_TOKEN.decimals;
+
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            selectFirmaAsset();
+            openManualSendScreen();
+            cy.get('#recipient-address')
+                .clear()
+                .type(OTHER_RECIPIENT_ADDRESS)
+                .blur();
+
+            cy.get('#amount-slider').then($slider => {
+                const min = parseFloat(String($slider.attr('min')));
+                const max = parseFloat(String($slider.attr('max')));
+                if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                    throw new Error(
+                        `invalid slider bounds min=${String($slider.attr('min'))} max=${String($slider.attr('max'))}`,
+                    );
+                }
+                expect(
+                    min,
+                    'slider min = smallest Firma primary step',
+                ).to.equal(MIN_FIRMA_SLIDER_PRIMARY);
+                expect(max, 'slider max ≤ stub Firma balance').to.be.at.most(
+                    atomsToUnit(5_000, FIRMA_TOKEN.decimals),
+                );
+            });
+
+            cy.wrap(sampleFracs).each(frac => {
+                cy.get('#amount-slider').then($slider => {
+                    const min = parseFloat(String($slider.attr('min')));
+                    const max = parseFloat(String($slider.attr('max')));
+                    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                        throw new Error(
+                            `invalid slider bounds min=${String($slider.attr('min'))} max=${String($slider.attr('max'))}`,
+                        );
+                    }
+                    const valuePrimary = primaryForSliderFraction(
+                        min,
+                        max,
+                        frac,
+                        firmaDecimals,
+                    );
+                    cy.wrap($slider)
+                        .invoke('val', String(valuePrimary))
+                        .trigger('input', { force: true });
+
+                    cy.get('#send-amount').should('have.value', valuePrimary);
+
+                    cy.get('#fee-display')
+                        .should('be.visible')
+                        .and('not.have.class', 'error');
+                    cy.get('#fee-display .fee-value-primary')
+                        .should('have.length', 2)
+                        .then($cells => {
+                            const sendFirma = parsePrimaryXecDisplay(
+                                $cells.get(0)?.textContent ?? '',
+                            );
+                            const networkFeeXec = parsePrimaryXecDisplay(
+                                $cells.get(1)?.textContent ?? '',
+                            );
+                            cy.log(
+                                `[Firma slider] frac=${frac} sendFirma=${sendFirma} feeXec=${networkFeeXec}`,
+                            );
+                            expect(
+                                sendFirma,
+                                `Amount row = slider primary at frac ${frac}`,
+                            ).to.equal(parseFloat(valuePrimary));
+                            expect(
+                                networkFeeXec,
+                                `network fee above dust at frac ${frac}`,
+                            ).to.be.greaterThan(DUST_AMOUNT_XEC);
+                        });
+                });
+            });
+        });
+    });
+
     it('amount input updates slider and transaction details', () => {
         runWithChronik(CHRONIK_STUB, () => {
             visitWithWalletMnemonic(TEST_MNEMONIC, {
@@ -301,6 +404,68 @@ describe('Send', () => {
                         ).toFixed(2),
                         'amount + fee = total after input change',
                     ).to.equal(totalOut);
+                });
+        });
+    });
+
+    it('amount input updates slider and transaction details when Firma is selected', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            selectFirmaAsset();
+            openManualSendScreen();
+            cy.get('#recipient-address')
+                .clear()
+                .type(OTHER_RECIPIENT_ADDRESS)
+                .blur();
+
+            cy.get('#send-amount')
+                .invoke('attr', 'max')
+                .then(maxStr => {
+                    const max = parseFloat(String(maxStr));
+                    if (!Number.isFinite(max)) {
+                        throw new Error(
+                            `invalid send-amount max: ${String(maxStr)}`,
+                        );
+                    }
+                    const valuePrimary = (max / 2).toFixed(
+                        FIRMA_TOKEN.decimals,
+                    );
+                    cy.get('#send-amount')
+                        .clear()
+                        .type(valuePrimary)
+                        .should('have.value', valuePrimary);
+                    cy.get('#amount-slider')
+                        .invoke('val')
+                        .then(val => {
+                            expect(
+                                parseFloat(String(val)),
+                                'slider reflects amount input',
+                            ).to.equal(parseFloat(valuePrimary));
+                        });
+                    cy.get('#fee-display')
+                        .should('be.visible')
+                        .and('not.have.class', 'error');
+                    cy.get('#fee-display .fee-value-primary')
+                        .should('have.length', 2)
+                        .then($cells => {
+                            const sendFirma = parsePrimaryXecDisplay(
+                                $cells.get(0)?.textContent ?? '',
+                            );
+                            const networkFeeXec = parsePrimaryXecDisplay(
+                                $cells.get(1)?.textContent ?? '',
+                            );
+                            expect(
+                                sendFirma,
+                                'Amount row matches typed primary',
+                            ).to.equal(parseFloat(valuePrimary));
+                            expect(
+                                networkFeeXec,
+                                'network fee above dust after input change',
+                            ).to.be.greaterThan(DUST_AMOUNT_XEC);
+                        });
                 });
         });
     });
@@ -355,6 +520,110 @@ describe('Send', () => {
                 cy.get('#fee-display .fee-item.title').should(
                     'contain',
                     'Insufficient funds',
+                );
+            });
+        });
+
+        it('shows error message when amount is below minimum with Firma selected', () => {
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                    /** 8 amount digits so a sub-min Firma value is not truncated to zero. */
+                    primaryBalanceType: 'Fiat',
+                });
+                waitForMainLoaded();
+                selectFirmaAsset();
+                openManualSendScreen();
+                cy.get('#recipient-address')
+                    .clear()
+                    .type(WALLET_ADDRESS)
+                    .blur();
+                cy.get('#send-amount')
+                    .clear()
+                    .type(
+                        (MIN_FIRMA_SLIDER_PRIMARY / 10).toFixed(
+                            FIRMA_TOKEN.decimals + 1,
+                        ),
+                    )
+                    .blur();
+                cy.get('#fee-display').should('be.visible');
+                cy.get('#fee-display').should('have.class', 'error');
+                cy.get('#fee-display .fee-item.title').should(
+                    'contain',
+                    'Amount is too small',
+                );
+            });
+        });
+
+        it('shows insufficient funds when amount is above max spendable with Firma selected', () => {
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                selectFirmaAsset();
+                openManualSendScreen();
+                cy.get('#recipient-address')
+                    .clear()
+                    .type(WALLET_ADDRESS)
+                    .blur();
+                cy.get('#send-amount')
+                    .invoke('attr', 'max')
+                    .then(maxStr => {
+                        const max = parseFloat(String(maxStr));
+                        if (!Number.isFinite(max)) {
+                            throw new Error(
+                                `invalid send-amount max: ${String(maxStr)}`,
+                            );
+                        }
+                        const tooHigh = (max + 10_000).toFixed(
+                            FIRMA_TOKEN.decimals,
+                        );
+                        cy.get('#send-amount').clear().type(tooHigh);
+                    });
+                cy.get('#fee-display').should('be.visible');
+                cy.get('#fee-display').should('have.class', 'error');
+                cy.get('#fee-display .fee-item.title').should(
+                    'contain',
+                    'Insufficient funds',
+                );
+            });
+        });
+
+        it('shows insufficient XEC for network fee when Firma is selected and there is no native XEC UTXO', () => {
+            runWithChronik(CHRONIK_STUB_NO_XEC, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                selectFirmaAsset();
+                openManualSendScreen();
+                cy.get('#recipient-address')
+                    .clear()
+                    .type(WALLET_ADDRESS)
+                    .blur();
+                cy.get('#send-amount')
+                    .invoke('attr', 'max')
+                    .then(maxStr => {
+                        const max = parseFloat(String(maxStr));
+                        if (!Number.isFinite(max)) {
+                            throw new Error(
+                                `invalid send-amount max: ${String(maxStr)}`,
+                            );
+                        }
+                        const valuePrimary = (max / 2).toFixed(
+                            FIRMA_TOKEN.decimals,
+                        );
+                        cy.get('#send-amount')
+                            .clear()
+                            .type(valuePrimary)
+                            .should('have.value', valuePrimary);
+                    });
+                cy.get('#fee-display').should('be.visible');
+                cy.get('#fee-display').should('have.class', 'error');
+                cy.get('#fee-display .fee-item.title').should(
+                    'contain',
+                    'Insufficient XEC for network fee',
                 );
             });
         });
@@ -528,6 +797,79 @@ describe('Send', () => {
             });
 
             // After sending, the app jumps to the main screen.
+            cy.get('#main-screen').should('be.visible');
+        });
+    });
+
+    it('sends max Firma to self', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            stubChronikBroadcastsSuccess();
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+
+            selectFirmaAsset();
+
+            cy.get('#primary-balance').should($el => {
+                expect(normalizeBalanceText($el.text())).to.equal(
+                    '0.5000 FIRMA',
+                );
+            });
+
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
+
+            cy.get('#ticker-label').should('contain', 'FIRMA');
+            cy.get('#send-amount').should('have.attr', 'step', '0.0001');
+
+            cy.get('#fee-display')
+                .should('be.visible')
+                .and('not.have.class', 'error');
+            cy.get('#fee-display .fee-item.title').should(
+                'contain',
+                'Transaction Details',
+            );
+            cy.get('#fee-display').within(() => {
+                cy.contains('.fee-label', 'Amount:');
+                cy.contains('.fee-label', 'Network Fee');
+            });
+            cy.get('#send-amount')
+                .invoke('val')
+                .then(sendVal => {
+                    const expectedFirma = parsePrimaryXecDisplay(
+                        String(sendVal),
+                    );
+                    cy.get('#fee-display .fee-value-primary')
+                        .should('have.length', 2)
+                        .then($cells => {
+                            const primaryValues = Array.from($cells).map(cell =>
+                                parsePrimaryXecDisplay(cell.textContent ?? ''),
+                            );
+                            const [sendAmountFirma, networkFeeXec] =
+                                primaryValues;
+                            expect(
+                                sendAmountFirma,
+                                'fee amount row matches send field (max Firma)',
+                            ).to.equal(expectedFirma);
+                            // When sending to self, the gas amount is also sent
+                            // to self so it is not accounted
+                            expect(
+                                networkFeeXec,
+                                'transaction details network fee (XEC) above zero',
+                            ).to.be.greaterThan(0);
+                        });
+                });
+
+            cy.get('#confirm-send').should('not.be.disabled').click();
+
+            cy.wait('@chronikBroadcastsSuccess').then(interception => {
+                expect(interception.request.method).to.eq('POST');
+                expect(interception.request.url).to.match(
+                    /\/broadcast-txs(\?|$)/,
+                );
+            });
+
             cy.get('#main-screen').should('be.visible');
         });
     });

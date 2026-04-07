@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "یوه تېروتنه رامنځته شوه",
         "amountTooSmall": "مقدار ډېر لږ دی",
+        "cannotCoverFee": "د شبکې فیس لپاره د XEC کافی نه دی",
         "failedToLoadWallet": "د بټوی د راخلاصولو په وخت کی ستونزه رامنځته شوه",
         "failedToSendTransaction": "د پیسو لیږدول بریالی نشول",
         "insufficientFunds": "په کافی اندازه پیسی شتون نلری",

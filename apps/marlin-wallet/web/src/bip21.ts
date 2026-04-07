@@ -4,7 +4,8 @@
 
 import { config } from './config';
 import { isValidECashAddress } from './address';
-import { satsToXec } from './amount';
+import { atomsToUnit, unitToAtoms } from './amount';
+import { XEC_ASSET } from './supported-assets';
 
 /**
  * Result of parsing a BIP21 URI
@@ -33,9 +34,8 @@ export function createBip21Uri(address: string, amountSats?: number): string {
     // Add amount parameter if provided and positive
     if (amountSats && amountSats > 0) {
         // Convert satoshis to XEC using the standard conversion function
-        const amountXec = satsToXec(amountSats);
-        // Format with 2 decimal places
-        bip21Uri += `?amount=${amountXec.toFixed(2)}`;
+        const amountXec = atomsToUnit(amountSats, XEC_ASSET.decimals);
+        bip21Uri += `?amount=${amountXec.toFixed(XEC_ASSET.decimals)}`;
     }
 
     return bip21Uri;
@@ -87,8 +87,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
 
             // Validate that it's a valid number and positive
             if (!isNaN(amountXec) && amountXec > 0) {
-                // Convert XEC to satoshis (1 XEC = 100 sats) and ensure it's an integer
-                result.sats = Math.round(amountXec * 100);
+                result.sats = unitToAtoms(amountXec, XEC_ASSET.decimals);
             }
         }
 

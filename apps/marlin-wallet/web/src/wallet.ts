@@ -3,8 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import { Wallet } from 'ecash-wallet';
-import { Address, Script, OP_RETURN } from 'ecash-lib';
+import { Address, Script, DEFAULT_DUST_SATS, OP_RETURN } from 'ecash-lib';
 import { config } from './config';
+import type { AssetDefinition } from './supported-assets';
 
 // Wallet date that we can't retrieve from ecash-wallet.
 // For now it's just the mnemonic.
@@ -54,4 +55,38 @@ export function buildAction(
 
     // Create the action with outputs
     return wallet.action({ outputs });
+}
+
+/**
+ * Build a wallet action that sends tokens (ALP, SLP, etc.).
+ */
+export function buildTokenSendAction(
+    wallet: Wallet,
+    recipientAddress: string,
+    atoms: bigint,
+    token: AssetDefinition,
+) {
+    const { tokenId, tokenType } = token;
+    if (!tokenId || !tokenType) {
+        throw new Error('Token send requires tokenId and tokenType');
+    }
+    const recipientScript = Address.parse(recipientAddress).toScript();
+    return wallet.action({
+        outputs: [
+            { sats: 0n },
+            {
+                sats: DEFAULT_DUST_SATS,
+                script: recipientScript,
+                tokenId,
+                atoms,
+            },
+        ],
+        tokenActions: [
+            {
+                type: 'SEND',
+                tokenId,
+                tokenType,
+            },
+        ],
+    });
 }

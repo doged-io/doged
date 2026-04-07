@@ -3,13 +3,20 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import { webViewLog, webViewError } from './common';
-import { calculateTransactionAmountSats, satsToXec } from './amount';
+import { calculateTransactionAmountAtoms, atomsToUnit } from './amount';
 import { Wallet } from 'ecash-wallet';
 import { ChronikClient } from 'chronik-client';
 import { getAddress } from './wallet';
 import { AppSettings } from './settings';
-import { CryptoTicker, formatPrice } from 'ecash-price';
+import { formatPrice } from 'ecash-price';
 import type { MarlinPriceFetcher } from './price';
+import {
+    activeCryptoTicker,
+    activeAssetDecimals,
+    activeTokenId,
+    allowFiatForActiveAsset,
+    activeQuoteCurrency,
+} from './active-asset';
 
 // ============================================================================
 // TRANSACTION HISTORY MANAGER
@@ -170,11 +177,26 @@ export class TransactionHistoryManager {
             return;
         }
 
-        // Fetch price once for fiat conversion
-        const pricePerXec = await this.priceFetcher?.current({
-            source: CryptoTicker.XEC,
-            quote: this.appSettings.fiatCurrency,
-        });
+        const pricePerXec = allowFiatForActiveAsset()
+            ? await this.priceFetcher?.current({
+                  source: activeQuoteCurrency(),
+                  quote: this.appSettings.fiatCurrency,
+              })
+            : null;
+
+        const tokenId = activeTokenId();
+        const primaryTicker = activeCryptoTicker();
+        const tokenDecimals = activeAssetDecimals();
+
+        const xecFormatOptions = {
+            locale: this.appSettings.locale,
+            decimals: tokenDecimals,
+            alwaysShowSign: true,
+        };
+        const fiatFormatOptions = {
+            locale: this.appSettings.locale,
+            alwaysShowSign: true,
+        };
 
         // Process transactions in parallel for better performance
         const transactionHTML = await Promise.all(
@@ -200,56 +222,48 @@ export class TransactionHistoryManager {
                           )}`
                         : txid;
 
-                // Calculate real transaction amount
-                const amountSats = await calculateTransactionAmountSats(
+                const atoms = await calculateTransactionAmountAtoms(
                     this.ecashWallet,
                     this.chronik,
                     txid,
+                    tokenId,
                 );
-                const amountXEC = satsToXec(amountSats);
 
-                const isReceived = amountXEC >= 0;
+                if (tokenId !== null && atoms === 0) {
+                    return null;
+                }
+
+                const amountPrimary = atomsToUnit(atoms, activeAssetDecimals());
+
+                const isReceived = amountPrimary >= 0;
                 const amountClass = isReceived ? 'received' : 'sent';
 
-                const xecFormatOptions = {
-                    locale: this.appSettings.locale,
-                    decimals: 2,
-                    alwaysShowSign: true,
-                };
-                const fiatFormatOptions = {
-                    locale: this.appSettings.locale,
-                    alwaysShowSign: true,
-                };
-
-                // Format primary amount according to primary balance type.
-                // If the price is not available, always show as XEC.
                 const primaryAmount =
                     this.appSettings.primaryBalanceType === 'XEC' ||
                     pricePerXec === null
                         ? formatPrice(
-                              amountXEC,
-                              CryptoTicker.XEC,
+                              amountPrimary,
+                              primaryTicker,
                               xecFormatOptions,
                           )
                         : formatPrice(
-                              amountXEC * pricePerXec,
+                              amountPrimary * pricePerXec,
                               this.appSettings.fiatCurrency,
                               fiatFormatOptions,
                           );
 
-                // Format secondary amount if we have a price
                 let secondaryAmount: string = '';
                 if (pricePerXec !== null) {
                     secondaryAmount =
                         this.appSettings.primaryBalanceType === 'XEC'
                             ? formatPrice(
-                                  amountXEC * pricePerXec,
+                                  amountPrimary * pricePerXec,
                                   this.appSettings.fiatCurrency,
                                   fiatFormatOptions,
                               )
                             : formatPrice(
-                                  amountXEC,
-                                  CryptoTicker.XEC,
+                                  amountPrimary,
+                                  primaryTicker,
                                   xecFormatOptions,
                               );
                 }
@@ -284,7 +298,8 @@ export class TransactionHistoryManager {
             `;
         }
 
-        transactionList.innerHTML = transactionHTML.join('') + loadingIndicator;
+        transactionList.innerHTML =
+            transactionHTML.filter(t => t !== null).join('') + loadingIndicator;
     }
 
     // Show no transactions message

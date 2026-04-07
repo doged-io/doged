@@ -2,7 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import { CryptoTicker, PriceFetcher, PricePair } from 'ecash-price';
+import { CryptoTicker, Fiat, PriceFetcher, PricePair } from 'ecash-price';
+import { activeAssetTicker, activeQuoteCurrency } from './active-asset';
 
 export class MarlinPriceFetcher {
     private priceFetcher: PriceFetcher;
@@ -23,12 +24,24 @@ export class MarlinPriceFetcher {
      * possible.
      */
     async current(pair: PricePair): Promise<number | null> {
+        // Special case for Firma: this is a stablecoin pegged to USD, so we
+        // can simply return 1.0 for the price if the user is using USD as the
+        // quote currency.
+        if (
+            activeAssetTicker() === 'FIRMA' &&
+            pair.source.toString() === activeQuoteCurrency().toString() &&
+            pair.quote.toString() === Fiat.USD.toString()
+        ) {
+            return 1.0;
+        }
+
         await this.priceFetcher.currentPairs(
             this.sourceCurrencies.map(source => ({
                 source,
                 quote: pair.quote,
             })),
         );
+
         return await this.priceFetcher.current(pair);
     }
 }

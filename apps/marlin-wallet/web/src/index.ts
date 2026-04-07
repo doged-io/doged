@@ -10,7 +10,6 @@ import { Wallet } from 'ecash-wallet';
 import { ChronikClient, ConnectionStrategy } from 'chronik-client';
 import {
     CoinGeckoProvider,
-    CryptoTicker,
     Fiat,
     PriceFetcher,
     ProviderStrategy,
@@ -26,7 +25,15 @@ import {
     webViewError,
     isReactNativeWebView,
 } from './common';
-import { satsToXec } from './amount';
+import { atomsToUnit } from './amount';
+import {
+    activeCryptoTicker,
+    activeAssetTicker,
+    activeAssetDecimals,
+    activeQuoteCurrency,
+    activeTokenId,
+    allowFiatForActiveAsset,
+} from './active-asset';
 import { getAddress, WalletData } from './wallet';
 import { storeMnemonic, loadMnemonic, generateMnemonic } from './mnemonic';
 import { config } from './config';
@@ -40,6 +47,7 @@ import { MainScreen } from './screen/main';
 import { paybuttonDeepLinkToBip21Uri } from './paybutton';
 import { changeLocale, initI18n, t } from './i18n';
 import { MarlinPriceFetcher } from './price';
+import { SUPPORTED_ASSETS } from './supported-assets';
 
 // Styles
 import './main.css';
@@ -335,9 +343,10 @@ async function subscribeToAddress(address: string) {
                                 break;
                             }
                             webViewLog(
-                                `Added pending transaction: ${satsToXec(
-                                    tx.amountSats,
-                                )} ${config.ticker} for tx ${txid}`,
+                                `Added pending transaction: ${atomsToUnit(
+                                    tx.amountAtoms,
+                                    activeAssetDecimals(),
+                                )} ${activeAssetTicker()} for tx ${txid}`,
                             );
                             break;
                         }
@@ -367,9 +376,10 @@ async function subscribeToAddress(address: string) {
                                         break;
                                     }
                                     webViewLog(
-                                        `Added pending confirmed transaction: ${satsToXec(
-                                            tx.amountSats,
-                                        )} ${config.ticker} for tx ${txid}`,
+                                        `Added pending confirmed transaction: ${atomsToUnit(
+                                            tx.amountAtoms,
+                                            activeAssetDecimals(),
+                                        )} ${activeAssetTicker()} for tx ${txid}`,
                                     );
                                 }
                             }
@@ -490,10 +500,12 @@ async function syncWallet() {
         }
 
         // Update the display
-        const pricePerXec = await priceFetcher?.current({
-            source: CryptoTicker.XEC,
-            quote: appSettings.fiatCurrency,
-        });
+        const pricePerXec = allowFiatForActiveAsset()
+            ? await priceFetcher?.current({
+                  source: activeQuoteCurrency(),
+                  quote: appSettings.fiatCurrency,
+              })
+            : null;
         if (mainScreen) {
             mainScreen.updateTransitionalBalance(
                 transactionManager.getTransitionalBalanceSats(),
@@ -501,7 +513,10 @@ async function syncWallet() {
             );
             mainScreen.updateAvailableBalanceDisplay(
                 0,
-                satsToXec(transactionManager.getAvailableBalanceSats()),
+                atomsToUnit(
+                    transactionManager.getAvailableBalanceSats(),
+                    activeAssetDecimals(),
+                ),
                 pricePerXec,
                 false,
             );
@@ -544,6 +559,22 @@ async function syncWallet() {
 // INITIALIZATION FUNCTIONS
 // ============================================================================
 
+function refreshStaticTickerLabels(): void {
+    const ticker = activeAssetTicker();
+    const ids = [
+        'ticker-balance',
+        'ticker-label',
+        'ticker-slider-min',
+        'ticker-slider-max',
+    ];
+    for (const elementId of ids) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = ticker;
+        }
+    }
+}
+
 // Initialize the app when DOM is ready
 async function initializeApp() {
     webViewLog('Initializing app...');
@@ -564,19 +595,7 @@ async function initializeApp() {
     // Initialize navigation
     navigation = new Navigation();
 
-    // Initialize ticker symbols in HTML
-    const tickerElements = [
-        'ticker-balance',
-        'ticker-label',
-        'ticker-slider-min',
-        'ticker-slider-max',
-    ];
-    for (const elementId of tickerElements) {
-        const el = document.getElementById(elementId);
-        if (el) {
-            el.textContent = config.ticker;
-        }
-    }
+    refreshStaticTickerLabels();
 
     // Set the back arrow icons
     for (const iconEl of document.querySelectorAll('.back-arrow-icon')) {
@@ -651,7 +670,7 @@ async function initializeApp() {
             ProviderStrategy.FALLBACK,
             60 * 1000,
         ),
-        [CryptoTicker.XEC],
+        SUPPORTED_ASSETS.map(asset => asset.quoteCurrency),
     );
 
     try {
@@ -669,43 +688,67 @@ async function initializeApp() {
         navigation,
         appSettings,
         priceFetcher,
+        primaryBalanceTicker: activeCryptoTicker(),
+        primaryBalanceDecimals: activeAssetDecimals(),
         onQRScanResult: async result => {
             if (sendScreen) {
                 await sendScreen.show(result);
             }
         },
+        onAssetSwitched: async () => {
+            if (!transactionManager || !ecashWallet || !mainScreen) {
+                return;
+            }
+            transactionManager.setTokenId(activeTokenId());
+            await syncWallet();
+            await mainScreen.updateWallet(
+                ecashWallet,
+                transactionManager.getAvailableBalanceSats(),
+                transactionManager.getTransitionalBalanceSats(),
+            );
+        },
+        refreshStaticTickerLabels,
     });
 
     // Initialize TransactionManager
     transactionManager = new TransactionManager({
         ecashWallet,
         chronik,
+        tokenId: activeTokenId(),
         onBalanceChange: async (
-            fromAvailableBalanceSats: number,
-            toAvailableBalanceSats: number,
-            transitionalBalanceSats: number,
+            fromAvailableBalanceAtoms: number,
+            toAvailableBalanceAtoms: number,
+            transitionalBalanceAtoms: number,
         ) => {
             if (!mainScreen) {
                 return;
             }
 
-            const pricePerXec = await priceFetcher?.current({
-                source: CryptoTicker.XEC,
-                quote: appSettings.fiatCurrency,
-            });
+            const pricePerXec = allowFiatForActiveAsset()
+                ? await priceFetcher?.current({
+                      source: activeQuoteCurrency(),
+                      quote: appSettings.fiatCurrency,
+                  })
+                : null;
 
             mainScreen.updateTransitionalBalance(
-                transitionalBalanceSats,
+                transitionalBalanceAtoms,
                 pricePerXec,
             );
 
-            const fromXec = satsToXec(fromAvailableBalanceSats);
-            const toXec = satsToXec(toAvailableBalanceSats);
+            const fromUnits = atomsToUnit(
+                fromAvailableBalanceAtoms,
+                activeAssetDecimals(),
+            );
+            const toUnits = atomsToUnit(
+                toAvailableBalanceAtoms,
+                activeAssetDecimals(),
+            );
             mainScreen.updateAvailableBalanceDisplay(
-                fromXec,
-                toXec,
+                fromUnits,
+                toUnits,
                 pricePerXec,
-                fromXec !== toXec,
+                fromUnits !== toUnits,
             );
         },
     });
@@ -723,36 +766,44 @@ async function initializeApp() {
 
     // Register callbacks
     settingsScreen.onPrimaryBalanceChange(async () => {
-        // Refresh balance display with new primary/secondary order
         if (ecashWallet && mainScreen && transactionManager) {
-            const currentXec = satsToXec(
+            const currentPrimary = atomsToUnit(
                 transactionManager.getAvailableBalanceSats(),
+                activeAssetDecimals(),
             );
+            const pricePerXec =
+                allowFiatForActiveAsset() && priceFetcher
+                    ? await priceFetcher.current({
+                          source: activeQuoteCurrency(),
+                          quote: appSettings.fiatCurrency,
+                      })
+                    : null;
             mainScreen.updateAvailableBalanceDisplay(
-                currentXec,
-                currentXec,
-                await priceFetcher?.current({
-                    source: CryptoTicker.XEC,
-                    quote: appSettings.fiatCurrency,
-                }),
+                currentPrimary,
+                currentPrimary,
+                pricePerXec,
                 false,
             );
         }
     });
 
     settingsScreen.onFiatCurrencyChange(async () => {
-        // Refresh balance display with new fiat currency
         if (ecashWallet && mainScreen && transactionManager) {
-            const currentXec = satsToXec(
+            const currentPrimary = atomsToUnit(
                 transactionManager.getAvailableBalanceSats(),
+                activeAssetDecimals(),
             );
+            const pricePerXec =
+                allowFiatForActiveAsset() && priceFetcher
+                    ? await priceFetcher.current({
+                          source: activeQuoteCurrency(),
+                          quote: appSettings.fiatCurrency,
+                      })
+                    : null;
             mainScreen.updateAvailableBalanceDisplay(
-                currentXec,
-                currentXec,
-                await priceFetcher?.current({
-                    source: CryptoTicker.XEC,
-                    quote: appSettings.fiatCurrency,
-                }),
+                currentPrimary,
+                currentPrimary,
+                pricePerXec,
                 false,
             );
         }
@@ -766,16 +817,21 @@ async function initializeApp() {
             mainScreen.updateAddressDisplay();
 
             if (ecashWallet && transactionManager) {
-                const currentXec = satsToXec(
+                const currentPrimary = atomsToUnit(
                     transactionManager.getAvailableBalanceSats(),
+                    activeAssetDecimals(),
                 );
+                const pricePerXec =
+                    allowFiatForActiveAsset() && priceFetcher
+                        ? await priceFetcher.current({
+                              source: activeQuoteCurrency(),
+                              quote: appSettings.fiatCurrency,
+                          })
+                        : null;
                 mainScreen.updateAvailableBalanceDisplay(
-                    currentXec,
-                    currentXec,
-                    await priceFetcher?.current({
-                        source: CryptoTicker.XEC,
-                        quote: appSettings.fiatCurrency,
-                    }),
+                    currentPrimary,
+                    currentPrimary,
+                    pricePerXec,
                     false,
                 );
             }
@@ -814,6 +870,8 @@ async function initializeApp() {
             navigation.showScreen(Screen.Main);
         });
     }
+
+    mainScreen.initAssetPicker();
 
     // Hide loading screen on success
     hideLoadingScreen();

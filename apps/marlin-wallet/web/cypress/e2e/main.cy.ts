@@ -5,6 +5,7 @@
 import {
     normalizeBalanceText,
     openSettingsFromMain,
+    selectFirmaAsset,
     visitFresh,
     waitForMainLoaded,
 } from '../fixture/common';
@@ -174,5 +175,76 @@ describe('Main screen', () => {
         });
 
         cy.get('#qr-code').should('not.contain', 'QR Code generation failed');
+    });
+
+    it('switches primary balance unit between XEC and Firma (zero balance)', () => {
+        visitFresh();
+        waitForMainLoaded();
+
+        cy.get('#primary-balance')
+            .invoke('text')
+            .then(t => normalizeBalanceText(t))
+            .should('eq', '0.00 XEC');
+
+        selectFirmaAsset();
+
+        cy.get('#primary-balance').should($el => {
+            expect(normalizeBalanceText($el.text())).to.equal('0.0000 FIRMA');
+        });
+
+        cy.get('#asset-picker-btn').click();
+        cy.get('#asset-picker-menu').should('have.class', 'open');
+        cy.get('#asset-picker-menu [data-asset="xec"]').click();
+        cy.get('#asset-picker-menu').should('not.have.class', 'open');
+
+        cy.get('#primary-balance').should($el => {
+            expect(normalizeBalanceText($el.text())).to.equal('0.00 XEC');
+        });
+    });
+
+    it('inverts primary and secondary balances with Firma selected (crypto vs fiat)', () => {
+        visitFresh();
+        waitForMainLoaded();
+
+        selectFirmaAsset();
+
+        cy.get('#primary-balance').should($el => {
+            expect(normalizeBalanceText($el.text())).to.equal('0.0000 FIRMA');
+        });
+        cy.get('#secondary-balance').should($el => {
+            expect(normalizeBalanceText($el.text())).to.equal('$0.00');
+        });
+
+        openSettingsFromMain();
+        cy.get('#primary-balance-toggle').should('not.be.checked');
+        cy.get('#primary-balance-toggle').check({ force: true });
+        cy.get('#primary-balance-toggle').should('be.checked');
+
+        returnToMainFromSettings();
+
+        cy.get('#primary-balance')
+            .invoke('text')
+            .then(t => normalizeBalanceText(t))
+            .should('eq', '$0.00');
+        cy.get('#secondary-balance')
+            .should('be.visible')
+            .invoke('text')
+            .then(t => normalizeBalanceText(t))
+            .should('eq', '0.0000 FIRMA');
+
+        openSettingsFromMain();
+        cy.get('#primary-balance-toggle').uncheck({ force: true });
+        cy.get('#primary-balance-toggle').should('not.be.checked');
+
+        returnToMainFromSettings();
+
+        cy.get('#primary-balance')
+            .invoke('text')
+            .then(t => normalizeBalanceText(t))
+            .should('eq', '0.0000 FIRMA');
+        cy.get('#secondary-balance')
+            .invoke('text')
+            .then(t => normalizeBalanceText(t))
+            .should('eq', '$0.00');
     });
 });

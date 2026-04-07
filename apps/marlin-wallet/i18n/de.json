@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Ein Fehler ist aufgetreten",
         "amountTooSmall": "Betrag zu klein",
+        "cannotCoverFee": "Unzureichendes XEC für die Netzwerkgebühr",
         "failedToLoadWallet": "Wallet konnte nicht geladen werden",
         "failedToSendTransaction": "Transaktion konnte nicht gesendet werden",
         "insufficientFunds": "Unzureichende Mittel",

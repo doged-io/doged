@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Error don occur",
         "amountTooSmall": "Amount too small",
+        "cannotCoverFee": "XEC no reach for network fee",
         "failedToLoadWallet": "E no gree load wallet",
         "failedToSendTransaction": "E no gree send transaction",
         "insufficientFunds": "Ur money no reach",

@@ -7,8 +7,18 @@ import { AppSettings } from '../settings';
 import { Wallet } from 'ecash-wallet';
 import { CryptoTicker, formatPrice } from 'ecash-price';
 import type { MarlinPriceFetcher } from '../price';
-import { config } from '../config';
-import { satsToXec } from '../amount';
+import {
+    activeAssetDecimals,
+    activeAssetDefinition,
+    activeAssetTicker,
+    activeCryptoTicker,
+    activeQuoteCurrency,
+    allowFiatForActiveAsset,
+    setActiveAsset,
+} from '../active-asset';
+import { coinIconUrlForAssetKey } from '../coin-icon-url';
+import { SUPPORTED_ASSETS } from '../supported-assets';
+import { atomsToUnit } from '../amount';
 import { copyAddress, isValidECashAddress } from '../address';
 import { getAddress } from '../wallet';
 import {
@@ -25,9 +35,17 @@ export interface MainScreenParams {
     navigation: Navigation;
     appSettings: AppSettings;
     priceFetcher: MarlinPriceFetcher | null;
+    /** Ticker used for primary crypto balance formatting */
+    primaryBalanceTicker: CryptoTicker;
+    /** Decimal places when showing the primary crypto amount */
+    primaryBalanceDecimals: number;
     onQRScanResult: (
         result?: Bip21ParseResult | { address: string },
     ) => Promise<void>;
+    /** Sync wallet state after the user picks a different asset (e.g. TransactionManager + UTXOs). */
+    onAssetSwitched: () => Promise<void>;
+    /** Updates shared ticker labels (main + send) when the active asset changes. */
+    refreshStaticTickerLabels: () => void;
 }
 
 interface UpdateBalanceElementParams {
@@ -52,12 +70,121 @@ export class MainScreen {
         manualEntryBtn: HTMLButtonElement;
         closeCameraBtn: HTMLButtonElement;
         cameraModal: HTMLElement;
+        assetPickerBtn: HTMLButtonElement;
+        assetPickerMenu: HTMLElement;
     };
 
     constructor(params: MainScreenParams) {
         this.params = params;
         this.assertUIElements();
         this.initializeEventListeners();
+    }
+
+    updateBalanceDisplayConfig(
+        primaryBalanceTicker: CryptoTicker,
+        primaryBalanceDecimals: number,
+    ): void {
+        this.params.primaryBalanceTicker = primaryBalanceTicker;
+        this.params.primaryBalanceDecimals = primaryBalanceDecimals;
+    }
+
+    /**
+     * Rebuild asset picker options from `SUPPORTED_ASSETS`.
+     */
+    private populateAssetPickerMenu(): void {
+        const { assetPickerMenu: menu } = this.ui;
+        menu.replaceChildren();
+        for (const def of SUPPORTED_ASSETS) {
+            const opt = document.createElement('button');
+            opt.type = 'button';
+            opt.className = 'asset-picker-option';
+            opt.dataset.asset = def.key;
+            opt.setAttribute('role', 'option');
+            const assetLabel = `${def.displayName} (${def.ticker})`;
+            const iconUrl = coinIconUrlForAssetKey(def.key);
+            if (iconUrl) {
+                const img = document.createElement('img');
+                img.src = iconUrl;
+                img.alt = assetLabel;
+                img.className = 'asset-picker-coin-icon';
+                img.decoding = 'async';
+                opt.appendChild(img);
+            }
+            const label = document.createElement('span');
+            label.textContent = assetLabel;
+            opt.appendChild(label);
+            menu.appendChild(opt);
+        }
+    }
+
+    private setAssetPickerButtonContent(): void {
+        const btn = this.ui.assetPickerBtn;
+        btn.replaceChildren();
+        const def = activeAssetDefinition();
+        const assetLabel = `${def.displayName} (${def.ticker})`;
+        const iconUrl = coinIconUrlForAssetKey(def.key);
+        if (!iconUrl) {
+            btn.setAttribute('aria-label', assetLabel);
+            return;
+        }
+        btn.removeAttribute('aria-label');
+        const img = document.createElement('img');
+        img.src = iconUrl;
+        img.alt = assetLabel;
+        img.className = 'asset-picker-btn-icon';
+        img.decoding = 'async';
+        btn.appendChild(img);
+    }
+
+    /**
+     * Wire the asset picker dropdown (main screen header).
+     */
+    initAssetPicker(): void {
+        this.populateAssetPickerMenu();
+        const { assetPickerBtn: btn, assetPickerMenu: menu } = this.ui;
+
+        this.setAssetPickerButtonContent();
+
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            menu.classList.remove('open');
+        });
+
+        menu.addEventListener('click', async e => {
+            e.stopPropagation();
+            const opt = (e.target as HTMLElement).closest(
+                '[data-asset]',
+            ) as HTMLElement | null;
+            if (!opt || !opt.dataset.asset) {
+                return;
+            }
+            menu.classList.remove('open');
+            const key = opt.dataset.asset;
+            const def = SUPPORTED_ASSETS.find(a => a.key === key);
+            if (!def) {
+                // Should never happen
+                return;
+            }
+            setActiveAsset({ def });
+            try {
+                await this.applyAssetSwitch();
+            } catch (error) {
+                webViewError('Failed to switch asset:', error);
+            }
+        });
+    }
+
+    private async applyAssetSwitch(): Promise<void> {
+        this.updateBalanceDisplayConfig(
+            activeCryptoTicker(),
+            activeAssetDecimals(),
+        );
+        this.params.refreshStaticTickerLabels();
+        this.setAssetPickerButtonContent();
+        await this.params.onAssetSwitched();
     }
 
     // Update wallet reference and display (called when wallet is reloaded)
@@ -74,14 +201,16 @@ export class MainScreen {
 
         this.updateAddressDisplay();
 
-        const pricePerXec = await this.params.priceFetcher?.current({
-            source: CryptoTicker.XEC,
-            quote: this.params.appSettings.fiatCurrency,
-        });
+        const pricePerXec = allowFiatForActiveAsset()
+            ? await this.params.priceFetcher?.current({
+                  source: activeQuoteCurrency(),
+                  quote: this.params.appSettings.fiatCurrency,
+              })
+            : null;
 
         this.updateAvailableBalanceDisplay(
             0,
-            satsToXec(availableBalanceSats),
+            atomsToUnit(availableBalanceSats, activeAssetDecimals()),
             pricePerXec,
             false,
         );
@@ -107,7 +236,7 @@ export class MainScreen {
         animate: boolean = true,
     ): void {
         webViewLog(
-            `Available balance updated from ${fromXec} ${config.ticker} to ${toXec} ${config.ticker}`,
+            `Available balance updated from ${fromXec} ${activeAssetTicker()} to ${toXec} ${activeAssetTicker()}`,
         );
 
         this.updateBalanceElement({
@@ -147,11 +276,14 @@ export class MainScreen {
         }
 
         const type = transitionalBalanceSats > 0 ? 'receive' : 'spend';
-        const transitionalXec = satsToXec(transitionalBalanceSats);
+        const transitionalXec = atomsToUnit(
+            transitionalBalanceSats,
+            activeAssetDecimals(),
+        );
 
-        const xecFormatOptions = {
+        const cryptoFormatOptions = {
             locale: this.params.appSettings.locale,
-            decimals: 2,
+            decimals: this.params.primaryBalanceDecimals,
             alwaysShowSign: true,
         };
         const fiatFormatOptions = {
@@ -164,8 +296,8 @@ export class MainScreen {
             pricePerXec === null
                 ? formatPrice(
                       transitionalXec,
-                      CryptoTicker.XEC,
-                      xecFormatOptions,
+                      this.params.primaryBalanceTicker,
+                      cryptoFormatOptions,
                   )
                 : formatPrice(
                       transitionalXec * pricePerXec,
@@ -207,6 +339,12 @@ export class MainScreen {
                 'close-camera',
             ) as HTMLButtonElement,
             cameraModal: document.getElementById('camera-modal') as HTMLElement,
+            assetPickerBtn: document.getElementById(
+                'asset-picker-btn',
+            ) as HTMLButtonElement,
+            assetPickerMenu: document.getElementById(
+                'asset-picker-menu',
+            ) as HTMLElement,
         };
 
         if (
@@ -218,7 +356,9 @@ export class MainScreen {
             !this.ui.scanBtn ||
             !this.ui.manualEntryBtn ||
             !this.ui.closeCameraBtn ||
-            !this.ui.cameraModal
+            !this.ui.cameraModal ||
+            !this.ui.assetPickerBtn ||
+            !this.ui.assetPickerMenu
         ) {
             webViewError('Missing required UI elements for main screen');
             throw new Error('Missing required UI elements for main screen');
@@ -318,10 +458,14 @@ export class MainScreen {
         const formatValue =
             pricePerXec === null
                 ? (value: number) => {
-                      return formatPrice(value, CryptoTicker.XEC, {
-                          locale: this.params.appSettings.locale,
-                          decimals: 2,
-                      });
+                      return formatPrice(
+                          value,
+                          this.params.primaryBalanceTicker,
+                          {
+                              locale: this.params.appSettings.locale,
+                              decimals: this.params.primaryBalanceDecimals,
+                          },
+                      );
                   }
                 : (value: number) => {
                       return formatPrice(

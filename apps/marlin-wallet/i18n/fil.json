@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "May naganap na error",
         "amountTooSmall": "Masyadong maliit ang halaga",
+        "cannotCoverFee": "Hindi sapat ang XEC para sa bayad sa network",
         "failedToLoadWallet": "Nabigo na i-load ang wallet",
         "failedToSendTransaction": "Nabigo na magpadala ng transaction",
         "insufficientFunds": "Kulang ang pondo",

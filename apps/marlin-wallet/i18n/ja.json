@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "エラーが発生しました",
         "amountTooSmall": "金額が小さすぎます",
+        "cannotCoverFee": "ネットワーク手数料を支払うためのXECが不足しています",
         "failedToLoadWallet": "ウォレットの読み込みが失敗しました",
         "failedToSendTransaction": "トランザクションの送信が失敗しました",
         "insufficientFunds": "残高不足",

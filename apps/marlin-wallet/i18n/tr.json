@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Bir hata oluştu",
         "amountTooSmall": "Tutar çok küçük",
+        "cannotCoverFee": "Ağ ücreti için yetersiz XEC",
         "failedToLoadWallet": "Cüzdan yüklenemedi",
         "failedToSendTransaction": "İşlem gönderilemedi",
         "insufficientFunds": "Yetersiz bakiye",

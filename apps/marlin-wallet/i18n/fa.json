@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "خطایی رخ داد",
         "amountTooSmall": "مبلغ بسیار کم است",
+        "cannotCoverFee": "XEC برای پرداخت کارمزد شبکه کافی نیست",
         "failedToLoadWallet": "بارگذاری کیف پول ناموفق بود",
         "failedToSendTransaction": "ارسال تراکنش ناموفق بود",
         "insufficientFunds": "موجودی ناکافی",

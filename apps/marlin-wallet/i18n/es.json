@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "Ocurrió un error",
         "amountTooSmall": "La cantidad es demasiado pequeña",
+        "cannotCoverFee": "XEC insuficiente para la comisión de red",
         "failedToLoadWallet": "Error al cargar la billetera",
         "failedToSendTransaction": "Error al enviar la transacción",
         "insufficientFunds": "Fondos insuficientes",

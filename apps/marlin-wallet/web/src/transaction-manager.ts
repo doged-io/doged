@@ -4,13 +4,13 @@
 
 import { Wallet } from 'ecash-wallet';
 import { ChronikClient } from 'chronik-client';
-import { calculateTransactionAmountSats, satsToXec } from './amount';
-import { config } from './config';
+import { calculateTransactionAmountAtoms, atomsToUnit } from './amount';
+import { activeAssetDecimals, activeAssetTicker } from './active-asset';
 import { webViewError, webViewLog } from './common';
 
 interface PendingTransaction {
-    // Positive = receive, negative = send, 0 = receive (in satoshis)
-    amountSats: number;
+    /** satoshis (XEC) or token atoms */
+    amountAtoms: number;
     state: 'pending_finalization' | 'finalized';
 }
 
@@ -23,26 +23,30 @@ export enum PostConsensusFinalizationResult {
 export interface TransactionManagerParams {
     ecashWallet: Wallet | null;
     chronik: ChronikClient;
+    /** null = track XEC (sats); otherwise track this token's atoms */
+    tokenId: string | null;
     onBalanceChange: (
-        fromAvailableBalanceSats: number,
-        toAvailableBalanceSats: number,
-        transitionalBalanceSats: number,
+        fromAvailableBalanceAtoms: number,
+        toAvailableBalanceAtoms: number,
+        transitionalBalanceAtoms: number,
     ) => Promise<void>;
 }
 
 export class TransactionManager {
     private params: TransactionManagerParams;
+    private tokenId: string | null;
 
     // Balance state - separate available and transitional (not finalized yet)
     // balances (in satoshis)
-    private availableBalanceSats = 0; // Only final amounts in satoshis
-    private transitionalBalanceSats = 0; // Only non final amounts in satoshis
+    private availableBalanceAtoms = 0;
+    private transitionalBalanceAtoms = 0;
 
     // Pending transactions - transactions that are not yet finalized
     private pendingAmounts: { [txid: string]: PendingTransaction } = {};
 
     constructor(params: TransactionManagerParams) {
         this.params = params;
+        this.tokenId = params.tokenId;
         this.sync();
     }
 
@@ -52,13 +56,18 @@ export class TransactionManager {
         this.sync();
     }
 
-    // Get current balance state
+    setTokenId(tokenId: string | null): void {
+        this.tokenId = tokenId;
+        this.pendingAmounts = {};
+        this.sync();
+    }
+
     getAvailableBalanceSats(): number {
-        return this.availableBalanceSats;
+        return this.availableBalanceAtoms;
     }
 
     getTransitionalBalanceSats(): number {
-        return this.transitionalBalanceSats;
+        return this.transitionalBalanceAtoms;
     }
 
     sync(): void {
@@ -66,23 +75,70 @@ export class TransactionManager {
             return;
         }
 
-        const spendableUtxos = this.params.ecashWallet.spendableSatsOnlyUtxos();
+        if (this.tokenId === null) {
+            this.syncXecBalances();
+        } else {
+            this.syncTokenBalances(this.tokenId);
+        }
+
+        this.transitionalBalanceAtoms = this.calculateTransitionalBalance();
+    }
+
+    private syncXecBalances(): void {
+        const wallet = this.params.ecashWallet!;
+        const spendableUtxos = wallet.spendableSatsOnlyUtxos();
         const finalUtxos = spendableUtxos.filter(utxo => utxo.isFinal);
-        this.availableBalanceSats = Number(
+        this.availableBalanceAtoms = Number(
             finalUtxos.reduce((sum, utxo) => sum + utxo.sats, 0n),
         );
 
         const nonFinalUtxos = spendableUtxos.filter(utxo => !utxo.isFinal);
+        const byTxId = new Map<string, bigint>();
         for (const utxo of nonFinalUtxos) {
-            this.pendingAmounts[utxo.outpoint.txid] = {
-                amountSats: Number(utxo.sats),
+            const id = utxo.outpoint.txid;
+            byTxId.set(id, (byTxId.get(id) ?? 0n) + utxo.sats);
+        }
+        this.pendingAmounts = {};
+        for (const [txid, sats] of byTxId) {
+            this.pendingAmounts[txid] = {
+                amountAtoms: Number(sats),
                 state: 'pending_finalization',
             };
         }
-        this.transitionalBalanceSats = this.calculateTransitionalBalance();
     }
 
-    // Check if transaction is pending
+    private syncTokenBalances(tokenId: string): void {
+        const wallet = this.params.ecashWallet!;
+        const spendable = wallet
+            .spendableUtxos()
+            .filter(
+                utxo =>
+                    utxo.token?.tokenId === tokenId && !utxo.token.isMintBaton,
+            );
+        const finalUtxos = spendable.filter(utxo => utxo.isFinal);
+        this.availableBalanceAtoms = Number(
+            finalUtxos.reduce(
+                (sum, utxo) => sum + (utxo.token?.atoms ?? 0n),
+                0n,
+            ),
+        );
+
+        const nonFinal = spendable.filter(utxo => !utxo.isFinal);
+        const byTxId = new Map<string, number>();
+        for (const utxo of nonFinal) {
+            const id = utxo.outpoint.txid;
+            const atoms = Number(utxo.token?.atoms ?? 0n);
+            byTxId.set(id, (byTxId.get(id) ?? 0) + atoms);
+        }
+        this.pendingAmounts = {};
+        for (const [txid, amt] of byTxId) {
+            this.pendingAmounts[txid] = {
+                amountAtoms: amt,
+                state: 'pending_finalization',
+            };
+        }
+    }
+
     isPendingTransaction(txid: string): boolean {
         return txid in this.pendingAmounts;
     }
@@ -94,21 +150,17 @@ export class TransactionManager {
         const tx = await this.addPendingAmount(txid, 'pending_finalization');
 
         if (tx !== false) {
-            // Update transitional balance
-            this.transitionalBalanceSats = this.calculateTransitionalBalance();
-
-            // Notify balance change
+            this.transitionalBalanceAtoms = this.calculateTransitionalBalance();
             await this.params.onBalanceChange(
-                this.availableBalanceSats,
-                this.availableBalanceSats,
-                this.transitionalBalanceSats,
+                this.availableBalanceAtoms,
+                this.availableBalanceAtoms,
+                this.transitionalBalanceAtoms,
             );
         }
 
         return tx;
     }
 
-    // Finalize pre-consensus transaction
     async finalizePreConsensus(txid: string): Promise<void> {
         let tx: PendingTransaction | false;
         if (this.pendingAmounts[txid]) {
@@ -124,15 +176,15 @@ export class TransactionManager {
             tx = pending_tx;
         }
 
-        await this.finalizeTransaction(tx.amountSats);
+        await this.finalizeTransaction(tx.amountAtoms);
         webViewLog(
-            `Pre-consensus finalized transaction ${txid}: ${satsToXec(
-                tx.amountSats,
-            )} ${config.ticker} moved to available balance, state set to finalized`,
+            `Pre-consensus finalized transaction ${txid}: ${atomsToUnit(
+                tx.amountAtoms,
+                activeAssetDecimals(),
+            )} ${activeAssetTicker()} moved to available balance, state set to finalized`,
         );
     }
 
-    // Finalize post-consensus transaction
     async finalizePostConsensus(
         txid: string,
     ): Promise<PostConsensusFinalizationResult> {
@@ -147,7 +199,7 @@ export class TransactionManager {
                 : PostConsensusFinalizationResult.ALREADY_FINALIZED;
         if (status === PostConsensusFinalizationResult.NEWLY_FINALIZED) {
             tx.state = 'finalized';
-            await this.finalizeTransaction(tx.amountSats);
+            await this.finalizeTransaction(tx.amountAtoms);
             webViewLog(`Post-consensus finalized pending transaction ${txid}`);
         }
 
@@ -163,19 +215,14 @@ export class TransactionManager {
     // Invalidate a transaction (remove from pending)
     async invalidateTransaction(txid: string): Promise<void> {
         delete this.pendingAmounts[txid];
-
-        // Update transitional balance
-        this.transitionalBalanceSats = this.calculateTransitionalBalance();
-
-        // Notify balance change
+        this.transitionalBalanceAtoms = this.calculateTransitionalBalance();
         await this.params.onBalanceChange(
-            this.availableBalanceSats,
-            this.availableBalanceSats,
-            this.transitionalBalanceSats,
+            this.availableBalanceAtoms,
+            this.availableBalanceAtoms,
+            this.transitionalBalanceAtoms,
         );
     }
 
-    // Add pending transaction amount
     private async addPendingAmount(
         txid: string,
         state: 'pending_finalization' | 'finalized',
@@ -192,52 +239,48 @@ export class TransactionManager {
             return false;
         }
 
-        const txAmountSats = await calculateTransactionAmountSats(
+        const txAmountAtoms = await calculateTransactionAmountAtoms(
             this.params.ecashWallet,
             this.params.chronik,
             txid,
+            this.tokenId,
         );
-        if (txAmountSats == 0) {
+        if (txAmountAtoms === 0) {
             webViewLog(`Transaction ${txid} has no amount, ignoring`);
             return false;
         }
 
         this.pendingAmounts[txid] = {
-            amountSats: txAmountSats,
+            amountAtoms: txAmountAtoms,
             state,
         };
         webViewLog(
-            `Added pending transaction ${txid}: ${satsToXec(txAmountSats)} ${
-                config.ticker
-            } (${txAmountSats} sats, state: ${state})`,
+            `Added pending transaction ${txid}: ${atomsToUnit(
+                txAmountAtoms,
+                activeAssetDecimals(),
+            )} ${activeAssetTicker()} (${txAmountAtoms} atoms, state: ${state})`,
         );
 
         return this.pendingAmounts[txid];
     }
 
-    // Finalize a transaction
-    private async finalizeTransaction(amountSats: number): Promise<void> {
-        const fromAvailableBalanceSats = this.availableBalanceSats;
-        this.availableBalanceSats += amountSats;
-
-        // Calculate transitional balance
-        this.transitionalBalanceSats = this.calculateTransitionalBalance();
-
-        // Notify balance change
+    private async finalizeTransaction(amountAtoms: number): Promise<void> {
+        const fromAvailable = this.availableBalanceAtoms;
+        this.availableBalanceAtoms += amountAtoms;
+        this.transitionalBalanceAtoms = this.calculateTransitionalBalance();
         await this.params.onBalanceChange(
-            fromAvailableBalanceSats,
-            this.availableBalanceSats,
-            this.transitionalBalanceSats,
+            fromAvailable,
+            this.availableBalanceAtoms,
+            this.transitionalBalanceAtoms,
         );
     }
 
-    // Calculate transitional balance (helper function)
     private calculateTransitionalBalance(): number {
         let balance = 0;
         for (const tx of Object.values(this.pendingAmounts).filter(
-            tx => tx.state === 'pending_finalization',
+            t => t.state === 'pending_finalization',
         )) {
-            balance += tx.amountSats;
+            balance += tx.amountAtoms;
         }
         return balance;
     }

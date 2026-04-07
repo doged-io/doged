@@ -98,6 +98,7 @@ describe('transaction-manager.ts', function () {
         transactionManager = new TransactionManager({
             ecashWallet: wallet,
             chronik: mockChronik as unknown as ChronikClient,
+            tokenId: null,
             onBalanceChange,
         });
     });
@@ -151,6 +152,7 @@ describe('transaction-manager.ts', function () {
             const manager = new TransactionManager({
                 ecashWallet: newWallet,
                 chronik: mockChronik as unknown as ChronikClient,
+                tokenId: null,
                 onBalanceChange,
             });
 
@@ -168,6 +170,7 @@ describe('transaction-manager.ts', function () {
             const manager = new TransactionManager({
                 ecashWallet: null,
                 chronik: mockChronik as unknown as ChronikClient,
+                tokenId: null,
                 onBalanceChange,
             });
 
@@ -188,7 +191,7 @@ describe('transaction-manager.ts', function () {
 
             expect(result).to.not.equal(false);
             if (result !== false) {
-                expect(result.amountSats).to.equal(amountSats);
+                expect(result.amountAtoms).to.equal(amountSats);
                 expect(result.state).to.equal('pending_finalization');
             }
 
@@ -264,6 +267,7 @@ describe('transaction-manager.ts', function () {
             const manager = new TransactionManager({
                 ecashWallet: null,
                 chronik: mockChronik as unknown as ChronikClient,
+                tokenId: null,
                 onBalanceChange,
             });
 

@@ -18,6 +18,7 @@
     "errors": {
         "anErrorOccurred": "حدث خطأ",
         "amountTooSmall": "المبلغ صغير جدًا",
+        "cannotCoverFee": "XEC غير كافٍ لرسوم الشبكة",
         "failedToLoadWallet": "فشل تحميل المحفظة",
         "failedToSendTransaction": "فشل إرسال المعاملة",
         "insufficientFunds": "رصيد غير كافٍ",
