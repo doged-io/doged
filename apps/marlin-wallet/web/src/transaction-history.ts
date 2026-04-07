@@ -8,7 +8,8 @@ import { Wallet } from 'ecash-wallet';
 import { ChronikClient } from 'chronik-client';
 import { getAddress } from './wallet';
 import { AppSettings } from './settings';
-import { CryptoTicker, XECPrice, formatPrice } from 'ecash-price';
+import { CryptoTicker, formatPrice } from 'ecash-price';
+import type { MarlinPriceFetcher } from './price';
 
 // ============================================================================
 // TRANSACTION HISTORY MANAGER
@@ -25,13 +26,13 @@ export class TransactionHistoryManager {
     private chronik: ChronikClient;
     private address: string;
     private appSettings: AppSettings;
-    private priceFetcher: XECPrice | null;
+    private priceFetcher: MarlinPriceFetcher | null;
 
     constructor(
         wallet: Wallet,
         chronik: ChronikClient,
         appSettings: AppSettings,
-        priceFetcher: XECPrice | null,
+        priceFetcher: MarlinPriceFetcher | null,
     ) {
         this.ecashWallet = wallet;
         this.chronik = chronik;
@@ -170,9 +171,10 @@ export class TransactionHistoryManager {
         }
 
         // Fetch price once for fiat conversion
-        const pricePerXec = await this.priceFetcher?.current(
-            this.appSettings.fiatCurrency,
-        );
+        const pricePerXec = await this.priceFetcher?.current({
+            source: CryptoTicker.XEC,
+            quote: this.appSettings.fiatCurrency,
+        });
 
         // Process transactions in parallel for better performance
         const transactionHTML = await Promise.all(

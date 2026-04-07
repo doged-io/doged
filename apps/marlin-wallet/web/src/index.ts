@@ -9,9 +9,10 @@
 import { Wallet } from 'ecash-wallet';
 import { ChronikClient, ConnectionStrategy } from 'chronik-client';
 import {
-    XECPrice,
     CoinGeckoProvider,
+    CryptoTicker,
     Fiat,
+    PriceFetcher,
     ProviderStrategy,
 } from 'ecash-price';
 import { TransactionHistoryManager } from './transaction-history';
@@ -38,6 +39,7 @@ import { SendScreen } from './screen/send';
 import { MainScreen } from './screen/main';
 import { paybuttonDeepLinkToBip21Uri } from './paybutton';
 import { changeLocale, initI18n, t } from './i18n';
+import { MarlinPriceFetcher } from './price';
 
 // Styles
 import './main.css';
@@ -67,7 +69,7 @@ let wsEndpoint: any = null;
 let chronik: ChronikClient;
 
 // Price API instance for fetching real-time XEC prices
-let priceFetcher: XECPrice | null = null;
+let priceFetcher: MarlinPriceFetcher | null = null;
 
 // Create global instance of TransactionHistoryManager
 let transactionHistory: TransactionHistoryManager | null = null;
@@ -488,9 +490,10 @@ async function syncWallet() {
         }
 
         // Update the display
-        const pricePerXec = await priceFetcher?.current(
-            appSettings.fiatCurrency,
-        );
+        const pricePerXec = await priceFetcher?.current({
+            source: CryptoTicker.XEC,
+            quote: appSettings.fiatCurrency,
+        });
         if (mainScreen) {
             mainScreen.updateTransitionalBalance(
                 transactionManager.getTransitionalBalanceSats(),
@@ -642,10 +645,13 @@ async function initializeApp() {
 
     // Initialize price API with CoinGecko provider
     // Cache prices for 60 seconds to reduce API calls
-    priceFetcher = new XECPrice(
-        [new CoinGeckoProvider()],
-        ProviderStrategy.FALLBACK,
-        60 * 1000,
+    priceFetcher = new MarlinPriceFetcher(
+        new PriceFetcher(
+            [new CoinGeckoProvider()],
+            ProviderStrategy.FALLBACK,
+            60 * 1000,
+        ),
+        [CryptoTicker.XEC],
     );
 
     try {
@@ -683,9 +689,10 @@ async function initializeApp() {
                 return;
             }
 
-            const pricePerXec = await priceFetcher?.current(
-                appSettings.fiatCurrency,
-            );
+            const pricePerXec = await priceFetcher?.current({
+                source: CryptoTicker.XEC,
+                quote: appSettings.fiatCurrency,
+            });
 
             mainScreen.updateTransitionalBalance(
                 transitionalBalanceSats,
@@ -724,7 +731,10 @@ async function initializeApp() {
             mainScreen.updateAvailableBalanceDisplay(
                 currentXec,
                 currentXec,
-                await priceFetcher?.current(appSettings.fiatCurrency),
+                await priceFetcher?.current({
+                    source: CryptoTicker.XEC,
+                    quote: appSettings.fiatCurrency,
+                }),
                 false,
             );
         }
@@ -739,7 +749,10 @@ async function initializeApp() {
             mainScreen.updateAvailableBalanceDisplay(
                 currentXec,
                 currentXec,
-                await priceFetcher?.current(appSettings.fiatCurrency),
+                await priceFetcher?.current({
+                    source: CryptoTicker.XEC,
+                    quote: appSettings.fiatCurrency,
+                }),
                 false,
             );
         }
@@ -759,7 +772,10 @@ async function initializeApp() {
                 mainScreen.updateAvailableBalanceDisplay(
                     currentXec,
                     currentXec,
-                    await priceFetcher?.current(appSettings.fiatCurrency),
+                    await priceFetcher?.current({
+                        source: CryptoTicker.XEC,
+                        quote: appSettings.fiatCurrency,
+                    }),
                     false,
                 );
             }

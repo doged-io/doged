@@ -7,7 +7,8 @@ import { AppSettings } from '../settings';
 import { DEFAULT_DUST_SATS } from 'ecash-lib';
 import { ChronikClient } from 'chronik-client';
 import { Wallet } from 'ecash-wallet';
-import { CryptoTicker, XECPrice, formatPrice } from 'ecash-price';
+import { CryptoTicker, formatPrice } from 'ecash-price';
+import type { MarlinPriceFetcher } from '../price';
 import {
     calculateMaxSpendableAmount,
     estimateTransactionFee,
@@ -27,7 +28,7 @@ export interface SendScreenParams {
     ecashWallet: Wallet;
     navigation: Navigation;
     appSettings: AppSettings;
-    priceFetcher: XECPrice | null;
+    priceFetcher: MarlinPriceFetcher | null;
     syncWallet: () => Promise<void>;
 }
 
@@ -78,9 +79,10 @@ export class SendScreen {
 
         // Fetch current price once upon screen opening
         this.currentPricePerXec =
-            (await this.params.priceFetcher?.current(
-                this.params.appSettings.fiatCurrency,
-            )) ?? null;
+            (await this.params.priceFetcher?.current({
+                source: CryptoTicker.XEC,
+                quote: this.params.appSettings.fiatCurrency,
+            })) ?? null;
         // Since the price and the settings won't change during the lifetime of
         // the screen, we can cache some parameters for simplicity.
         this.useXecPrimary =

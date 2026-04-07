@@ -5,7 +5,8 @@
 import { Navigation } from '../navigation';
 import { AppSettings } from '../settings';
 import { Wallet } from 'ecash-wallet';
-import { CryptoTicker, XECPrice, formatPrice } from 'ecash-price';
+import { CryptoTicker, formatPrice } from 'ecash-price';
+import type { MarlinPriceFetcher } from '../price';
 import { config } from '../config';
 import { satsToXec } from '../amount';
 import { copyAddress, isValidECashAddress } from '../address';
@@ -23,7 +24,7 @@ export interface MainScreenParams {
     ecashWallet: Wallet | null;
     navigation: Navigation;
     appSettings: AppSettings;
-    priceFetcher: XECPrice | null;
+    priceFetcher: MarlinPriceFetcher | null;
     onQRScanResult: (
         result?: Bip21ParseResult | { address: string },
     ) => Promise<void>;
@@ -73,9 +74,10 @@ export class MainScreen {
 
         this.updateAddressDisplay();
 
-        const pricePerXec = await this.params.priceFetcher?.current(
-            this.params.appSettings.fiatCurrency,
-        );
+        const pricePerXec = await this.params.priceFetcher?.current({
+            source: CryptoTicker.XEC,
+            quote: this.params.appSettings.fiatCurrency,
+        });
 
         this.updateAvailableBalanceDisplay(
             0,
