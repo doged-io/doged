@@ -43,6 +43,9 @@ import {
 import { MockChronikClient } from 'mock-chronik-client';
 import {
     Wallet,
+    CONSOLIDATE_UTXOS_BATCHSIZE,
+    MAX_TX_SERSIZE_ERROR_CODE,
+    MaxTxSersizeError,
     validateTokenActions,
     getActionTotals,
     getTokenType,
@@ -7633,9 +7636,17 @@ describe('getMaxP2pkhOutputs', () => {
 
     context('Error cases', () => {
         it('Throws error when inputs (just) exceeds MAX_TX_SERSIZE', () => {
-            expect(() => getMaxP2pkhOutputs(709, 0)).to.throw(
-                `Total inputs exceed maxTxSersize of ${MAX_TX_SERSIZE} bytes. You must consolidate utxos to fulfill this action.`,
-            );
+            let caught: unknown;
+            try {
+                getMaxP2pkhOutputs(709, 0);
+            } catch (e) {
+                caught = e;
+            }
+            expect(caught).to.be.instanceOf(MaxTxSersizeError);
+            const mx = caught as MaxTxSersizeError;
+            expect(mx.code).to.equal(MAX_TX_SERSIZE_ERROR_CODE);
+            expect(mx.reason).to.equal('TOTAL_INPUTS_EXCEED');
+            expect(mx.maxTxSersize).to.equal(MAX_TX_SERSIZE);
         });
 
         it('Does not throw when inputs are less than MAX_TX_SERSIZE', () => {
@@ -7665,6 +7676,126 @@ describe('getMaxP2pkhOutputs', () => {
             // Lower size gives lower result
             expect(resultWithLower).to.equal(1466);
         });
+    });
+});
+
+describe('WalletAction.build auto-consolidate for maxTxSersize', () => {
+    it('prepends consolidation when a token SEND requires more than CONSOLIDATE_UTXOS_BATCHSIZE inputs', async () => {
+        const mockChronik = new MockChronikClient();
+        const testWallet = Wallet.fromSk(
+            DUMMY_SK,
+            mockChronik as unknown as ChronikClient,
+        );
+        mockChronik.setBlockchainInfo({
+            tipHash: DUMMY_TIPHASH,
+            tipHeight: DUMMY_TIPHEIGHT,
+        });
+        const inputCount = CONSOLIDATE_UTXOS_BATCHSIZE + 42;
+        const tokenUtxos: WalletUtxo[] = Array.from(
+            { length: inputCount },
+            (_, i) => ({
+                ...getDummySlpUtxo(1n),
+                outpoint: {
+                    txid: i.toString(16).padStart(64, '0'),
+                    outIdx: 0,
+                },
+                sats: 546n,
+            }),
+        );
+        const fuel: WalletUtxo = {
+            ...DUMMY_UTXO,
+            sats: 10_000_000n,
+            outpoint: { txid: 'ee'.repeat(32), outIdx: 0 },
+        };
+        mockChronik.setUtxosByAddress(DUMMY_ADDRESS, [...tokenUtxos, fuel]);
+        await testWallet.sync();
+
+        const built = testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        atoms: BigInt(inputCount),
+                        isMintBaton: false,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: DUMMY_TOKENID_SLP_TOKEN_TYPE_FUNGIBLE,
+                        tokenType: SLP_TOKEN_TYPE_FUNGIBLE,
+                    },
+                ],
+            })
+            .build();
+
+        expect(built.txs).to.have.length(4);
+
+        // The first consolidation tx maxes out p2pkh inputs
+        expect(built.txs[0].inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+        expect(built.txs[0].serSize()).to.equal(99972);
+
+        expect(built.txs[1].inputs).to.have.length(43);
+        expect(built.txs[1].serSize()).to.equal(6205);
+
+        expect(built.txs[2].inputs).to.have.length(3);
+        expect(built.txs[2].serSize()).to.equal(467);
+
+        // And now we only need 1 token utxo for the actual action ... and also an XEC utxo
+        expect(built.txs[3].inputs).to.have.length(2);
+        expect(built.txs[3].serSize()).to.equal(424);
+    });
+
+    it('prepends consolidation when an XEC send hits maxTxSersize from too many inputs', async () => {
+        const mockChronik = new MockChronikClient();
+        const testWallet = Wallet.fromSk(
+            DUMMY_SK,
+            mockChronik as unknown as ChronikClient,
+        );
+        mockChronik.setBlockchainInfo({
+            tipHash: DUMMY_TIPHASH,
+            tipHeight: DUMMY_TIPHEIGHT,
+        });
+        const inputCount = CONSOLIDATE_UTXOS_BATCHSIZE + 50;
+        const perUtxo = 10000n;
+        const xecUtxos: WalletUtxo[] = Array.from(
+            { length: inputCount },
+            (_, i) => ({
+                ...DUMMY_UTXO,
+                sats: perUtxo,
+                outpoint: {
+                    txid: i.toString(16).padStart(64, '0'),
+                    outIdx: 0,
+                },
+            }),
+        );
+        mockChronik.setUtxosByAddress(DUMMY_ADDRESS, xecUtxos);
+        await testWallet.sync();
+        const sendSats = perUtxo * BigInt(inputCount) - 500000n;
+        const built = testWallet
+            .action({
+                outputs: [{ sats: sendSats, script: MOCK_DESTINATION_SCRIPT }],
+            })
+            .build();
+
+        // We have 2 consolidation txs for this case
+        expect(built.txs).to.have.length(3);
+
+        // The first consolidation tx maxes out p2pkh inputs
+        expect(built.txs[0].inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+        expect(built.txs[0].serSize()).to.equal(99874);
+
+        // Change from prev consolidation tx and the 50 utxos on top
+        expect(built.txs[1].inputs).to.have.length(51);
+        expect(built.txs[1].serSize()).to.equal(7235);
+
+        // Now we only need 1 utxo for the actual action
+        expect(built.txs[2].inputs).to.have.length(1);
+        // Which is accordingly quite small indeed
+        expect(built.txs[2].serSize()).to.equal(219);
     });
 });
 

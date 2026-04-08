@@ -337,3 +337,7 @@ Exactly **one** cosigner entry must include a secret key per instance (this part
 # 5.2.0
 
 - Support `p2sh` multisig (ECDSA only) [D19777](https://reviews.bitcoinabc.org/D19777)
+
+# 5.3.0
+
+- Automatically consolidate utxos if a tx fails due to a maxSerSize error not related to too many outputs [D19800](https://reviews.bitcoinabc.org/D19800)

@@ -110,6 +110,58 @@ const DUMMY_PRELIMINARY_TXID = '99'.repeat(32);
  */
 export const CONSOLIDATE_UTXOS_BATCHSIZE = 708;
 
+/**
+ * Stable `code` on {@link MaxTxSersizeError} for programmatic handling (e.g. UI, logging).
+ */
+export const MAX_TX_SERSIZE_ERROR_CODE = 'ECASH_WALLET_MAX_TX_SERSIZE' as const;
+
+/**
+ * Why {@link MaxTxSersizeError} was thrown — distinguishes consolidate-eligible cases.
+ */
+export type MaxTxSersizeReason =
+    /** Dummy tx for output budgeting has too many p2pkh inputs for the size limit. */
+    | 'TOTAL_INPUTS_EXCEED'
+    /** Token action cannot use chained split; tx serialization exceeds limit. */
+    | 'TOKEN_TX_EXCEEDS_CANNOT_CHAIN';
+
+/**
+ * Thrown when an action cannot be built within `MAX_TX_SERSIZE` or `action.maxTxSersize`.
+ *
+ * Prefer `instanceof MaxTxSersizeError` or `err.code === MAX_TX_SERSIZE_ERROR_CODE` over
+ * matching {@link Error.message}.
+ */
+export class MaxTxSersizeError extends Error {
+    public readonly code = MAX_TX_SERSIZE_ERROR_CODE;
+
+    constructor(
+        message: string,
+        public readonly reason: MaxTxSersizeReason,
+        public readonly maxTxSersize: number,
+    ) {
+        super(message);
+        this.name = 'MaxTxSersizeError';
+    }
+}
+
+/**
+ * @returns Whether {@link err} is a {@link MaxTxSersizeError} from this library.
+ */
+export function isMaxTxSersizeError(err: unknown): err is MaxTxSersizeError {
+    return err instanceof MaxTxSersizeError;
+}
+
+/**
+ * Optional parameters for {@link WalletAction.build}.
+ */
+export interface BuildWalletActionOptions {
+    /**
+     * If true, do not run automatic UTXO consolidation when the build fails with
+     * a maxTxSersize error. Used internally by {@link Wallet.consolidateUtxos}
+     * to avoid recursive auto-consolidation.
+     */
+    skipAutoConsolidateOnMaxTxSize?: boolean;
+}
+
 /** Optional config for consolidateUtxos */
 export interface ConsolidateUtxosConfig {
     /** If provided, consolidate only token UTXOs with this tokenId */
@@ -473,7 +525,7 @@ export class Wallet extends WalletBase<KeypairData> {
                 tokenActions: [{ type: 'SEND', tokenId, tokenType }],
                 requiredUtxos: batch.map(u => u.outpoint),
                 feePerKb,
-            }).build();
+            }).build(ALL_BIP143, { skipAutoConsolidateOnMaxTxSize: true });
 
             signedTxs.push(builtAction.txs[0]);
         }
@@ -1264,6 +1316,7 @@ export class WalletAction {
 
         const dustSats = this.action.dustSats || DEFAULT_DUST_SATS;
         const feePerKb = this.action.feePerKb || DEFAULT_FEE_SATS_PER_KB;
+        const maxTxSersize = this.action.maxTxSersize || MAX_TX_SERSIZE;
 
         // Get token send outputs for this tokenId
         const tokenSendOutputs = this.action.outputs.filter(
@@ -1708,6 +1761,24 @@ export class WalletAction {
                 dustSats,
             });
 
+            /**
+             * TOKEN_SEND_EXCEEDS_MAX_OUTPUTS is built here instead of via the single-tx path, so we
+             * never hit the usual post-build maxTxSersize check. TxAlpha still spends every selected
+             * token input, so it can exceed the broadcast limit even when each per-tx output batch is
+             * protocol-valid. Throw before UTXO updates so {@link WalletAction.build} can run
+             * auto-consolidate (same as other MaxTxSersizeError cases) and retry with fewer inputs.
+             */
+            if (i === 0) {
+                const txSerSize = signedTx.serSize();
+                if (txSerSize > maxTxSersize) {
+                    throw new MaxTxSersizeError(
+                        `Chained token send TxAlpha exceeds maxTxSersize ${maxTxSersize} (actual ${txSerSize}).`,
+                        'TOTAL_INPUTS_EXCEED',
+                        maxTxSersize,
+                    );
+                }
+            }
+
             // Get txid for this tx
             const txid = toHexRev(sha256d(signedTx.ser()));
 
@@ -1837,8 +1908,10 @@ export class WalletAction {
         // Only expected in edge case as pure token send txs are restricted by OP_RETURN limits
         // long before they hit maxTxSersize
         if (this.action.tokenActions && this.action.tokenActions.length > 0) {
-            throw new Error(
+            throw new MaxTxSersizeError(
                 `This token tx exceeds maxTxSersize ${maxTxSersize} and cannot be split into a chained tx. Try breaking it into smaller txs, e.g. by handling the token outputs in their own txs.`,
+                'TOKEN_TX_EXCEEDS_CANNOT_CHAIN',
+                maxTxSersize,
             );
         }
 
@@ -2387,10 +2460,102 @@ export class WalletAction {
      * not final at build time, and multiple cosigner instances share the same address.
      * Call {@link ActionableWallet.sync} after a successful {@link BuiltAction.broadcast}
      * (and before building another spend) so UTXOs match the chain.
+     *
+     * **{@link Wallet} only:** If building fails with a `maxTxSersize` error and the
+     * failure is consistent with too many inputs, ecash-wallet runs
+     * {@link Wallet.consolidateUtxos} (token ids from SEND/BURN actions, then XEC-only)
+     * once, then retries `_build` a single time. The returned {@link BuiltAction} may
+     * include consolidation txs before the user action. If `_build` still fails with
+     * `maxTxSersize`, the error is rethrown (no further auto-consolidate rounds).
+     * Multisig and watch-only wallets do not auto-consolidate.
      */
-    public build(sighash = ALL_BIP143): BuiltAction {
+    public build(
+        sighash = ALL_BIP143,
+        options: BuildWalletActionOptions = {},
+    ): BuiltAction {
         const updateUtxos = !this._wallet.isMultisig;
-        return this._build({ sighash, updateUtxos });
+        const { skipAutoConsolidateOnMaxTxSize = false } = options;
+
+        if (
+            skipAutoConsolidateOnMaxTxSize ||
+            !this._walletSupportsAutoConsolidate()
+        ) {
+            return this._build({ sighash, updateUtxos });
+        }
+
+        const state: { walletAction: WalletAction } = { walletAction: this };
+        const consolidationPrefix: Tx[] = [];
+
+        try {
+            return state.walletAction._build({ sighash, updateUtxos });
+        } catch (err) {
+            if (!isMaxTxSersizeError(err)) {
+                throw err;
+            }
+            const newTxs =
+                state.walletAction._optimisticConsolidateExcessInputs();
+            if (newTxs.length === 0) {
+                throw err;
+            }
+            consolidationPrefix.push(...newTxs);
+            state.walletAction = WalletAction.fromAction(
+                state.walletAction._wallet,
+                state.walletAction.action,
+                state.walletAction.selectUtxosResult.config,
+            );
+        }
+
+        const built = state.walletAction._build({ sighash, updateUtxos });
+        return new BuiltAction(
+            this._wallet,
+            [...consolidationPrefix, ...built.txs],
+            built.feePerKb,
+            state.walletAction,
+        );
+    }
+
+    /**
+     * {@link Wallet} exposes {@link Wallet.consolidateUtxos}; multisig and watch-only do not.
+     */
+    private _walletSupportsAutoConsolidate(): boolean {
+        if (this._wallet.isMultisig) {
+            return false;
+        }
+        const w = this._wallet as ActionableWallet & {
+            consolidateUtxos?: Wallet['consolidateUtxos'];
+        };
+        return typeof w.consolidateUtxos === 'function';
+    }
+
+    /**
+     * Optimistically merge spendable UTXOs (token SEND/BURN tokenIds, then XEC-only)
+     * via {@link Wallet.consolidateUtxos}. Mutates the wallet utxo set like other builds.
+     */
+    private _optimisticConsolidateExcessInputs(): Tx[] {
+        const w = this._wallet as Wallet;
+        const txs: Tx[] = [];
+        const tokenIds = new Set<string>();
+        for (const ta of this.action.tokenActions ?? []) {
+            if (ta.type === 'SEND' || ta.type === 'BURN') {
+                if (ta.tokenId !== payment.GENESIS_TOKEN_ID_PLACEHOLDER) {
+                    tokenIds.add(ta.tokenId);
+                }
+            }
+        }
+        for (const tokenId of tokenIds) {
+            const tokenUtxoCount = w
+                .spendableUtxos()
+                .filter(
+                    u => u.token?.tokenId === tokenId && !u.token?.isMintBaton,
+                ).length;
+            if (tokenUtxoCount > 1) {
+                txs.push(...w.consolidateUtxos({ tokenId }).build().txs);
+            }
+        }
+        if (w.spendableSatsOnlyUtxos().length > 1) {
+            txs.push(...w.consolidateUtxos().build().txs);
+        }
+        return txs;
     }
 
     /**
@@ -6053,8 +6218,10 @@ export const getMaxP2pkhOutputs = (
         // Unlikely to run into this as we need 709 inputs
         // For now, ecash-wallet does not support automatic utxo-consolidation
         // But, it would not be too complicated to add this support
-        throw new Error(
+        throw new MaxTxSersizeError(
             `Total inputs exceed maxTxSersize of ${maxTxSersize} bytes. You must consolidate utxos to fulfill this action.`,
+            'TOTAL_INPUTS_EXCEED',
+            maxTxSersize,
         );
     }
 

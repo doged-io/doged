@@ -44,7 +44,7 @@ import {
 } from 'ecash-lib';
 import * as wordlist from 'ecash-lib/wordlists/english.json';
 import { TestRunner } from 'ecash-lib/dist/test/testRunner.js';
-import { Wallet } from '../src/wallet';
+import { Wallet, CONSOLIDATE_UTXOS_BATCHSIZE } from '../src/wallet';
 import { GENESIS_TOKEN_ID_PLACEHOLDER } from 'ecash-lib/dist/payment';
 
 use(chaiAsPromised);
@@ -3910,5 +3910,191 @@ describe('HD Wallet can build and broadcast on regtest', () => {
                 u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
             );
         expect(tokenUtxosAfter).to.have.length(1);
+    });
+
+    it('auto-consolidates then broadcasts XEC-only send when HD wallet has 1000 XEC UTXOs', async function () {
+        const testWallet = createHDWallet(310, chronik);
+        const receiveAddr = testWallet.getReceiveAddress(0);
+        const receiveScript = Script.fromAddress(receiveAddr);
+
+        const NUM_UTXOS = 1000;
+        const satsPerUtxo = 10000n;
+        const xecOutputs = Array(NUM_UTXOS).fill(satsPerUtxo);
+        await runner.sendToScript(xecOutputs, receiveScript);
+        await testWallet.sync();
+        expect(testWallet.spendableSatsOnlyUtxos()).to.have.length(NUM_UTXOS);
+
+        const sendSats = satsPerUtxo * BigInt(NUM_UTXOS) - 800000n;
+        const resp = await testWallet
+            .action({
+                outputs: [{ sats: sendSats, script: MOCK_DESTINATION_SCRIPT }],
+            })
+            .build()
+            .broadcast();
+
+        expect(resp.success).to.equal(true);
+
+        // User spend is completed in 3 txs (2 consolidation + 1 send)
+        expect(resp.broadcasted).to.have.length(3);
+
+        // The first tx begins consolidating utxos
+        const firstTx = await chronik.tx(resp.broadcasted[0]);
+        expect(firstTx.inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+
+        // The second tx continues consolidating utxos
+        const secondTx = await chronik.tx(resp.broadcasted[1]);
+        expect(secondTx.inputs).to.have.length(293);
+
+        // The third tx fulfills the action with a single input
+        const thirdTx = await chronik.tx(resp.broadcasted[2]);
+        expect(thirdTx.inputs).to.have.length(1);
+        expect(thirdTx.outputs).to.have.length(2);
+        expect(thirdTx.outputs[0].sats).to.equal(sendSats);
+        expect(thirdTx.outputs[0].outputScript).to.include(
+            MOCK_DESTINATION_SCRIPT.toHex(),
+        );
+    });
+
+    it('auto-consolidates then broadcasts ALP SEND when HD wallet has 1000 token UTXOs (one tokenId)', async function () {
+        const testWallet = createHDWallet(311, chronik);
+        const receiveAddr = testWallet.getReceiveAddress(0);
+        await runner.sendToScript(
+            1_000_000_00n,
+            Script.fromAddress(receiveAddr),
+        );
+        await testWallet.sync();
+
+        const TARGET_TOKEN_UTXOS = 1000;
+        const genesisMintQty = BigInt(TARGET_TOKEN_UTXOS);
+        const alpGenesisInfo = {
+            tokenTicker: 'H1K',
+            tokenName: 'HD auto consolidate 1k',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+        await testWallet.sync();
+
+        const fanoutResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(TARGET_TOKEN_UTXOS).fill({
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: 1n,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(fanoutResp.success).to.equal(true);
+        await testWallet.sync();
+
+        const tokenUtxosBefore = testWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosBefore).to.have.length(TARGET_TOKEN_UTXOS);
+
+        const sendResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: alpTokenId,
+                        atoms: BigInt(TARGET_TOKEN_UTXOS),
+                        isMintBaton: false,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+
+        expect(sendResp.success).to.equal(true);
+        expect(sendResp.broadcasted).to.have.length(4);
+
+        // The first tx begins consolidating utxos
+        const firstTx = await chronik.tx(sendResp.broadcasted[0]);
+        expect(firstTx.inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+
+        // The second tx continues consolidating utxos
+        const secondTx = await chronik.tx(sendResp.broadcasted[1]);
+        expect(secondTx.inputs).to.have.length(293);
+
+        // The third tx finishes consolidating utxos
+        const thirdTx = await chronik.tx(sendResp.broadcasted[2]);
+        expect(thirdTx.inputs).to.have.length(3);
+
+        // The fourth tx fulfills the action with a single input
+        const fourthTx = await chronik.tx(sendResp.broadcasted[3]);
+        // XEC and token inputs
+        expect(fourthTx.inputs).to.have.length(2);
+
+        // Token OP_RETURN, token output, token change
+        expect(fourthTx.outputs).to.have.length(3);
+        expect(fourthTx.outputs[0].sats).to.equal(0n); // OP_RETURN
+        expect(fourthTx.outputs[1].sats).to.equal(546n); // token output
+        expect(fourthTx.outputs[1].token!.tokenId).to.equal(alpTokenId);
+        expect(fourthTx.outputs[1].token!.atoms).to.equal(
+            BigInt(TARGET_TOKEN_UTXOS),
+        );
+        expect(fourthTx.outputs[2].sats).to.equal(99807242n); // XEC change
+        expect(typeof fourthTx.outputs[2].token).to.equal('undefined');
+
+        await testWallet.sync();
+        const tokenUtxosAfter = testWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosAfter).to.have.length(0);
     });
 });

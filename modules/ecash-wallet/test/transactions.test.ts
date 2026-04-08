@@ -4521,4 +4521,613 @@ describe('Wallet can build and broadcast on regtest', () => {
         await wallet.sync();
         expect(wallet.spendableSatsOnlyUtxos()).to.have.length(1);
     });
+
+    it('auto-consolidates then broadcasts XEC-only send when wallet has 1000 XEC UTXOs', async function () {
+        const testWallet = Wallet.fromSk(fromHex('3a'.repeat(32)), chronik);
+        const NUM_UTXOS = 1000;
+        const satsPerUtxo = 10000n;
+        const xecOutputs = Array(NUM_UTXOS).fill(satsPerUtxo);
+        await runner.sendToScript(xecOutputs, testWallet.script);
+        await testWallet.sync();
+        expect(testWallet.spendableSatsOnlyUtxos()).to.have.length(NUM_UTXOS);
+
+        const sendSats = satsPerUtxo * BigInt(NUM_UTXOS) - 800000n;
+        const resp = await testWallet
+            .action({
+                outputs: [{ sats: sendSats, script: MOCK_DESTINATION_SCRIPT }],
+            })
+            .build()
+            .broadcast();
+
+        expect(resp.success).to.equal(true);
+
+        // User spend is completed in 3 txs (2 consolidation + 1 send)
+        expect(resp.broadcasted).to.have.length(3);
+
+        // The first tx begins consolidating utxos
+        const firstTx = await chronik.tx(resp.broadcasted[0]);
+        expect(firstTx.inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+
+        // The second tx continues consolidating utxos
+        const secondTx = await chronik.tx(resp.broadcasted[1]);
+        expect(secondTx.inputs).to.have.length(293);
+
+        // The third tx fulfills the action with a single input
+        const thirdTx = await chronik.tx(resp.broadcasted[2]);
+        expect(thirdTx.inputs).to.have.length(1);
+        expect(thirdTx.outputs).to.have.length(2);
+        expect(thirdTx.outputs[0].sats).to.equal(sendSats);
+        expect(thirdTx.outputs[0].outputScript).to.include(
+            MOCK_DESTINATION_SCRIPT.toHex(),
+        );
+    });
+
+    it('auto-consolidates then broadcasts ALP SEND when wallet has 1000 token UTXOs (one tokenId)', async function () {
+        const testWallet = Wallet.fromSk(fromHex('3b'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, testWallet.script);
+        await testWallet.sync();
+
+        const TARGET_TOKEN_UTXOS = 1000;
+        const genesisMintQty = BigInt(TARGET_TOKEN_UTXOS);
+        const alpGenesisInfo = {
+            tokenTicker: 'A1K',
+            tokenName: 'Auto consolidate 1k inputs',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        const alpTokenId = genesisResp.broadcasted[0];
+        await testWallet.sync();
+
+        const fanoutResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(TARGET_TOKEN_UTXOS).fill({
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: 1n,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(fanoutResp.success).to.equal(true);
+        await testWallet.sync();
+
+        const tokenUtxosBefore = testWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosBefore).to.have.length(TARGET_TOKEN_UTXOS);
+
+        const sendResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: alpTokenId,
+                        atoms: BigInt(TARGET_TOKEN_UTXOS),
+                        isMintBaton: false,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+
+        expect(sendResp.success).to.equal(true);
+        expect(sendResp.broadcasted).to.have.length(4);
+
+        // The first tx begins consolidating utxos
+        const firstTx = await chronik.tx(sendResp.broadcasted[0]);
+        expect(firstTx.inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+
+        // The second tx continues consolidating utxos
+        const secondTx = await chronik.tx(sendResp.broadcasted[1]);
+        expect(secondTx.inputs).to.have.length(293);
+
+        // The third tx finishes consolidating utxos
+        const thirdTx = await chronik.tx(sendResp.broadcasted[2]);
+        expect(thirdTx.inputs).to.have.length(3);
+
+        // The fourth tx fulfills the action with a single input
+        const fourthTx = await chronik.tx(sendResp.broadcasted[3]);
+        // XEC and token inputs
+        expect(fourthTx.inputs).to.have.length(2);
+
+        // Token OP_RETURN, token output, token change
+        expect(fourthTx.outputs).to.have.length(3);
+        expect(fourthTx.outputs[0].sats).to.equal(0n); // OP_RETURN
+        expect(fourthTx.outputs[1].sats).to.equal(546n); // token output
+        expect(fourthTx.outputs[1].token!.tokenId).to.equal(alpTokenId);
+        expect(fourthTx.outputs[1].token!.atoms).to.equal(
+            BigInt(TARGET_TOKEN_UTXOS),
+        );
+        expect(fourthTx.outputs[2].sats).to.equal(99807238n); // XEC change
+        expect(typeof fourthTx.outputs[2].token).to.equal('undefined');
+
+        const tokenUtxosAfter = testWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosAfter).to.have.length(0);
+    });
+
+    it('auto-consolidates token and XEC UTXOs when a combined SEND needs at least one', async function () {
+        const testWallet = Wallet.fromSk(fromHex('3e'.repeat(32)), chronik);
+        const n = 500;
+        await runner.sendToScript(5_000_000_00n, testWallet.script);
+        await testWallet.sync();
+
+        const genesisMintQty = BigInt(n);
+        const alpGenesisInfo = {
+            tokenTicker: 'TXC',
+            tokenName: 'Combined auto consolidate',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(genesisResp.success).to.equal(true);
+        const alpTokenId = genesisResp.broadcasted[0];
+        await testWallet.sync();
+
+        const fanoutResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(n).fill({
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: 1n,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(fanoutResp.success).to.equal(true);
+        await testWallet.sync();
+
+        expect(
+            testWallet
+                .spendableUtxos()
+                .filter(
+                    u =>
+                        u.token?.tokenId === alpTokenId &&
+                        !u.token?.isMintBaton,
+                ),
+        ).to.have.length(n);
+
+        if (testWallet.spendableSatsOnlyUtxos().length > 1) {
+            const preXec = await testWallet
+                .consolidateUtxos()
+                .build()
+                .broadcast();
+            expect(preXec.success).to.equal(true);
+            await testWallet.sync();
+        }
+
+        const satsPerXecUtxo = 100_000n;
+        await runner.sendToScript(
+            Array(n).fill(satsPerXecUtxo),
+            testWallet.script,
+        );
+        await testWallet.sync();
+
+        expect(
+            testWallet
+                .spendableUtxos()
+                .filter(
+                    u =>
+                        u.token?.tokenId === alpTokenId &&
+                        !u.token?.isMintBaton,
+                ),
+        ).to.have.length(n);
+        expect(testWallet.spendableSatsOnlyUtxos()).to.have.length(501);
+        expect(testWallet.utxos).to.have.length(1002);
+
+        const destHex = MOCK_DESTINATION_SCRIPT.toHex();
+        const sendSats = satsPerXecUtxo * BigInt(n) - 4_000_000n;
+        const sendResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: DEFAULT_DUST_SATS,
+                        script: MOCK_DESTINATION_SCRIPT,
+                        tokenId: alpTokenId,
+                        atoms: BigInt(n),
+                        isMintBaton: false,
+                    },
+                    {
+                        sats: sendSats,
+                        script: MOCK_DESTINATION_SCRIPT,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+
+        expect(sendResp.success).to.equal(true);
+
+        expect(sendResp.broadcasted).to.have.length(3);
+
+        const txs = await Promise.all(
+            sendResp.broadcasted.map(txid => chronik.tx(txid)),
+        );
+
+        // The first tx consolidates token utxos
+        const firstTx = txs[0];
+        expect(firstTx.inputs).to.have.length(n);
+        expect(firstTx.outputs).to.have.length(3);
+        expect(firstTx.outputs[0].sats).to.equal(0n);
+        expect(firstTx.tokenEntries).to.have.length(1);
+        expect(firstTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(firstTx.tokenEntries[0].tokenId).to.equal(alpTokenId);
+        expect(firstTx.tokenEntries[0].tokenType.type).to.equal(
+            'ALP_TOKEN_TYPE_STANDARD',
+        );
+
+        // The second tx consolidates XEC utxos
+        const secondTx = txs[1];
+        expect(secondTx.inputs).to.have.length(502);
+        expect(secondTx.outputs).to.have.length(1);
+        expect(secondTx.tokenEntries).to.have.length(0);
+
+        const finalTx = txs[txs.length - 1];
+        expect(finalTx.inputs).to.have.length(2);
+        expect(finalTx.outputs[0].sats).to.equal(0n);
+        const tokenOut = finalTx.outputs.find(
+            o =>
+                o.outputScript === destHex &&
+                o.token != null &&
+                o.token.tokenId === alpTokenId,
+        );
+        expect(tokenOut).to.not.equal(undefined);
+        expect(tokenOut!.token!.atoms).to.equal(BigInt(n));
+        const xecOut = finalTx.outputs.find(
+            o =>
+                o.outputScript === destHex &&
+                o.token == null &&
+                o.sats === sendSats,
+        );
+        expect(xecOut).to.not.equal(undefined);
+    });
+
+    it('auto-consolidates 1000 XEC inputs then chains broadcast to 3500 outputs', async function () {
+        const testWallet = Wallet.fromSk(fromHex('3c'.repeat(32)), chronik);
+        const NUM_INPUT_UTXOS = 1000;
+        const NUM_OUTPUTS = 3500;
+        /**
+         * Homogeneous 10k-sat inputs: 3500 * 546 dust outputs only need ~206 inputs, so
+         * selectUtxos never exceeds CONSOLIDATE_UTXOS_BATCHSIZE and output chaining runs
+         * without input consolidation (first tx is chain alpha ~206 in, not 708).
+         * Use a larger per-recipient amount so the wallet must select >708 inputs; then the
+         * first build hits maxTxSersize, MaxTxSersizeError, and auto-consolidate prefixes txs.
+         */
+        const satsPerUtxo = 12000n;
+        const satsPerRecipient = 3000n;
+
+        const xecOutputs = Array(NUM_INPUT_UTXOS).fill(satsPerUtxo);
+        await runner.sendToScript(xecOutputs, testWallet.script);
+        await testWallet.sync();
+        expect(testWallet.spendableSatsOnlyUtxos()).to.have.length(
+            NUM_INPUT_UTXOS,
+        );
+
+        const chainOutputs: TxOutput[] = Array.from(
+            { length: NUM_OUTPUTS },
+            (_, i) => {
+                const hex = i.toString(16).padStart(40, '0');
+                const script = Script.p2pkh(fromHex(hex));
+                return { script, sats: satsPerRecipient };
+            },
+        );
+        const recipientScriptHexes = new Set(
+            chainOutputs.map(o => o.script.toHex()),
+        );
+
+        // 3500 * 3000 == 10.5M requires >875 of our 12k inputs before fees
+        const resp = await testWallet
+            .action({
+                outputs: chainOutputs,
+            })
+            .build()
+            .broadcast();
+
+        expect(resp.success).to.equal(true);
+
+        const firstTx = await chronik.tx(resp.broadcasted[0]);
+        expect(firstTx.inputs).to.have.length(CONSOLIDATE_UTXOS_BATCHSIZE);
+
+        const secondTx = await chronik.tx(resp.broadcasted[1]);
+        expect(secondTx.inputs).to.have.length(293);
+
+        // We also have chained txs to fulfill the action
+        expect(resp.broadcasted.length).to.equal(4);
+
+        const thirdTx = await chronik.tx(resp.broadcasted[2]);
+
+        // Now we only need 1 utxo
+        expect(thirdTx.inputs).to.have.length(1);
+        expect(thirdTx.outputs).to.have.length(2936);
+
+        const fourthTx = await chronik.tx(resp.broadcasted[3]);
+        expect(fourthTx.inputs).to.have.length(1);
+        expect(fourthTx.outputs).to.have.length(566);
+
+        const recipientScriptsSeenOnChain = new Set<string>();
+        for (const txid of resp.broadcasted) {
+            const tx = await chronik.tx(txid);
+            for (const out of tx.outputs) {
+                if (
+                    recipientScriptHexes.has(out.outputScript) &&
+                    out.sats === satsPerRecipient
+                ) {
+                    recipientScriptsSeenOnChain.add(out.outputScript);
+                }
+            }
+        }
+        expect(recipientScriptsSeenOnChain.size).to.equal(NUM_OUTPUTS);
+        expect(testWallet.spendableSatsOnlyUtxos()).to.have.length(1);
+    });
+
+    it('auto-consolidates 1000 ALP token inputs then chains broadcast to 3500 token outputs', async function () {
+        const testWallet = Wallet.fromSk(fromHex('3d'.repeat(32)), chronik);
+        await runner.sendToScript(1_000_000_00n, testWallet.script);
+        await testWallet.sync();
+
+        const TARGET_FANOUT_UTXOS = 1000;
+        const ATOMS_PER_FANOUT_UTXO = 4n;
+        const genesisMintQty =
+            BigInt(TARGET_FANOUT_UTXOS) * ATOMS_PER_FANOUT_UTXO;
+
+        const alpGenesisInfo = {
+            tokenTicker: 'A3K',
+            tokenName: 'Auto consolidate ALP then chain',
+            url: 'cashtab.com',
+            decimals: 0,
+        };
+        const genesisResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        atoms: genesisMintQty,
+                    },
+                    {
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: payment.GENESIS_TOKEN_ID_PLACEHOLDER,
+                        isMintBaton: true,
+                        atoms: 0n,
+                    },
+                ],
+                tokenActions: [
+                    {
+                        type: 'GENESIS',
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                        genesisInfo: alpGenesisInfo,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(genesisResp.success).to.equal(true);
+        const alpTokenId = genesisResp.broadcasted[0];
+        await testWallet.sync();
+
+        const fanoutResp = await testWallet
+            .action({
+                outputs: [
+                    { sats: 0n },
+                    ...Array(TARGET_FANOUT_UTXOS).fill({
+                        sats: 546n,
+                        script: testWallet.script,
+                        tokenId: alpTokenId,
+                        atoms: ATOMS_PER_FANOUT_UTXO,
+                        isMintBaton: false,
+                    }),
+                ],
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build()
+            .broadcast();
+        expect(fanoutResp.success).to.equal(true);
+        await testWallet.sync();
+
+        const tokenUtxosBefore = testWallet
+            .spendableUtxos()
+            .filter(
+                u => u.token?.tokenId === alpTokenId && !u.token?.isMintBaton,
+            );
+        expect(tokenUtxosBefore).to.have.length(TARGET_FANOUT_UTXOS);
+
+        const NUM_RECIPIENTS = 3500;
+        const atomsPerRecipient = 1n;
+        const recipientScriptHexes = new Set<string>();
+        const sendOutputs: payment.PaymentOutput[] = [{ sats: 0n }];
+        for (let i = 0; i < NUM_RECIPIENTS; i++) {
+            const hex = i.toString(16).padStart(40, '0');
+            const script = Script.p2pkh(fromHex(hex));
+            recipientScriptHexes.add(script.toHex());
+            sendOutputs.push({
+                sats: DEFAULT_DUST_SATS,
+                script,
+                tokenId: alpTokenId,
+                atoms: atomsPerRecipient,
+                isMintBaton: false,
+            });
+        }
+
+        const built = testWallet
+            .action({
+                outputs: sendOutputs,
+                tokenActions: [
+                    {
+                        type: 'SEND',
+                        tokenId: alpTokenId,
+                        tokenType: ALP_TOKEN_TYPE_STANDARD,
+                    },
+                ],
+            })
+            .build();
+        const resp = await built.broadcast();
+        expect(resp.success).to.equal(true);
+
+        // Token txs to many outputs require many more txs than XEC txs, since outputs per tx are limited by OP_RETURN
+        // and not maxTxSersize
+        expect(resp.broadcasted).to.have.length(128);
+
+        const firstTx = await chronik.tx(resp.broadcasted[0]);
+        const secondTx = await chronik.tx(resp.broadcasted[1]);
+        const thirdTx = await chronik.tx(resp.broadcasted[2]);
+        const fourthTx = await chronik.tx(resp.broadcasted[3]);
+        const lastTx = await chronik.tx(
+            resp.broadcasted[resp.broadcasted.length - 1],
+        );
+
+        // First two txs consolidate utxos
+        expect(firstTx.inputs).to.have.length(708);
+        expect(secondTx.inputs).to.have.length(293);
+        // Third tx consolidates XEC utxos. This is not strictly necessary but it does not hurt.
+        // We consolidate both XEC and token utxos in the token path
+        expect(thirdTx.inputs).to.have.length(3);
+        expect(thirdTx.outputs).to.have.length(1);
+        expect(thirdTx.tokenEntries).to.have.length(0); // No tokens in this tx
+
+        // Now we start the actual chained outputs of token txs
+        expect(fourthTx.inputs).to.have.length(2);
+        expect(fourthTx.outputs).to.have.length(31);
+        expect(fourthTx.tokenEntries).to.have.length(1);
+        expect(fourthTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(fourthTx.tokenEntries[0].tokenId).to.equal(alpTokenId);
+        expect(fourthTx.tokenEntries[0].tokenType.type).to.equal(
+            'ALP_TOKEN_TYPE_STANDARD',
+        );
+        expect(fourthTx.tokenEntries[0].tokenType.protocol).to.equal('ALP');
+
+        expect(lastTx.inputs).to.have.length(1);
+        expect(lastTx.outputs).to.have.length(30);
+        expect(lastTx.tokenEntries).to.have.length(1);
+        expect(lastTx.tokenEntries[0].txType).to.equal('SEND');
+        expect(lastTx.tokenEntries[0].tokenId).to.equal(alpTokenId);
+        expect(lastTx.tokenEntries[0].tokenType.type).to.equal(
+            'ALP_TOKEN_TYPE_STANDARD',
+        );
+        expect(lastTx.tokenEntries[0].tokenType.protocol).to.equal('ALP');
+
+        const recipientScriptsSeenOnChain = new Set<string>();
+        for (const txid of resp.broadcasted) {
+            const tx = await chronik.tx(txid);
+            for (const out of tx.outputs) {
+                if (
+                    recipientScriptHexes.has(out.outputScript) &&
+                    out.token?.tokenId === alpTokenId &&
+                    out.token?.atoms === atomsPerRecipient
+                ) {
+                    recipientScriptsSeenOnChain.add(out.outputScript);
+                }
+            }
+        }
+        expect(recipientScriptsSeenOnChain.size).to.equal(NUM_RECIPIENTS);
+    });
 });
