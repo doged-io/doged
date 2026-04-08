@@ -327,7 +327,7 @@ export class SettingsScreen {
         // Get all fiat currencies, move USD and EUR to the top, keep the others in alphabetical order
         let allFiats = Fiat.listAll();
         allFiats = allFiats.filter(
-            fiat => fiat.toString() !== 'USD' && fiat.toString() !== 'EUR',
+            fiat => fiat.toString() !== 'usd' && fiat.toString() !== 'eur',
         );
         allFiats.unshift(Fiat.USD, Fiat.EUR);
 
