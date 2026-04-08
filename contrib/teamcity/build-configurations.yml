@@ -1123,6 +1123,11 @@ builds:
             build_args:
                 - 'NGINX_CONF=nginx-preview.conf'
 
+    preview-marlin-wallet:
+        docker:
+            dockerfile: marlin-wallet.Dockerfile
+            port: 3000
+
     cashtab-connect-tests:
         runOnDiffRegex:
             - modules/cashtab-connect/
