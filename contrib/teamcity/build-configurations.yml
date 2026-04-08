@@ -1197,3 +1197,19 @@ builds:
         depends:
             - marlin-wallet
             - mock-chronik-client
+
+    marlin-wallet-e2e-tests:
+        runOnDiffRegex:
+            - apps/marlin-wallet/web/
+        env:
+            JS_PROJECT_ROOT: apps/marlin-wallet/web
+        depends:
+            - marlin-wallet
+        script: |
+            corepack enable
+            corepack prepare pnpm@10.24.0 --activate
+            pushd "${TOPLEVEL}"
+            pnpm install --frozen-lockfile --filter marlin-wallet-web...
+            pnpm --filter marlin-wallet-web exec cypress install
+            pnpm --filter marlin-wallet-web run test:e2e
+            popd

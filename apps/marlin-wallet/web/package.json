@@ -8,7 +8,10 @@
         "dev": "webpack serve --mode development",
         "start": "pnpm run build && http-server dist -p 3000 -c-1",
         "test": "mocha",
-        "coverage": "nyc mocha"
+        "coverage": "nyc mocha",
+        "cypress:open": "cypress open",
+        "cypress:run": "cypress run",
+        "test:e2e": "start-server-and-test 'pnpm run dev' http://localhost:3000 'pnpm run cypress:run'"
     },
     "dependencies": {
         "@types/bip39": "^2.4.2",
@@ -33,6 +36,7 @@
         "chai": "^6.2.2",
         "chai-as-promised": "^8.0.2",
         "css-loader": "^7.1.2",
+        "cypress": "^15.13.1",
         "html-webpack-plugin": "^5.5.3",
         "http-server": "^14.1.1",
         "mocha": "^11.7.5",
@@ -41,6 +45,7 @@
         "mock-chronik-client": "file:../../../modules/mock-chronik-client",
         "nyc": "^17.1.0",
         "sinon": "^21.0.0",
+        "start-server-and-test": "^3.0.0",
         "style-loader": "^4.0.0",
         "ts-loader": "^9.4.4",
         "tsx": "^4.21.0",

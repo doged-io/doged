@@ -83,6 +83,11 @@ Flipper-Folly
 # React Native
 .react-native/
 
+# Cypress
+web/cypress/screenshots/
+web/cypress/videos/
+web/cypress/downloads/
+
 # Web build artifacts
 web/dist/
 web/node_modules/
