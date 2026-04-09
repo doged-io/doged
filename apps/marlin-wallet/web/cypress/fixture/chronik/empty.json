@@ -1,0 +1,18 @@
+{
+    "meta": {
+        "address": "ecash:qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g",
+        "p2pkhPayloadHex": "3a5fb236934ec078b4507c303d3afd82067f8fc1",
+        "exportedAt": "2026-01-01T00:00:00.000Z",
+        "pageSize": 25,
+        "historyNumPages": 0,
+        "historyNumTxs": 0
+    },
+    "historyPages": {
+        "0": {
+            "txs": [],
+            "numPages": 0,
+            "numTxs": 0
+        }
+    },
+    "txs": {}
+}

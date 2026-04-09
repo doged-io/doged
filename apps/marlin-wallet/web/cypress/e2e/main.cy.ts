@@ -3,21 +3,12 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import {
+    normalizeBalanceText,
     openSettingsFromMain,
     visitFresh,
     waitForMainLoaded,
 } from '../fixture/common';
 import { stubCoingeckoXecFiatPrices } from '../fixture/stubs';
-
-/**
- * Collapse Unicode spaces so currency strings match across browsers.
- * This avoid hard to debug failures when the locale uses non-ASCII spaces.
- * For example, the German locale uses a non-breaking space (U+00A0) in the
- * currency strings.
- */
-function normalizeBalanceText(s: string): string {
-    return s.replace(/\u00a0/g, ' ').trim();
-}
 
 describe('Main screen', () => {
     const returnToMainFromSettings = () => {

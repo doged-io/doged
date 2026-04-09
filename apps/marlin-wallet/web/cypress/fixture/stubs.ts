@@ -4,6 +4,30 @@
 
 /// <reference types="cypress" />
 
+import {
+    applyChronikStubIntercepts,
+    chronikStubPath,
+    type ChronikStub,
+    type ChronikStubRunContext,
+} from './chronik-json-protobuf';
+
+/**
+ * Load a Chronik stub JSON, intercept matching `history` and `/tx/*`, and run `body`.
+ * `cy.readFile` parses `.json` into an object (Cypress default); see
+ * `chronik-json-protobuf.ts`.
+ */
+export function runWithChronik(
+    fileNameOrPath: string,
+    body: (ctx: ChronikStubRunContext) => void,
+): void {
+    const path = chronikStubPath(fileNameOrPath);
+    cy.readFile(path).then(data => {
+        const stub = data as ChronikStub;
+        applyChronikStubIntercepts(stub);
+        body({ stub });
+    });
+}
+
 /**
  * CoinGecko response shape for ecash-price CoinGeckoProvider (see
  * modules/ecash-price). Intercepting avoids flaky secondary balance when the
