@@ -2,35 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-/**
- * CoinGecko response shape for ecash-price CoinGeckoProvider (see
- * modules/ecash-price). Intercepting avoids flaky secondary balance when the
- * API is down or rate-limited.
- */
-function stubCoingeckoXecFiatPrices() {
-    cy.intercept(
-        { method: 'GET', url: /api\.coingecko\.com\/api\/v3\/simple\/price/ },
-        req => {
-            const url = new URL(req.url);
-            const vsRaw = url.searchParams.get('vs_currencies') || '';
-            const parts = vsRaw
-                .split(',')
-                .map(s => s.trim().toLowerCase())
-                .filter(Boolean);
-            const lastUpdated = Math.floor(Date.now() / 1000);
-            const ecash: Record<string, number> = {
-                last_updated_at: lastUpdated,
-            };
-            if (parts.includes('usd')) {
-                ecash.usd = 0.00005;
-            }
-            if (parts.includes('eur')) {
-                ecash.eur = 0.000046;
-            }
-            req.reply({ statusCode: 200, body: { ecash } });
-        },
-    );
-}
+import {
+    openSettingsFromMain,
+    visitFresh,
+    waitForMainLoaded,
+} from '../fixture/common';
+import { stubCoingeckoXecFiatPrices } from '../fixture/stubs';
 
 /**
  * Collapse Unicode spaces so currency strings match across browsers.
@@ -43,25 +20,6 @@ function normalizeBalanceText(s: string): string {
 }
 
 describe('Main screen', () => {
-    const visitFresh = () => {
-        cy.visit('/', {
-            onBeforeLoad(win) {
-                win.localStorage.clear();
-            },
-        });
-    };
-
-    const waitForMainLoaded = () => {
-        cy.get('#loading').should('not.be.visible');
-        cy.get('#main-screen').should('be.visible');
-    };
-
-    const openSettingsFromMain = () => {
-        cy.get('#main-screen').should('be.visible');
-        cy.get('.settings-button').click();
-        cy.get('#settings-screen').should('be.visible');
-    };
-
     const returnToMainFromSettings = () => {
         cy.get('#settings-back-btn').click();
         cy.get('#main-screen').should('be.visible');
