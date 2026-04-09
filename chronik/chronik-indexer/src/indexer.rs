@@ -1281,6 +1281,12 @@ impl ChronikIndexer {
     pub fn mempool(&self) -> &Mempool {
         &self.mempool
     }
+
+    /// Stop the indexer, e.g. to prepare for shutdown
+    pub fn stop(&self) -> Result<()> {
+        self.db.close()?;
+        Ok(())
+    }
 }
 
 fn verify_schema_version(db: &Db) -> Result<u64> {

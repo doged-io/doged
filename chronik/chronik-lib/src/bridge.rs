@@ -375,6 +375,13 @@ impl Chronik {
         );
     }
 
+    /// Stop Chronik to prepare for shutdown.
+    pub fn stop(&self) -> Result<()> {
+        let indexer = self.indexer.blocking_write();
+        indexer.stop()?;
+        Ok(())
+    }
+
     fn add_tx_to_mempool(
         &self,
         ptx: &ffi::CTransaction,

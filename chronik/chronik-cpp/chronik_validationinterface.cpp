@@ -6,6 +6,7 @@
 #include <chronik-cpp/util/hash.h>
 #include <chronik_lib/src/ffi.rs.h>
 #include <kernel/chain.h>
+#include <logging.h>
 #include <node/context.h>
 #include <primitives/block.h>
 #include <txmempool.h>
@@ -25,6 +26,16 @@ public:
     void Register() { RegisterValidationInterface(this); }
 
     void Unregister() { UnregisterValidationInterface(this); }
+
+    bool StopChronik() {
+        try {
+            m_chronik->stop();
+        } catch (const std::exception &e) {
+            LogPrintf("Error stopping Chronik: %s\n", e.what());
+            return false;
+        }
+        return true;
+    }
 
 private:
     rust::Box<chronik_bridge::Chronik> m_chronik;
@@ -101,6 +112,7 @@ void StartChronikValidationInterface(
 void StopChronikValidationInterface() {
     if (g_chronik_validation_interface) {
         g_chronik_validation_interface->Unregister();
+        g_chronik_validation_interface->StopChronik();
         // Reset so the Box is dropped and all handles are released.
         g_chronik_validation_interface.reset();
     }

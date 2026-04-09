@@ -112,6 +112,9 @@ mod ffi_inner {
             tx: &CTransaction,
             spent_coins: &CxxVector<CCoin>,
         );
+        // The Result return type will be converted to a C++ exception:
+        // https://cxx.rs/binding/result.html#returning-result-from-rust-to-c
+        fn stop(&self) -> Result<()>;
     }
 
     unsafe extern "C++" {
