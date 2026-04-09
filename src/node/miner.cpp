@@ -143,7 +143,10 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     coinbaseTx.vout[0].nValue =
         blockFitter.nFees +
         GetBlockSubsidy(nHeight, consensusParams, pindexPrev->GetBlockHash());
-    coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
+    std::string coinbaseTag =
+        gArgs.GetArg("-coinbasetag", "/doged/");
+    std::vector<uint8_t> tagBytes(coinbaseTag.begin(), coinbaseTag.end());
+    coinbaseTx.vin[0].scriptSig = CScript() << nHeight << tagBytes;
 
     const Amount blockReward = coinbaseTx.vout[0].nValue;
 

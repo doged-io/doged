@@ -1281,6 +1281,11 @@ void SetupServerArgs(NodeContext &node) {
                    "Override block version to test forking scenarios",
                    ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
                    OptionsCategory::BLOCK_CREATION);
+    argsman.AddArg(
+        "-coinbasetag=<text>",
+        "Text to embed in the coinbase scriptSig of mined blocks, "
+        "e.g. your pool or miner name (default: /doged/)",
+        ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
 
     stratum::RegisterStratumArgs(argsman);
 
