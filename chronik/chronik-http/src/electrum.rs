@@ -28,7 +28,6 @@ use chronik_indexer::{
 };
 use chronik_proto::proto::{BlockMetadata, Tx};
 use chronik_util::log_chronik;
-use futures::future;
 use itertools::izip;
 use karyon_jsonrpc::{
     client::ClientBuilder,
@@ -344,9 +343,10 @@ impl ChronikElectrumServer {
                         .build()
                         .await
                         .map_err(|err| ServingFailed(err.to_string()))?;
-                    server.start();
-
-                    let () = future::pending().await;
+                    server
+                        .start_block()
+                        .await
+                        .map_err(|err| ServingFailed(err.to_string()))?;
 
                     Ok::<(), ChronikElectrumServerError>(())
                 })
