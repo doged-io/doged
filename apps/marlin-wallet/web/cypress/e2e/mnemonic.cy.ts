@@ -2,14 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import * as bip39 from 'bip39';
-
 import {
     openSettingsFromMain,
     visitFresh,
     waitForMainLoaded,
 } from '../fixture/common';
 import { stubCoingeckoXecFiatPrices } from '../fixture/stubs';
+import { validateMnemonic } from '../../src/mnemonic';
 
 /**
  * Same mnemonic as cashtab/src/wallet/fixtures/vectors.js (createCashtabWallet).
@@ -23,22 +22,6 @@ const CASHTAB_TEST_MNEMONIC =
 
 const CASHTAB_TEST_ADDRESS = 'ecash:qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g';
 
-/**
- * True when text is exactly twelve whitespace-separated English BIP39 words and
- * the phrase passes bip39 checksum validation.
- */
-function isValidMnemonic(text: string): boolean {
-    const trimmed = text.trim();
-    if (!trimmed) {
-        return false;
-    }
-    const words = trimmed.split(/\s+/);
-    if (words.length !== 12) {
-        return false;
-    }
-    return bip39.validateMnemonic(trimmed, bip39.wordlists['english']);
-}
-
 describe('Mnemonic', () => {
     beforeEach(() => {
         stubCoingeckoXecFiatPrices();
@@ -50,7 +33,7 @@ describe('Mnemonic', () => {
         openSettingsFromMain();
 
         cy.get('#mnemonic-text').should($ta => {
-            expect(isValidMnemonic(String($ta.val()))).to.equal(true);
+            expect(validateMnemonic(String($ta.val()))).to.equal(true);
         });
 
         // Initially blurred
@@ -72,7 +55,7 @@ describe('Mnemonic', () => {
             .invoke('val')
             .then(raw => {
                 const phrase = String(raw).trim();
-                expect(isValidMnemonic(phrase)).to.equal(true);
+                expect(validateMnemonic(phrase)).to.equal(true);
                 const words = phrase.split(/\s+/);
 
                 // Modal is initially hidden
@@ -174,12 +157,7 @@ describe('Mnemonic', () => {
         const invalidMnemonicMessageEn =
             'Invalid mnemonic. Please enter a valid 12-word recovery phrase.';
 
-        expect(
-            bip39.validateMnemonic(
-                invalidChecksumTwelveWords,
-                bip39.wordlists['english'],
-            ),
-        ).to.equal(false);
+        expect(validateMnemonic(invalidChecksumTwelveWords)).to.equal(false);
 
         visitFresh();
         waitForMainLoaded();
@@ -189,7 +167,7 @@ describe('Mnemonic', () => {
             .invoke('val')
             .then(original => {
                 const originalPhrase = String(original).trim();
-                expect(isValidMnemonic(originalPhrase)).to.equal(true);
+                expect(validateMnemonic(originalPhrase)).to.equal(true);
 
                 cy.get('#edit-mnemonic-btn').click();
                 cy.get('#mnemonic-edit-modal').should(

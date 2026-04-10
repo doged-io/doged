@@ -2,7 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import * as bip39 from 'bip39';
+import { entropyToMnemonic, mnemonicToEntropy } from 'ecash-lib';
+import englishWordlist from 'ecash-lib/wordlists/english.json';
 import randomBytes from 'randombytes';
 import {
     isReactNativeWebView,
@@ -13,15 +14,11 @@ import {
 import { WalletData } from './wallet';
 
 /**
- * Generate a mnemonic using the bip39 library. Use to create a new wallet.
+ * Generate a 12-word BIP39 mnemonic using ecash-lib.
  */
 export function generateMnemonic(): string {
-    const mnemonic = bip39.generateMnemonic(
-        128,
-        randomBytes,
-        bip39.wordlists['english'],
-    );
-    return mnemonic;
+    const entropy = randomBytes(16);
+    return entropyToMnemonic(entropy, englishWordlist);
 }
 
 /*
@@ -36,22 +33,34 @@ export function getMnemonic(walletData: WalletData): string | null {
     return walletData.mnemonic;
 }
 
-// Check the mnemonic is valid
+/**
+ * True if the phrase is valid BIP39 English (checksum and word list).
+ * mnemonicToEntropy throws if invalid.
+ */
 export function validateMnemonic(mnemonic: string): boolean {
     try {
-        // Check if it's a valid BIP39 mnemonic
-        return bip39.validateMnemonic(mnemonic.trim());
+        const trimmed = mnemonic.trim();
+        if (!trimmed) {
+            return false;
+        }
+        const words = trimmed.split(/\s+/);
+        if (words.length === 0) {
+            return false;
+        }
+        const normalized = words.join(' ');
+        mnemonicToEntropy(normalized, englishWordlist.words);
+        return true;
     } catch {
         return false;
     }
 }
 
 /**
- * Get the BIP39 English wordlist
+ * Get the BIP39 English wordlist (from ecash-lib).
  * @returns Array of all 2048 BIP39 English words
  */
 export function getBIP39Wordlist(): string[] {
-    return bip39.wordlists['english'];
+    return englishWordlist.words;
 }
 
 /**

@@ -14,9 +14,7 @@
         "test:e2e": "start-server-and-test 'pnpm run dev' http://localhost:3000 'pnpm run cypress:run'"
     },
     "dependencies": {
-        "@types/bip39": "^2.4.2",
         "@types/qrcode": "^1.5.5",
-        "bip39": "^3.1.0",
         "buffer": "^6.0.3",
         "chronik-client": "file:../../../modules/chronik-client",
         "ecash-lib": "file:../../../modules/ecash-lib",
