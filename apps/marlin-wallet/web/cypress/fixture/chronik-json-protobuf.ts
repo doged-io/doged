@@ -26,6 +26,10 @@ export interface ChronikStub {
     historyPages: Record<string, unknown>;
     /** `Tx` protobuf-JSON keyed by txid */
     txs: Record<string, unknown>;
+    /** `ScriptUtxos` protobuf-JSON for `GET …/script/p2pkh/<hex>/utxos`. */
+    scriptUtxos: unknown;
+    /** `BlockchainInfo` protobuf-JSON for `GET /blockchain-info`. */
+    blockchainInfo: unknown;
 }
 
 /** Context passed to {@link runWithChronik} in `stubs.ts`. */
@@ -35,7 +39,7 @@ export type ChronikStubRunContext = {
 
 const CHRONIK_STUB_DIR = 'cypress/fixture/chronik';
 
-const CHRONIK_PROTOBUF_HEADERS = {
+export const CHRONIK_PROTOBUF_HEADERS = {
     'content-type': 'application/x-protobuf',
 } as const;
 
@@ -54,6 +58,16 @@ function encodeHistoryPageFromFixtureJson(parsed: unknown): Uint8Array {
 function encodeTxFromFixtureJson(parsed: unknown): Uint8Array {
     const msg = proto.Tx.fromJSON(parsed);
     return proto.Tx.encode(msg).finish();
+}
+
+function encodeScriptUtxosFromFixtureJson(parsed: unknown): Uint8Array {
+    const msg = proto.ScriptUtxos.fromJSON(parsed);
+    return proto.ScriptUtxos.encode(msg).finish();
+}
+
+function encodeBlockchainInfoFromFixtureJson(parsed: unknown): Uint8Array {
+    const msg = proto.BlockchainInfo.fromJSON(parsed);
+    return proto.BlockchainInfo.encode(msg).finish();
 }
 
 /**
@@ -75,7 +89,9 @@ export function chronikStubPath(fileNameOrPath: string): string {
     return `${CHRONIK_STUB_DIR}/${fileNameOrPath}`;
 }
 
-function chronikAsProtobufBody(data: Cypress.Buffer | Uint8Array): ArrayBuffer {
+export function chronikAsProtobufBody(
+    data: Cypress.Buffer | Uint8Array,
+): ArrayBuffer {
     const u8 =
         data instanceof Uint8Array
             ? data
@@ -83,16 +99,44 @@ function chronikAsProtobufBody(data: Cypress.Buffer | Uint8Array): ArrayBuffer {
     return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
 }
 
-function chronikHistoryUrlRegex(bundle: ChronikStub): RegExp {
-    const hex = bundle.meta.p2pkhPayloadHex.toLowerCase();
+/**
+ * Normalize a Cypress intercept `req.body` (binary protobuf POST) to
+ * `Uint8Array`.
+ */
+export function cypressRequestBodyToUint8Array(body: unknown): Uint8Array {
+    if (body instanceof Uint8Array) {
+        return body;
+    }
+    if (body instanceof ArrayBuffer) {
+        return new Uint8Array(body);
+    }
+    return new Uint8Array(body as unknown as Iterable<number>);
+}
+
+/** 32 random bytes as protobuf-JSON base64 for a `BroadcastTxsResponse` txid. */
+export function randomTxidBase64ForProtobufJson(): string {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]!);
+    }
+    return btoa(binary);
+}
+
+function chronikHistoryUrlRegex(stub: ChronikStub): RegExp {
+    const hex = stub.meta.p2pkhPayloadHex.toLowerCase();
     return new RegExp(`/script/p2pkh/${hex}/history(\\?|$)`);
 }
 
-function chronikEncodeTxStubMap(
-    bundle: ChronikStub,
-): Record<string, Uint8Array> {
+function chronikScriptUtxosUrlRegex(stub: ChronikStub): RegExp {
+    const hex = stub.meta.p2pkhPayloadHex.toLowerCase();
+    return new RegExp(`/script/p2pkh/${hex}/utxos(\\?|$)`);
+}
+
+function chronikEncodeTxStubMap(stub: ChronikStub): Record<string, Uint8Array> {
     const out: Record<string, Uint8Array> = {};
-    for (const [id, txJson] of Object.entries(bundle.txs)) {
+    for (const [id, txJson] of Object.entries(stub.txs)) {
         out[id.toLowerCase()] = encodeTxFromFixtureJson(txJson);
     }
     return out;
@@ -134,12 +178,12 @@ function chronikRegisterTxStubs(
  * Register Cypress intercepts for Chronik `history` and `/tx/*` from a parsed
  * stub.
  */
-export function applyChronikStubIntercepts(bundle: ChronikStub): void {
-    const historyUrlRe = chronikHistoryUrlRegex(bundle);
+export function applyChronikStubIntercepts(stub: ChronikStub): void {
+    const historyUrlRe = chronikHistoryUrlRegex(stub);
 
-    const pages = bundle.historyPages;
+    const pages = stub.historyPages;
     if (pages['0'] === undefined) {
-        throw new Error('Chronik bundle missing historyPages["0"]');
+        throw new Error('Chronik stub missing historyPages["0"]');
     }
     const encodedByPage: Record<string, Uint8Array> = {};
     const need = new Set<string>();
@@ -152,7 +196,7 @@ export function applyChronikStubIntercepts(bundle: ChronikStub): void {
             need.add(id);
         }
     }
-    const allTxBodies = chronikEncodeTxStubMap(bundle);
+    const allTxBodies = chronikEncodeTxStubMap(stub);
     const txBodies: Record<string, Uint8Array> = {};
     for (const id of need) {
         const body = allTxBodies[id];
@@ -178,4 +222,27 @@ export function applyChronikStubIntercepts(bundle: ChronikStub): void {
         });
     });
     chronikRegisterTxStubs(/\/tx\/[0-9a-fA-F]+(\?|$)/, txBodies);
+
+    const scriptUtxosBody = encodeScriptUtxosFromFixtureJson(stub.scriptUtxos);
+    cy.intercept(
+        { method: 'GET', url: chronikScriptUtxosUrlRegex(stub) },
+        req => {
+            req.reply({
+                statusCode: 200,
+                headers: CHRONIK_PROTOBUF_HEADERS,
+                body: chronikAsProtobufBody(scriptUtxosBody),
+            });
+        },
+    );
+
+    const blockchainInfoBody = encodeBlockchainInfoFromFixtureJson(
+        stub.blockchainInfo,
+    );
+    cy.intercept({ method: 'GET', url: /\/blockchain-info(\?|$)/ }, req => {
+        req.reply({
+            statusCode: 200,
+            headers: CHRONIK_PROTOBUF_HEADERS,
+            body: chronikAsProtobufBody(blockchainInfoBody),
+        });
+    });
 }

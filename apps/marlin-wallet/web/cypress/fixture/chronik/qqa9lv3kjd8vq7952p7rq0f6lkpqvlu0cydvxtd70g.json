@@ -2,7 +2,7 @@
     "meta": {
         "address": "ecash:qqa9lv3kjd8vq7952p7rq0f6lkpqvlu0cydvxtd70g",
         "p2pkhPayloadHex": "3a5fb236934ec078b4507c303d3afd82067f8fc1",
-        "exportedAt": "2026-04-09T12:24:37.989Z",
+        "exportedAt": "2026-04-10T15:06:39.176Z",
         "pageSize": 25,
         "historyNumPages": 2,
         "historyNumTxs": 31
@@ -24354,5 +24354,48 @@
             "size": 670,
             "isFinal": true
         }
+    },
+    "scriptUtxos": {
+        "script": "dqkUOl+yNpNOwHi0UHwwPTr9ggZ/j8GIrA==",
+        "utxos": [
+            {
+                "outpoint": {
+                    "txid": "MCPCoC15MuL3FgFquGYkndKSOHln29BQ/yALi4VgBzs=",
+                    "outIdx": 1
+                },
+                "blockHeight": 827538,
+                "sats": "546",
+                "isFinal": true,
+                "token": {
+                    "tokenId": "3fee3384150b030490b7bee095a63900f66a45f2d8e3002ae2cf17ce3ef4d109",
+                    "tokenType": {
+                        "slp": "SLP_TOKEN_TYPE_FUNGIBLE"
+                    },
+                    "entryIdx": -1,
+                    "atoms": "1"
+                }
+            },
+            {
+                "outpoint": {
+                    "txid": "itONISlplU6r8NdcCyIiNPEmgkVU8tj77YTcqFHBmBg=",
+                    "outIdx": 1
+                },
+                "blockHeight": 827810,
+                "sats": "546",
+                "isFinal": true,
+                "token": {
+                    "tokenId": "1898c151a8dc84edfbd8f254458226f13422220b5cd7f0ab4e956929218dd38a",
+                    "tokenType": {
+                        "slp": "SLP_TOKEN_TYPE_FUNGIBLE"
+                    },
+                    "entryIdx": -1,
+                    "atoms": "100"
+                }
+            }
+        ]
+    },
+    "blockchainInfo": {
+        "tipHash": "wIjmNaDdaaKj+xUe+WBG2fg7zPu/0RYaAAAAAAAAAAA=",
+        "tipHeight": 944207
     }
 }

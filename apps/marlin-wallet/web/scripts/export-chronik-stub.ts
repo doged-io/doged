@@ -7,6 +7,8 @@
  * `<payload-without-ecash-prefix>.json`):
  * - Fetches `script/p2pkh/<hash>/history` for pages 0..N-1
  * - Fetches each `tx/<explorerTxid>` referenced on those pages
+ * - Fetches `script/p2pkh/<hash>/utxos` (full `ScriptUtxos`, including token UTXOs)
+ * - Fetches `blockchain-info` (`BlockchainInfo` for wallet sync / maturity)
  *
  * Usage (from apps/marlin-wallet/web):
  *   pnpm exec tsx scripts/export-chronik-stub.ts <out.json> <ecash:...> \\
@@ -124,6 +126,31 @@ async function fetchTx(chronikUrl: string, txidHex: string): Promise<proto.Tx> {
     return proto.Tx.decode(buf);
 }
 
+async function fetchScriptUtxos(
+    chronikUrl: string,
+    p2pkhHex: string,
+): Promise<proto.ScriptUtxos> {
+    const url = `${chronikUrl}/script/p2pkh/${p2pkhHex}/utxos`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`GET ${url} -> ${res.status} ${res.statusText}`);
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    return proto.ScriptUtxos.decode(buf);
+}
+
+async function fetchBlockchainInfo(
+    chronikUrl: string,
+): Promise<proto.BlockchainInfo> {
+    const url = `${chronikUrl}/blockchain-info`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`GET ${url} -> ${res.status} ${res.statusText}`);
+    }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    return proto.BlockchainInfo.decode(buf);
+}
+
 async function exportFromAddress(args: {
     address: string;
     chronikUrl: string;
@@ -168,6 +195,12 @@ async function exportFromAddress(args: {
         txs[id] = proto.Tx.toJSON(tx);
     }
 
+    const scriptUtxosMsg = await fetchScriptUtxos(
+        args.chronikUrl,
+        p2pkhPayloadHex,
+    );
+    const blockchainInfoMsg = await fetchBlockchainInfo(args.chronikUrl);
+
     const stub: ChronikStub = {
         meta: {
             address: args.address,
@@ -179,6 +212,8 @@ async function exportFromAddress(args: {
         },
         historyPages,
         txs,
+        scriptUtxos: proto.ScriptUtxos.toJSON(scriptUtxosMsg),
+        blockchainInfo: proto.BlockchainInfo.toJSON(blockchainInfoMsg),
     };
 
     fs.mkdirSync(path.dirname(args.out), { recursive: true });

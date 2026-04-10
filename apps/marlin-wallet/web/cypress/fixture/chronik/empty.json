@@ -14,5 +14,13 @@
             "numTxs": 0
         }
     },
-    "txs": {}
+    "txs": {},
+    "scriptUtxos": {
+        "script": "dqkUOl+yNpNOwHi0UHwwPTr9ggZ/j8GIrA==",
+        "utxos": []
+    },
+    "blockchainInfo": {
+        "tipHash": "s1m7JbYFIvB0PXH15B0GhZdM3mbo1Ts7AAAAAAAAAAA=",
+        "tipHeight": 944199
+    }
 }

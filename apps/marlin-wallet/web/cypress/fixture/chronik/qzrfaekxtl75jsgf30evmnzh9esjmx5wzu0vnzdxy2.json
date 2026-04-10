@@ -1,0 +1,298 @@
+{
+    "meta": {
+        "address": "ecash:qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2",
+        "p2pkhPayloadHex": "869ee6c65ffd4941098bf2cdcc572e612d9a8e17",
+        "exportedAt": "2026-04-10T15:04:54.181Z",
+        "pageSize": 25,
+        "historyNumPages": 1,
+        "historyNumTxs": 2
+    },
+    "historyPages": {
+        "0": {
+            "txs": [
+                {
+                    "txid": "syAseLQ1UopPrDkzRLETpc+PumjjxNkYOXGTccV8d6U=",
+                    "version": 2,
+                    "inputs": [
+                        {
+                            "prevOut": {
+                                "txid": "ebljYbMT2XUQcTpYqYt4T6XXkYCmUwQz2nGZY2k4/sk=",
+                                "outIdx": 1
+                            },
+                            "inputScript": "QejcLOYGWBoTCZaJV77fyUV86JMM/qSjiFJoxM6kPZCXv6/9qlErQoWKfY7vMAlvfY27DDGaKlQ4iX2slesjeVVBIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                            "sats": "546",
+                            "sequenceNo": 4294967295,
+                            "token": {
+                                "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                                "tokenType": {
+                                    "alp": "ALP_TOKEN_TYPE_STANDARD"
+                                },
+                                "atoms": "8000"
+                            }
+                        },
+                        {
+                            "prevOut": {
+                                "txid": "GrqbN1O5d7LfiPZzEZTuG4t7JZOk3SQvp5YFi7czPrw=",
+                                "outIdx": 1
+                            },
+                            "inputScript": "QRd+tZz+ztvDEME4KZ1bDQx+c5rA4WyBmZK/Cu+6Ag/7jOS/Sqdo3ml/ikOjl3Vh8uXmKPfvsNpUyMXOv5zIQ/1BIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                            "sats": "19995767",
+                            "sequenceNo": 4294967295
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "outputScript": "alA3U0xQMgAEU0VORPDLCDAsS7xmW2JBWSsZ/TfsXWMvMj6asU/bddV/lIcDAogTAAAAALgLAAAAAA=="
+                        },
+                        {
+                            "sats": "546",
+                            "outputScript": "dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA==",
+                            "token": {
+                                "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                                "tokenType": {
+                                    "alp": "ALP_TOKEN_TYPE_STANDARD"
+                                },
+                                "atoms": "5000"
+                            }
+                        },
+                        {
+                            "sats": "546",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                            "token": {
+                                "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                                "tokenType": {
+                                    "alp": "ALP_TOKEN_TYPE_STANDARD"
+                                },
+                                "atoms": "3000"
+                            }
+                        },
+                        {
+                            "sats": "19994760",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA=="
+                        }
+                    ],
+                    "block": {
+                        "height": 944199,
+                        "hash": "s1m7JbYFIvB0PXH15B0GhZdM3mbo1Ts7AAAAAAAAAAA=",
+                        "timestamp": "1775829937",
+                        "isFinal": true
+                    },
+                    "timeFirstSeen": "1775829466",
+                    "size": 461,
+                    "tokenEntries": [
+                        {
+                            "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                            "tokenType": {
+                                "alp": "ALP_TOKEN_TYPE_STANDARD"
+                            },
+                            "txType": "SEND",
+                            "actualBurnAtoms": "0"
+                        }
+                    ],
+                    "tokenStatus": "TOKEN_STATUS_NORMAL",
+                    "isFinal": true
+                },
+                {
+                    "txid": "GrqbN1O5d7LfiPZzEZTuG4t7JZOk3SQvp5YFi7czPrw=",
+                    "version": 2,
+                    "inputs": [
+                        {
+                            "prevOut": {
+                                "txid": "AjDfkdKeKxRdAbhT2r38Jwb2tjzMR/q4DyrP57ptVBE="
+                            },
+                            "inputScript": "QdJXs/BT7P1rhj6gCazJk6zsCOLajy76fy5IQLNbAyL9CRr5qQph1Gfm8QP6k2uxGXOg+qIDzaSG6tK+u2ZPg0FBIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                            "sats": "29995986",
+                            "sequenceNo": 4294967295
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "sats": "10000000",
+                            "outputScript": "dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA=="
+                        },
+                        {
+                            "sats": "19995767",
+                            "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                            "spentBy": {
+                                "txid": "syAseLQ1UopPrDkzRLETpc+PumjjxNkYOXGTccV8d6U=",
+                                "inputIdx": 1
+                            }
+                        }
+                    ],
+                    "block": {
+                        "height": 944199,
+                        "hash": "s1m7JbYFIvB0PXH15B0GhZdM3mbo1Ts7AAAAAAAAAAA=",
+                        "timestamp": "1775829937",
+                        "isFinal": true
+                    },
+                    "timeFirstSeen": "1775829445",
+                    "size": 219,
+                    "isFinal": true
+                }
+            ],
+            "numPages": 1,
+            "numTxs": 2
+        }
+    },
+    "txs": {
+        "a5777cc57193713918d9c4e368ba8fcfa513b1443339ac4f8a5235b4782c20b3": {
+            "txid": "syAseLQ1UopPrDkzRLETpc+PumjjxNkYOXGTccV8d6U=",
+            "version": 2,
+            "inputs": [
+                {
+                    "prevOut": {
+                        "txid": "ebljYbMT2XUQcTpYqYt4T6XXkYCmUwQz2nGZY2k4/sk=",
+                        "outIdx": 1
+                    },
+                    "inputScript": "QejcLOYGWBoTCZaJV77fyUV86JMM/qSjiFJoxM6kPZCXv6/9qlErQoWKfY7vMAlvfY27DDGaKlQ4iX2slesjeVVBIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                    "sats": "546",
+                    "sequenceNo": 4294967295,
+                    "token": {
+                        "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                        "tokenType": {
+                            "alp": "ALP_TOKEN_TYPE_STANDARD"
+                        },
+                        "atoms": "8000"
+                    }
+                },
+                {
+                    "prevOut": {
+                        "txid": "GrqbN1O5d7LfiPZzEZTuG4t7JZOk3SQvp5YFi7czPrw=",
+                        "outIdx": 1
+                    },
+                    "inputScript": "QRd+tZz+ztvDEME4KZ1bDQx+c5rA4WyBmZK/Cu+6Ag/7jOS/Sqdo3ml/ikOjl3Vh8uXmKPfvsNpUyMXOv5zIQ/1BIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                    "sats": "19995767",
+                    "sequenceNo": 4294967295
+                }
+            ],
+            "outputs": [
+                {
+                    "outputScript": "alA3U0xQMgAEU0VORPDLCDAsS7xmW2JBWSsZ/TfsXWMvMj6asU/bddV/lIcDAogTAAAAALgLAAAAAA=="
+                },
+                {
+                    "sats": "546",
+                    "outputScript": "dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA==",
+                    "token": {
+                        "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                        "tokenType": {
+                            "alp": "ALP_TOKEN_TYPE_STANDARD"
+                        },
+                        "atoms": "5000"
+                    }
+                },
+                {
+                    "sats": "546",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                    "token": {
+                        "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                        "tokenType": {
+                            "alp": "ALP_TOKEN_TYPE_STANDARD"
+                        },
+                        "atoms": "3000"
+                    }
+                },
+                {
+                    "sats": "19994760",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA=="
+                }
+            ],
+            "block": {
+                "height": 944199,
+                "hash": "s1m7JbYFIvB0PXH15B0GhZdM3mbo1Ts7AAAAAAAAAAA=",
+                "timestamp": "1775829937",
+                "isFinal": true
+            },
+            "timeFirstSeen": "1775829466",
+            "size": 461,
+            "tokenEntries": [
+                {
+                    "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                    "tokenType": {
+                        "alp": "ALP_TOKEN_TYPE_STANDARD"
+                    },
+                    "txType": "SEND",
+                    "actualBurnAtoms": "0"
+                }
+            ],
+            "tokenStatus": "TOKEN_STATUS_NORMAL",
+            "isFinal": true
+        },
+        "bc3e33b78b0596a72f24dda493257b8b1bee941173f688dfb277b953379bba1a": {
+            "txid": "GrqbN1O5d7LfiPZzEZTuG4t7JZOk3SQvp5YFi7czPrw=",
+            "version": 2,
+            "inputs": [
+                {
+                    "prevOut": {
+                        "txid": "AjDfkdKeKxRdAbhT2r38Jwb2tjzMR/q4DyrP57ptVBE="
+                    },
+                    "inputScript": "QdJXs/BT7P1rhj6gCazJk6zsCOLajy76fy5IQLNbAyL9CRr5qQph1Gfm8QP6k2uxGXOg+qIDzaSG6tK+u2ZPg0FBIQKyfAIizzpmkawjjTom8qRJV+LXdAF5yFrvDaJVtq2Wvw==",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                    "sats": "29995986",
+                    "sequenceNo": 4294967295
+                }
+            ],
+            "outputs": [
+                {
+                    "sats": "10000000",
+                    "outputScript": "dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA=="
+                },
+                {
+                    "sats": "19995767",
+                    "outputScript": "dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==",
+                    "spentBy": {
+                        "txid": "syAseLQ1UopPrDkzRLETpc+PumjjxNkYOXGTccV8d6U=",
+                        "inputIdx": 1
+                    }
+                }
+            ],
+            "block": {
+                "height": 944199,
+                "hash": "s1m7JbYFIvB0PXH15B0GhZdM3mbo1Ts7AAAAAAAAAAA=",
+                "timestamp": "1775829937",
+                "isFinal": true
+            },
+            "timeFirstSeen": "1775829445",
+            "size": 219,
+            "isFinal": true
+        }
+    },
+    "scriptUtxos": {
+        "script": "dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA==",
+        "utxos": [
+            {
+                "outpoint": {
+                    "txid": "syAseLQ1UopPrDkzRLETpc+PumjjxNkYOXGTccV8d6U=",
+                    "outIdx": 1
+                },
+                "blockHeight": 944199,
+                "sats": "546",
+                "isFinal": true,
+                "token": {
+                    "tokenId": "0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0",
+                    "tokenType": {
+                        "alp": "ALP_TOKEN_TYPE_STANDARD"
+                    },
+                    "entryIdx": -1,
+                    "atoms": "5000"
+                }
+            },
+            {
+                "outpoint": {
+                    "txid": "GrqbN1O5d7LfiPZzEZTuG4t7JZOk3SQvp5YFi7czPrw="
+                },
+                "blockHeight": 944199,
+                "sats": "10000000",
+                "isFinal": true
+            }
+        ]
+    },
+    "blockchainInfo": {
+        "tipHash": "wIjmNaDdaaKj+xUe+WBG2fg7zPu/0RYaAAAAAAAAAAA=",
+        "tipHeight": 944207
+    }
+}

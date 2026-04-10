@@ -4,12 +4,55 @@
 
 /// <reference types="cypress" />
 
+import * as proto from '../../../../../modules/chronik-client/proto/chronik';
+
 import {
     applyChronikStubIntercepts,
+    CHRONIK_PROTOBUF_HEADERS,
+    chronikAsProtobufBody,
     chronikStubPath,
+    cypressRequestBodyToUint8Array,
+    randomTxidBase64ForProtobufJson,
     type ChronikStub,
     type ChronikStubRunContext,
 } from './chronik-json-protobuf';
+
+/**
+ * Stub `POST …/broadcast-txs` with a successful `BroadcastTxsResponse`. Decodes
+ * the request and returns one random txid per `rawTx` (same shape ecash-wallet
+ * expects from {@link WalletAction.broadcast}).
+ *
+ * Register before `cy.visit` (e.g. inside `runWithChronik` after GET stubs).
+ * Route alias: `chronikBroadcastsSuccess` (use `cy.wait('@chronikBroadcastsSuccess')`).
+ *
+ * Chronik’s `POST /broadcast-tx` (singular) is not stubbed; only the batched
+ * endpoint used by ecash-wallet `broadcastTxs` is matched.
+ */
+export function stubChronikBroadcastsSuccess(): void {
+    cy.intercept({ method: 'POST', url: /\/broadcast-txs(\?|$)/ }, req => {
+        let rawTxCount: number;
+        try {
+            const decoded = proto.BroadcastTxsRequest.decode(
+                cypressRequestBodyToUint8Array(req.body),
+            );
+            rawTxCount = decoded.rawTxs.length;
+        } catch {
+            req.continue();
+            return;
+        }
+        const txidsJson = Array.from({ length: rawTxCount }, () =>
+            randomTxidBase64ForProtobufJson(),
+        );
+        const out = proto.BroadcastTxsResponse.encode(
+            proto.BroadcastTxsResponse.fromJSON({ txids: txidsJson }),
+        ).finish();
+        req.reply({
+            statusCode: 200,
+            headers: CHRONIK_PROTOBUF_HEADERS,
+            body: chronikAsProtobufBody(out),
+        });
+    }).as('chronikBroadcastsSuccess');
+}
 
 /**
  * Load a Chronik stub JSON, intercept matching `history` and `/tx/*`, and run `body`.

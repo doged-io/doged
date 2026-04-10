@@ -2,7 +2,7 @@
 
 ## `export-chronik-stub.ts`
 
-Downloads Chronik history pages and txs, then writes one JSON file for Cypress (`ChronikStub` — see `cypress/fixture/chronik/chronik-json-protobuf.ts`).
+Downloads Chronik history pages, txs, **script utxos** (all UTXOs for the address, including tokens), and **blockchain info**, then writes one JSON file for Cypress (`ChronikStub` — see `cypress/fixture/chronik-json-protobuf.ts`).
 
 Run from **`apps/marlin-wallet/web`** (needs network):
 
