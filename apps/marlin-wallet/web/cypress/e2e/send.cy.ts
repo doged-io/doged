@@ -7,6 +7,9 @@ import {
     visitWithWalletMnemonic,
     waitForMainLoaded,
 } from '../fixture/common';
+import { DEFAULT_DUST_SATS } from 'ecash-lib';
+import { satsToXec } from '../../src/amount';
+import { createBip21Uri } from '../../src/bip21';
 import {
     runWithChronik,
     stubChronikBroadcastsSuccess,
@@ -23,6 +26,8 @@ const CHRONIK_STUB = 'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json';
 
 const STUB_EXPECTED_TOTAL_XEC = 100_000.0;
 
+const DUST_AMOUNT_XEC = satsToXec(Number(DEFAULT_DUST_SATS));
+
 /**
  * Parse the leading number from a primary `formatPrice(..., XEC)` cell (e.g. `1,234.56 XEC`).
  */
@@ -37,9 +42,424 @@ function parsePrimaryXecDisplay(text: string): number {
     return parseFloat(match[1]);
 }
 
+function primaryForSliderFraction(
+    min: number,
+    max: number,
+    frac: number,
+): string {
+    if (frac <= 0) {
+        return min.toFixed(2);
+    }
+    if (frac >= 1) {
+        return max.toFixed(2);
+    }
+    return (min + (max - min) * frac).toFixed(2);
+}
+
 describe('Send', () => {
     beforeEach(() => {
         stubCoingeckoXecFiatPrices();
+    });
+
+    /**
+     * Open send form via QR flow → Manual Entry.
+     * We can't test the camera flow in Cypress, so we just click the buttons.
+     */
+    function openManualSendScreen(): void {
+        cy.get('#scan-btn').click();
+        cy.get('#manual-entry-btn').click();
+        cy.get('#send-screen').should('not.have.class', 'hidden');
+    }
+
+    function assertReturnedToMain(): void {
+        cy.get('#main-screen').should('be.visible');
+        cy.get('#send-screen').should('have.class', 'hidden');
+    }
+
+    function fillRecipientAndMaxSlider(): void {
+        cy.get('#recipient-address').clear().type(WALLET_ADDRESS).blur();
+        cy.get('#amount-slider').then($slider => {
+            const max = $slider.attr('max');
+            expect(max, 'slider max').to.be.a('string').and.not.eq('');
+            cy.wrap($slider)
+                .invoke('val', max)
+                .trigger('input', { force: true });
+        });
+    }
+
+    function pasteBip21UriIntoRecipient(uri: string): void {
+        cy.get('#recipient-address')
+            .invoke('val', uri)
+            .trigger('input', { force: true });
+    }
+
+    describe('BIP21 URI pasted into recipient field', () => {
+        it('fills address and amount from URI', () => {
+            const uri = createBip21Uri(WALLET_ADDRESS, 10_000);
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#recipient-address').should('have.class', 'valid');
+                cy.get('#send-amount')
+                    .should('have.value', '100.00')
+                    .and('have.attr', 'readonly');
+                cy.get('#amount-slider').should('be.disabled');
+                cy.get('#paybutton-logo-container').should(
+                    'have.css',
+                    'display',
+                    'none',
+                );
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('fills fields, shows PayButton logo for PayButton op_return_raw', () => {
+            const uri = `${createBip21Uri(WALLET_ADDRESS, 2500)}&op_return_raw=0450415900`;
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#send-amount')
+                    .should('have.value', '25.00')
+                    .and('have.attr', 'readonly');
+                cy.get('#amount-slider').should('be.disabled');
+                cy.get('#paybutton-logo-container').should(
+                    'have.css',
+                    'display',
+                    'flex',
+                );
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('fills amount but hides PayButton logo for non-PayButton op_return_raw', () => {
+            const uri = `${createBip21Uri(WALLET_ADDRESS, 2500)}&op_return_raw=deadbeef`;
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#send-amount')
+                    .should('have.value', '25.00')
+                    .and('have.attr', 'readonly');
+                cy.get('#amount-slider').should('be.disabled');
+                cy.get('#paybutton-logo-container').should(
+                    'have.css',
+                    'display',
+                    'none',
+                );
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+    });
+
+    it('slider samples update amount input and fee rows in proportion', () => {
+        const sampleFracs = [0, 0.25, 0.5, 0.75, 1];
+
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            openManualSendScreen();
+            cy.get('#recipient-address').clear().type(WALLET_ADDRESS).blur();
+
+            cy.get('#amount-slider').then($slider => {
+                const min = parseFloat(String($slider.attr('min')));
+                const max = parseFloat(String($slider.attr('max')));
+                if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                    throw new Error(
+                        `invalid slider bounds min=${String($slider.attr('min'))} max=${String($slider.attr('max'))}`,
+                    );
+                }
+                expect(
+                    min,
+                    'slider min = dust threshold (XEC primary)',
+                ).to.equal(DUST_AMOUNT_XEC);
+                expect(
+                    max,
+                    'slider max ≤ stub balance (XEC primary)',
+                ).to.be.at.most(STUB_EXPECTED_TOTAL_XEC);
+            });
+
+            cy.wrap(sampleFracs).each(frac => {
+                cy.get('#amount-slider').then($slider => {
+                    const min = parseFloat(String($slider.attr('min')));
+                    const max = parseFloat(String($slider.attr('max')));
+                    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                        throw new Error(
+                            `invalid slider bounds min=${String($slider.attr('min'))} max=${String($slider.attr('max'))}`,
+                        );
+                    }
+                    const valuePrimary = primaryForSliderFraction(
+                        min,
+                        max,
+                        frac,
+                    );
+                    cy.wrap($slider)
+                        .invoke('val', String(valuePrimary))
+                        .trigger('input', { force: true });
+
+                    // The amount input gets updated by the slider
+                    cy.get('#send-amount').should('have.value', valuePrimary);
+
+                    // So are the transaction details
+                    cy.get('#fee-display')
+                        .should('be.visible')
+                        .and('not.have.class', 'error');
+                    cy.get('#fee-display .fee-value-primary')
+                        .should('have.length', 3)
+                        .then($cells => {
+                            const primaryValues = Array.from($cells).map(cell =>
+                                parsePrimaryXecDisplay(
+                                    cell.textContent ?? '',
+                                ).toFixed(2),
+                            );
+                            const [sendAmount, networkFee, totalOut] =
+                                primaryValues;
+                            cy.log(
+                                `[slider debug] frac=${frac} sendAmount=${sendAmount} networkFee=${networkFee} totalOut=${totalOut}`,
+                            );
+                            expect(
+                                sendAmount,
+                                `Amount row = slider primary at frac ${frac}`,
+                            ).to.equal(valuePrimary);
+                            expect(
+                                (
+                                    parseFloat(sendAmount) +
+                                    parseFloat(networkFee)
+                                ).toFixed(2),
+                                `amount + fee = total at slider frac ${frac}`,
+                            ).to.equal(totalOut);
+                        });
+                });
+            });
+        });
+    });
+
+    it('amount input updates slider and transaction details', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            openManualSendScreen();
+            cy.get('#recipient-address').clear().type(WALLET_ADDRESS).blur();
+
+            const valuePrimary = (STUB_EXPECTED_TOTAL_XEC / 2).toFixed(2);
+            cy.get('#send-amount')
+                .clear()
+                .type(valuePrimary)
+                .should('have.value', valuePrimary);
+            // The slider gets updated by the amount input
+            cy.get('#amount-slider')
+                .invoke('val')
+                .then(val => {
+                    expect(
+                        parseFloat(String(val)),
+                        'slider reflects amount input',
+                    ).to.equal(parseFloat(valuePrimary));
+                });
+            // So are the transaction details
+            cy.get('#fee-display')
+                .should('be.visible')
+                .and('not.have.class', 'error');
+            cy.get('#fee-display .fee-value-primary')
+                .should('have.length', 3)
+                .then($cells => {
+                    const primaryValues = Array.from($cells).map(cell =>
+                        parsePrimaryXecDisplay(cell.textContent ?? '').toFixed(
+                            2,
+                        ),
+                    );
+                    const [sendAmount, networkFee, totalOut] = primaryValues;
+                    expect(
+                        sendAmount,
+                        'Amount row matches typed primary',
+                    ).to.equal(valuePrimary);
+                    expect(
+                        (
+                            parseFloat(sendAmount) + parseFloat(networkFee)
+                        ).toFixed(2),
+                        'amount + fee = total after input change',
+                    ).to.equal(totalOut);
+                });
+        });
+    });
+
+    describe('transaction details error heading', () => {
+        it('shows dust error when amount is below minimum', () => {
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                cy.get('#recipient-address')
+                    .clear()
+                    .type(WALLET_ADDRESS)
+                    .blur();
+                cy.get('#send-amount').clear().type('0.01');
+                cy.get('#fee-display').should('be.visible');
+                cy.get('#fee-display').should('have.class', 'error');
+                cy.get('#fee-display .fee-item.title').should(
+                    'contain',
+                    'Amount is too small',
+                );
+            });
+        });
+
+        it('shows insufficient funds when amount is above max spendable', () => {
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                cy.get('#recipient-address')
+                    .clear()
+                    .type(WALLET_ADDRESS)
+                    .blur();
+                cy.get('#send-amount')
+                    .invoke('attr', 'max')
+                    .then(maxStr => {
+                        const max = parseFloat(String(maxStr));
+                        if (!Number.isFinite(max)) {
+                            throw new Error(
+                                `invalid send-amount max: ${String(maxStr)}`,
+                            );
+                        }
+                        const tooHigh = (max + 10_000).toFixed(2);
+                        cy.get('#send-amount').clear().type(tooHigh);
+                    });
+                cy.get('#fee-display').should('be.visible');
+                cy.get('#fee-display').should('have.class', 'error');
+                cy.get('#fee-display .fee-item.title').should(
+                    'contain',
+                    'Insufficient funds',
+                );
+            });
+        });
+    });
+
+    it('header back button and cancel button return to main', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            openManualSendScreen();
+            cy.get('#back-btn').click();
+            assertReturnedToMain();
+            openManualSendScreen();
+            cy.get('#cancel-send').click();
+            assertReturnedToMain();
+        });
+    });
+
+    it('disabling require hold to send updates the send button after reopening send', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC);
+            waitForMainLoaded();
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
+            cy.get('#confirm-send span').should('have.text', 'Hold to Send');
+
+            cy.get('#back-btn').click();
+            assertReturnedToMain();
+            cy.get('.settings-button').click();
+            cy.get('#settings-screen').should('not.have.class', 'hidden');
+            cy.get('#hold-to-send-toggle').should('be.checked');
+            cy.get('#hold-to-send-toggle').uncheck({ force: true });
+            cy.get('#settings-back-btn').click();
+            cy.get('#main-screen').should('be.visible');
+
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
+            cy.get('#confirm-send span').should('have.text', 'Send');
+        });
+    });
+
+    it('fee details show dual currency; fiat primary swaps send + fee units', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
+
+            // XEC primary: amount/slider in XEC; fee rows show XEC then USD.
+            cy.get('#fee-display').should('be.visible');
+            cy.get('#ticker-label').should('contain', 'XEC');
+            cy.get('#send-amount').should('have.attr', 'step', '0.01');
+            cy.get('#amount-slider').should('have.attr', 'step', '0.01');
+            cy.get('#fee-display .fee-item .fee-value').should(
+                'have.length',
+                3,
+            );
+            cy.get('#fee-display .fee-item .fee-value').each($wrap => {
+                cy.wrap($wrap)
+                    .find('.fee-value-primary')
+                    .invoke('text')
+                    .should('match', /XEC/i);
+                cy.wrap($wrap)
+                    .find('.fee-value-secondary')
+                    .invoke('text')
+                    .should('match', /\$/);
+            });
+
+            cy.get('#back-btn').click();
+            assertReturnedToMain();
+            cy.get('.settings-button').click();
+            cy.get('#settings-screen').should('not.have.class', 'hidden');
+            cy.get('#primary-balance-toggle').should('not.be.checked');
+            cy.get('#primary-balance-toggle').check({ force: true });
+            cy.get('#primary-balance-toggle').should('be.checked');
+            cy.get('#settings-back-btn').click();
+            cy.get('#main-screen').should('be.visible');
+
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
+
+            // Fiat primary: amount/slider in fiat; fee rows show USD then XEC.
+            cy.get('#fee-display').should('be.visible');
+            cy.get('#ticker-label').should('contain', 'USD');
+            cy.get('#send-amount').should('have.attr', 'step', '0.00000001');
+            cy.get('#amount-slider').should('have.attr', 'step', '0.00000001');
+            cy.get('#fee-display .fee-item .fee-value').should(
+                'have.length',
+                3,
+            );
+            cy.get('#fee-display .fee-item .fee-value').each($wrap => {
+                cy.wrap($wrap)
+                    .find('.fee-value-primary')
+                    .invoke('text')
+                    .should('match', /\$/);
+                cy.wrap($wrap)
+                    .find('.fee-value-secondary')
+                    .invoke('text')
+                    .should('match', /XEC/i);
+            });
+        });
     });
 
     it('sends max to self', () => {
@@ -50,19 +470,8 @@ describe('Send', () => {
             });
             waitForMainLoaded();
 
-            cy.get('#scan-btn').click();
-            cy.get('#manual-entry-btn').click();
-
-            cy.get('#send-screen').should('not.have.class', 'hidden');
-            cy.get('#recipient-address').clear().type(WALLET_ADDRESS).blur();
-
-            cy.get('#amount-slider').then($slider => {
-                const max = $slider.attr('max');
-                expect(max, 'slider max').to.be.a('string').and.not.eq('');
-                cy.wrap($slider)
-                    .invoke('val', max)
-                    .trigger('input', { force: true });
-            });
+            openManualSendScreen();
+            fillRecipientAndMaxSlider();
 
             cy.get('#fee-display')
                 .should('be.visible')
