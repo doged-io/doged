@@ -5,7 +5,10 @@
 /// <reference types="cypress" />
 
 import * as proto from '../../../../../modules/chronik-client/proto/chronik';
-import { toHexRev } from '../../../../../modules/chronik-client/src/hex';
+import {
+    fromHexRev,
+    toHexRev,
+} from '../../../../../modules/chronik-client/src/hex';
 
 /**
  * Single reviewable JSON for Chronik Cypress stubs: history pages (protobuf
@@ -71,12 +74,55 @@ function encodeBlockchainInfoFromFixtureJson(parsed: unknown): Uint8Array {
 }
 
 /**
- * Explorer / Chronik URL txid (hex, reversed byte order) for a `Tx` JSON
- * fixture, lowercase.
+ * Txid (hex, reversed byte order) for a `Tx` JSON fixture, lowercase.
  */
-function lowerCaseTxidFromTxJson(tx: unknown): string {
+export function lowerCaseTxidFromTxJson(tx: unknown): string {
     const msg = proto.Tx.fromJSON(tx);
     return toHexRev(msg.txid).toLowerCase();
+}
+
+/**
+ * Encode a Chronik WebSocket `WsMsg` with a `tx` payload (same wire format as
+ * Chronik). For `TX_FINALIZED`, pass `finalizationReasonType` so the client
+ * receives a valid finalization reason (Chronik `MsgTx.finalization_reason`).
+ */
+export function encodeChronikWsMsgTx(
+    txid: string,
+    msgType: proto.TxMsgType,
+    finalizationReasonType?: proto.TxFinalizationReasonType,
+): Uint8Array {
+    const txidBytes = fromHexRev(txid.toLowerCase());
+    const msgTx: proto.MsgTx = {
+        msgType,
+        txid: txidBytes,
+        finalizationReason: undefined,
+    };
+    if (finalizationReasonType !== undefined) {
+        msgTx.finalizationReason = {
+            finalizationType: finalizationReasonType,
+        };
+    }
+    return proto.WsMsg.encode({ tx: msgTx }).finish();
+}
+
+/**
+ * Stub `GET …/tx/<txid>` with a protobuf `Tx` built from fixture JSON.
+ * Register after {@link applyChronikStubIntercepts} so this route wins over the
+ * generic `/tx/*` handler for the same id.
+ */
+export function stubChronikGetTxFromFixtureJson(txJson: unknown): void {
+    const body = encodeTxFromFixtureJson(txJson);
+    const txid = lowerCaseTxidFromTxJson(txJson);
+    cy.intercept(
+        { method: 'GET', url: new RegExp(`/tx/${txid}(\\?|$)`, 'i') },
+        req => {
+            req.reply({
+                statusCode: 200,
+                headers: CHRONIK_PROTOBUF_HEADERS,
+                body: chronikAsProtobufBody(body),
+            });
+        },
+    );
 }
 
 /**

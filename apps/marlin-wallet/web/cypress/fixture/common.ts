@@ -19,6 +19,15 @@ export type VisitWalletMnemonicSettings = {
     locale?: string;
 };
 
+/** Optional hooks for {@link visitWithWalletMnemonic}. */
+export type VisitWalletMnemonicHooks = {
+    /**
+     * Runs at the end of `onBeforeLoad` (after `localStorage` is seeded),
+     * before the application JavaScript executes.
+     */
+    beforeAppLoad?: (win: Cypress.AUTWindow) => void;
+};
+
 const DEFAULT_STORED_WALLET_SETTINGS = {
     requireHoldToSend: true,
     primaryBalanceType: 'XEC' as const,
@@ -45,10 +54,14 @@ export function visitFresh(): void {
  * uses `loadSettings()` defaults from `src/settings.ts`. If `settings` is
  * passed, each field falls back to those same defaults when not specified, then
  * the merged object is stored before load.
+ *
+ * Optional `hooks.beforeAppLoad` runs last in `onBeforeLoad` (e.g. install a
+ * stub `WebSocket` before the bundle runs).
  */
 export function visitWithWalletMnemonic(
     mnemonic: string,
     settings?: VisitWalletMnemonicSettings,
+    hooks?: VisitWalletMnemonicHooks,
 ): void {
     cy.visit('/', {
         onBeforeLoad(win) {
@@ -63,6 +76,7 @@ export function visitWithWalletMnemonic(
                     }),
                 );
             }
+            hooks?.beforeAppLoad?.(win);
         },
     });
 }

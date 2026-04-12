@@ -12,10 +12,127 @@ import {
     chronikAsProtobufBody,
     chronikStubPath,
     cypressRequestBodyToUint8Array,
+    encodeChronikWsMsgTx,
+    lowerCaseTxidFromTxJson,
     randomTxidBase64ForProtobufJson,
+    stubChronikGetTxFromFixtureJson,
     type ChronikStub,
     type ChronikStubRunContext,
 } from './chronik-json-protobuf';
+
+/**
+ * Public surface of the Chronik `/ws` stub attached to
+ * {@link WindowWithChronikWebSocketStub.__chronikWebSocketStub}.
+ */
+export interface ChronikWebSocketStub {
+    emitTxWebsocket(
+        txWsEventType: proto.TxMsgType,
+        txJson: unknown,
+        finalizationReasonType?: proto.TxFinalizationReasonType,
+    ): void;
+}
+
+/**
+ * Window augmented by {@link installChronikWebSocketStub} with the last
+ * stub Chronik socket (only Chronik `/ws` URLs use the stub).
+ */
+export type WindowWithChronikWebSocketStub = Window &
+    typeof globalThis & {
+        __chronikWebSocketStub?: ChronikWebSocketStub;
+    };
+
+/**
+ * Minimal WebSocket stub for Chronik: `onopen` on a microtask, `send` no-op,
+ * delivers protobuf `WsMsg` frames via {@link ChronikWebSocketStub.emitTxWebsocket}
+ * (which also registers the matching `GET /tx/…` intercept for a tx fixture).
+ */
+class ChronikWebSocketStubImpl implements ChronikWebSocketStub {
+    /* WebSocket minimal implementation */
+    binaryType: BinaryType = 'blob';
+    bufferedAmount = 0;
+    extensions = '';
+    protocol = '';
+    readyState: number;
+    readonly url: string;
+
+    onclose: ((event: CloseEvent) => void) | null = null;
+    onerror: ((event: Event) => void) | null = null;
+    onmessage: ((event: MessageEvent) => void) | null = null;
+    onopen: ((event: Event) => void) | null = null;
+
+    constructor(url: string) {
+        this.url = url;
+        this.readyState = 0;
+        queueMicrotask(() => {
+            this.readyState = 1;
+            if (this.onopen) {
+                this.onopen(new Event('open'));
+            }
+        });
+    }
+
+    send(_data: string | ArrayBufferLike | Blob | ArrayBufferView): void {}
+
+    close(_code?: number, _reason?: string): void {
+        this.readyState = 3;
+    }
+
+    /**
+     * Stub `GET …/tx/<id>` for this Chronik `Tx` protobuf-JSON fixture (see
+     * {@link stubChronikGetTxFromFixtureJson}), then deliver a `WsMsg` with
+     * `tx` payload and the given {@link proto.TxMsgType} on the wire (same
+     * encoding as Chronik). Register intercepts after
+     * {@link applyChronikStubIntercepts} so the `/tx/` route wins.
+     */
+    emitTxWebsocket(
+        txWsEventType: proto.TxMsgType,
+        txJson: unknown,
+        finalizationReasonType?: proto.TxFinalizationReasonType,
+    ): void {
+        stubChronikGetTxFromFixtureJson(txJson);
+        const txid = lowerCaseTxidFromTxJson(txJson);
+        const u8 = encodeChronikWsMsgTx(
+            txid,
+            txWsEventType,
+            finalizationReasonType,
+        );
+        if (!this.onmessage) {
+            return;
+        }
+        const blob = new Blob([new Uint8Array(u8)]);
+        this.onmessage({ data: blob } as MessageEvent);
+    }
+}
+
+/**
+ * Replace `window.WebSocket` so only Chronik `…/ws` connections use a stub; all
+ * other URLs use the native implementation. Call from `cy.visit` `onBeforeLoad`
+ * after saving `localStorage` and before the app bundle runs.
+ */
+export function installChronikWebSocketStub(
+    win: WindowWithChronikWebSocketStub,
+): void {
+    const NativeWebSocket = win.WebSocket;
+
+    const Replacement = function (
+        this: unknown,
+        url: string | URL,
+        protocols?: string | string[],
+    ): WebSocket {
+        const urlStr = String(url);
+        if (!urlStr.includes('/ws')) {
+            return new NativeWebSocket(
+                url,
+                protocols as string | string[] | undefined,
+            );
+        }
+        const stub = new ChronikWebSocketStubImpl(urlStr);
+        win.__chronikWebSocketStub = stub;
+        return stub as unknown as WebSocket;
+    };
+    Replacement.prototype = NativeWebSocket.prototype;
+    win.WebSocket = Replacement as unknown as typeof WebSocket;
+}
 
 /**
  * Stub `POST …/broadcast-txs` with a successful `BroadcastTxsResponse`. Decodes
