@@ -87,6 +87,14 @@ ninja doged-miner
 ./doged-miner -o stratum+tcp://pool:3333 -u worker -p x --cpu 4
 ```
 
+Code Quality Fixes
+-------------------
+
+Several upstream code quality patches are included:
+
+- **CTxInWitness naming** — fixed inconsistent casing (`CTxinWitness` → `CTxInWitness`) across the transaction and test code.
+- **C++11 compatibility** — added explicit `shared_ptr` constructor to resolve compilation errors on strict C++11 toolchains.
+
 What is Dogecoin?
 ---------------------
 
