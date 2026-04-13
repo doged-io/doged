@@ -7,12 +7,13 @@ import {
     TxMsgType,
 } from '../../../../../modules/chronik-client/proto/chronik';
 import { fromHexRev } from '../../../../../modules/chronik-client/src/hex';
-import { CryptoTicker, formatPrice } from 'ecash-price';
+import { CryptoTicker, Fiat, formatPrice } from 'ecash-price';
 
 import { DEFAULT_LOCALE } from '../../../i18n/locales';
 import { satsToXec } from '../../src/amount';
 import {
     normalizeBalanceText,
+    openSettingsFromMain,
     visitWithWalletMnemonic,
     waitForMainLoaded,
 } from '../fixture/common';
@@ -35,6 +36,8 @@ const CHRONIK_STUB = 'qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2.json';
 const STUB_AVAILABLE_XEC = 100_000;
 /** output script for `ecash:qzrfaekxtl75jsgf30evmnzh9esjmx5wzu0vnzdxy2` */
 const STUB_WALLET_OUTPUT_SCRIPT = 'dqkUhp7mxl/9SUEJi/LNzFcuYS2ajheIrA==';
+/** USD per 1 XEC from {@link stubCoingeckoXecFiatPrices} (`ecash.usd`). */
+const STUB_USD_PER_XEC = 0.00005;
 
 /** External p2pkh script used on the synthetic input (not the stub wallet). */
 const SYNTHETIC_P2PKH_OUTPUT_SCRIPT = 'dqkUfsiUhjvs0GZXr1GsRXF/erkXfeSIrA==';
@@ -264,6 +267,91 @@ describe('Transitional balance', () => {
                         STUB_AVAILABLE_XEC + satsToXec(sendDeltaSats),
                         CryptoTicker.XEC,
                         { locale: DEFAULT_LOCALE, decimals: 2 },
+                    ),
+                );
+            });
+        });
+    });
+
+    it('shows spend transitional amount in fiat then finalizes to updated fiat primary (settings before tx)', () => {
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, undefined, {
+                beforeAppLoad(win) {
+                    installChronikWebSocketStub(
+                        win as WindowWithChronikWebSocketStub,
+                    );
+                },
+            });
+            waitForMainLoaded();
+
+            openSettingsFromMain();
+            cy.get('#primary-balance-toggle').should('not.be.checked');
+            cy.get('#primary-balance-toggle').check({ force: true });
+            cy.get('#primary-balance-toggle').should('be.checked');
+            cy.get('#settings-back-btn').click();
+            cy.get('#main-screen').should('be.visible');
+
+            cy.get('#primary-balance').should($el => {
+                const t = normalizeBalanceText($el.text());
+                expect(t).to.equal(
+                    formatPrice(
+                        STUB_AVAILABLE_XEC * STUB_USD_PER_XEC,
+                        Fiat.USD,
+                        { locale: DEFAULT_LOCALE },
+                    ),
+                );
+            });
+
+            const syntheticTxid =
+                'e2e000000000000000000000000000000000000000000000000000000000abc9';
+            const amountXec = 10_000;
+            const sendAmountSats = amountXec * 100;
+            const mempoolTx = sendTx(
+                syntheticTxid,
+                sendAmountSats,
+                SYNTHETIC_INPUT_SATS,
+            );
+            const sendDeltaSats = -(sendAmountSats + SYNTHETIC_FEE_SATS);
+            const transitionalXec = satsToXec(sendDeltaSats);
+            const expectedTransitionalUsd = formatPrice(
+                transitionalXec * STUB_USD_PER_XEC,
+                Fiat.USD,
+                { locale: DEFAULT_LOCALE, alwaysShowSign: true },
+            );
+
+            cy.window().then(win => {
+                const stub = ensureWebsocketStub(win);
+                stub.emitTxWebsocket(TxMsgType.TX_ADDED_TO_MEMPOOL, mempoolTx);
+            });
+
+            cy.get('#transitional-balance')
+                .should('be.visible')
+                .and('have.class', 'spend')
+                .and($el => {
+                    const t = normalizeBalanceText($el.text());
+                    expect(t).to.equal(expectedTransitionalUsd);
+                    expect(t.toUpperCase()).not.to.include('XEC');
+                });
+
+            cy.window().then(win => {
+                const stub = ensureWebsocketStub(win);
+                stub.emitTxWebsocket(
+                    TxMsgType.TX_FINALIZED,
+                    mempoolTx,
+                    TxFinalizationReasonType.TX_FINALIZATION_REASON_PRE_CONSENSUS,
+                );
+            });
+
+            cy.get('#transitional-balance').should('have.class', 'hidden');
+            cy.get('#primary-balance').should($el => {
+                const t = normalizeBalanceText($el.text());
+                const availableXecAfter =
+                    STUB_AVAILABLE_XEC + satsToXec(sendDeltaSats);
+                expect(t).to.equal(
+                    formatPrice(
+                        availableXecAfter * STUB_USD_PER_XEC,
+                        Fiat.USD,
+                        { locale: DEFAULT_LOCALE },
                     ),
                 );
             });
