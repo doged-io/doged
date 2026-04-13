@@ -414,14 +414,11 @@ describe('<CreateTokenForm />', () => {
             '4HC',
         );
 
-        // The decimals input is disabled
-        const decimalsInput = screen.getByPlaceholderText(
-            'Enter number of decimal places',
-        );
-        expect(decimalsInput).toHaveProperty('disabled', true);
+        // NFT collections use 0 decimals internally; decimals input is not shown
+        expect(
+            screen.queryByPlaceholderText('Enter number of decimal places'),
+        ).not.toBeInTheDocument();
 
-        // Decimals is set to 0
-        expect(decimalsInput).toHaveValue(0);
         await user.type(
             await screen.findByPlaceholderText('Enter NFT collection size'),
             '4',

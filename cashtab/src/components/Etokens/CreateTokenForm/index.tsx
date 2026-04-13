@@ -1047,15 +1047,16 @@ const CreateTokenForm: React.FC<CreateTokenFormProps> = ({ groupTokenId }) => {
                 />
                 {!isNftMint && (
                     <>
-                        <Input
-                            placeholder="Enter number of decimal places"
-                            name="decimals"
-                            type="number"
-                            disabled={createNftCollection}
-                            value={formData.decimals}
-                            handleInput={handleInput}
-                            error={formDataErrors.decimals}
-                        />
+                        {!createNftCollection && (
+                            <Input
+                                placeholder="Enter number of decimal places"
+                                name="decimals"
+                                type="number"
+                                value={formData.decimals}
+                                handleInput={handleInput}
+                                error={formDataErrors.decimals}
+                            />
+                        )}
                         <SendTokenInput
                             placeholder={`Enter ${
                                 createNftCollection
