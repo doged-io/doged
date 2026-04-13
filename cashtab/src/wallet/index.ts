@@ -3,7 +3,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import BigNumber from 'bignumber.js';
-import randomBytes from 'randombytes';
 import { ChronikClient } from 'chronik-client';
 import { encodeCashAddress, decodeCashAddress } from 'ecashaddrjs';
 import appConfig from 'config/app';
@@ -330,7 +329,8 @@ export const generateTokensFromWalletUtxos = async (
  */
 export const generateMnemonic = (): string => {
     // Generate 16 bytes (128 bits) of entropy
-    const entropy = randomBytes(16);
+    const entropy = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(entropy);
     // Convert entropy to mnemonic using ecash-lib
     const mnemonic = entropyToMnemonic(entropy, englishWordlist);
     return mnemonic;

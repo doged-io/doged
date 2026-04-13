@@ -1,6 +1,6 @@
 {
     "name": "cashtab",
-    "version": "5.0.3",
+    "version": "5.0.4",
     "private": true,
     "type": "module",
     "scripts": {
@@ -47,7 +47,6 @@
         "localforage": "^1.9.0",
         "lodash.debounce": "^4.0.8",
         "qrcode.react": "^4.2.0",
-        "randombytes": "^2.1.0",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",
         "react-easy-crop": "^5.0.6",
@@ -82,7 +81,6 @@
         "@types/jest-when": "^3.5.5",
         "@types/lodash.debounce": "^4.0.9",
         "@types/node": "^24.9.1",
-        "@types/randombytes": "^2.0.3",
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "@types/react-google-recaptcha": "^2.1.9",
