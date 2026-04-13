@@ -522,15 +522,15 @@ describe('<SendXec /> rendered with params in URL', () => {
         // The amount input is disabled because it is set by a bip21 query string
         expect(amountInputEl).toHaveProperty('disabled', true);
 
-        const opReturnRawInput = screen.getByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // Advanced section is hidden for BIP21 input; op_return_raw is rendered as parsed output
+        expect(
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // No addr validation errors on load
         for (const addrErr of SEND_ADDRESS_VALIDATION_ERRORS) {
@@ -722,15 +722,15 @@ describe('<SendXec /> rendered with params in URL', () => {
             screen.getByText('BIP21: Sending 115.50 XEC to 2 outputs'),
         ).toBeInTheDocument();
 
-        const opReturnRawInput = screen.getByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // Advanced section is hidden for BIP21 input; op_return_raw is rendered as parsed output
+        expect(
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // No addr validation errors on load
         for (const addrErr of SEND_ADDRESS_VALIDATION_ERRORS) {

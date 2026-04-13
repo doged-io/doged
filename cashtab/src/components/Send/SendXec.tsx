@@ -123,16 +123,16 @@ const SendContentWrapper = styled.div`
 `;
 
 const SendXecForm = styled.div`
-    margin: 12px 0;
+    margin: 2px 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
     flex-grow: 1;
 `;
 const SendXecRow = styled.div``;
 
 const AdvancedSection = styled.div`
-    margin: 12px 0;
+    margin: 0;
     width: 100%;
 `;
 const AdvancedHeader = styled.button`
@@ -141,7 +141,7 @@ const AdvancedHeader = styled.button`
     gap: 2px;
     width: 100%;
     background: none;
-    padding: 12px 0;
+    padding: 8px 0;
     border: none;
     color: ${props => props.theme.primaryText};
     font-size: var(--text-base);
@@ -214,6 +214,16 @@ const AmountPreviewCtn = styled.div`
     gap: 12px;
     border-top: 1px solid ${props => props.theme.border};
     padding-top: 20px;
+    /*
+     * On narrow viewports the send action row is position:fixed above the bottom
+     * nav (see SendButtonContainer in styled.ts). Without extra space below this
+     * block, the “Sending” amount and fiat line can end up under those buttons
+     * with no way to scroll them fully into view. This padding is scrollable
+     * clearance only—not a measured bar height, just enough to clear typical layouts.
+     */
+    @media (max-width: 768px) {
+        padding-bottom: 48px;
+    }
 `;
 const AmountPreviewLabel = styled.div`
     color: ${props => props.theme.primaryText};
@@ -265,7 +275,7 @@ const SendToManyHolder = styled.div``;
 const SendToOneInputForm = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
 `;
 
 const InputModesHolder = styled.div<{ open: boolean }>`
@@ -2531,6 +2541,11 @@ const SendXec: React.FC = () => {
 
     const priceApiError =
         fiatPrice === null && selectedCurrency !== appConfig.ticker;
+    const isBip21QueryStringPresent = 'queryString' in parsedAddressInput;
+    const shouldRenderParsedOpReturnRaw =
+        sendWithOpReturnRaw &&
+        opReturnRawError === false &&
+        formData.opReturnRaw !== '';
 
     const disableSendButton = shouldSendXecBeDisabled(
         formData,
@@ -3297,128 +3312,134 @@ const SendXec: React.FC = () => {
                     )}
                     {!isTokenMode && (
                         <SendXecForm>
-                            <AdvancedSection>
-                                <AdvancedHeader
-                                    type="button"
-                                    onClick={handleAdvancedHeaderClick}
-                                >
-                                    Advanced{' '}
-                                    <AdvancedChevron $open={advancedOpen} />
-                                </AdvancedHeader>
-                                {advancedOpen && (
-                                    <>
-                                        <AdvancedButtonsRow>
-                                            <AdvancedButton
-                                                type="button"
-                                                $active={isOneToManyXECSend}
-                                                onClick={() =>
-                                                    setIsOneToManyXECSend(
-                                                        !isOneToManyXECSend,
-                                                    )
-                                                }
-                                                disabled={
-                                                    txInfoFromUrl !== false ||
-                                                    'queryString' in
-                                                        parsedAddressInput
-                                                }
-                                            >
-                                                Send to many
-                                            </AdvancedButton>
-                                            <AdvancedButton
-                                                type="button"
-                                                $active={sendWithCashtabMsg}
-                                                onClick={() => {
-                                                    if (
-                                                        !sendWithCashtabMsg &&
-                                                        sendWithOpReturnRaw
-                                                    ) {
-                                                        setSendWithOpReturnRaw(
-                                                            false,
-                                                        );
+                            {!isBip21QueryStringPresent && (
+                                <AdvancedSection>
+                                    <AdvancedHeader
+                                        type="button"
+                                        onClick={handleAdvancedHeaderClick}
+                                    >
+                                        Advanced{' '}
+                                        <AdvancedChevron $open={advancedOpen} />
+                                    </AdvancedHeader>
+                                    {advancedOpen && (
+                                        <>
+                                            <AdvancedButtonsRow>
+                                                <AdvancedButton
+                                                    type="button"
+                                                    $active={isOneToManyXECSend}
+                                                    onClick={() =>
+                                                        setIsOneToManyXECSend(
+                                                            !isOneToManyXECSend,
+                                                        )
                                                     }
-                                                    setSendWithCashtabMsg(
-                                                        !sendWithCashtabMsg,
-                                                    );
-                                                }}
-                                                disabled={
-                                                    txInfoFromUrl !== false ||
-                                                    'queryString' in
-                                                        parsedAddressInput
-                                                }
-                                            >
-                                                Message
-                                            </AdvancedButton>
-                                            <AdvancedButton
-                                                type="button"
-                                                $active={sendWithOpReturnRaw}
-                                                onClick={() => {
-                                                    if (
-                                                        !sendWithOpReturnRaw &&
-                                                        sendWithCashtabMsg
-                                                    ) {
+                                                    disabled={
+                                                        txInfoFromUrl !==
+                                                            false ||
+                                                        isBip21QueryStringPresent
+                                                    }
+                                                >
+                                                    Send to many
+                                                </AdvancedButton>
+                                                <AdvancedButton
+                                                    type="button"
+                                                    $active={sendWithCashtabMsg}
+                                                    onClick={() => {
+                                                        if (
+                                                            !sendWithCashtabMsg &&
+                                                            sendWithOpReturnRaw
+                                                        ) {
+                                                            setSendWithOpReturnRaw(
+                                                                false,
+                                                            );
+                                                        }
                                                         setSendWithCashtabMsg(
-                                                            false,
+                                                            !sendWithCashtabMsg,
                                                         );
+                                                    }}
+                                                    disabled={
+                                                        txInfoFromUrl !==
+                                                            false ||
+                                                        isBip21QueryStringPresent
                                                     }
-                                                    setSendWithOpReturnRaw(
-                                                        !sendWithOpReturnRaw,
-                                                    );
-                                                }}
-                                                disabled={
-                                                    txInfoFromUrl !== false ||
-                                                    'queryString' in
-                                                        parsedAddressInput
-                                                }
-                                            >
-                                                op_return_raw
-                                            </AdvancedButton>
-                                        </AdvancedButtonsRow>
-                                        <AdvancedContent>
-                                            {sendWithCashtabMsg && (
-                                                <SendXecRow>
-                                                    <TextArea
-                                                        name="cashtabMsg"
-                                                        height={62}
-                                                        placeholder={`Include a public Cashtab msg with this tx ${
-                                                            location &&
-                                                            location.state &&
-                                                            location.state
-                                                                .airdropTokenId
-                                                                ? `(max ${
-                                                                      opreturnConfig.cashtabMsgByteLimit -
+                                                >
+                                                    Message
+                                                </AdvancedButton>
+                                                <AdvancedButton
+                                                    type="button"
+                                                    $active={
+                                                        sendWithOpReturnRaw
+                                                    }
+                                                    onClick={() => {
+                                                        if (
+                                                            !sendWithOpReturnRaw &&
+                                                            sendWithCashtabMsg
+                                                        ) {
+                                                            setSendWithCashtabMsg(
+                                                                false,
+                                                            );
+                                                        }
+                                                        setSendWithOpReturnRaw(
+                                                            !sendWithOpReturnRaw,
+                                                        );
+                                                    }}
+                                                    disabled={
+                                                        txInfoFromUrl !==
+                                                            false ||
+                                                        isBip21QueryStringPresent
+                                                    }
+                                                >
+                                                    op_return_raw
+                                                </AdvancedButton>
+                                            </AdvancedButtonsRow>
+                                            <AdvancedContent>
+                                                {sendWithCashtabMsg && (
+                                                    <SendXecRow>
+                                                        <TextArea
+                                                            name="cashtabMsg"
+                                                            height={62}
+                                                            placeholder={`Include a public Cashtab msg with this tx ${
+                                                                location &&
+                                                                location.state &&
+                                                                location.state
+                                                                    .airdropTokenId
+                                                                    ? `(max ${
+                                                                          opreturnConfig.cashtabMsgByteLimit -
+                                                                          localAirdropTxAddedBytes
+                                                                      } bytes)`
+                                                                    : `(max ${opreturnConfig.cashtabMsgByteLimit} bytes)`
+                                                            }`}
+                                                            value={
+                                                                formData.cashtabMsg
+                                                            }
+                                                            error={
+                                                                cashtabMsgError
+                                                            }
+                                                            showCount
+                                                            customCount={getCashtabMsgByteCount(
+                                                                formData.cashtabMsg,
+                                                            )}
+                                                            max={
+                                                                location &&
+                                                                location.state &&
+                                                                location.state
+                                                                    .airdropTokenId
+                                                                    ? opreturnConfig.cashtabMsgByteLimit -
                                                                       localAirdropTxAddedBytes
-                                                                  } bytes)`
-                                                                : `(max ${opreturnConfig.cashtabMsgByteLimit} bytes)`
-                                                        }`}
-                                                        value={
-                                                            formData.cashtabMsg
-                                                        }
-                                                        error={cashtabMsgError}
-                                                        showCount
-                                                        customCount={getCashtabMsgByteCount(
-                                                            formData.cashtabMsg,
-                                                        )}
-                                                        max={
-                                                            location &&
-                                                            location.state &&
-                                                            location.state
-                                                                .airdropTokenId
-                                                                ? opreturnConfig.cashtabMsgByteLimit -
-                                                                  localAirdropTxAddedBytes
-                                                                : opreturnConfig.cashtabMsgByteLimit
-                                                        }
-                                                        handleInput={e =>
-                                                            handleCashtabMsgChange(
-                                                                e,
-                                                            )
-                                                        }
-                                                    />
-                                                </SendXecRow>
-                                            )}
-                                        </AdvancedContent>
-                                    </>
-                                )}
-                            </AdvancedSection>
+                                                                    : opreturnConfig.cashtabMsgByteLimit
+                                                            }
+                                                            handleInput={e =>
+                                                                handleCashtabMsgChange(
+                                                                    e,
+                                                                )
+                                                            }
+                                                        />
+                                                    </SendXecRow>
+                                                )}
+                                            </AdvancedContent>
+                                        </>
+                                    )}
+                                </AdvancedSection>
+                            )}
                             {isBip21TokenSend(parsedAddressInput) &&
                                 tokenIdQueryError === false && (
                                     <>
@@ -3556,30 +3577,33 @@ const SendXec: React.FC = () => {
                                     </ParsedBip21InfoRow>
                                 </SendXecRow>
                             )}
-                            {advancedOpen && sendWithOpReturnRaw && (
-                                <>
-                                    <SendXecRow>
-                                        <TextArea
-                                            name="opReturnRaw"
-                                            height={62}
-                                            placeholder={`(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`}
-                                            value={formData.opReturnRaw}
-                                            error={opReturnRawError}
-                                            disabled={
-                                                txInfoFromUrl !== false ||
-                                                'queryString' in
-                                                    parsedAddressInput
-                                            }
-                                            showCount
-                                            max={
-                                                2 *
-                                                opReturn.opreturnParamByteLimit
-                                            }
-                                            handleInput={handleOpReturnRawInput}
-                                        />
-                                    </SendXecRow>
-                                    {opReturnRawError === false &&
-                                        formData.opReturnRaw !== '' && (
+                            {advancedOpen &&
+                                !isBip21QueryStringPresent &&
+                                sendWithOpReturnRaw && (
+                                    <>
+                                        <SendXecRow>
+                                            <TextArea
+                                                name="opReturnRaw"
+                                                height={62}
+                                                placeholder={`(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`}
+                                                value={formData.opReturnRaw}
+                                                error={opReturnRawError}
+                                                disabled={
+                                                    txInfoFromUrl !== false ||
+                                                    'queryString' in
+                                                        parsedAddressInput
+                                                }
+                                                showCount
+                                                max={
+                                                    2 *
+                                                    opReturn.opreturnParamByteLimit
+                                                }
+                                                handleInput={
+                                                    handleOpReturnRawInput
+                                                }
+                                            />
+                                        </SendXecRow>
+                                        {shouldRenderParsedOpReturnRaw && (
                                             <SendXecRow>
                                                 <ParsedBip21InfoRow>
                                                     <ParsedBip21InfoLabel>
@@ -3597,8 +3621,25 @@ const SendXec: React.FC = () => {
                                                 </ParsedBip21InfoRow>
                                             </SendXecRow>
                                         )}
-                                </>
-                            )}
+                                    </>
+                                )}
+                            {isBip21QueryStringPresent &&
+                                shouldRenderParsedOpReturnRaw && (
+                                    <SendXecRow>
+                                        <ParsedBip21InfoRow>
+                                            <ParsedBip21InfoLabel>
+                                                Parsed op_return_raw
+                                            </ParsedBip21InfoLabel>
+                                            <ParsedBip21Info>
+                                                <b>
+                                                    {parsedOpReturnRaw.protocol}
+                                                </b>
+                                                <br />
+                                                {parsedOpReturnRaw.data}
+                                            </ParsedBip21Info>
+                                        </ParsedBip21InfoRow>
+                                    </SendXecRow>
+                                )}
                             {/* Parsed input_data_raw when present in BIP21 (XEC mode) */}
                             {(parsedInputDataRaw.protocol !== '' ||
                                 parsedInputDataRaw.data !== '') && (

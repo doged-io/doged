@@ -250,11 +250,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -325,11 +324,10 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
     });
     it('Valid address with valid bip21 query string with valid amount param rejected if amount exceeds wallet balance', async () => {
         // Mock the app with context at the Send screen
@@ -382,11 +380,10 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
     });
     it('Pass a valid address and an invalid bip21 query string', async () => {
         // Mock the app with context at the Send screen
@@ -421,11 +418,10 @@ describe('<SendXec />', () => {
         // The Send To input value matches user input
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input unchanged
         expect(amountInputEl).toHaveValue(null);
@@ -443,11 +439,10 @@ describe('<SendXec />', () => {
             'cursor: not-allowed',
         );
 
-        // The Message button is disabled because we have a querystring address input (Advanced already expanded above)
-        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // Message control is hidden as part of hidden Advanced section
+        expect(
+            screen.queryByRole('button', { name: 'Message' }),
+        ).not.toBeInTheDocument();
     });
     it('Pass a valid address and bip21 query string with op_return_raw param to Send To field', async () => {
         // Mock the app with context at the Send screen
@@ -482,11 +477,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input is untouched
         expect(amountInputEl).toHaveValue(null);
@@ -503,27 +497,23 @@ describe('<SendXec />', () => {
             expect(screen.queryByText(amountErr)).not.toBeInTheDocument();
         }
 
-        const opReturnRawInputs = screen.getAllByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-        const opReturnRawInput = opReturnRawInputs[0];
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // BIP21 op_return_raw is rendered as parsed output, not editable input
+        expect(screen.getByText('Parsed op_return_raw')).toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // The Send button is disabled because amount is not entered
         expect(screen.getByRole('button', { name: 'Send' })).toHaveStyle(
             'cursor: not-allowed',
         );
 
-        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
-        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // Message control is hidden as part of hidden Advanced section
+        expect(
+            screen.queryByRole('button', { name: 'Message' }),
+        ).not.toBeInTheDocument();
     });
     it('Parses input_data_raw correctly (lokad + bet range) for XEC send', async () => {
         const mockedChronik = await initializeCashtabStateForTests(
@@ -594,11 +584,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -615,27 +604,23 @@ describe('<SendXec />', () => {
             expect(screen.queryByText(amountErr)).not.toBeInTheDocument();
         }
 
-        const opReturnRawInputs = screen.getAllByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-        const opReturnRawInput = opReturnRawInputs[0];
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // BIP21 op_return_raw is rendered as parsed output, not editable input
+        expect(screen.getByText('Parsed op_return_raw')).toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // The Send button is enabled as we have valid address and amount params
         expect(screen.getByRole('button', { name: 'Send' })).not.toHaveStyle(
             'cursor: not-allowed',
         );
 
-        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
-        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // Message control is hidden as part of hidden Advanced section
+        expect(
+            screen.queryByRole('button', { name: 'Message' }),
+        ).not.toBeInTheDocument();
     });
     it('Pass a valid address and bip21 query string with valid amount and invalid op_return_raw params to Send To field', async () => {
         // Mock the app with context at the Send screen
@@ -670,11 +655,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field has this address as a value
         expect(addressInputEl).toHaveValue(addressInput);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(500);
@@ -682,32 +666,27 @@ describe('<SendXec />', () => {
         // The amount input is disabled because it is set by a bip21 query string
         expect(amountInputEl).toHaveProperty('disabled', true);
 
-        const opReturnRawInputs = screen.getAllByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-        const opReturnRawInput = opReturnRawInputs[0];
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
-
-        // We get expected addr validation error
+        // Invalid BIP21 op_return_raw does not expose advanced input
         expect(
-            screen.getAllByText('Input must be lowercase hex a-f 0-9.')[0],
-        ).toBeInTheDocument();
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
+
+        // Invalid op_return_raw does not render parsed op_return section
+        expect(
+            screen.queryByText('Parsed op_return_raw'),
+        ).not.toBeInTheDocument();
 
         // The Send button is disabled as we have valid address and amount params
         expect(screen.getByRole('button', { name: 'Send' })).toHaveStyle(
             'cursor: not-allowed',
         );
 
-        // The Message button is disabled because op_return_raw is set (Advanced already expanded above)
-        expect(screen.getByRole('button', { name: 'Message' })).toHaveProperty(
-            'disabled',
-            true,
-        );
+        // Message control is hidden as part of hidden Advanced section
+        expect(
+            screen.queryByRole('button', { name: 'Message' }),
+        ).not.toBeInTheDocument();
     });
     it('Clicking "Send" will send a valid tx with op_return_raw after entry of a valid address and bip21 query string with valid amount and op_return_raw params to Send To field', async () => {
         // Mock the app with context at the Send screen
@@ -763,11 +742,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field is not disabled
         expect(addressInputEl).toHaveProperty('disabled', false);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Amount input is the valid amount param value
         expect(amountInputEl).toHaveValue(17);
@@ -775,16 +753,13 @@ describe('<SendXec />', () => {
         // The amount input is disabled because it is set by a bip21 query string
         expect(amountInputEl).toHaveProperty('disabled', true);
 
-        const opReturnRawInputs = screen.getAllByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-        const opReturnRawInput = opReturnRawInputs[0];
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // BIP21 op_return_raw is rendered as parsed output, not editable input
+        expect(screen.getByText('Parsed op_return_raw')).toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // We see expected data in the op_return_raw preview
         expect(
@@ -1320,11 +1295,10 @@ describe('<SendXec />', () => {
         // The 'Send To' input field is not disabled
         expect(addressInputEl).toHaveProperty('disabled', false);
 
-        // The "Send to many" button is disabled (expand Advanced first to see it)
-        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        // Advanced controls are hidden for BIP21 input
         expect(
-            screen.getByRole('button', { name: 'Send to many' }),
-        ).toHaveProperty('disabled', true);
+            screen.queryByRole('button', { name: /Advanced/i }),
+        ).not.toBeInTheDocument();
 
         // Because we have multiple outputs, the amount input is not displayed
         expect(screen.queryByPlaceholderText('Amount')).not.toBeInTheDocument();
@@ -1334,16 +1308,13 @@ describe('<SendXec />', () => {
             screen.getByText('BIP21: Sending 1,251.56 XEC to 2 outputs'),
         ).toBeInTheDocument();
 
-        const opReturnRawInputs = screen.getAllByPlaceholderText(
-            `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
-        );
-        const opReturnRawInput = opReturnRawInputs[0];
-
-        // The op_return_raw input is populated with this op_return_raw
-        expect(opReturnRawInput).toHaveValue(op_return_raw);
-
-        // The op_return_raw input is disabled
-        expect(opReturnRawInput).toHaveProperty('disabled', true);
+        // BIP21 op_return_raw is rendered as parsed output, not editable input
+        expect(screen.getByText('Parsed op_return_raw')).toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                `(Advanced) Enter raw hex to be included with this transaction's OP_RETURN`,
+            ),
+        ).not.toBeInTheDocument();
 
         // We see expected data in the op_return_raw preview
         expect(
