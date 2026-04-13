@@ -17,7 +17,7 @@ fi
 run_as_nobody() {
   # Make sure the nobody account isn't expired
   chage -E -1 nobody
-  su -l nobody -s /bin/bash -c "cd ${PWD} && $1"
+  su -s /bin/bash -l nobody -c "cd ${PWD} && $1"
 }
 
 PACKAGE="$1"
@@ -32,7 +32,7 @@ pushd "${PACKAGE}"
 source PKGBUILD
 
 # Install the dependencies
-pacman -S --needed --noconfirm "${depends[@]}" "${makedepends[@]}"
+pacman --disable-sandbox -S --needed --noconfirm "${depends[@]}" "${makedepends[@]}"
 
 # Copy the common files
 for f in "${source[@]}"
