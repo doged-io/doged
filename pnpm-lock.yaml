@@ -306,9 +306,6 @@ importers:
 
   apps/marlin-wallet/web:
     dependencies:
-      '@types/qrcode':
-        specifier: ^1.5.5
-        version: 1.5.6
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -346,6 +343,9 @@ importers:
       '@types/pulltorefreshjs':
         specifier: ^0.1.7
         version: 0.1.7
+      '@types/qrcode':
+        specifier: ^1.5.5
+        version: 1.5.6
       '@types/sinon':
         specifier: ^20.0.0
         version: 20.0.0

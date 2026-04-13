@@ -14,7 +14,6 @@
         "test:e2e": "start-server-and-test 'pnpm run dev' http://localhost:3000 'pnpm run cypress:run'"
     },
     "dependencies": {
-        "@types/qrcode": "^1.5.5",
         "buffer": "^6.0.3",
         "chronik-client": "file:../../../modules/chronik-client",
         "ecash-lib": "file:../../../modules/ecash-lib",
@@ -29,6 +28,7 @@
         "@types/chai-as-promised": "^8.0.1",
         "@types/mocha": "^10.0.10",
         "@types/pulltorefreshjs": "^0.1.7",
+        "@types/qrcode": "^1.5.5",
         "@types/sinon": "^20.0.0",
         "chai": "^6.2.2",
         "chai-as-promised": "^8.0.2",
