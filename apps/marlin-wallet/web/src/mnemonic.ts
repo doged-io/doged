@@ -4,7 +4,6 @@
 
 import { entropyToMnemonic, mnemonicToEntropy } from 'ecash-lib';
 import englishWordlist from 'ecash-lib/wordlists/english.json';
-import randomBytes from 'randombytes';
 import {
     isReactNativeWebView,
     sendMessageToBackend,
@@ -17,7 +16,8 @@ import { WalletData } from './wallet';
  * Generate a 12-word BIP39 mnemonic using ecash-lib.
  */
 export function generateMnemonic(): string {
-    const entropy = randomBytes(16);
+    const entropy = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(entropy);
     return entropyToMnemonic(entropy, englishWordlist);
 }
 
