@@ -492,12 +492,7 @@ function AppContent(): React.JSX.Element {
             end={{ x: 1, y: 1 }}
             style={styles.container}
         >
-            <StatusBar
-                barStyle="light-content"
-                translucent={true}
-                backgroundColor="transparent"
-                hidden={false}
-            />
+            <StatusBar barStyle="light-content" />
             <ScrollView
                 style={[
                     styles.scrollView,

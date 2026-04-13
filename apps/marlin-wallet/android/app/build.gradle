@@ -158,6 +158,9 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    // Edge-to-edge entrypoint used by MainActivity (Android 15–compatible path vs raw Window APIs).
+    implementation("androidx.activity:activity-ktx:1.10.1")
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

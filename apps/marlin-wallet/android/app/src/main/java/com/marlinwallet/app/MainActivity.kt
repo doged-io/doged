@@ -5,15 +5,13 @@
 package com.marlinwallet.app
 
 import android.content.Intent
-import android.graphics.Color
 import android.nfc.NfcAdapter
 import android.nfc.NdefMessage
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.WindowManager
-import androidx.core.view.WindowCompat
+import androidx.activity.enableEdgeToEdge
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.ReactHost
@@ -54,20 +52,10 @@ class MainActivity : ReactActivity() {
   }
   
   override fun onCreate(savedInstanceState: Bundle?) {
+    // Android 15+: use ActivityX edge-to-edge instead of deprecated Window bar color APIs.
+    enableEdgeToEdge()
     super.onCreate(savedInstanceState)
-    
-    // Configure window for Android 15+ (API 35)
-    // Enable edge-to-edge display for safe area insets
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-    
-    // Make status bar transparent - padding is handled in React Native
-    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-    window.statusBarColor = Color.TRANSPARENT
-    
-    // Make navigation bar transparent - padding is handled in React Native
-    window.navigationBarColor = Color.TRANSPARENT
-    
+
     // Reset listener state on app launch
     PaymentRequestModule.reset()
     
