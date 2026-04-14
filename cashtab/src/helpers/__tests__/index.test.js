@@ -15,6 +15,7 @@ import {
     previewTokenId,
     previewSolAddr,
     getMultisendTargetOutputs,
+    parseTokenMultisendRows,
 } from 'helpers';
 import vectors from 'helpers/fixtures/vectors';
 
@@ -182,6 +183,35 @@ describe('Cashtab helper functions', () => {
                     getMultisendTargetOutputs(userMultisendInput),
                 ).toStrictEqual(targetOutputs);
             });
+        });
+    });
+
+    describe('parseTokenMultisendRows', () => {
+        it('parses two CSV lines into address and decimalized qty', () => {
+            const input = `ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035, 1.5\necash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6,2`;
+            expect(parseTokenMultisendRows(input)).toStrictEqual([
+                {
+                    address: 'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
+                    decimalizedQty: '1.5',
+                },
+                {
+                    address: 'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6',
+                    decimalizedQty: '2',
+                },
+            ]);
+        });
+
+        it('rejects empty lines with the same message as isValidTokenMultiSendUserInput', () => {
+            expect(() =>
+                parseTokenMultisendRows(
+                    'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035,1\n',
+                ),
+            ).toThrow('Remove empty row at line 2');
+            expect(() =>
+                parseTokenMultisendRows(
+                    'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035,1\n\necash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6,2',
+                ),
+            ).toThrow('Remove empty row at line 2');
         });
     });
 });

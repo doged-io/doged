@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+import BigNumber from 'bignumber.js';
 import { toast } from 'react-toastify';
 
 /**
@@ -20,6 +21,28 @@ export const sumOneToManyXec = (
     return destinationAddressAndValueArray.reduce((prev, curr) => {
         return prev + parseFloat(curr.split(',')[1]);
     }, 0);
+};
+
+/**
+ * Sum decimalized token quantities from send-to-many lines (address,qty per line).
+ * @param destinationAddressAndValueArray lines split on newline
+ * @returns decimalized total as string (for display / comparison)
+ */
+export const sumOneToManyToken = (
+    destinationAddressAndValueArray: string[],
+): string => {
+    let total = new BigNumber(0);
+    for (const line of destinationAddressAndValueArray) {
+        if (line.trim() === '') {
+            continue;
+        }
+        const qtyPart = line.split(',')[1];
+        if (typeof qtyPart === 'undefined') {
+            return 'NaN';
+        }
+        total = total.plus(new BigNumber(qtyPart.trim()));
+    }
+    return total.toFixed();
 };
 
 export const confirmRawTx = (notification: React.ReactNode) => {

@@ -18,6 +18,7 @@ import {
     validateMnemonic,
     isProbablyNotAScam,
     isValidMultiSendUserInput,
+    isValidTokenMultiSendUserInput,
     shouldSendXecBeDisabled,
     parseAddressInput,
     isValidStoredCashtabWallet,
@@ -435,6 +436,31 @@ describe('Cashtab validation functions', () => {
                     isValidMultiSendUserInput(
                         userMultisendInput,
                         balanceSats,
+                        userLocale,
+                    ),
+                ).toBe(returned);
+            });
+        });
+    });
+    describe('Determines if a user input token multi-send CSV is valid', () => {
+        const { expectedReturns } = vectors.isValidTokenMultiSendUserInput;
+        expectedReturns.forEach(expectedReturn => {
+            const {
+                description,
+                userMultisendInput,
+                tokenBalance,
+                decimals,
+                tokenProtocol,
+                userLocale,
+                returned,
+            } = expectedReturn;
+            it(`isValidTokenMultiSendUserInput: ${description}`, () => {
+                expect(
+                    isValidTokenMultiSendUserInput(
+                        userMultisendInput,
+                        tokenBalance,
+                        decimals,
+                        tokenProtocol,
                         userLocale,
                     ),
                 ).toBe(returned);

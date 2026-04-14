@@ -522,6 +522,95 @@ export const isValidMultiSendUserInput = (
     return true;
 };
 
+/**
+ * Validate token send-to-many textarea (CSV lines: address,decimalizedTokenQty).
+ * Empty lines (after trim) are invalid; {@link parseTokenMultisendRows} uses the same rule and throws if violated.
+ * @param userMultisendInput textarea value
+ * @param tokenBalance decimalized wallet balance for this token
+ * @param decimals token decimals (0–9)
+ * @param tokenProtocol SLP or ALP
+ * @param userLocale navigator.language or default
+ */
+export const isValidTokenMultiSendUserInput = (
+    userMultisendInput: string,
+    tokenBalance: string,
+    decimals: SlpDecimals,
+    tokenProtocol: 'SLP' | 'ALP',
+    userLocale: string,
+): true | string => {
+    if (typeof userMultisendInput !== 'string') {
+        return 'Input must be a string';
+    }
+    if (userMultisendInput.trim() === '') {
+        return 'Input must not be blank';
+    }
+    const maxQty = getMaxDecimalizedQty(decimals, tokenProtocol);
+    const inputLines = userMultisendInput.split('\n');
+    let totalBn = new BigNumber(0);
+    const tokenBalanceBn = new BigNumber(tokenBalance);
+
+    for (let i = 0; i < inputLines.length; i += 1) {
+        if (inputLines[i].trim() === '') {
+            return `Remove empty row at line ${i + 1}`;
+        }
+        const addressAndValueThisLine = inputLines[i].split(',');
+        if (addressAndValueThisLine.length < 2) {
+            return `Line ${
+                i + 1
+            } must have address and token qty, separated by a comma`;
+        }
+        if (addressAndValueThisLine.length > 2) {
+            return `Line ${
+                i + 1
+            }: Comma can only separate address and token qty.`;
+        }
+        const address = addressAndValueThisLine[0].trim();
+        if (!isValidCashAddress(address, appConfig.prefix)) {
+            return `Invalid address "${address}" at line ${i + 1}`;
+        }
+        const qty = addressAndValueThisLine[1].trim();
+        if (qty === '') {
+            return `Token qty is required at line ${i + 1}`;
+        }
+        if (!STRINGIFIED_DECIMALIZED_REGEX.test(qty)) {
+            return `Invalid token qty format at line ${i + 1}`;
+        }
+        if (qty === '0') {
+            return `Token qty must be > 0 at line ${i + 1}`;
+        }
+        const qtyBn = new BigNumber(qty);
+        if (qtyBn.gt(maxQty)) {
+            return `Token qty at line ${
+                i + 1
+            } exceeds max supported qty for this token in one output (${maxQty})`;
+        }
+        if (qty.includes('.')) {
+            if (qty.split('.')[1].length > decimals) {
+                if (decimals === 0) {
+                    return `This token does not support decimal places (line ${
+                        i + 1
+                    })`;
+                }
+                return `Max ${decimals} decimal place${
+                    decimals === 1 ? '' : 's'
+                } at line ${i + 1}`;
+            }
+        }
+        totalBn = totalBn.plus(qtyBn);
+    }
+
+    if (totalBn.gt(tokenBalanceBn)) {
+        return `Total token amount sent (${decimalizedTokenQtyToLocaleFormat(
+            totalBn.toFixed(),
+            userLocale,
+        )}) exceeds wallet balance of ${decimalizedTokenQtyToLocaleFormat(
+            tokenBalance,
+            userLocale,
+        )}`;
+    }
+    return true;
+};
+
 const VALID_LOWERCASE_HEX_REGEX = /^[a-f0-9]+$/;
 /**
  * Validate bip21 op_return_raw input

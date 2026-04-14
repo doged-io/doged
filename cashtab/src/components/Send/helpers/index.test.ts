@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import { sumOneToManyXec } from './';
+import { sumOneToManyXec, sumOneToManyToken } from './';
 
 it(`sumOneToManyXec() correctly parses the value for a valid one to many send XEC transaction`, () => {
     const destinationAddressAndValueArray = [
@@ -28,4 +28,12 @@ it(`sumOneToManyXec() returns NaN for an address and value array that is partial
         'ecash:qq9h6d0a5q65fgywv4ry64x04ep906mdku8f0gxfgx,',
     ];
     expect(sumOneToManyXec(destinationAddressAndValueArray)).toStrictEqual(NaN);
+});
+
+it(`sumOneToManyToken() sums decimalized token qtys from CSV lines`, () => {
+    const lines = [
+        'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035,0.01',
+        'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6,0.02',
+    ];
+    expect(sumOneToManyToken(lines)).toBe('0.03');
 });

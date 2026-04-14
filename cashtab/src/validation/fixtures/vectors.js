@@ -1864,6 +1864,31 @@ export default {
             },
         ],
     },
+    isValidTokenMultiSendUserInput: {
+        expectedReturns: [
+            {
+                description:
+                    'Accepts two lines when total qty is within SLP balance',
+                userMultisendInput: `ecash:qplkmuz3rx480u6vc4xgc0qxnza42p0e7vll6p90wr,1\necash:qqxrrls4u0znxx2q7e5m4en4z2yjrqgqeucckaerq3,2`,
+                tokenBalance: '10',
+                decimals: 2,
+                tokenProtocol: 'SLP',
+                userLocale: appConfig.defaultLocale,
+                returned: true,
+            },
+            {
+                description:
+                    'Rejects when total decimalized qty exceeds token balance',
+                userMultisendInput: `ecash:qplkmuz3rx480u6vc4xgc0qxnza42p0e7vll6p90wr,6\necash:qqxrrls4u0znxx2q7e5m4en4z2yjrqgqeucckaerq3,6`,
+                tokenBalance: '10',
+                decimals: 2,
+                tokenProtocol: 'SLP',
+                userLocale: appConfig.defaultLocale,
+                returned:
+                    'Total token amount sent (12) exceeds wallet balance of 10',
+            },
+        ],
+    },
     isValidTokenSendOrBurnAmount: {
         expectedReturns: [
             {

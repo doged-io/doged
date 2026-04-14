@@ -560,3 +560,35 @@ export const getMultisendTargetOutputs = (
     }
     return targetOutputs;
 };
+
+export interface TokenMultisendCsvRow {
+    address: string;
+    decimalizedQty: string;
+}
+
+/**
+ * Parse token send-to-many textarea (CSV: address,decimalizedTokenQty).
+ * Uses the same line rules as {@link isValidTokenMultiSendUserInput}: every split line
+ * must be non-empty after trim (no blank rows). Call only after validation returns true;
+ * if called with invalid input, throws so behavior cannot diverge from validation.
+ * @param userMultisendInput Raw textarea value
+ * @returns One row per non-empty line (same count and order as validation)
+ * @throws {Error} When a line is empty after trim (message matches validation)
+ */
+export const parseTokenMultisendRows = (
+    userMultisendInput: string,
+): TokenMultisendCsvRow[] => {
+    const rows: TokenMultisendCsvRow[] = [];
+    const inputLines = userMultisendInput.split('\n');
+    for (let i = 0; i < inputLines.length; i += 1) {
+        if (inputLines[i].trim() === '') {
+            throw new Error(`Remove empty row at line ${i + 1}`);
+        }
+        const parts = inputLines[i].split(',');
+        rows.push({
+            address: parts[0].trim(),
+            decimalizedQty: parts[1].trim(),
+        });
+    }
+    return rows;
+};

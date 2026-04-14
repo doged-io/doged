@@ -25,6 +25,7 @@ import CashtabTestWrapper from 'components/App/fixtures/CashtabTestWrapper';
 import { Ecc } from 'ecash-lib';
 import {
     slp1FixedBear,
+    slp1FixedCachet,
     alpMocks,
     slp1NftChildMocks,
     slp1NftParentMocks,
@@ -2879,7 +2880,9 @@ describe('<SendXec />', () => {
             expect(addressInput).toBeInTheDocument();
         });
 
-        // Verify EMPP switches are visible for ALP tokens
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+
+        // Verify EMPP switches are visible for ALP tokens (inside Advanced)
         await waitFor(() => {
             expect(
                 screen.getByRole('button', { name: 'Cashtab Msg' }),
@@ -3057,6 +3060,8 @@ describe('<SendXec />', () => {
         await user.type(amountInputEl, token_decimalized_qty);
         expect(amountInputEl).toHaveValue(token_decimalized_qty);
 
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+
         // Enable empp_raw switch
         const emppRawButton = screen.getByRole('button', {
             name: 'empp_raw',
@@ -3102,5 +3107,123 @@ describe('<SendXec />', () => {
         await waitFor(() => {
             expect(screen.getByText(tokenTicker)).toBeInTheDocument();
         });
+    });
+    it('SLP CACHET: Token send to many — 25 recipients (form workflow)', async () => {
+        const cachetWallet = {
+            ...tokenTestWallet,
+            state: {
+                ...tokenTestWallet.state,
+                slpUtxos: [
+                    ...tokenTestWallet.state.slpUtxos,
+                    {
+                        outpoint: {
+                            txid: 'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                            outIdx: 2,
+                        },
+                        blockHeight: 838200,
+                        isCoinbase: false,
+                        isFinal: true,
+                        sats: 546n,
+                        token: {
+                            tokenId: slp1FixedCachet.tokenId,
+                            tokenType: {
+                                protocol: 'SLP',
+                                type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                                number: 1,
+                            },
+                            atoms: 10000000n,
+                            isMintBaton: false,
+                        },
+                    },
+                ],
+                tokens: new Map([
+                    ...Array.from(tokenTestWallet.state.tokens.entries()),
+                    [slp1FixedCachet.tokenId, '100000'],
+                ]),
+            },
+        };
+
+        const mockedChronik = await initializeCashtabStateForTests(
+            cachetWallet,
+            localforage,
+        );
+
+        await localforage.setItem('settings', {
+            fiatCurrency: 'usd',
+            sendModal: false,
+            autoCameraOn: false,
+            hideMessagesFromUnknownSenders: false,
+            balanceVisible: true,
+            satsPerKb: FEE_SATS_PER_KB_CASHTAB_LEGACY,
+        });
+
+        mockedChronik.setToken(slp1FixedCachet.tokenId, slp1FixedCachet.token);
+        mockedChronik.setTx(slp1FixedCachet.tokenId, slp1FixedCachet.tx);
+
+        const addrA = 'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035';
+        const addrB = 'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6';
+        const tokenMultiLines = Array.from(
+            { length: 25 },
+            (_, i) => `${i % 2 === 0 ? addrA : addrB},0.01`,
+        ).join('\n');
+
+        render(
+            <CashtabTestWrapper
+                chronik={mockedChronik}
+                ecc={ecc}
+                route="/send"
+            />,
+        );
+
+        // Prep mock chronik client with expected tx chain
+        const firstTx =
+            '0200000002b13c550e03a38750239191f649760d70b95c13de2e25c0884b93961ba361d8ae0200000064412fa83a70087fbf9e0efa08161255270aec2f1501de8b0391557e0752755b6256e7ed8371178688d77f0191f955ab281de14f3260c1fd8b0048d9cf738f20a8ea4121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffffef76d01776229a95c45696cf68f2f98c8332d0c53e3f24e73fd9c6deaf792618030000006441bc4f378d7c80e96acf58ee765101963c1329c252a7247df67ec000d94b0d931b98297d0138109ff618c940e695566e064bcb9005b61d16113299679b839e22ec4121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffff150000000000000000d96a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000098966e22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac62150000000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188accdf30e00000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188ac00000000';
+        const firstTxid =
+            '5a91a5c598a9b85621d364ce91a62adf6bcb1ec672fa2eab148923de10ed85e5';
+        const secondTx =
+            '0200000001e585ed10de238914ab2efa72c61ecb6bdf2aa691ce64d32156b8a998c5a5915a130000006441f96d7573ca7ffac1351fb37fd7433453fa6cf81a27babd2f8fd4728a169efc8632894d4382d9cd449ff01817d72cf1e11a0400b4155373c054f0d5d02d983bb14121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffff090000000000000000766a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000098966722020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188ac00000000';
+        const secondTxid =
+            'd70e0f559347395152e3b888130591d6d913ff9d93ea935de802490e4f9762bd';
+        mockedChronik.setBroadcastTx(firstTx, firstTxid);
+        mockedChronik.setBroadcastTx(secondTx, secondTxid);
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        await user.click(
+            await screen.findByRole('link', { name: /Send Token/i }),
+        );
+
+        await screen.findByPlaceholderText('Search by token ticker or name');
+        await user.type(
+            screen.getByPlaceholderText('Search by token ticker or name'),
+            'CACHET',
+        );
+        await waitFor(() => {
+            expect(screen.getByText('CACHET')).toBeInTheDocument();
+        });
+        await user.click(screen.getByText('CACHET').closest('div'));
+
+        await screen.findByPlaceholderText('Address');
+        await user.click(screen.getByRole('button', { name: /Advanced/i }));
+        await user.click(screen.getByRole('button', { name: 'Send to many' }));
+
+        const multiEl = screen.getByPlaceholderText(
+            /One address & token qty per line/,
+        );
+        fireEvent.input(multiEl, { target: { value: tokenMultiLines } });
+        fireEvent.change(multiEl, { target: { value: tokenMultiLines } });
+        expect(multiEl).toHaveValue(tokenMultiLines);
+
+        await user.click(screen.getByRole('button', { name: 'Send' }));
+
+        const txSuccessNotification = await screen.findByText('eToken sent');
+        expect(txSuccessNotification).toHaveAttribute(
+            'href',
+            `${explorer.blockExplorerUrl}/tx/${firstTxid}`,
+        );
     });
 });

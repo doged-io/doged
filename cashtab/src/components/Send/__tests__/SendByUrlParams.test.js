@@ -1234,15 +1234,14 @@ describe('<SendXec /> rendered with params in URL', () => {
             screen.queryByText(`Error querying token info for ${token_id}`),
         ).not.toBeInTheDocument();
 
-        // Wait for parsed empp_raw info to appear
-        await waitFor(() => {
-            expect(screen.getByText('Parsed empp_raw')).toBeInTheDocument();
-        });
-
-        // We see the parsed empp_raw as a cashtab msg (the switch label and the parsed empp raw)
-        expect(screen.getAllByText('Cashtab Msg')).toHaveLength(2);
-        // We parse the empp_raw Cashtab msg
-        expect(screen.getByText('test message')).toBeInTheDocument();
+        // BIP21 token URLs have a query string, so Advanced (empp_raw textarea and
+        // "Parsed empp_raw" preview) is not shown. empp_raw is still applied from the URL when sending.
+        expect(screen.queryByText('Parsed empp_raw')).not.toBeInTheDocument();
+        expect(
+            screen.queryByPlaceholderText(
+                /Enter raw hex EMPP push \(max 100 bytes\)/,
+            ),
+        ).not.toBeInTheDocument();
 
         // The send button is enabled
         expect(

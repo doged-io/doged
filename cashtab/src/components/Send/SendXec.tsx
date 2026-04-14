@@ -29,6 +29,7 @@ import { sumOneToManyXec, confirmRawTx } from './helpers';
 import { Event } from 'components/Common/GoogleAnalytics';
 import {
     isValidMultiSendUserInput,
+    isValidTokenMultiSendUserInput,
     shouldSendXecBeDisabled,
     parseAddressInput,
     isValidXecSendAmount,
@@ -37,7 +38,7 @@ import {
     isValidTokenSendOrBurnAmount,
 } from 'validation';
 import { Alert, AlertMsg, Info } from 'components/Common/Atoms';
-import { getMultisendTargetOutputs } from 'helpers';
+import { getMultisendTargetOutputs, parseTokenMultisendRows } from 'helpers';
 import { ChronikClient } from 'chronik-client';
 import {
     getCashtabMsgTargetOutput,
@@ -489,6 +490,14 @@ const TokenFormContainer = styled.div`
     display: flex;
     flex-direction: column;
     margin: 12px 0;
+    /*
+     * Token mode does not render AmountPreviewCtn (XEC-only), which supplies mobile
+     * scroll clearance above the fixed send row. Without this, Advanced and content
+     * below it sit under the Send button / bottom nav (extension and narrow web).
+     */
+    @media (max-width: 768px), (max-height: 600px) {
+        padding-bottom: 48px;
+    }
 `;
 interface CashtabTxInfo {
     address?: string;
@@ -575,6 +584,7 @@ const SendXec: React.FC = () => {
     interface SendTokenFormData {
         amount: string;
         address: string;
+        multiAddressInput: string;
         tokenCashtabMsg: string;
         emppRaw: string;
     }
@@ -582,6 +592,7 @@ const SendXec: React.FC = () => {
     const emptyTokenFormData: SendTokenFormData = {
         amount: '',
         address: '',
+        multiAddressInput: '',
         tokenCashtabMsg: '',
         emppRaw: '',
     };
@@ -608,6 +619,12 @@ const SendXec: React.FC = () => {
     const [sendWithEmppRaw, setSendWithEmppRaw] = useState<boolean>(false);
     const [emppRawError, setEmppRawError] = useState<false | string>(false);
     const [tokenCashtabMsgError, setTokenCashtabMsgError] = useState<
+        false | string
+    >(false);
+    const [tokenAdvancedOpen, setTokenAdvancedOpen] = useState<boolean>(false);
+    const [isOneToManyTokenSend, setIsOneToManyTokenSend] =
+        useState<boolean>(false);
+    const [multiTokenSendError, setMultiTokenSendError] = useState<
         false | string
     >(false);
     const [selectedCurrency, setSelectedCurrency] = useState<string>(
@@ -643,6 +660,49 @@ const SendXec: React.FC = () => {
         'SLP_TOKEN_TYPE_NFT1_GROUP',
         'SLP_TOKEN_TYPE_MINT_VAULT',
     ];
+
+    const tokenAdvancedSendToManySupported = useMemo(() => {
+        if (!selectedTokenId) {
+            return false;
+        }
+        const info = cashtabCache.tokens.get(selectedTokenId);
+        if (typeof info === 'undefined') {
+            return false;
+        }
+        const t = info.tokenType.type;
+        return (
+            t === 'ALP_TOKEN_TYPE_STANDARD' ||
+            t === 'SLP_TOKEN_TYPE_FUNGIBLE' ||
+            t === 'SLP_TOKEN_TYPE_NFT1_GROUP' ||
+            t === 'SLP_TOKEN_TYPE_MINT_VAULT'
+        );
+    }, [selectedTokenId, cashtabCache.tokens]);
+
+    const tokenAdvancedAlpEmppSupported = useMemo(() => {
+        if (!selectedTokenId) {
+            return false;
+        }
+        const info = cashtabCache.tokens.get(selectedTokenId);
+        return info?.tokenType.type === 'ALP_TOKEN_TYPE_STANDARD';
+    }, [selectedTokenId, cashtabCache.tokens]);
+
+    /** First-line example qty in send-to-many placeholder (matches token decimals). */
+    const tokenSendToManyExampleFirstQty = useMemo(() => {
+        if (!selectedTokenId) {
+            return '1';
+        }
+        const info = cashtabCache.tokens.get(selectedTokenId);
+        if (typeof info === 'undefined') {
+            return '1';
+        }
+        const decimals = Number(info.genesisInfo.decimals);
+        if (!Number.isFinite(decimals) || decimals <= 0) {
+            return '1';
+        }
+        const d = Math.min(Math.floor(decimals), 9);
+        const frac = '123456789'.slice(0, d);
+        return `1.${frac}`;
+    }, [selectedTokenId, cashtabCache.tokens]);
 
     // Support cashtab button from web pages
     const [txInfoFromUrl, setTxInfoFromUrl] = useState<false | CashtabTxInfo>(
@@ -954,20 +1014,22 @@ const SendXec: React.FC = () => {
         setSendWithEmppRaw(false);
         setTokenCashtabMsgError(false);
         setEmppRawError(false);
+        setTokenAdvancedOpen(false);
+        setIsOneToManyTokenSend(false);
+        setMultiTokenSendError(false);
     };
 
     const _clearTokenFormFields = () => {
         // Clear form fields but keep tokenId selected
-        setTokenFormData({
-            ...emptyTokenFormData,
-            // Keep tokenId in state, just clear the form fields
-        });
+        setTokenFormData({ ...emptyTokenFormData });
         setSendTokenAmountError(false);
         setSendAddressError(false);
         setSendWithCashtabMsgToken(false);
         setSendWithEmppRaw(false);
         setTokenCashtabMsgError(false);
         setEmppRawError(false);
+        setIsOneToManyTokenSend(false);
+        setMultiTokenSendError(false);
     };
 
     const handleTokenSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -978,14 +1040,16 @@ const SendXec: React.FC = () => {
     const handleTokenSelect = (tokenId: string) => {
         setSelectedTokenId(tokenId);
         setTokenSearch('');
-        setTokenFormData({
-            ...tokenFormData,
-            amount: '',
-        });
+        setTokenFormData({ ...emptyTokenFormData });
         setSendTokenAmountError(false);
-
-        // Clear any previous errors
-        setSendTokenAmountError(false);
+        setSendAddressError(false);
+        setTokenAdvancedOpen(false);
+        setIsOneToManyTokenSend(false);
+        setMultiTokenSendError(false);
+        setSendWithCashtabMsgToken(false);
+        setSendWithEmppRaw(false);
+        setTokenCashtabMsgError(false);
+        setEmppRawError(false);
     };
 
     const handleTokenAmountChange = (
@@ -1032,8 +1096,9 @@ const SendXec: React.FC = () => {
     };
 
     const sendToken = async () => {
-        // Determine if this is a BIP21 token send or form-based send
-        const isBip21Send = isBip21TokenSend(parsedAddressInput);
+        // BIP21 token send excludes send-to-many form mode
+        const isBip21Send =
+            isBip21TokenSend(parsedAddressInput) && !isOneToManyTokenSend;
 
         let address: string;
         let tokenId: string;
@@ -1047,6 +1112,15 @@ const SendXec: React.FC = () => {
             decimalizedTokenQty =
                 parsedAddressInput.token_decimalized_qty.value;
             eventName = 'Bip21 Token Send';
+        } else if (isOneToManyTokenSend) {
+            if (!selectedTokenId) {
+                toast.error('No token selected');
+                return;
+            }
+            address = '';
+            tokenId = selectedTokenId;
+            decimalizedTokenQty = '';
+            eventName = 'Token Send To Many';
         } else {
             // Form-based token send - use tokenFormData and selectedTokenId
             if (!selectedTokenId) {
@@ -1104,35 +1178,64 @@ const SendXec: React.FC = () => {
             }
 
             // Build payment.Action for ecash-wallet
+            let action: payment.Action;
 
-            const sendAtoms = BigInt(
-                undecimalizeTokenAmount(
-                    decimalizedTokenQty,
-                    decimals as SlpDecimals,
-                ),
-            );
+            if (isOneToManyTokenSend) {
+                const rows = parseTokenMultisendRows(
+                    tokenFormData.multiAddressInput,
+                );
+                action = {
+                    outputs: [
+                        { sats: 0n },
+                        ...rows.map(row => ({
+                            sats: BigInt(appConfig.dustSats),
+                            script: Script.fromAddress(row.address),
+                            tokenId,
+                            atoms: BigInt(
+                                undecimalizeTokenAmount(
+                                    row.decimalizedQty,
+                                    decimals as SlpDecimals,
+                                ),
+                            ),
+                        })),
+                    ],
+                    tokenActions: [
+                        {
+                            type: 'SEND',
+                            tokenId,
+                            tokenType: tokenType as unknown as TokenType,
+                        },
+                    ],
+                    feePerKb: BigInt(settings.satsPerKb),
+                };
+            } else {
+                const sendAtoms = BigInt(
+                    undecimalizeTokenAmount(
+                        decimalizedTokenQty,
+                        decimals as SlpDecimals,
+                    ),
+                );
 
-            // All token sends are the same in the ecash-wallet API
-            // ecash-wallet deals with differing token specs
-            const action: payment.Action = {
-                outputs: [
-                    { sats: 0n }, // OP_RETURN at outIdx 0
-                    {
-                        sats: BigInt(appConfig.dustSats),
-                        script: Script.fromAddress(address),
-                        tokenId: tokenId,
-                        atoms: sendAtoms,
-                    },
-                ],
-                tokenActions: [
-                    {
-                        type: 'SEND',
-                        tokenId: tokenId,
-                        tokenType: tokenType as unknown as TokenType,
-                    },
-                ],
-                feePerKb: BigInt(settings.satsPerKb),
-            };
+                action = {
+                    outputs: [
+                        { sats: 0n },
+                        {
+                            sats: BigInt(appConfig.dustSats),
+                            script: Script.fromAddress(address),
+                            tokenId: tokenId,
+                            atoms: sendAtoms,
+                        },
+                    ],
+                    tokenActions: [
+                        {
+                            type: 'SEND',
+                            tokenId: tokenId,
+                            tokenType: tokenType as unknown as TokenType,
+                        },
+                    ],
+                    feePerKb: BigInt(settings.satsPerKb),
+                };
+            }
 
             // Add DataAction for firma if present (ALP only)
             if (
@@ -2029,9 +2132,14 @@ const SendXec: React.FC = () => {
         }
 
         setSendAddressError(tokenRenderedError);
+        if (hasQueryString) {
+            setIsOneToManyTokenSend(false);
+            setMultiTokenSendError(false);
+        }
         setTokenFormData(p => ({
             ...p,
             [name]: value,
+            ...(hasQueryString ? { multiAddressInput: '' } : {}),
         }));
     };
 
@@ -2250,6 +2358,36 @@ const SendXec: React.FC = () => {
         }));
     };
 
+    const handleTokenMultiAddressChange = (
+        e: React.ChangeEvent<HTMLTextAreaElement>,
+    ) => {
+        const { value, name } = e.target;
+        if (!selectedTokenId) {
+            return;
+        }
+        const tokenBalance = tokens.get(selectedTokenId);
+        const cachedToken = cashtabCache.tokens.get(selectedTokenId);
+        if (!cachedToken || typeof tokenBalance === 'undefined') {
+            return;
+        }
+        const { decimals } = cachedToken.genesisInfo;
+        const { protocol } = cachedToken.tokenType;
+        const errorOrIsValid = isValidTokenMultiSendUserInput(
+            value,
+            tokenBalance,
+            decimals as SlpDecimals,
+            protocol as 'ALP' | 'SLP',
+            userLocale,
+        );
+        setMultiTokenSendError(
+            typeof errorOrIsValid === 'string' ? errorOrIsValid : false,
+        );
+        setTokenFormData(p => ({
+            ...p,
+            [name]: value,
+        }));
+    };
+
     const handleSelectedCurrencyChange = (
         e: React.ChangeEvent<HTMLSelectElement>,
     ) => {
@@ -2361,6 +2499,53 @@ const SendXec: React.FC = () => {
             }
         }
         setAdvancedOpen(prev => !prev);
+    };
+
+    /**
+     * Toggles the token-send Advanced section open/closed.
+     * When collapsing Advanced while the screen is not driven by a URL tx (`txInfoFromUrl === false`),
+     * resets advanced-only state: turns off send-to-many and Cashtab msg, clears the multi-send
+     * textarea and token Cashtab msg, and either re-applies `empp_raw` from parsed BIP21 input
+     * (if present and valid) or clears empp toggles and fields.
+     */
+    const handleTokenAdvancedHeaderClick = () => {
+        if (tokenAdvancedOpen && txInfoFromUrl === false) {
+            const rehydrateEmppFromBip21 =
+                typeof parsedAddressInput.empp_raw !== 'undefined' &&
+                typeof parsedAddressInput.empp_raw.value === 'string' &&
+                parsedAddressInput.empp_raw.error === false
+                    ? parsedAddressInput.empp_raw.value
+                    : '';
+
+            setIsOneToManyTokenSend(false);
+            setSendWithCashtabMsgToken(false);
+            setMultiTokenSendError(false);
+            setTokenCashtabMsgError(false);
+            setTokenFormData(p => ({
+                ...p,
+                multiAddressInput: '',
+                tokenCashtabMsg: '',
+            }));
+
+            if (rehydrateEmppFromBip21 !== '') {
+                setSendWithEmppRaw(true);
+                handleEmppRawInput({
+                    target: {
+                        name: 'emppRaw',
+                        value: rehydrateEmppFromBip21,
+                    },
+                } as React.ChangeEvent<HTMLTextAreaElement>);
+            } else {
+                setSendWithEmppRaw(false);
+                setEmppRawError(false);
+                setParsedEmppRaw({ protocol: '', data: '' });
+                setTokenFormData(p => ({
+                    ...p,
+                    emppRaw: '',
+                }));
+            }
+        }
+        setTokenAdvancedOpen(prev => !prev);
     };
 
     const handleTokenCashtabMsgChange = (
@@ -2573,12 +2758,20 @@ const SendXec: React.FC = () => {
         cashtabCache.tokens.get(selectedTokenId)?.tokenType.type !==
             'ALP_TOKEN_TYPE_STANDARD';
 
-    const disableTokenSendButton =
-        !selectedTokenId ||
+    const tokenSendOneToOneInvalid =
         tokenFormData.address === '' ||
         tokenFormData.amount === '' ||
         sendTokenAmountError !== false ||
-        sendAddressError !== false ||
+        sendAddressError !== false;
+
+    const tokenSendToManyInvalid =
+        tokenFormData.multiAddressInput === '' || multiTokenSendError !== false;
+
+    const disableTokenSendButton =
+        !selectedTokenId ||
+        (isOneToManyTokenSend
+            ? tokenSendToManyInvalid
+            : tokenSendOneToOneInvalid) ||
         tokenCashtabMsgError !== false ||
         emppRawError !== false ||
         inputDataRawError !== false ||
@@ -2669,11 +2862,19 @@ const SendXec: React.FC = () => {
                             title="Confirm Send"
                             description={
                                 isTokenMode && selectedTokenId
-                                    ? `Send ${tokenFormData.amount} ${
-                                          cashtabCache.tokens.get(
-                                              selectedTokenId,
-                                          )?.genesisInfo.tokenTicker || 'token'
-                                      } to ${tokenFormData.address}`
+                                    ? isOneToManyTokenSend
+                                        ? `Send ${
+                                              cashtabCache.tokens.get(
+                                                  selectedTokenId,
+                                              )?.genesisInfo.tokenTicker ||
+                                              'token'
+                                          } to multiple recipients from your list?`
+                                        : `Send ${tokenFormData.amount} ${
+                                              cashtabCache.tokens.get(
+                                                  selectedTokenId,
+                                              )?.genesisInfo.tokenTicker ||
+                                              'token'
+                                          } to ${tokenFormData.address}`
                                     : isOneToManyXECSend
                                       ? `Send
                                 ${multiSendTotal.toLocaleString(userLocale, {
@@ -2858,61 +3059,350 @@ const SendXec: React.FC = () => {
                                     </TokenSelectInputWrapper>
                                 )}
                             </TokenSelectDropdown>
-                            {selectedTokenId && (
-                                <InputWithScanner
-                                    label="Address"
-                                    placeholder="Address"
-                                    name="address"
-                                    value={tokenFormData.address}
-                                    disabled={
-                                        txInfoFromUrl !== false &&
-                                        isBip21TokenSendWithTokenId(
-                                            parsedAddressInput,
-                                        ) &&
-                                        selectedTokenId !== null &&
-                                        parsedAddressInput.token_id?.value ===
-                                            selectedTokenId
-                                    }
-                                    handleInput={e => {
-                                        const parsed = parseAddressInput(
-                                            e.target.value,
-                                            balanceSats,
-                                            userLocale,
-                                        );
-                                        handleTokenModeAddressChange(e, parsed);
-                                    }}
-                                    error={sendAddressError}
-                                />
-                            )}
-                            {/* Show token amount input */}
-                            {selectedTokenId && (
-                                <SendTokenInput
-                                    label="Amount"
-                                    name="amount"
-                                    placeholder="Amount"
-                                    value={tokenFormData.amount}
-                                    inputDisabled={
-                                        isBip21TokenSendWithTokenId(
-                                            parsedAddressInput,
-                                        ) &&
-                                        selectedTokenId !== null &&
-                                        parsedAddressInput.token_id?.value ===
-                                            selectedTokenId &&
-                                        typeof parsedAddressInput.token_decimalized_qty !==
-                                            'undefined' &&
-                                        typeof parsedAddressInput
-                                            .token_decimalized_qty.value ===
-                                            'string' &&
-                                        parsedAddressInput.token_decimalized_qty
-                                            .value !== null &&
-                                        parsedAddressInput.token_decimalized_qty
-                                            .error === false
-                                    }
-                                    error={sendTokenAmountError}
-                                    handleInput={handleTokenAmountChange}
-                                    handleOnMax={onTokenMax}
-                                />
-                            )}
+                            {selectedTokenId &&
+                                (tokenAdvancedSendToManySupported ? (
+                                    <InputModesHolder
+                                        open={isOneToManyTokenSend}
+                                    >
+                                        <SendToOneHolder>
+                                            <InputWithScanner
+                                                label="Address"
+                                                placeholder="Address"
+                                                name="address"
+                                                value={tokenFormData.address}
+                                                disabled={
+                                                    (txInfoFromUrl !== false &&
+                                                        isBip21TokenSendWithTokenId(
+                                                            parsedAddressInput,
+                                                        ) &&
+                                                        selectedTokenId !==
+                                                            null &&
+                                                        parsedAddressInput
+                                                            .token_id?.value ===
+                                                            selectedTokenId) ||
+                                                    isOneToManyTokenSend
+                                                }
+                                                handleInput={e => {
+                                                    const parsed =
+                                                        parseAddressInput(
+                                                            e.target.value,
+                                                            balanceSats,
+                                                            userLocale,
+                                                        );
+                                                    handleTokenModeAddressChange(
+                                                        e,
+                                                        parsed,
+                                                    );
+                                                }}
+                                                error={sendAddressError}
+                                            />
+                                            <SendTokenInput
+                                                label="Amount"
+                                                name="amount"
+                                                placeholder="Amount"
+                                                value={tokenFormData.amount}
+                                                inputDisabled={
+                                                    isOneToManyTokenSend ||
+                                                    (isBip21TokenSendWithTokenId(
+                                                        parsedAddressInput,
+                                                    ) &&
+                                                        selectedTokenId !==
+                                                            null &&
+                                                        parsedAddressInput
+                                                            .token_id?.value ===
+                                                            selectedTokenId &&
+                                                        typeof parsedAddressInput.token_decimalized_qty !==
+                                                            'undefined' &&
+                                                        typeof parsedAddressInput
+                                                            .token_decimalized_qty
+                                                            .value ===
+                                                            'string' &&
+                                                        parsedAddressInput
+                                                            .token_decimalized_qty
+                                                            .value !== null &&
+                                                        parsedAddressInput
+                                                            .token_decimalized_qty
+                                                            .error === false)
+                                                }
+                                                error={sendTokenAmountError}
+                                                handleInput={
+                                                    handleTokenAmountChange
+                                                }
+                                                handleOnMax={onTokenMax}
+                                            />
+                                        </SendToOneHolder>
+                                        <SendToManyHolder>
+                                            <TextArea
+                                                label="Send to many"
+                                                placeholder={`One address & token qty per line, separated by comma \ne.g. \necash:qpatql05s9jfavnu0tv6lkjjk25n6tmj9gkpyrlwu8,${tokenSendToManyExampleFirstQty} \necash:qzvydd4n3lm3xv62cx078nu9rg0e3srmqq0knykfed,2`}
+                                                name="multiAddressInput"
+                                                handleInput={
+                                                    handleTokenMultiAddressChange
+                                                }
+                                                value={
+                                                    tokenFormData.multiAddressInput
+                                                }
+                                                error={multiTokenSendError}
+                                                disabled={
+                                                    txInfoFromUrl !== false ||
+                                                    'queryString' in
+                                                        parsedAddressInput
+                                                }
+                                            />
+                                        </SendToManyHolder>
+                                    </InputModesHolder>
+                                ) : (
+                                    <>
+                                        <InputWithScanner
+                                            label="Address"
+                                            placeholder="Address"
+                                            name="address"
+                                            value={tokenFormData.address}
+                                            disabled={
+                                                txInfoFromUrl !== false &&
+                                                isBip21TokenSendWithTokenId(
+                                                    parsedAddressInput,
+                                                ) &&
+                                                selectedTokenId !== null &&
+                                                parsedAddressInput.token_id
+                                                    ?.value === selectedTokenId
+                                            }
+                                            handleInput={e => {
+                                                const parsed =
+                                                    parseAddressInput(
+                                                        e.target.value,
+                                                        balanceSats,
+                                                        userLocale,
+                                                    );
+                                                handleTokenModeAddressChange(
+                                                    e,
+                                                    parsed,
+                                                );
+                                            }}
+                                            error={sendAddressError}
+                                        />
+                                        <SendTokenInput
+                                            label="Amount"
+                                            name="amount"
+                                            placeholder="Amount"
+                                            value={tokenFormData.amount}
+                                            inputDisabled={
+                                                isBip21TokenSendWithTokenId(
+                                                    parsedAddressInput,
+                                                ) &&
+                                                selectedTokenId !== null &&
+                                                parsedAddressInput.token_id
+                                                    ?.value ===
+                                                    selectedTokenId &&
+                                                typeof parsedAddressInput.token_decimalized_qty !==
+                                                    'undefined' &&
+                                                typeof parsedAddressInput
+                                                    .token_decimalized_qty
+                                                    .value === 'string' &&
+                                                parsedAddressInput
+                                                    .token_decimalized_qty
+                                                    .value !== null &&
+                                                parsedAddressInput
+                                                    .token_decimalized_qty
+                                                    .error === false
+                                            }
+                                            error={sendTokenAmountError}
+                                            handleInput={
+                                                handleTokenAmountChange
+                                            }
+                                            handleOnMax={onTokenMax}
+                                        />
+                                    </>
+                                ))}
+                            {selectedTokenId &&
+                                tokenAdvancedSendToManySupported &&
+                                !('queryString' in parsedAddressInput) && (
+                                    <AdvancedSection>
+                                        <AdvancedHeader
+                                            type="button"
+                                            onClick={
+                                                handleTokenAdvancedHeaderClick
+                                            }
+                                        >
+                                            Advanced{' '}
+                                            <AdvancedChevron
+                                                $open={tokenAdvancedOpen}
+                                            />
+                                        </AdvancedHeader>
+                                        {tokenAdvancedOpen && (
+                                            <>
+                                                <AdvancedButtonsRow>
+                                                    <AdvancedButton
+                                                        type="button"
+                                                        $active={
+                                                            isOneToManyTokenSend
+                                                        }
+                                                        onClick={() =>
+                                                            setIsOneToManyTokenSend(
+                                                                !isOneToManyTokenSend,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            txInfoFromUrl !==
+                                                            false
+                                                        }
+                                                    >
+                                                        Send to many
+                                                    </AdvancedButton>
+                                                    {tokenAdvancedAlpEmppSupported && (
+                                                        <>
+                                                            <AdvancedButton
+                                                                type="button"
+                                                                $active={
+                                                                    sendWithCashtabMsgToken
+                                                                }
+                                                                onClick={() => {
+                                                                    if (
+                                                                        !sendWithCashtabMsgToken &&
+                                                                        sendWithEmppRaw
+                                                                    ) {
+                                                                        setSendWithEmppRaw(
+                                                                            false,
+                                                                        );
+                                                                    }
+                                                                    setSendWithCashtabMsgToken(
+                                                                        !sendWithCashtabMsgToken,
+                                                                    );
+                                                                }}
+                                                                disabled={
+                                                                    txInfoFromUrl !==
+                                                                        false ||
+                                                                    'queryString' in
+                                                                        parsedAddressInput
+                                                                }
+                                                            >
+                                                                Cashtab Msg
+                                                            </AdvancedButton>
+                                                            <AdvancedButton
+                                                                type="button"
+                                                                $active={
+                                                                    sendWithEmppRaw
+                                                                }
+                                                                onClick={() => {
+                                                                    if (
+                                                                        !sendWithEmppRaw &&
+                                                                        sendWithCashtabMsgToken
+                                                                    ) {
+                                                                        setSendWithCashtabMsgToken(
+                                                                            false,
+                                                                        );
+                                                                    }
+                                                                    setSendWithEmppRaw(
+                                                                        !sendWithEmppRaw,
+                                                                    );
+                                                                }}
+                                                                disabled={
+                                                                    txInfoFromUrl !==
+                                                                        false ||
+                                                                    'queryString' in
+                                                                        parsedAddressInput
+                                                                }
+                                                            >
+                                                                empp_raw
+                                                            </AdvancedButton>
+                                                        </>
+                                                    )}
+                                                </AdvancedButtonsRow>
+                                                {tokenAdvancedAlpEmppSupported &&
+                                                    sendWithCashtabMsgToken && (
+                                                        <SendXecRow>
+                                                            <TextArea
+                                                                name="tokenCashtabMsg"
+                                                                height={62}
+                                                                placeholder={`Include a Cashtab msg EMPP push with this token tx (max 100 bytes)`}
+                                                                value={
+                                                                    tokenFormData.tokenCashtabMsg
+                                                                }
+                                                                error={
+                                                                    tokenCashtabMsgError
+                                                                }
+                                                                showCount
+                                                                customCount={
+                                                                    strToBytes(
+                                                                        tokenFormData.tokenCashtabMsg,
+                                                                    ).length
+                                                                }
+                                                                max={100}
+                                                                handleInput={
+                                                                    handleTokenCashtabMsgChange
+                                                                }
+                                                            />
+                                                        </SendXecRow>
+                                                    )}
+                                                {tokenAdvancedAlpEmppSupported &&
+                                                    (sendWithEmppRaw ||
+                                                        (typeof parsedAddressInput.empp_raw !==
+                                                            'undefined' &&
+                                                            parsedAddressInput
+                                                                .empp_raw
+                                                                .error ===
+                                                                false)) && (
+                                                        <>
+                                                            <SendXecRow>
+                                                                <TextArea
+                                                                    name="emppRaw"
+                                                                    height={62}
+                                                                    placeholder={`(Advanced) Enter raw hex EMPP push (max 100 bytes)`}
+                                                                    value={
+                                                                        tokenFormData.emppRaw
+                                                                    }
+                                                                    error={
+                                                                        emppRawError
+                                                                    }
+                                                                    disabled={
+                                                                        txInfoFromUrl !==
+                                                                            false ||
+                                                                        'queryString' in
+                                                                            parsedAddressInput
+                                                                    }
+                                                                    showCount
+                                                                    max={200}
+                                                                    customCount={
+                                                                        tokenFormData
+                                                                            .emppRaw
+                                                                            .length /
+                                                                        2
+                                                                    }
+                                                                    handleInput={
+                                                                        handleEmppRawInput
+                                                                    }
+                                                                />
+                                                            </SendXecRow>
+                                                            {emppRawError ===
+                                                                false &&
+                                                                tokenFormData.emppRaw !==
+                                                                    '' && (
+                                                                    <SendXecRow>
+                                                                        <ParsedBip21InfoRow>
+                                                                            <ParsedBip21InfoLabel>
+                                                                                Parsed
+                                                                                empp_raw
+                                                                            </ParsedBip21InfoLabel>
+                                                                            <ParsedBip21Info>
+                                                                                <b>
+                                                                                    {
+                                                                                        parsedEmppRaw.protocol
+                                                                                    }
+                                                                                </b>
+                                                                                <br />
+                                                                                {
+                                                                                    parsedEmppRaw.data
+                                                                                }
+                                                                            </ParsedBip21Info>
+                                                                        </ParsedBip21InfoRow>
+                                                                    </SendXecRow>
+                                                                )}
+                                                        </>
+                                                    )}
+                                            </>
+                                        )}
+                                    </AdvancedSection>
+                                )}
                             {/* Show error if empp_raw is present but token is not ALP */}
                             {shouldShowSlpErrorForEmppRaw && (
                                 <SendXecRow>
@@ -2924,154 +3414,6 @@ const SendXec: React.FC = () => {
                                     </Alert>
                                 </SendXecRow>
                             )}
-                            {/* Show EMPP options for ALP tokens */}
-                            {selectedTokenId &&
-                                typeof cashtabCache.tokens.get(
-                                    selectedTokenId,
-                                ) !== 'undefined' &&
-                                cashtabCache.tokens.get(selectedTokenId)
-                                    ?.tokenType.type ===
-                                    'ALP_TOKEN_TYPE_STANDARD' && (
-                                    <>
-                                        <SendXecRow>
-                                            <AdvancedButtonsRow>
-                                                <AdvancedButton
-                                                    type="button"
-                                                    $active={
-                                                        sendWithCashtabMsgToken
-                                                    }
-                                                    onClick={() => {
-                                                        if (
-                                                            !sendWithCashtabMsgToken &&
-                                                            sendWithEmppRaw
-                                                        ) {
-                                                            setSendWithEmppRaw(
-                                                                false,
-                                                            );
-                                                        }
-                                                        setSendWithCashtabMsgToken(
-                                                            !sendWithCashtabMsgToken,
-                                                        );
-                                                    }}
-                                                    disabled={
-                                                        txInfoFromUrl !==
-                                                            false ||
-                                                        'queryString' in
-                                                            parsedAddressInput
-                                                    }
-                                                >
-                                                    Cashtab Msg
-                                                </AdvancedButton>
-                                                <AdvancedButton
-                                                    type="button"
-                                                    $active={sendWithEmppRaw}
-                                                    onClick={() => {
-                                                        if (
-                                                            !sendWithEmppRaw &&
-                                                            sendWithCashtabMsgToken
-                                                        ) {
-                                                            setSendWithCashtabMsgToken(
-                                                                false,
-                                                            );
-                                                        }
-                                                        setSendWithEmppRaw(
-                                                            !sendWithEmppRaw,
-                                                        );
-                                                    }}
-                                                    disabled={
-                                                        txInfoFromUrl !==
-                                                            false ||
-                                                        'queryString' in
-                                                            parsedAddressInput
-                                                    }
-                                                >
-                                                    empp_raw
-                                                </AdvancedButton>
-                                            </AdvancedButtonsRow>
-                                        </SendXecRow>
-                                        {sendWithCashtabMsgToken && (
-                                            <SendXecRow>
-                                                <TextArea
-                                                    name="tokenCashtabMsg"
-                                                    height={62}
-                                                    placeholder={`Include a Cashtab msg EMPP push with this token tx (max 100 bytes)`}
-                                                    value={
-                                                        tokenFormData.tokenCashtabMsg
-                                                    }
-                                                    error={tokenCashtabMsgError}
-                                                    showCount
-                                                    customCount={
-                                                        strToBytes(
-                                                            tokenFormData.tokenCashtabMsg,
-                                                        ).length
-                                                    }
-                                                    max={100}
-                                                    handleInput={
-                                                        handleTokenCashtabMsgChange
-                                                    }
-                                                />
-                                            </SendXecRow>
-                                        )}
-                                        {(sendWithEmppRaw ||
-                                            (typeof parsedAddressInput.empp_raw !==
-                                                'undefined' &&
-                                                parsedAddressInput.empp_raw
-                                                    .error === false)) && (
-                                            <>
-                                                <SendXecRow>
-                                                    <TextArea
-                                                        name="emppRaw"
-                                                        height={62}
-                                                        placeholder={`(Advanced) Enter raw hex EMPP push (max 100 bytes)`}
-                                                        value={
-                                                            tokenFormData.emppRaw
-                                                        }
-                                                        error={emppRawError}
-                                                        disabled={
-                                                            txInfoFromUrl !==
-                                                                false ||
-                                                            'queryString' in
-                                                                parsedAddressInput
-                                                        }
-                                                        showCount
-                                                        max={200}
-                                                        customCount={
-                                                            tokenFormData
-                                                                .emppRaw
-                                                                .length / 2
-                                                        }
-                                                        handleInput={
-                                                            handleEmppRawInput
-                                                        }
-                                                    />
-                                                </SendXecRow>
-                                                {emppRawError === false &&
-                                                    tokenFormData.emppRaw !==
-                                                        '' && (
-                                                        <SendXecRow>
-                                                            <ParsedBip21InfoRow>
-                                                                <ParsedBip21InfoLabel>
-                                                                    Parsed
-                                                                    empp_raw
-                                                                </ParsedBip21InfoLabel>
-                                                                <ParsedBip21Info>
-                                                                    <b>
-                                                                        {
-                                                                            parsedEmppRaw.protocol
-                                                                        }
-                                                                    </b>
-                                                                    <br />
-                                                                    {
-                                                                        parsedEmppRaw.data
-                                                                    }
-                                                                </ParsedBip21Info>
-                                                            </ParsedBip21InfoRow>
-                                                        </SendXecRow>
-                                                    )}
-                                            </>
-                                        )}
-                                    </>
-                                )}
                             {/* Parsed input_data_raw when present in BIP21 (token mode) */}
                             {selectedTokenId &&
                                 (parsedInputDataRaw.protocol !== '' ||
