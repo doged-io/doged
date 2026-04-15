@@ -21,6 +21,7 @@ import {
 import CashtabTestWrapper from 'components/App/fixtures/CashtabTestWrapper';
 import {
     slp1FixedBear,
+    slp1FixedCachet,
     tokenTestWallet,
 } from 'components/Etokens/fixtures/mocks';
 import { FIRMA, FIRMA_REDEEM_ADDRESS } from 'constants/tokens';
@@ -1244,6 +1245,89 @@ describe('<SendXec /> rendered with params in URL', () => {
         ).not.toBeInTheDocument();
 
         // The send button is enabled
+        expect(
+            await screen.findByRole('button', { name: 'Accept' }),
+        ).toBeEnabled();
+    });
+    it('bip21 - token send-to-many renders in token mode from URL params', async () => {
+        const cachetWallet = {
+            ...tokenTestWallet,
+            state: {
+                ...tokenTestWallet.state,
+                slpUtxos: [
+                    ...tokenTestWallet.state.slpUtxos,
+                    {
+                        outpoint: {
+                            txid: slp1FixedCachet.tokenId,
+                            outIdx: 2,
+                        },
+                        blockHeight: 838200,
+                        isCoinbase: false,
+                        isFinal: true,
+                        sats: 546n,
+                        token: {
+                            tokenId: slp1FixedCachet.tokenId,
+                            tokenType: {
+                                protocol: 'SLP',
+                                type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                                number: 1,
+                            },
+                            atoms: 10000000n,
+                            isMintBaton: false,
+                        },
+                    },
+                ],
+                tokens: new Map([
+                    ...Array.from(tokenTestWallet.state.tokens.entries()),
+                    [slp1FixedCachet.tokenId, '100000'],
+                ]),
+            },
+        };
+        const destinationAddress =
+            'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035';
+        const secondAddress =
+            'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6';
+        const thirdAddress = 'ecash:qqgsuw6q6y2szxvg5kf4ccf6tzsf8dqh4vlcd636sl';
+        const token_id = slp1FixedCachet.tokenId;
+        const bip21Str = `${destinationAddress}?token_id=${token_id}&token_decimalized_qty=0.01&addr=${secondAddress}&token_decimalized_qty=0.02&addr=${thirdAddress}&token_decimalized_qty=0.03`;
+        const hash = `#/send?bip21=${bip21Str}`;
+        Object.defineProperty(window, 'location', {
+            value: {
+                hash,
+            },
+            writable: true,
+        });
+
+        const mockedChronik = await initializeCashtabStateForTests(
+            cachetWallet,
+            localforage,
+        );
+        mockedChronik.setTx(slp1FixedCachet.tx.txid, slp1FixedCachet.tx);
+        mockedChronik.setToken(slp1FixedCachet.tokenId, slp1FixedCachet.token);
+        render(<CashtabTestWrapper chronik={mockedChronik} route="/send" />);
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        expect(
+            await screen.findByTitle('Balance XEC', {}, { timeout: 10000 }),
+        ).toHaveTextContent('9,970.81 XEC');
+
+        const multiInputEl = await screen.findByPlaceholderText(
+            /One address & token qty per line/,
+        );
+        expect(multiInputEl).toBeDisabled();
+        expect(multiInputEl).toHaveValue(
+            `${destinationAddress},0.01\n${secondAddress},0.02\n${thirdAddress},0.03`,
+        );
+
+        expect(
+            await screen.findByText('BIP21: Sending 0.06 CACHET to 3 outputs'),
+        ).toBeInTheDocument();
+
         expect(
             await screen.findByRole('button', { name: 'Accept' }),
         ).toBeEnabled();

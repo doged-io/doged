@@ -3226,4 +3226,125 @@ describe('<SendXec />', () => {
             `${explorer.blockExplorerUrl}/tx/${firstTxid}`,
         );
     });
+    it('SLP CACHET: Token send to many — valid bip21 input renders and sends chained tx', async () => {
+        const cachetWallet = {
+            ...tokenTestWallet,
+            state: {
+                ...tokenTestWallet.state,
+                slpUtxos: [
+                    ...tokenTestWallet.state.slpUtxos,
+                    {
+                        outpoint: {
+                            txid: 'aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1',
+                            outIdx: 2,
+                        },
+                        blockHeight: 838200,
+                        isCoinbase: false,
+                        isFinal: true,
+                        sats: 546n,
+                        token: {
+                            tokenId: slp1FixedCachet.tokenId,
+                            tokenType: {
+                                protocol: 'SLP',
+                                type: 'SLP_TOKEN_TYPE_FUNGIBLE',
+                                number: 1,
+                            },
+                            atoms: 10000000n,
+                            isMintBaton: false,
+                        },
+                    },
+                ],
+                tokens: new Map([
+                    ...Array.from(tokenTestWallet.state.tokens.entries()),
+                    [slp1FixedCachet.tokenId, '100000'],
+                ]),
+            },
+        };
+
+        const mockedChronik = await initializeCashtabStateForTests(
+            cachetWallet,
+            localforage,
+        );
+        await localforage.setItem('settings', {
+            fiatCurrency: 'usd',
+            sendModal: false,
+            autoCameraOn: false,
+            hideMessagesFromUnknownSenders: false,
+            balanceVisible: true,
+            satsPerKb: FEE_SATS_PER_KB_CASHTAB_LEGACY,
+        });
+
+        mockedChronik.setToken(slp1FixedCachet.tokenId, slp1FixedCachet.token);
+        mockedChronik.setTx(slp1FixedCachet.tokenId, slp1FixedCachet.tx);
+
+        const addrA = 'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035';
+        const addrB = 'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6';
+        const bip21Query = [
+            `token_id=${slp1FixedCachet.tokenId}`,
+            'token_decimalized_qty=0.01',
+            ...Array.from(
+                { length: 24 },
+                (_, i) =>
+                    `addr=${i % 2 === 0 ? addrB : addrA}&token_decimalized_qty=0.01`,
+            ),
+        ].join('&');
+        const bip21Input = `${addrA}?${bip21Query}`;
+
+        // Prep mock chronik client with expected tx chain
+        const firstTx =
+            '0200000002b13c550e03a38750239191f649760d70b95c13de2e25c0884b93961ba361d8ae0200000064412fa83a70087fbf9e0efa08161255270aec2f1501de8b0391557e0752755b6256e7ed8371178688d77f0191f955ab281de14f3260c1fd8b0048d9cf738f20a8ea4121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffffef76d01776229a95c45696cf68f2f98c8332d0c53e3f24e73fd9c6deaf792618030000006441bc4f378d7c80e96acf58ee765101963c1329c252a7247df67ec000d94b0d931b98297d0138109ff618c940e695566e064bcb9005b61d16113299679b839e22ec4121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffff150000000000000000d96a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000098966e22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac62150000000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188accdf30e00000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188ac00000000';
+        const firstTxid =
+            '5a91a5c598a9b85621d364ce91a62adf6bcb1ec672fa2eab148923de10ed85e5';
+        const secondTx =
+            '0200000001e585ed10de238914ab2efa72c61ecb6bdf2aa691ce64d32156b8a998c5a5915a130000006441f96d7573ca7ffac1351fb37fd7433453fa6cf81a27babd2f8fd4728a169efc8632894d4382d9cd449ff01817d72cf1e11a0400b4155373c054f0d5d02d983bb14121031d4603bdc23aca9432f903e3cf5975a3f655cc3fa5057c61d00dfc1ca5dfd02dffffffff090000000000000000766a04534c500001010453454e4420aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000000000108000000000098966722020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9144e532257c01b310b3b5c1fd947c79a72addf852388ac22020000000000001976a91495e79f51d4260bc0dc3ba7fb77c7be92d0fbdd1d88ac22020000000000001976a9143a5fb236934ec078b4507c303d3afd82067f8fc188ac00000000';
+        const secondTxid =
+            'd70e0f559347395152e3b888130591d6d913ff9d93ea935de802490e4f9762bd';
+        mockedChronik.setBroadcastTx(firstTx, firstTxid);
+        mockedChronik.setBroadcastTx(secondTx, secondTxid);
+
+        render(
+            <CashtabTestWrapper
+                chronik={mockedChronik}
+                ecc={ecc}
+                route="/send"
+            />,
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        const addressInputEl = await screen.findByPlaceholderText('Address');
+        fireEvent.input(addressInputEl, { target: { value: bip21Input } });
+        fireEvent.change(addressInputEl, { target: { value: bip21Input } });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('BIP21: Sending 0.25 CACHET to 25 outputs'),
+            ).toBeInTheDocument();
+        });
+
+        const multiEl = await screen.findByPlaceholderText(
+            /One address & token qty per line/,
+        );
+        expect(multiEl).toHaveProperty('disabled', true);
+        expect(multiEl).toHaveValue(
+            `${addrA},0.01\n${Array.from(
+                { length: 24 },
+                (_, i) => `${i % 2 === 0 ? addrB : addrA},0.01`,
+            ).join('\n')}`,
+        );
+
+        const sendButton = screen.getByRole('button', { name: 'Send' });
+        expect(sendButton).toBeEnabled();
+        await user.click(sendButton);
+
+        const txSuccessNotification = await screen.findByText('eToken sent');
+        expect(txSuccessNotification).toHaveAttribute(
+            'href',
+            `${explorer.blockExplorerUrl}/tx/${firstTxid}`,
+        );
+    });
 });

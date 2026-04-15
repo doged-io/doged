@@ -832,6 +832,10 @@ export interface CashtabParsedAddressInfo {
     input_data_raw?: { value: null | string; error: false | string };
     token_id?: { value: null | string; error: false | string };
     token_decimalized_qty?: { value: null | string; error: false | string };
+    parsedAdditionalTokenOutputs?: {
+        value: null | [string, string][];
+        error: false | string;
+    };
     firma?: { value: null | string; error: false | string };
 }
 
@@ -922,95 +926,168 @@ export function parseAddressInput(
 
         if (addrParams.has('token_id')) {
             // Parse bip21 for token send tx
-            const tokenParams = [...addrParams.keys()].length;
-            const hasTokenDecimalizedQty = addrParams.has(
+            const allowedParams = [
+                'token_id',
                 'token_decimalized_qty',
+                'firma',
+                'empp_raw',
+                'input_data_raw',
+                'addr',
+            ];
+            const hasUnsupportedTokenParam = [...addrParams.keys()].some(
+                key => !allowedParams.includes(key),
             );
-            const hasFirma = addrParams.has('firma');
-            const hasEmppRaw = addrParams.has('empp_raw');
-
-            // Validate that only allowed params are present
-            const hasInputDataRaw = addrParams.has('input_data_raw');
-            const allowedParams = ['token_id'];
-            if (hasTokenDecimalizedQty) {
-                allowedParams.push('token_decimalized_qty');
-            }
-            if (hasFirma) {
-                allowedParams.push('firma');
-            }
-            if (hasEmppRaw) {
-                allowedParams.push('empp_raw');
-            }
-            if (hasInputDataRaw) {
-                allowedParams.push('input_data_raw');
-            }
-
-            if (tokenParams > allowedParams.length) {
-                // Invalid params present
-                parsedAddressInput.queryString.error = `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), firma (optional), empp_raw (optional), and input_data_raw (optional)`;
+            if (hasUnsupportedTokenParam) {
+                parsedAddressInput.queryString.error = `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), addr (optional), firma (optional), empp_raw (optional), and input_data_raw (optional)`;
                 return parsedAddressInput;
             }
 
-            // Parse token_id
-            const passedTokenId = addrParams.get('token_id');
-            parsedAddressInput.token_id = {
-                value: passedTokenId,
-                error: isValidTokenId(passedTokenId)
+            let precedingTokenAddr: false | string = false;
+            const additionalTokenOutputs: [string, string][] = [];
+            let seenTokenId = false;
+            let seenBaseTokenQty = false;
+            let seenFirma = false;
+            let seenEmppRaw = false;
+            let seenInputDataRaw = false;
+
+            const setTokenQtyError = (value: string | null): false | string => {
+                return typeof value === 'string' &&
+                    STRINGIFIED_DECIMALIZED_REGEX.test(value)
                     ? false
-                    : 'token_id is not a valid tokenId',
+                    : 'Invalid token_decimalized_qty';
             };
 
-            // Parse token_decimalized_qty if present
-            if (hasTokenDecimalizedQty) {
-                const passedTokenDecimalizedQty = addrParams.get(
-                    'token_decimalized_qty',
-                );
-                const isValidTokenDecimalizedQty =
-                    typeof passedTokenDecimalizedQty === 'string'
-                        ? STRINGIFIED_DECIMALIZED_REGEX.test(
-                              passedTokenDecimalizedQty,
-                          )
-                        : false;
-                // Note, because we do not know token decimals, validation of token_decimalized_qty
-                // must wait for the the token send screen. We only check if it's a stringified
-                // number
-                parsedAddressInput.token_decimalized_qty = {
-                    value: passedTokenDecimalizedQty,
-                    error: isValidTokenDecimalizedQty
-                        ? false
-                        : 'Invalid token_decimalized_qty',
-                };
+            for (const [key, value] of addrParams) {
+                if (
+                    precedingTokenAddr !== false &&
+                    key !== 'token_decimalized_qty'
+                ) {
+                    parsedAddressInput.queryString.error = `No token_decimalized_qty key for addr ${precedingTokenAddr}`;
+                    parsedAddressInput.parsedAdditionalTokenOutputs = {
+                        value: null,
+                        error: parsedAddressInput.queryString.error,
+                    };
+                    return parsedAddressInput;
+                }
+
+                if (key === 'token_id') {
+                    if (seenTokenId) {
+                        parsedAddressInput.queryString.error =
+                            'Duplicated token_id param';
+                        return parsedAddressInput;
+                    }
+                    seenTokenId = true;
+                    parsedAddressInput.token_id = {
+                        value,
+                        error: isValidTokenId(value)
+                            ? false
+                            : 'token_id is not a valid tokenId',
+                    };
+                    continue;
+                }
+
+                if (key === 'token_decimalized_qty') {
+                    if (precedingTokenAddr !== false) {
+                        additionalTokenOutputs.push([
+                            precedingTokenAddr,
+                            value,
+                        ]);
+                        if (!parsedAddressInput.parsedAdditionalTokenOutputs) {
+                            parsedAddressInput.parsedAdditionalTokenOutputs = {
+                                value: null,
+                                error: false,
+                            };
+                        }
+                        parsedAddressInput.parsedAdditionalTokenOutputs.value =
+                            additionalTokenOutputs;
+                        precedingTokenAddr = false;
+                    } else if (!seenBaseTokenQty) {
+                        seenBaseTokenQty = true;
+                        parsedAddressInput.token_decimalized_qty = {
+                            value,
+                            error: setTokenQtyError(value),
+                        };
+                    } else {
+                        parsedAddressInput.queryString.error =
+                            'The token_decimalized_qty param appears without a corresponding addr param';
+                        return parsedAddressInput;
+                    }
+                    continue;
+                }
+
+                if (key === 'addr') {
+                    if (!parsedAddressInput.parsedAdditionalTokenOutputs) {
+                        parsedAddressInput.parsedAdditionalTokenOutputs = {
+                            value: null,
+                            error: false,
+                        };
+                    }
+                    const isValidNthAddress = isValidCashAddress(
+                        value,
+                        appConfig.prefix,
+                    );
+                    if (!isValidNthAddress) {
+                        parsedAddressInput.parsedAdditionalTokenOutputs.error = `Invalid address "${value}"`;
+                        parsedAddressInput.queryString.error =
+                            parsedAddressInput.parsedAdditionalTokenOutputs.error;
+                        return parsedAddressInput;
+                    }
+                    precedingTokenAddr = value;
+                    continue;
+                }
+
+                if (key === 'firma') {
+                    if (seenFirma) {
+                        parsedAddressInput.queryString.error =
+                            'Duplicated firma param';
+                        return parsedAddressInput;
+                    }
+                    seenFirma = true;
+                    parsedAddressInput.firma = {
+                        value,
+                        error: getFirmaPushError(value),
+                    };
+                    continue;
+                }
+
+                if (key === 'empp_raw') {
+                    if (seenEmppRaw) {
+                        parsedAddressInput.queryString.error =
+                            'Duplicated empp_raw param';
+                        return parsedAddressInput;
+                    }
+                    seenEmppRaw = true;
+                    parsedAddressInput.empp_raw = {
+                        value,
+                        error: getEmppRawError(value),
+                    };
+                    continue;
+                }
+
+                if (key === 'input_data_raw') {
+                    if (seenInputDataRaw) {
+                        parsedAddressInput.queryString.error =
+                            'Duplicated input_data_raw param';
+                        return parsedAddressInput;
+                    }
+                    seenInputDataRaw = true;
+                    parsedAddressInput.input_data_raw = {
+                        value,
+                        error: getInputDataRawError(value),
+                    };
+                }
             }
 
-            // Parse firma if present
-            if (hasFirma) {
-                const passedFirma = addrParams.get('firma');
-                const firmaError = getFirmaPushError(passedFirma);
-                parsedAddressInput.firma = {
-                    value: passedFirma,
-                    error: firmaError,
-                };
-            }
-
-            // Parse empp_raw if present
-            if (hasEmppRaw) {
-                const passedEmppRaw = addrParams.get('empp_raw');
-                const emppRawError = getEmppRawError(passedEmppRaw);
-                parsedAddressInput.empp_raw = {
-                    value: passedEmppRaw,
-                    error: emppRawError,
-                };
-            }
-
-            // Parse input_data_raw if present (Cashtab-only, for p2shInputData)
-            if (hasInputDataRaw) {
-                const passedInputDataRaw = addrParams.get('input_data_raw');
-                const inputDataRawError =
-                    getInputDataRawError(passedInputDataRaw);
-                parsedAddressInput.input_data_raw = {
-                    value: passedInputDataRaw,
-                    error: inputDataRawError,
-                };
+            if (precedingTokenAddr !== false) {
+                parsedAddressInput.queryString.error = `No token_decimalized_qty key for addr ${precedingTokenAddr}`;
+                if (
+                    typeof parsedAddressInput.parsedAdditionalTokenOutputs !==
+                    'undefined'
+                ) {
+                    parsedAddressInput.parsedAdditionalTokenOutputs.error =
+                        parsedAddressInput.queryString.error;
+                }
+                return parsedAddressInput;
             }
         } else if (addrParams.has('token_decimalized_qty')) {
             // This is an invalid bip21 token tx

@@ -924,7 +924,7 @@ export default {
                     },
                     queryString: {
                         value: 'token_id=1111111111111111111111111111111111111111111111111111111111111111&token_decimalized_qty=100.123&amount=100',
-                        error: `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), firma (optional), empp_raw (optional), and input_data_raw (optional)`,
+                        error: `Invalid bip21 token tx: bip21 token txs may only include the params token_id, token_decimalized_qty (optional), addr (optional), firma (optional), empp_raw (optional), and input_data_raw (optional)`,
                     },
                 },
             },
@@ -1146,6 +1146,75 @@ export default {
                     queryString: {
                         value: 'token_id=aed861a31b96934b88c0252ede135cb9700d7649f69191235087a3030e553cb1&token_decimalized_qty=10&input_data_raw=44494345000100000000e1f505',
                         error: false,
+                    },
+                },
+            },
+            {
+                description:
+                    'bip21 token: valid token send-to-many with addr and token_decimalized_qty pairs',
+                addressInput:
+                    'ecash:qq9h6d0a5q65fgywv4ry64x04ep906mdku8f0gxfgx?token_id=1111111111111111111111111111111111111111111111111111111111111111&token_decimalized_qty=1.23&addr=ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035&token_decimalized_qty=2&addr=ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6&token_decimalized_qty=3.5',
+                balanceSats: 50000000,
+                userLocale: appConfig.defaultLocale,
+                parsedAddressInput: {
+                    address: {
+                        value: 'ecash:qq9h6d0a5q65fgywv4ry64x04ep906mdku8f0gxfgx',
+                        error: false,
+                    },
+                    token_id: {
+                        value: '1111111111111111111111111111111111111111111111111111111111111111',
+                        error: false,
+                    },
+                    token_decimalized_qty: {
+                        value: '1.23',
+                        error: false,
+                    },
+                    parsedAdditionalTokenOutputs: {
+                        value: [
+                            [
+                                'ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
+                                '2',
+                            ],
+                            [
+                                'ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6',
+                                '3.5',
+                            ],
+                        ],
+                        error: false,
+                    },
+                    queryString: {
+                        value: 'token_id=1111111111111111111111111111111111111111111111111111111111111111&token_decimalized_qty=1.23&addr=ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035&token_decimalized_qty=2&addr=ecash:qp89xgjhcqdnzzemts0aj378nfe2mhu9yvxj9nhgg6&token_decimalized_qty=3.5',
+                        error: false,
+                    },
+                },
+            },
+            {
+                description:
+                    'bip21 token: addr without following token_decimalized_qty is invalid',
+                addressInput:
+                    'ecash:qq9h6d0a5q65fgywv4ry64x04ep906mdku8f0gxfgx?token_id=1111111111111111111111111111111111111111111111111111111111111111&token_decimalized_qty=1&addr=ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
+                balanceSats: 50000000,
+                userLocale: appConfig.defaultLocale,
+                parsedAddressInput: {
+                    address: {
+                        value: 'ecash:qq9h6d0a5q65fgywv4ry64x04ep906mdku8f0gxfgx',
+                        error: false,
+                    },
+                    token_id: {
+                        value: '1111111111111111111111111111111111111111111111111111111111111111',
+                        error: false,
+                    },
+                    token_decimalized_qty: {
+                        value: '1',
+                        error: false,
+                    },
+                    parsedAdditionalTokenOutputs: {
+                        value: null,
+                        error: 'No token_decimalized_qty key for addr ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
+                    },
+                    queryString: {
+                        value: 'token_id=1111111111111111111111111111111111111111111111111111111111111111&token_decimalized_qty=1&addr=ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
+                        error: 'No token_decimalized_qty key for addr ecash:qz2708636snqhsxu8wnlka78h6fdp77ar59jrf5035',
                     },
                 },
             },

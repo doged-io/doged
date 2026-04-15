@@ -834,6 +834,47 @@ const SendXec: React.FC = () => {
         );
     };
 
+    const isBip21TokenSendToMany = (
+        parsedAddressInput: CashtabParsedAddressInfo,
+    ): parsedAddressInput is {
+        address: { value: string; error: false };
+        token_id: { value: string; error: false | string };
+        token_decimalized_qty: { value: string; error: false | string };
+        parsedAdditionalTokenOutputs: {
+            value: [string, string][];
+            error: false | string;
+        };
+    } => {
+        return (
+            isBip21TokenSend(parsedAddressInput) &&
+            typeof parsedAddressInput.parsedAdditionalTokenOutputs !==
+                'undefined' &&
+            parsedAddressInput.parsedAdditionalTokenOutputs.value !== null &&
+            parsedAddressInput.parsedAdditionalTokenOutputs.error === false &&
+            parsedAddressInput.parsedAdditionalTokenOutputs.value.length > 0
+        );
+    };
+
+    const getBip21TokenSendToManyRows = (
+        parsedAddressInput: CashtabParsedAddressInfo,
+    ): Array<{ address: string; decimalizedQty: string }> => {
+        if (!isBip21TokenSendToMany(parsedAddressInput)) {
+            return [];
+        }
+        return [
+            {
+                address: parsedAddressInput.address.value,
+                decimalizedQty: parsedAddressInput.token_decimalized_qty.value,
+            },
+            ...parsedAddressInput.parsedAdditionalTokenOutputs.value.map(
+                ([address, decimalizedQty]) => ({
+                    address,
+                    decimalizedQty,
+                }),
+            ),
+        ];
+    };
+
     const isValidFirmaRedeemTx = (
         parsedAddressInput: CashtabParsedAddressInfo,
     ): parsedAddressInput is {
@@ -895,6 +936,14 @@ const SendXec: React.FC = () => {
                   parseFloat(parsedAddressInput.amount.value),
               )
             : 0;
+
+    const bip21TokenSendToManyRows =
+        getBip21TokenSendToManyRows(parsedAddressInput);
+    const bip21TokenSendToManyOutputCount = bip21TokenSendToManyRows.length;
+    const bip21TokenSendToManyTotal = bip21TokenSendToManyRows.reduce(
+        (accumulator, row) => accumulator + parseFloat(row.decimalizedQty),
+        0,
+    );
 
     const userLocale = getUserLocale(navigator);
 
@@ -1096,9 +1145,13 @@ const SendXec: React.FC = () => {
     };
 
     const sendToken = async () => {
+        const isBip21SendToMany = isBip21TokenSendToMany(parsedAddressInput);
+
         // BIP21 token send excludes send-to-many form mode
         const isBip21Send =
-            isBip21TokenSend(parsedAddressInput) && !isOneToManyTokenSend;
+            isBip21TokenSend(parsedAddressInput) &&
+            !isOneToManyTokenSend &&
+            !isBip21SendToMany;
 
         let address: string;
         let tokenId: string;
@@ -1112,6 +1165,11 @@ const SendXec: React.FC = () => {
             decimalizedTokenQty =
                 parsedAddressInput.token_decimalized_qty.value;
             eventName = 'Bip21 Token Send';
+        } else if (isBip21SendToMany) {
+            address = '';
+            tokenId = parsedAddressInput.token_id.value;
+            decimalizedTokenQty = '';
+            eventName = 'Bip21 Token Send To Many';
         } else if (isOneToManyTokenSend) {
             if (!selectedTokenId) {
                 toast.error('No token selected');
@@ -1180,10 +1238,10 @@ const SendXec: React.FC = () => {
             // Build payment.Action for ecash-wallet
             let action: payment.Action;
 
-            if (isOneToManyTokenSend) {
-                const rows = parseTokenMultisendRows(
-                    tokenFormData.multiAddressInput,
-                );
+            if (isBip21SendToMany || isOneToManyTokenSend) {
+                const rows = isBip21SendToMany
+                    ? getBip21TokenSendToManyRows(parsedAddressInput)
+                    : parseTokenMultisendRows(tokenFormData.multiAddressInput);
                 action = {
                     outputs: [
                         { sats: 0n },
@@ -2020,6 +2078,15 @@ const SendXec: React.FC = () => {
         ) {
             tokenRenderedError = parsedAddressInput.input_data_raw.error;
         }
+        if (
+            tokenRenderedError === false &&
+            typeof parsedAddressInput.parsedAdditionalTokenOutputs !==
+                'undefined' &&
+            parsedAddressInput.parsedAdditionalTokenOutputs.error !== false
+        ) {
+            tokenRenderedError =
+                parsedAddressInput.parsedAdditionalTokenOutputs.error;
+        }
 
         // Parse and set firma if it's in the query string
         if (
@@ -2132,14 +2199,30 @@ const SendXec: React.FC = () => {
         }
 
         setSendAddressError(tokenRenderedError);
+        const bip21TokenSendToManyRows = hasQueryString
+            ? getBip21TokenSendToManyRows(parsedAddressInput)
+            : [];
+        const hasBip21TokenSendToMany = bip21TokenSendToManyRows.length > 0;
+
         if (hasQueryString) {
-            setIsOneToManyTokenSend(false);
+            setIsOneToManyTokenSend(hasBip21TokenSendToMany);
             setMultiTokenSendError(false);
         }
+
+        const tokenSendToManyCsv = hasBip21TokenSendToMany
+            ? bip21TokenSendToManyRows
+                  .map(
+                      ({ address, decimalizedQty }) =>
+                          `${address},${decimalizedQty}`,
+                  )
+                  .join('\n')
+            : '';
         setTokenFormData(p => ({
             ...p,
             [name]: value,
-            ...(hasQueryString ? { multiAddressInput: '' } : {}),
+            ...(hasQueryString
+                ? { multiAddressInput: tokenSendToManyCsv }
+                : {}),
         }));
     };
 
@@ -3435,8 +3518,8 @@ const SendXec: React.FC = () => {
                                         </ParsedBip21InfoRow>
                                     </SendXecRow>
                                 )}
-                            {/* Show BIP21 token send info in token mode (only if token_decimalized_qty is present) */}
-                            {isBip21TokenSend(parsedAddressInput) &&
+                            {/* Show BIP21 token send info in token mode */}
+                            {isBip21TokenSendWithTokenId(parsedAddressInput) &&
                                 selectedTokenId !== null &&
                                 selectedTokenId ===
                                     parsedAddressInput.token_id.value &&
@@ -3447,9 +3530,33 @@ const SendXec: React.FC = () => {
                                         ) !== 'undefined' ? (
                                             <>
                                                 {/* Show parsed token send info */}
-                                                {isValidFirmaRedeemTx(
+                                                {isBip21TokenSendToMany(
                                                     parsedAddressInput,
                                                 ) ? (
+                                                    <Info>
+                                                        <b>
+                                                            BIP21: Sending{' '}
+                                                            {bip21TokenSendToManyTotal.toLocaleString(
+                                                                userLocale,
+                                                                {
+                                                                    maximumFractionDigits: 9,
+                                                                },
+                                                            )}{' '}
+                                                            {cashtabCache.tokens.get(
+                                                                selectedTokenId,
+                                                            )?.genesisInfo
+                                                                .tokenTicker ||
+                                                                'token'}{' '}
+                                                            to{' '}
+                                                            {
+                                                                bip21TokenSendToManyOutputCount
+                                                            }{' '}
+                                                            outputs
+                                                        </b>
+                                                    </Info>
+                                                ) : isValidFirmaRedeemTx(
+                                                      parsedAddressInput,
+                                                  ) ? (
                                                     <ParsedTokenSend
                                                         style={{
                                                             marginBottom:
