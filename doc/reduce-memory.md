@@ -26,7 +26,8 @@ The size of some in-memory caches can be reduced. As caches trade off memory usa
 
 - `-maxconnections=<n>` - the maximum number of connections, this defaults to 4096. Each active connection takes up some
   memory. This option applies only if incoming connections are enabled, otherwise the number of connections will never
-  be more than 10. Of the 10 outbound peers, there can be 8 full-relay connections and 2 block-relay-only ones.
+  be more than 318. Of the 318 outbound peers, there can be 16 full-relay connections, 300 avalanche peers and 2 block-relay-only ones.
+  Note that `-maxconnections=<n>` cannot be set to a lower number than `-maxavalancheoutbound` (300 by default).
 
 ## Thread configuration
 

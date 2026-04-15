@@ -3,10 +3,10 @@ Reduce Traffic
 
 Some node operators need to deal with bandwidth caps imposed by their ISPs.
 
-By default, doged allows up to 4096 connections to different peers, 10 of
-which are outbound. You can therefore, have at most 4086 inbound connections.
-Of the 10 outbound peers, there can be 8 full-relay connections and 2
-block-relay-only ones.
+By default, doged allows up to 4096 connections to different peers, 318 of
+which are outbound. You can therefore, have at most 3778 inbound connections.
+Of the 318 outbound peers, there can be 16 full-relay connections, 300 avalanche
+peers and 2 block-relay-only ones.
 
 The default settings can result in relatively significant traffic consumption.
 
@@ -37,6 +37,8 @@ blocks and transactions to fewer nodes.
 Reducing the maximum connected nodes to a minimum could be desirable if traffic
 limits are tiny. Keep in mind that bitcoin's trustless model works best if you are
 connected to a handful of nodes.
+
+Note that this number cannot be set lower than `-maxavalancheoutbound` (300 by default).
 
 ## 4. Turn off transaction relay (`-blocksonly`)
 
