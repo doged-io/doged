@@ -693,6 +693,7 @@ add_library(server
 	pow/pow.cpp
 	rest.cpp
 	stratum/stratum.cpp
+	stratum/stratumaux.cpp
 	stratum/stratumconfig.cpp
 	stratum/stratumjob.cpp
 	stratum/stratumprotocol.cpp
