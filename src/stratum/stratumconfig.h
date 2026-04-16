@@ -57,6 +57,22 @@ struct StratumConfig {
     bool preferLocal = true;     // Use local node when synced (tier 1)
     bool warnSoloMining = true;  // Warn when falling through to local-only
     std::vector<StratumPoolEntry> upstreamPools; // Proxy targets (tier 2+)
+
+    /**
+     * External chain for multi-chain merged mining via RPC.
+     * Parsed from -mergemine=name:host:port:user:pass:chainid[:poll_ms]
+     */
+    struct MergeMineEntry {
+        std::string name;
+        std::string rpcHost;
+        uint16_t rpcPort;
+        std::string rpcUser;
+        std::string rpcPassword;
+        uint32_t chainId;
+        int pollIntervalMs = 5000;
+    };
+
+    std::vector<MergeMineEntry> mergeMineChains;
 };
 
 void RegisterStratumArgs(ArgsManager &args);

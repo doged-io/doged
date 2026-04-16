@@ -70,6 +70,7 @@ enum LogFlags : uint32_t {
     NETDEBUG = (1 << 27),
     TXPACKAGES = (1 << 28),
     STRATUM = (1 << 29),
+    MERGEMINE = (1 << 30),
     ALL = ~uint32_t(0),
 };
 

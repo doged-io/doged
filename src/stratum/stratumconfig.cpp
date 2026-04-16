@@ -68,6 +68,12 @@ void RegisterStratumArgs(ArgsManager &args) {
                 "Log a warning when solo-mining locally with no upstream "
                 "pool available (default: 1)",
                 ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
+    args.AddArg("-mergemine=<spec>",
+                "Add an external chain for multi-chain merged mining via "
+                "RPC. Format: name:host:port:user:pass:chainid[:poll_ms]. "
+                "Example: -mergemine=LTC:127.0.0.1:9332:user:pass:2:5000. "
+                "Can be specified multiple times.",
+                ArgsManager::ALLOW_ANY, OptionsCategory::BLOCK_CREATION);
 }
 
 util::Result<StratumConfig> ParseStratumConfig(const ArgsManager &args) {
@@ -180,6 +186,47 @@ util::Result<StratumConfig> ParseStratumConfig(const ArgsManager &args) {
         }
 
         config.upstreamPools.push_back(entry);
+    }
+
+    // Parse merge-mine chain specs: name:host:port:user:pass:chainid[:poll_ms]
+    for (const auto &spec : args.GetArgs("-mergemine")) {
+        StratumConfig::MergeMineEntry entry;
+        std::vector<std::string> parts;
+        std::string token;
+        for (char c : spec) {
+            if (c == ':' && parts.size() < 6) {
+                parts.push_back(token);
+                token.clear();
+            } else {
+                token += c;
+            }
+        }
+        parts.push_back(token);
+
+        if (parts.size() < 6) {
+            return {{strprintf(
+                Untranslated("-mergemine format: name:host:port:user:pass:chainid[:poll_ms], got '%s'"),
+                spec)}};
+        }
+
+        entry.name = parts[0];
+        entry.rpcHost = parts[1];
+        entry.rpcPort = static_cast<uint16_t>(atoi(parts[2].c_str()));
+        if (entry.rpcPort == 0) {
+            return {{strprintf(
+                Untranslated("Invalid port in -mergemine '%s'"), spec)}};
+        }
+        entry.rpcUser = parts[3];
+        entry.rpcPassword = parts[4];
+        entry.chainId = static_cast<uint32_t>(strtoul(parts[5].c_str(), nullptr, 0));
+        if (parts.size() > 6) {
+            entry.pollIntervalMs = atoi(parts[6].c_str());
+            if (entry.pollIntervalMs < 500) {
+                entry.pollIntervalMs = 500;
+            }
+        }
+
+        config.mergeMineChains.push_back(entry);
     }
 
     return config;
