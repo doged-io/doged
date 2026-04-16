@@ -695,6 +695,7 @@ add_library(server
 	stratum/stratum.cpp
 	stratum/stratumaux.cpp
 	stratum/stratumconfig.cpp
+	stratum/mergemine.cpp
 	stratum/stratumjob.cpp
 	stratum/stratumprotocol.cpp
 	stratum/stratumstats.cpp
