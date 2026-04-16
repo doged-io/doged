@@ -8,6 +8,7 @@
 #include <chainparams.h>
 #include <config.h>
 #include <consensus/merkle.h>
+#include <script/script.h>
 #include <hash.h>
 #include <node/miner.h>
 #include <pow/pow.h>
@@ -19,6 +20,22 @@
 
 namespace stratum {
 
+static std::unique_ptr<StratumAuxManager> g_globalAuxMgr;
+
+void InitGlobalAuxManager(Chainstate &chainstate, const CTxMemPool *mempool,
+                          const CChainParams &params) {
+    g_globalAuxMgr = std::make_unique<StratumAuxManager>(
+        chainstate, mempool, params, CScript() << OP_TRUE);
+}
+
+StratumAuxManager *GetGlobalAuxManager() {
+    return g_globalAuxMgr.get();
+}
+
+void StopGlobalAuxManager() {
+    g_globalAuxMgr.reset();
+}
+
 StratumAuxManager::StratumAuxManager(Chainstate &chainstate,
                                      const CTxMemPool *mempool,
                                      const CChainParams &params,
@@ -26,7 +43,13 @@ StratumAuxManager::StratumAuxManager(Chainstate &chainstate,
     : m_chainstate(chainstate), m_mempool(mempool), m_params(params),
       m_coinbaseScript(coinbaseScript) {}
 
+void StratumAuxManager::SetCoinbaseScript(const CScript &script) {
+    LOCK(m_mutex);
+    m_coinbaseScript = script;
+}
+
 util::Result<AuxWorkTemplate> StratumAuxManager::CreateAuxWork() {
+    LOCK(m_mutex);
     LOCK(cs_main);
 
     const CBlockIndex *pindexPrev = m_chainstate.m_chain.Tip();
@@ -42,6 +65,9 @@ util::Result<AuxWorkTemplate> StratumAuxManager::CreateAuxWork() {
 
     CBlock &block = blockTemplate->block;
 
+    // CreateNewBlock doesn't compute hashMerkleRoot; compute it now
+    block.hashMerkleRoot = BlockMerkleRoot(block);
+
     // Build the StratumJob underlying this aux work
     StratumJob job;
     job.jobId = 0; // aux work uses hash as key, not jobId
@@ -50,8 +76,17 @@ util::Result<AuxWorkTemplate> StratumAuxManager::CreateAuxWork() {
     job.nVersionRaw = block.nVersion;
     job.height = pindexPrev->nHeight + 1;
 
-    // Compute the aux block hash (SHA-256d of the 80-byte header, NOT Scrypt)
-    uint256 auxBlockHash = block.GetHash();
+    // The aux block hash must be computed with the AuxPoW version bit set,
+    // since SubmitAuxBlock sets this bit before ProcessNewBlock, and
+    // validation uses block.GetHash() (with the bit set) for CheckAuxBlockHash.
+    CBlockHeader hdr;
+    hdr.nVersion = VersionWithAuxPow(block.nVersion, true);
+    hdr.hashPrevBlock = block.hashPrevBlock;
+    hdr.hashMerkleRoot = block.hashMerkleRoot;
+    hdr.nTime = block.nTime;
+    hdr.nBits = block.nBits;
+    hdr.nNonce = block.nNonce;
+    uint256 auxBlockHash = hdr.GetHash();
 
     // Compute network target from nBits
     arith_uint256 target;
@@ -75,6 +110,14 @@ util::Result<AuxWorkTemplate> StratumAuxManager::CreateAuxWork() {
     work.underlyingJob = std::move(job);
 
     m_pendingWork[auxBlockHash] = work;
+    m_workInsertOrder.push_back(auxBlockHash);
+
+    // FIFO eviction: remove oldest entries first
+    while (m_pendingWork.size() > 32) {
+        uint256 oldest = m_workInsertOrder.front();
+        m_workInsertOrder.pop_front();
+        m_pendingWork.erase(oldest);
+    }
 
     return work;
 }
@@ -243,23 +286,35 @@ bool StratumAuxManager::SubmitAuxBlock(const AuxWorkTemplate &work,
         VersionWithAuxPow(work.underlyingJob.nVersionRaw, true);
     block->auxpow = std::move(auxpow);
 
+    // CreateNewBlock doesn't compute hashMerkleRoot; do it now.
+    block->hashMerkleRoot = BlockMerkleRoot(*block);
+
     bool newBlock = false;
     return chainman.ProcessNewBlock(block, /*force_processing=*/true,
                                     /*min_pow_checked=*/true, &newBlock);
 }
 
-const AuxWorkTemplate *
+std::optional<AuxWorkTemplate>
 StratumAuxManager::GetWork(const uint256 &auxBlockHash) const {
+    LOCK(m_mutex);
     auto it = m_pendingWork.find(auxBlockHash);
     if (it == m_pendingWork.end()) {
-        return nullptr;
+        return std::nullopt;
     }
-    return &it->second;
+    return it->second;
+}
+
+void StratumAuxManager::RemoveWork(const uint256 &auxBlockHash) {
+    LOCK(m_mutex);
+    m_pendingWork.erase(auxBlockHash);
 }
 
 void StratumAuxManager::PruneWork(size_t keepCount) {
-    while (m_pendingWork.size() > keepCount) {
-        m_pendingWork.erase(m_pendingWork.begin());
+    LOCK(m_mutex);
+    while (m_pendingWork.size() > keepCount && !m_workInsertOrder.empty()) {
+        uint256 oldest = m_workInsertOrder.front();
+        m_workInsertOrder.pop_front();
+        m_pendingWork.erase(oldest);
     }
 }
 

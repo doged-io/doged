@@ -13,9 +13,13 @@
 #include <univalue.h>
 #include <util/result.h>
 
+#include <sync.h>
+
 #include <cstdint>
+#include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
 class CChainParams;
@@ -39,18 +43,6 @@ struct AuxWorkTemplate {
     int32_t height;
     arith_uint256 target;
     StratumJob underlyingJob;
-};
-
-/**
- * Data to embed in the parent chain's coinbase transaction for merge-mining.
- */
-struct MergeMineCommitment {
-    std::vector<uint8_t> coinbasePayload; // fabe6d6d + root + treesize + nonce
-    uint256 chainMerkleRoot;
-    uint32_t nTreeSize;
-    uint32_t nMergeMineNonce;
-    uint32_t nChainIndex;
-    std::vector<uint256> chainMerkleBranch;
 };
 
 /**
@@ -107,19 +99,38 @@ public:
                         std::shared_ptr<CAuxPow> auxpow,
                         ChainstateManager &chainman);
 
-    /** Retrieve pending work by aux block hash. */
-    const AuxWorkTemplate *GetWork(const uint256 &auxBlockHash) const;
+    /** Retrieve pending work by aux block hash (returns a copy). */
+    std::optional<AuxWorkTemplate> GetWork(const uint256 &auxBlockHash) const;
+
+    /** Remove a specific work entry (after successful submission). */
+    void RemoveWork(const uint256 &auxBlockHash);
 
     /** Remove old work items, keeping at most keepCount. */
     void PruneWork(size_t keepCount);
 
+    /**
+     * Update the coinbase script (e.g. when a new address is passed via RPC).
+     */
+    void SetCoinbaseScript(const CScript &script);
+
 private:
+    mutable Mutex m_mutex;
     Chainstate &m_chainstate;
     const CTxMemPool *m_mempool;
     const CChainParams &m_params;
-    CScript m_coinbaseScript;
-    std::map<uint256, AuxWorkTemplate> m_pendingWork;
+    CScript m_coinbaseScript GUARDED_BY(m_mutex);
+    std::map<uint256, AuxWorkTemplate> m_pendingWork GUARDED_BY(m_mutex);
+    std::deque<uint256> m_workInsertOrder GUARDED_BY(m_mutex);
 };
+
+/**
+ * Global aux manager lifecycle — initialised once during startup so that
+ * createauxblock/submitauxblock RPCs share the same work cache.
+ */
+void InitGlobalAuxManager(Chainstate &chainstate, const CTxMemPool *mempool,
+                          const CChainParams &params);
+StratumAuxManager *GetGlobalAuxManager();
+void StopGlobalAuxManager();
 
 } // namespace stratum
 

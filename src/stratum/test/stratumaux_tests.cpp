@@ -177,8 +177,8 @@ BOOST_AUTO_TEST_CASE(get_work_by_hash) {
     auto result = mgr.CreateAuxWork();
     BOOST_REQUIRE(result.has_value());
 
-    const AuxWorkTemplate *found = mgr.GetWork(result->auxBlockHash);
-    BOOST_REQUIRE(found != nullptr);
+    auto found = mgr.GetWork(result->auxBlockHash);
+    BOOST_REQUIRE(found.has_value());
     BOOST_CHECK(found->auxBlockHash == result->auxBlockHash);
 }
 
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(get_work_unknown_hash) {
 
     uint256 fakeHash;
     fakeHash.SetNull();
-    BOOST_CHECK(mgr.GetWork(fakeHash) == nullptr);
+    BOOST_CHECK(!mgr.GetWork(fakeHash).has_value());
 }
 
 BOOST_AUTO_TEST_CASE(prune_work) {

@@ -29,6 +29,7 @@
 #include <pow/pow.h>
 #include <primitives/auxpow.h>
 #include <rpc/blockchain.h>
+#include <stratum/mergemine.h>
 #include <stratum/stratumaux.h>
 #include <rpc/mining.h>
 #include <rpc/server.h>
@@ -1480,20 +1481,31 @@ static RPCHelpMan createauxblock() {
                                    "Invalid Dogecoin address");
             }
 
-            CScript coinbaseScript = GetScriptForDestination(dest);
+            stratum::StratumAuxManager *auxMgr =
+                stratum::GetGlobalAuxManager();
+            if (!auxMgr) {
+                throw JSONRPCError(RPC_INTERNAL_ERROR,
+                                   "Aux manager not initialized");
+            }
 
-            NodeContext &node = EnsureAnyNodeContext(request.context);
-            ChainstateManager &chainman = EnsureChainman(node);
+            auxMgr->SetCoinbaseScript(GetScriptForDestination(dest));
 
-            stratum::StratumAuxManager auxMgr(
-                chainman.ActiveChainstate(), node.mempool.get(), chainParams,
-                coinbaseScript);
-
-            auto workResult = auxMgr.CreateAuxWork();
+            auto workResult = auxMgr->CreateAuxWork();
             if (!workResult) {
                 throw JSONRPCError(RPC_INTERNAL_ERROR,
                                    "Failed to create aux block template");
             }
+
+            // Collect external chain hashes for the merge-mine tree
+            std::vector<uint256> otherAuxHashes;
+            auto *mm = stratum::GetMergeMineManager();
+            if (mm) {
+                otherAuxHashes = mm->GetAuxHashes();
+            }
+
+            stratum::MergeMineCommitment commitment =
+                auxMgr->BuildCommitment(workResult->auxBlockHash,
+                                        otherAuxHashes);
 
             UniValue result(UniValue::VOBJ);
             result.pushKV("hash", workResult->auxBlockHash.GetHex());
@@ -1506,6 +1518,38 @@ static RPCHelpMan createauxblock() {
                           strprintf("%08x", workResult->nBits));
             result.pushKV("height", workResult->height);
             result.pushKV("target", workResult->target.GetHex());
+
+            // Include merge-mine commitment for the parent coinbase
+            result.pushKV("merkleroot",
+                          commitment.chainMerkleRoot.GetHex());
+            result.pushKV("merklesize",
+                          (int)commitment.nTreeSize);
+            result.pushKV("mergenonce",
+                          (int)commitment.nMergeMineNonce);
+            result.pushKV("coinbasepayload",
+                          HexStr(commitment.coinbasePayload));
+
+            // Chain merkle branch and index for AuxPoW construction
+            UniValue branchArr(UniValue::VARR);
+            for (const auto &h : commitment.chainMerkleBranch) {
+                branchArr.push_back(h.GetHex());
+            }
+            result.pushKV("chainmerklebranch", branchArr);
+            result.pushKV("chainindex", (int)commitment.nChainIndex);
+
+            // List external chains included in the tree
+            if (mm && mm->ChainCount() > 0) {
+                auto allWork = mm->GetAllWork();
+                UniValue auxChains(UniValue::VARR);
+                for (const auto &[name, work] : allWork) {
+                    UniValue c(UniValue::VOBJ);
+                    c.pushKV("chain", name);
+                    c.pushKV("auxhash", work.auxHash.GetHex());
+                    c.pushKV("height", (int64_t)work.height);
+                    auxChains.push_back(c);
+                }
+                result.pushKV("auxchains", auxChains);
+            }
 
             return result;
         },
@@ -1535,14 +1579,29 @@ static RPCHelpMan submitauxblock() {
                 throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid hash");
             }
 
+            stratum::StratumAuxManager *auxMgr =
+                stratum::GetGlobalAuxManager();
+            if (!auxMgr) {
+                throw JSONRPCError(RPC_INTERNAL_ERROR,
+                                   "Aux manager not initialized");
+            }
+
+            auto workOpt = auxMgr->GetWork(auxBlockHash);
+            if (!workOpt) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                   "Aux block hash not found in work cache "
+                                   "(stale or unknown -- call createauxblock "
+                                   "first)");
+            }
+            stratum::AuxWorkTemplate work = *workOpt;
+
             std::vector<uint8_t> auxpowData = ParseHex(auxpowHex);
             if (auxpowData.empty()) {
                 throw JSONRPCError(RPC_INVALID_PARAMETER,
                                    "Invalid auxpow hex data");
             }
 
-            // Deserialize the CAuxPow
-            CDataStream ss(auxpowData, SER_NETWORK, PROTOCOL_VERSION);
+            CDataStream ss(Span{auxpowData}, SER_NETWORK, PROTOCOL_VERSION);
             auto auxpow = std::make_shared<CAuxPow>();
             ss >> *auxpow;
 
@@ -1550,29 +1609,91 @@ static RPCHelpMan submitauxblock() {
             ChainstateManager &chainman = EnsureChainman(node);
             const CChainParams &chainParams = config.GetChainParams();
 
-            // We need to recreate the aux work to get the block template.
-            // In a production system, this would look up cached work by hash.
-            CScript coinbaseScript = CScript() << OP_TRUE;
-            stratum::StratumAuxManager auxMgr(
-                chainman.ActiveChainstate(), node.mempool.get(), chainParams,
-                coinbaseScript);
-
-            auto workResult = auxMgr.CreateAuxWork();
-            if (!workResult) {
-                throw JSONRPCError(RPC_INTERNAL_ERROR,
-                                   "Failed to create aux work for validation");
-            }
-
-            // Validate parent PoW (Scrypt)
-            if (!auxMgr.ValidateParentPow(auxpow->parentBlock,
-                                           workResult->nBits,
-                                           chainParams.GetConsensus())) {
+            if (!auxMgr->ValidateParentPow(auxpow->parentBlock,
+                                            work.nBits,
+                                            chainParams.GetConsensus())) {
                 throw JSONRPCError(RPC_VERIFY_ERROR,
                                    "Parent proof of work failed");
             }
 
-            bool accepted = auxMgr.SubmitAuxBlock(*workResult, auxpow, chainman);
+            bool accepted =
+                auxMgr->SubmitAuxBlock(work, auxpow, chainman);
+            if (accepted) {
+                auxMgr->RemoveWork(auxBlockHash);
+            }
             return UniValue(accepted);
+        },
+    };
+}
+
+static RPCHelpMan getmergemineinfo() {
+    return RPCHelpMan{
+        "getmergemineinfo",
+        "Returns information about multi-chain merged mining via "
+        "external RPC nodes.\n",
+        {},
+        RPCResult{RPCResult::Type::OBJ,
+                  "",
+                  "",
+                  {
+                      {RPCResult::Type::BOOL, "enabled",
+                       "Whether merge mining is active"},
+                      {RPCResult::Type::NUM, "chains",
+                       "Number of external chains configured"},
+                      {RPCResult::Type::ARR,
+                       "work",
+                       "Current work for each chain",
+                       {
+                           {RPCResult::Type::OBJ,
+                            "",
+                            "",
+                            {
+                                {RPCResult::Type::STR, "chain",
+                                 "Chain name"},
+                                {RPCResult::Type::NUM, "chainid",
+                                 "Chain ID"},
+                                {RPCResult::Type::NUM, "height",
+                                 "Block height"},
+                                {RPCResult::Type::STR_HEX, "auxhash",
+                                 "Aux block hash"},
+                                {RPCResult::Type::STR_HEX, "target",
+                                 "Target hash"},
+                                {RPCResult::Type::NUM, "age",
+                                 "Seconds since last refresh"},
+                            }},
+                       }},
+                  }},
+        RPCExamples{HelpExampleCli("getmergemineinfo", "")},
+        [&](const RPCHelpMan &self, const Config &,
+            const JSONRPCRequest &) -> UniValue {
+            UniValue result(UniValue::VOBJ);
+
+            auto *mm = stratum::GetMergeMineManager();
+            if (!mm) {
+                result.pushKV("enabled", false);
+                result.pushKV("chains", 0);
+                result.pushKV("work", UniValue(UniValue::VARR));
+                return result;
+            }
+
+            result.pushKV("enabled", true);
+            result.pushKV("chains", (int64_t)mm->ChainCount());
+
+            auto allWork = mm->GetAllWork();
+            UniValue workArr(UniValue::VARR);
+            int64_t now = GetTime();
+            for (const auto &[name, work] : allWork) {
+                UniValue w(UniValue::VOBJ);
+                w.pushKV("chain", name);
+                w.pushKV("chainid", (int64_t)work.chainId);
+                w.pushKV("height", (int64_t)work.height);
+                w.pushKV("auxhash", work.auxHash.GetHex());
+                w.pushKV("target", work.target);
+                w.pushKV("age", now - work.fetchedAt);
+                workArr.push_back(w);
+            }
+            result.pushKV("work", workArr);
+            return result;
         },
     };
 }
@@ -1590,6 +1711,7 @@ void RegisterMiningRPCCommands(CRPCTable &t) {
         {"mining",      submitheader,          },
         {"mining",      createauxblock,        },
         {"mining",      submitauxblock,        },
+        {"mining",      getmergemineinfo,      },
 
         {"generating",  generatetoaddress,     },
         {"generating",  generatetodescriptor,  },
