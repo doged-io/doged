@@ -30,6 +30,15 @@ enum class ShareResult {
     REJECTED_INVALID,
 };
 
+struct ShareValidationResult {
+    bool dogeBlockFound = false;
+    bool shareAccepted = false;
+    bool duplicateShare = false;
+    bool invalidShare = false;
+    bool lowDifficulty = false;
+    std::vector<std::string> auxChainsSolved;
+};
+
 struct ShareSubmission {
     std::string workerName;
     uint64_t jobId;
@@ -73,11 +82,38 @@ ShareResult ValidateShare(const StratumJob &job,
                           std::set<std::string> &submittedNonces);
 
 /**
+ * Extended share validation that also checks each external chain's nBits
+ * independently. Returns per-chain solved info in addition to the standard
+ * DOGE share/block result.
+ */
+ShareValidationResult ValidateShareEx(const StratumJob &job,
+                                      const std::string &extranonce1,
+                                      const ShareSubmission &sub,
+                                      double workerDifficulty,
+                                      const Consensus::Params &params,
+                                      std::set<std::string> &submittedNonces);
+
+/** Convert nBits compact target to a 256-bit value. Returns false if invalid. */
+bool NBitsToTarget(uint32_t nBits, arith_uint256 &target);
+
+/**
  * Assemble the full CBlock from job + submission and call ProcessNewBlock.
  */
 bool SubmitBlock(const StratumJob &job, const std::string &extranonce1,
                  const ShareSubmission &sub, ChainstateManager &chainman,
                  const CChainParams &chainParams);
+
+/**
+ * Construct a serialized AuxPoW proof for a specific external chain,
+ * using the job's merge-mine commitment and the miner's share submission
+ * as the parent block data.
+ *
+ * @return Hex-encoded AuxPoW (suitable for submitauxblock RPC).
+ */
+std::string BuildAuxPowForChain(const StratumJob &job,
+                                const std::string &extranonce1,
+                                const ShareSubmission &sub,
+                                const std::string &chainName);
 
 /** Stratum error codes per specification. */
 namespace StratumError {

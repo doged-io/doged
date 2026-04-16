@@ -65,6 +65,9 @@ public:
 
     size_t GetWorkerCount() const;
 
+    /** Called when an external chain's merge-mine work changes. */
+    void OnExternalWorkUpdate(const std::string &chainName);
+
 protected:
     // CValidationInterface: called when the active chain tip changes
     void UpdatedBlockTip(const CBlockIndex *pindexNew,
@@ -150,6 +153,9 @@ bool InitStratumServer(const StratumConfig &config, Chainstate &chainstate,
 void StartStratumServer();
 void InterruptStratumServer();
 void StopStratumServer();
+
+/** Get the global stratum server instance (may be nullptr). */
+StratumServer *GetStratumServer();
 
 } // namespace stratum
 

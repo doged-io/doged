@@ -11,6 +11,8 @@
 #include <pow/pow.h>
 #include <script/standard.h>
 #include <shutdown.h>
+#include <streams.h>
+#include <stratum/mergemine.h>
 #include <util/strencodings.h>
 #include <util/time.h>
 #include <validation.h>
@@ -467,77 +469,92 @@ void StratumServer::HandleSubmit(ClientSession &session,
         return;
     }
 
-    ShareResult result = ValidateShare(
+    ShareValidationResult result = ValidateShareEx(
         *job, session.worker->GetExtranonce1(), *subResult,
         session.worker->GetCurrentDifficulty(),
         m_chainParams.GetConsensus(), session.submittedNonces);
 
-    switch (result) {
-        case ShareResult::ACCEPTED_BLOCK:
-            session.worker->RecordShareAccepted(
-                session.worker->GetCurrentDifficulty());
-            m_totalSharesAccepted++;
-            m_blocksFound++;
-            SendResponse(session, req.id, UniValue(true),
-                         UniValue(UniValue::VNULL));
+    if (result.duplicateShare) {
+        session.worker->RecordShareRejected();
+        m_totalSharesRejected++;
+        UniValue err(UniValue::VARR);
+        err.push_back(StratumError::DUPLICATE_SHARE);
+        err.push_back("Duplicate share");
+        err.push_back(UniValue(UniValue::VNULL));
+        SendResponse(session, req.id, UniValue(false), err);
+        return;
+    }
 
-            SubmitBlock(*job, session.worker->GetExtranonce1(), *subResult,
-                        m_chainman, m_chainParams);
+    if (result.invalidShare) {
+        session.worker->RecordShareRejected();
+        m_totalSharesRejected++;
+        UniValue err(UniValue::VARR);
+        err.push_back(20);
+        err.push_back("Invalid share");
+        err.push_back(UniValue(UniValue::VNULL));
+        SendResponse(session, req.id, UniValue(false), err);
+        return;
+    }
 
-            LogPrintf("Stratum: BLOCK FOUND by worker %s at height %d!\n",
-                      session.worker->GetWorkerName(), job->height);
-            break;
+    if (result.lowDifficulty) {
+        session.worker->RecordShareRejected();
+        m_totalSharesRejected++;
+        UniValue err(UniValue::VARR);
+        err.push_back(StratumError::LOW_DIFFICULTY);
+        err.push_back("Low difficulty share");
+        err.push_back(UniValue(UniValue::VNULL));
+        SendResponse(session, req.id, UniValue(false), err);
+        return;
+    }
 
-        case ShareResult::ACCEPTED:
-            session.worker->RecordShareAccepted(
-                session.worker->GetCurrentDifficulty());
-            m_totalSharesAccepted++;
-            SendResponse(session, req.id, UniValue(true),
-                         UniValue(UniValue::VNULL));
-            break;
+    // Share is accepted (meets at least worker difficulty)
+    session.worker->RecordShareAccepted(
+        session.worker->GetCurrentDifficulty());
+    m_totalSharesAccepted++;
+    SendResponse(session, req.id, UniValue(true),
+                 UniValue(UniValue::VNULL));
 
-        case ShareResult::REJECTED_LOW_DIFF: {
-            session.worker->RecordShareRejected();
-            m_totalSharesRejected++;
-            UniValue err(UniValue::VARR);
-            err.push_back(StratumError::LOW_DIFFICULTY);
-            err.push_back("Low difficulty share");
-            err.push_back(UniValue(UniValue::VNULL));
-            SendResponse(session, req.id, UniValue(false), err);
-            break;
-        }
+    // DOGE block found
+    if (result.dogeBlockFound) {
+        m_blocksFound++;
+        SubmitBlock(*job, session.worker->GetExtranonce1(), *subResult,
+                    m_chainman, m_chainParams);
+        LogPrintf("Stratum: BLOCK FOUND by worker %s at height %d!\n",
+                  session.worker->GetWorkerName(), job->height);
+    }
 
-        case ShareResult::REJECTED_DUPLICATE: {
-            session.worker->RecordShareRejected();
-            m_totalSharesRejected++;
-            UniValue err(UniValue::VARR);
-            err.push_back(StratumError::DUPLICATE_SHARE);
-            err.push_back("Duplicate share");
-            err.push_back(UniValue(UniValue::VNULL));
-            SendResponse(session, req.id, UniValue(false), err);
-            break;
-        }
+    // Submit AuxPoW proof to each external chain whose target was met,
+    // regardless of whether a DOGE block was also found.
+    if (!result.auxChainsSolved.empty()) {
+        auto *mm = GetMergeMineManager();
+        if (mm) {
+            for (const auto &chainName : result.auxChainsSolved) {
+                std::string auxpowHex = BuildAuxPowForChain(
+                    *job, session.worker->GetExtranonce1(),
+                    *subResult, chainName);
 
-        case ShareResult::REJECTED_STALE: {
-            session.worker->RecordShareStale();
-            m_totalSharesStale++;
-            UniValue err(UniValue::VARR);
-            err.push_back(StratumError::JOB_NOT_FOUND);
-            err.push_back("Stale share");
-            err.push_back(UniValue(UniValue::VNULL));
-            SendResponse(session, req.id, UniValue(false), err);
-            break;
-        }
+                // Find the aux hash for this chain
+                uint256 auxHash;
+                for (const auto &t : job->auxChainTargets) {
+                    if (t.chainName == chainName) {
+                        auxHash = t.auxHash;
+                        break;
+                    }
+                }
 
-        case ShareResult::REJECTED_INVALID: {
-            session.worker->RecordShareRejected();
-            m_totalSharesRejected++;
-            UniValue err(UniValue::VARR);
-            err.push_back(20);
-            err.push_back("Invalid share");
-            err.push_back(UniValue(UniValue::VNULL));
-            SendResponse(session, req.id, UniValue(false), err);
-            break;
+                auto submitResult =
+                    mm->SubmitToChain(chainName, auxHash, auxpowHex);
+                if (submitResult.accepted) {
+                    LogPrintf("Stratum: %s block accepted! "
+                              "(worker %s)\n",
+                              chainName,
+                              session.worker->GetWorkerName());
+                } else {
+                    LogPrint(BCLog::STRATUM,
+                             "Stratum: %s rejected AuxPoW: %s\n",
+                             chainName, submitResult.error);
+                }
+            }
         }
     }
 }
@@ -703,6 +720,15 @@ size_t StratumServer::GetWorkerCount() const {
     return m_sessions.size();
 }
 
+void StratumServer::OnExternalWorkUpdate(const std::string &chainName) {
+    if (!m_running.load()) {
+        return;
+    }
+    if (m_router) {
+        m_router->OnExternalWorkUpdate(chainName);
+    }
+}
+
 void StratumServer::UpdatedBlockTip(const CBlockIndex *pindexNew,
                                      const CBlockIndex *,
                                      bool fInitialDownload) {
@@ -809,6 +835,10 @@ void StopStratumServer() {
         g_stratumServer->Stop();
         g_stratumServer.reset();
     }
+}
+
+StratumServer *GetStratumServer() {
+    return g_stratumServer.get();
 }
 
 } // namespace stratum

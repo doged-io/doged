@@ -7,6 +7,7 @@
 
 #include <primitives/block.h>
 #include <script/script.h>
+#include <uint256.h>
 #include <univalue.h>
 #include <util/result.h>
 
@@ -27,6 +28,31 @@ struct CBlockTemplate;
 
 namespace stratum {
 
+/**
+ * Data to embed in the parent chain's coinbase transaction for merge-mining.
+ * Moved here (from stratumaux.h) so StratumJob can hold it without circular
+ * includes.
+ */
+struct MergeMineCommitment {
+    std::vector<uint8_t> coinbasePayload; // fabe6d6d + root + treesize + nonce
+    uint256 chainMerkleRoot;
+    uint32_t nTreeSize = 0;
+    uint32_t nMergeMineNonce = 0;
+    uint32_t nChainIndex = 0;
+    std::vector<uint256> chainMerkleBranch;
+};
+
+/**
+ * Per-chain target snapshot stored in each StratumJob so that share
+ * validation can independently check every external chain's nBits.
+ */
+struct AuxChainTarget {
+    std::string chainName;
+    uint32_t chainId = 0;
+    uint256 auxHash;
+    uint32_t nBits = 0;
+};
+
 struct StratumJob {
     uint64_t jobId;
     std::shared_ptr<CBlock> block;
@@ -42,6 +68,9 @@ struct StratumJob {
     uint32_t nBitsRaw = 0;
     int32_t nVersionRaw = 0;
     int height = 0;
+
+    MergeMineCommitment mergeCommitment;
+    std::vector<AuxChainTarget> auxChainTargets;
 };
 
 class StratumJobManager {

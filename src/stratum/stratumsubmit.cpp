@@ -9,7 +9,9 @@
 #include <consensus/merkle.h>
 #include <crypto/scrypt.h>
 #include <hash.h>
+#include <logging.h>
 #include <pow/pow.h>
+#include <primitives/auxpow.h>
 #include <streams.h>
 #include <util/strencodings.h>
 #include <util/translation.h>
@@ -132,6 +134,12 @@ arith_uint256 DifficultyToTarget(double difficulty) {
     return scaled / diffScaled;
 }
 
+bool NBitsToTarget(uint32_t nBits, arith_uint256 &target) {
+    bool fNegative, fOverflow;
+    target.SetCompact(nBits, &fNegative, &fOverflow);
+    return !fNegative && !fOverflow && target != 0;
+}
+
 ShareResult ValidateShare(const StratumJob &job,
                           const std::string &extranonce1,
                           const ShareSubmission &sub,
@@ -171,6 +179,58 @@ ShareResult ValidateShare(const StratumJob &job,
     return ShareResult::REJECTED_LOW_DIFF;
 }
 
+ShareValidationResult ValidateShareEx(const StratumJob &job,
+                                      const std::string &extranonce1,
+                                      const ShareSubmission &sub,
+                                      double workerDifficulty,
+                                      const Consensus::Params &params,
+                                      std::set<std::string> &submittedNonces) {
+    ShareValidationResult result;
+
+    std::string dupeKey = strprintf("%x:%s:%s:%s", sub.jobId, sub.extranonce2,
+                                    sub.nonce, sub.ntime);
+    if (submittedNonces.count(dupeKey)) {
+        result.duplicateShare = true;
+        return result;
+    }
+
+    CBaseBlockHeader header = ReconstructHeader(job, extranonce1, sub);
+    BlockHash powHash = ScryptPowHash(header);
+    arith_uint256 hashValue = UintToArith256(powHash);
+
+    arith_uint256 networkTarget;
+    if (!NBitsToTarget(params, job.nBitsRaw, networkTarget)) {
+        result.invalidShare = true;
+        return result;
+    }
+
+    submittedNonces.insert(dupeKey);
+
+    if (hashValue <= networkTarget) {
+        result.dogeBlockFound = true;
+        result.shareAccepted = true;
+    } else {
+        arith_uint256 workerTarget = DifficultyToTarget(workerDifficulty);
+        if (hashValue <= workerTarget) {
+            result.shareAccepted = true;
+        } else {
+            result.lowDifficulty = true;
+            return result;
+        }
+    }
+
+    // Check each external chain's target independently
+    for (const auto &auxTarget : job.auxChainTargets) {
+        arith_uint256 chainTarget;
+        if (NBitsToTarget(auxTarget.nBits, chainTarget) &&
+            hashValue <= chainTarget) {
+            result.auxChainsSolved.push_back(auxTarget.chainName);
+        }
+    }
+
+    return result;
+}
+
 bool SubmitBlock(const StratumJob &job, const std::string &extranonce1,
                  const ShareSubmission &sub, ChainstateManager &chainman,
                  const CChainParams &chainParams) {
@@ -200,6 +260,91 @@ bool SubmitBlock(const StratumJob &job, const std::string &extranonce1,
     bool newBlock = false;
     return chainman.ProcessNewBlock(block, /*force_processing=*/true,
                                     /*min_pow_checked=*/true, &newBlock);
+}
+
+std::string BuildAuxPowForChain(const StratumJob &job,
+                                const std::string &extranonce1,
+                                const ShareSubmission &sub,
+                                const std::string &chainName) {
+    // 1. Reconstruct the full coinbase transaction
+    std::string fullCoinbaseHex =
+        job.coinbase1 + extranonce1 + sub.extranonce2 + job.coinbase2;
+    std::vector<uint8_t> coinbaseBytes = ParseHex(fullCoinbaseHex);
+    CDataStream cbStream(coinbaseBytes, SER_NETWORK, PROTOCOL_VERSION);
+    CTransaction coinbaseTx(deserialize, cbStream);
+
+    // 2. Build the parent block header from the share
+    CBaseBlockHeader parentHeader = ReconstructHeader(job, extranonce1, sub);
+
+    // 3. Compute the coinbase merkle branch (path from coinbase to merkle root)
+    //    The coinbase is always at index 0 in the block.
+    std::vector<uint256> coinbaseMerkleBranch;
+    if (job.block && job.block->vtx.size() > 1) {
+        // Reconstruct the block with the miner's coinbase
+        CBlock parentBlock(*job.block);
+        CMutableTransaction mtx;
+        CDataStream mtxStream(coinbaseBytes, SER_NETWORK, PROTOCOL_VERSION);
+        mtxStream >> mtx;
+        parentBlock.vtx[0] = MakeTransactionRef(std::move(mtx));
+
+        std::vector<uint256> leaves;
+        for (const auto &tx : parentBlock.vtx) {
+            leaves.push_back(tx->GetHash());
+        }
+        size_t index = 0;
+        std::vector<uint256> level = leaves;
+        while (level.size() > 1) {
+            size_t siblingIdx = index ^ 1;
+            if (siblingIdx < level.size()) {
+                coinbaseMerkleBranch.push_back(level[siblingIdx]);
+            } else {
+                coinbaseMerkleBranch.push_back(level[index]);
+            }
+            std::vector<uint256> nextLevel;
+            for (size_t i = 0; i < level.size(); i += 2) {
+                uint256 left = level[i];
+                uint256 right =
+                    (i + 1 < level.size()) ? level[i + 1] : left;
+                nextLevel.push_back(Hash(Span(left), Span(right)));
+            }
+            level = nextLevel;
+            index /= 2;
+        }
+    }
+
+    // 4. Compute the chain merkle branch for this specific chain
+    //    from the job's commitment data.
+    //    For DOGE's own commitment, we use the stored branch directly.
+    //    For other chains, we need to find the chain's leaf position and
+    //    compute its branch in the aux merkle tree.
+    const auto &commit = job.mergeCommitment;
+
+    // 5. Serialize the CAuxPow
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+
+    // coinbaseTx
+    ss << coinbaseTx;
+
+    // hashBlock (parent block's hash — the DOGE parent block header hash)
+    uint256 parentBlockHash = parentHeader.GetHash();
+    ss << parentBlockHash;
+
+    // vMerkleBranch (coinbase merkle branch in the parent block)
+    ss << coinbaseMerkleBranch;
+
+    // nIndex (coinbase is always at index 0)
+    ss << (uint32_t)0;
+
+    // vChainMerkleBranch
+    ss << commit.chainMerkleBranch;
+
+    // nChainIndex
+    ss << commit.nChainIndex;
+
+    // parentBlock header
+    ss << parentHeader;
+
+    return HexStr(ss);
 }
 
 } // namespace stratum

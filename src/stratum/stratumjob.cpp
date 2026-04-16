@@ -7,8 +7,11 @@
 #include <chainparams.h>
 #include <config.h>
 #include <consensus/merkle.h>
+#include <logging.h>
 #include <node/miner.h>
 #include <primitives/auxpow.h>
+#include <stratum/mergemine.h>
+#include <stratum/stratumaux.h>
 #include <streams.h>
 #include <util/strencodings.h>
 #include <util/translation.h>
@@ -158,6 +161,50 @@ util::Result<StratumJob> StratumJobManager::CreateJob(bool cleanJobs) {
 
     CBlock &block = blockTemplate->block;
 
+    // Inject merge-mine commitment into the coinbase scriptSig before
+    // splitting, so the fabe6d6d payload is part of coinbase1 that miners
+    // hash over.
+    MergeMineCommitment commitment;
+    std::vector<AuxChainTarget> auxTargets;
+
+    auto *mm = GetMergeMineManager();
+    if (mm && mm->ChainCount() > 0) {
+        block.hashMerkleRoot = BlockMerkleRoot(block);
+
+        // Compute DOGE's own aux hash (with AuxPoW version bit)
+        CBlockHeader hdr;
+        hdr.nVersion = VersionWithAuxPow(block.nVersion, true);
+        hdr.hashPrevBlock = block.hashPrevBlock;
+        hdr.hashMerkleRoot = block.hashMerkleRoot;
+        hdr.nTime = block.nTime;
+        hdr.nBits = block.nBits;
+        hdr.nNonce = block.nNonce;
+        uint256 dogeAuxHash = hdr.GetHash();
+
+        auto allWork = mm->GetAllWorkSorted();
+        std::vector<uint256> otherHashes;
+        for (const auto &w : allWork) {
+            otherHashes.push_back(w.auxHash);
+            auxTargets.push_back({w.chainName, w.chainId, w.auxHash, w.nBits});
+        }
+
+        auto *auxMgr = GetGlobalAuxManager();
+        if (auxMgr) {
+            commitment = auxMgr->BuildCommitment(dogeAuxHash, otherHashes);
+        }
+
+        if (!commitment.coinbasePayload.empty()) {
+            CMutableTransaction mtx(*block.vtx[0]);
+            if (!mtx.vin.empty()) {
+                CScript &scriptSig = mtx.vin[0].scriptSig;
+                scriptSig.insert(scriptSig.end(),
+                                 commitment.coinbasePayload.begin(),
+                                 commitment.coinbasePayload.end());
+                block.vtx[0] = MakeTransactionRef(std::move(mtx));
+            }
+        }
+    }
+
     StratumJob job;
     job.jobId = m_nextJobId++;
     job.block = std::make_shared<CBlock>(block);
@@ -166,8 +213,10 @@ util::Result<StratumJob> StratumJobManager::CreateJob(bool cleanJobs) {
     job.nBitsRaw = block.nBits;
     job.nVersionRaw = block.nVersion;
     job.height = pindexPrev->nHeight + 1;
+    job.mergeCommitment = std::move(commitment);
+    job.auxChainTargets = std::move(auxTargets);
 
-    // Split coinbase
+    // Split coinbase (now includes fabe6d6d payload if any)
     auto [cb1, cb2] = SplitCoinbase(*block.vtx[0]);
     job.coinbase1 = cb1;
     job.coinbase2 = cb2;
@@ -188,6 +237,12 @@ util::Result<StratumJob> StratumJobManager::CreateJob(bool cleanJobs) {
 
     uint64_t id = job.jobId;
     m_jobs[id] = job;
+
+    if (!job.auxChainTargets.empty()) {
+        LogPrint(BCLog::STRATUM,
+                 "Stratum: job %x embeds %zu aux chain(s) in coinbase\n",
+                 id, job.auxChainTargets.size());
+    }
 
     return job;
 }
