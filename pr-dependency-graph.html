@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>doged PR Dependency Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Anybody:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  background:#08090d;
+  color:#c9d1d9;
+  font-family:'IBM Plex Mono',monospace;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px;
+}
+.header{text-align:center;margin-bottom:36px}
+.header h1{
+  font-family:'Anybody',sans-serif;font-weight:900;font-size:32px;
+  letter-spacing:-1px;
+  background:linear-gradient(135deg,#58a6ff,#3fb950);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.header p{color:#484f58;font-size:12px;margin-top:6px;letter-spacing:1px}
+svg{width:820px;height:440px;filter:drop-shadow(0 0 80px rgba(88,166,255,0.06))}
+.edge{stroke:#21262d;stroke-width:2;fill:none}
+.edge-active{stroke:#30363d;stroke-width:2;fill:none}
+.edge-draft{stroke:#21262d;stroke-width:1.5;fill:none;stroke-dasharray:6 4}
+.dot{fill:#30363d}.dot-active{fill:#58a6ff}
+.card{filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))}
+.card rect{rx:10;ry:10}
+.card-open rect{fill:#0d1117;stroke:#3fb950;stroke-width:2}
+.card-ready rect{fill:#0d1117;stroke:#58a6ff;stroke-width:2}
+.card-queued rect{fill:#0d1117;stroke:#21262d;stroke-width:1.5}
+.card-draft rect{fill:#0d1117;stroke:#21262d;stroke-width:1.5;stroke-dasharray:6 4}
+.pr-label{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
+.pr-title{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;fill:#e6edf3}
+.pr-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#484f58}
+.legend{margin-top:28px;display:flex;gap:24px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#484f58}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+.legend-dot.open{background:#3fb950}
+.legend-dot.ready{background:#58a6ff}
+.legend-dot.queued{background:#21262d;border:1px solid #30363d}
+.legend-dot.draft{background:transparent;border:1.5px dashed #30363d}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>doged PR Stack</h1>
+  <p>FRENCHBTC/DOGED &rarr; DOGED-IO/DOGED</p>
+</div>
+<svg viewBox="0 0 820 440">
+  <!-- Edges -->
+  <path class="edge-active" d="M 330 72 L 330 108"/>
+  <circle class="dot-active" cx="330" cy="108" r="3"/>
+  <path class="edge" d="M 410 52 Q 540 52 620 80 L 620 108"/>
+  <circle class="dot" cx="620" cy="108" r="3"/>
+  <path class="edge" d="M 410 52 Q 600 42 740 80 L 740 108"/>
+  <circle class="dot" cx="740" cy="108" r="3"/>
+  <path class="edge-draft" d="M 250 52 Q 140 52 100 80 L 100 108"/>
+  <circle class="dot" cx="100" cy="108" r="3"/>
+  <path class="edge-active" d="M 330 180 L 330 218"/>
+  <circle class="dot-active" cx="330" cy="218" r="3"/>
+  <path class="edge-active" d="M 330 290 L 330 328"/>
+  <circle class="dot-active" cx="330" cy="328" r="3"/>
+
+  <!-- PR1 -->
+  <g class="card card-open" transform="translate(220,0)">
+    <rect width="220" height="68"/>
+    <text class="pr-label" x="16" y="22" fill="#3fb950">PR1</text>
+    <text class="pr-title" x="16" y="42">Stratum v1 core</text>
+    <text class="pr-sub" x="16" y="58">#102 &#x2022; open</text>
+  </g>
+  <!-- PR2 draft -->
+  <g class="card card-draft" transform="translate(10,112)">
+    <rect width="180" height="68"/>
+    <text class="pr-label" x="14" y="22" fill="#484f58">PR2</text>
+    <text class="pr-title" x="14" y="42" fill="#484f58">Proxy + routing</text>
+    <text class="pr-sub" x="14" y="58">draft &#x2022; deferred</text>
+  </g>
+  <!-- PR3 -->
+  <g class="card card-ready" transform="translate(220,112)">
+    <rect width="220" height="68"/>
+    <text class="pr-label" x="16" y="22" fill="#58a6ff">PR3</text>
+    <text class="pr-title" x="16" y="42">AuxPoW RPCs</text>
+    <text class="pr-sub" x="16" y="58">#103 &#x2022; open</text>
+  </g>
+  <!-- PR4 -->
+  <g class="card card-ready" transform="translate(220,222)">
+    <rect width="220" height="68"/>
+    <text class="pr-label" x="16" y="22" fill="#58a6ff">PR4</text>
+    <text class="pr-title" x="16" y="42">Multi-chain merge-mine</text>
+    <text class="pr-sub" x="16" y="58">#104 &#x2022; open</text>
+  </g>
+  <!-- PR5 -->
+  <g class="card card-ready" transform="translate(190,332)">
+    <rect width="280" height="68"/>
+    <text class="pr-label" x="16" y="22" fill="#58a6ff">PR5</text>
+    <text class="pr-title" x="16" y="42">Per-chain target + AuxPoW</text>
+    <text class="pr-sub" x="16" y="58">#105 &#x2022; open</text>
+  </g>
+  <!-- PR6 draft -->
+  <g class="card card-draft" transform="translate(500,332)">
+    <rect width="180" height="68"/>
+    <text class="pr-label" x="14" y="22" fill="#484f58">PR6</text>
+    <text class="pr-title" x="14" y="42" fill="#484f58">SQLite analytics</text>
+    <text class="pr-sub" x="14" y="58">draft &#x2022; separate branch</text>
+  </g>
+  <!-- PR7 -->
+  <g class="card card-queued" transform="translate(530,112)">
+    <rect width="180" height="68"/>
+    <text class="pr-label" x="14" y="22" fill="#30363d">PR7</text>
+    <text class="pr-title" x="14" y="42" fill="#6e7681">REST API + dashboard</text>
+    <text class="pr-sub" x="14" y="58">queued</text>
+  </g>
+  <!-- PR8 -->
+  <g class="card card-queued" transform="translate(650,222)">
+    <rect width="160" height="68"/>
+    <text class="pr-label" x="14" y="22" fill="#30363d">PR8</text>
+    <text class="pr-title" x="14" y="42" fill="#6e7681">Miner tool</text>
+    <text class="pr-sub" x="14" y="58">queued</text>
+  </g>
+</svg>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot open"></div>Open upstream</div>
+  <div class="legend-item"><div class="legend-dot ready"></div>Open (stacked)</div>
+  <div class="legend-item"><div class="legend-dot queued"></div>Queued</div>
+  <div class="legend-item"><div class="legend-dot draft"></div>Draft / deferred</div>
+</div>
+</body>
+</html>
