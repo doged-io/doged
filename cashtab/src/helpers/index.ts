@@ -66,6 +66,26 @@ export const isMobile = (navigator: ExtendedNavigator): boolean => {
 };
 
 /**
+ * True when the browser looks like a phone-class Android browser session (not a typical
+ * tablet UA, and not the native app — exclude the latter with Capacitor.isNativePlatform()
+ * at the call site). Used to promote the Play Store app on Cashtab Web for Android phones.
+ */
+export const isAndroidMobileWebUserAgent = (
+    navigator?: ExtendedNavigator,
+): boolean => {
+    if (typeof navigator?.userAgent === 'undefined') {
+        return false;
+    }
+    if (!/android/i.test(navigator.userAgent)) {
+        return false;
+    }
+    if (typeof navigator.userAgentData?.mobile !== 'undefined') {
+        return navigator.userAgentData.mobile === true;
+    }
+    return /\bmobile\b/i.test(navigator.userAgent);
+};
+
+/**
  * Call in a web browser. Return user locale if available or default (e.g. 'en-US') if not.
  * @param navigator
  * @returns

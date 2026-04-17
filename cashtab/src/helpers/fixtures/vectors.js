@@ -51,6 +51,62 @@ export default {
             },
         ],
     },
+    isAndroidMobileWebUserAgent: {
+        expectedReturns: [
+            {
+                description: 'Navigator is undefined',
+                navigator: undefined,
+                result: false,
+            },
+            {
+                description: 'Non-Android user agent',
+                navigator: {
+                    userAgent:
+                        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
+                    userAgentData: { mobile: true },
+                },
+                result: false,
+            },
+            {
+                description:
+                    'Android tablet-style UA without Mobile and no userAgentData',
+                navigator: {
+                    userAgent:
+                        'Mozilla/5.0 (Linux; Android 13; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                },
+                result: false,
+            },
+            {
+                description:
+                    'Android phone with userAgentData.mobile and Chrome UA',
+                navigator: {
+                    userAgent:
+                        'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
+                    userAgentData: { mobile: true },
+                },
+                result: true,
+            },
+            {
+                description:
+                    'Android phone UA without userAgentData (fallback: Mobile token)',
+                navigator: {
+                    userAgent:
+                        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
+                },
+                result: true,
+            },
+            {
+                description:
+                    'Android desktop mode (userAgentData.mobile false)',
+                navigator: {
+                    userAgent:
+                        'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                    userAgentData: { mobile: false },
+                },
+                result: false,
+            },
+        ],
+    },
     getUserLocale: {
         expectedReturns: [
             {

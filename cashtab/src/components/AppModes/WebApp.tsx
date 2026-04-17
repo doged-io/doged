@@ -2,11 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import appConfig from 'config/app';
 import { toast } from 'react-toastify';
 import { isMobile } from 'helpers';
 import { platformInfo } from 'platform/detection';
+import AndroidWebAppBanner from 'components/Common/AndroidWebAppBanner';
 
 interface ExtendedWindow {
     bitcoinAbc?: 'cashtab';
@@ -169,8 +170,7 @@ const WebApp = () => {
         checkForPersistentStorage();
         handleExtensionStatus();
     }, []);
-    // Note: none of the above functionality requires rendering, so return null
-    return null;
+    return <AndroidWebAppBanner />;
 };
 
 export default WebApp;

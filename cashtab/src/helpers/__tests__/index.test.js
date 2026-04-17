@@ -4,6 +4,7 @@
 
 import {
     isMobile,
+    isAndroidMobileWebUserAgent,
     getUserLocale,
     cashtabCacheToJSON,
     storedCashtabCacheToMap,
@@ -27,6 +28,16 @@ describe('Cashtab helper functions', () => {
             const { description, navigator, result } = expectedReturn;
             it(`isMobile: ${description}`, () => {
                 expect(isMobile(navigator)).toBe(result);
+            });
+        });
+    });
+    describe('Detect Android phone browser (Cashtab Web app promo)', () => {
+        const { expectedReturns } = vectors.isAndroidMobileWebUserAgent;
+
+        expectedReturns.forEach(expectedReturn => {
+            const { description, navigator, result } = expectedReturn;
+            it(`isAndroidMobileWebUserAgent: ${description}`, () => {
+                expect(isAndroidMobileWebUserAgent(navigator)).toBe(result);
             });
         });
     });
