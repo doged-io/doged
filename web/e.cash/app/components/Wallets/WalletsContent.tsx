@@ -12,7 +12,7 @@ import Button from "../Atoms/Button";
 const wallets = [
   {
     name: "Cashtab Web",
-    text: "Cashtab (Web) is an open source, highly secure, non-custodial web wallet for eCash (XEC) & eTokens. It is a fast & easy-to-use XEC wallet designed for everyday use.",
+    text: "Cashtab (Web) is an open source non-custodial web wallet for eCash (XEC) & eTokens. Mint and trade tokens and NFTs, send and receive txs, sign and verify msgs, manage multiple wallets, and more.",
     image: "/cashtab.png",
     link: "https://cashtab.com/",
     availableOn: ["Web App"],
@@ -24,6 +24,14 @@ const wallets = [
     image: "/cashtab-extension.png",
     link: "https://chromewebstore.google.com/detail/cashtab/obldfcmebhllhjlhjbnghaipekcppeag",
     availableOn: ["Browser Extension"],
+    features: ["eTokens", "Message Signing"],
+  },
+  {
+    name: "Cashtab Android",
+    text: "All the features of Cashtab Web with optimized mobile integrations.",
+    image: "/cashtab.png",
+    link: "https://play.google.com/store/apps/details?id=com.cashtab.app",
+    availableOn: ["Android"],
     features: ["eTokens", "Message Signing"],
   },
   {
