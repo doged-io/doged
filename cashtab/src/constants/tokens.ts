@@ -211,3 +211,7 @@ export const FIRMA: TokenConst = {
         },
     },
 };
+
+/** FIRMA genesis minter pubkey — order book only lists this maker or the active wallet. */
+export const FIRMA_MINTER_PK_HEX =
+    '03fba49912622cf8bb5b3729b1b5da3e72c6b57d369c8647f6cc7c6cbed510d105';

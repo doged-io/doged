@@ -90,6 +90,7 @@ import { getAgoraPartialAcceptTokenQtyError } from 'validation';
 import { Alert, Info, CopyTokenId } from 'components/Common/Atoms';
 import { AgoraOffer, AgoraPartial } from 'ecash-agora';
 import { IsMintAddressIcon } from 'components/Common/CustomIcons';
+import { FIRMA, FIRMA_MINTER_PK_HEX } from 'constants/tokens';
 
 /**
  * Allow users to buy above spot (within reason)
@@ -759,6 +760,16 @@ const OrderBook: React.FC<OrderBookProps> = ({
                     // If this is XECX
                     // and the active wallet did not make this offer
                     // and the spot price is not 1:1, do not render
+                    continue;
+                }
+
+                // FIRMA: only minter or active-wallet offers
+                if (
+                    tokenId === FIRMA.tokenId &&
+                    !isMakerThisOffer &&
+                    toHex(activeOffer.variant.params.makerPk) !==
+                        FIRMA_MINTER_PK_HEX
+                ) {
                     continue;
                 }
 
