@@ -740,6 +740,28 @@ const OrderBook: React.FC<OrderBookProps> = ({
                     }
                 }
 
+                const askedSats = activeOffer.askedSats(maxOfferTokens);
+
+                // We convert to askedNanoSats before calculating the spot price,
+                // so that we get a bigint spot price
+                const askedNanoSats = askedSats * BigInt(1e9);
+
+                // Note this price is nanosatoshis per token satoshi
+                const spotPriceNanoSatsPerTokenSat =
+                    askedNanoSats / maxOfferTokens;
+
+                // XECX: same spot-XEC figure shown on each bar; skip off‑1:1 unless maker (cancel path).
+                if (
+                    tokenId === appConfig.vipTokens.xecx.tokenId &&
+                    !isMakerThisOffer &&
+                    askedSats !== maxOfferTokens
+                ) {
+                    // If this is XECX
+                    // and the active wallet did not make this offer
+                    // and the spot price is not 1:1, do not render
+                    continue;
+                }
+
                 // Check if user can afford the minimum amount of this offer
                 const minPriceSats = activeOffer.askedSats(minOfferTokens);
                 const canAffordMin = minPriceSats <= balanceSats;
@@ -755,16 +777,6 @@ const OrderBook: React.FC<OrderBookProps> = ({
                 if (maxOfferTokens > deepestActiveOfferedTokens) {
                     deepestActiveOfferedTokens = maxOfferTokens;
                 }
-
-                const askedSats = activeOffer.askedSats(maxOfferTokens);
-
-                // We convert to askedNanoSats before calculating the spot price,
-                // so that we get a bigint spot price
-                const askedNanoSats = askedSats * BigInt(1e9);
-
-                // Note this price is nanosatoshis per token satoshi
-                const spotPriceNanoSatsPerTokenSat =
-                    askedNanoSats / maxOfferTokens;
 
                 activeOffer.spotPriceNanoSatsPerTokenSat =
                     spotPriceNanoSatsPerTokenSat;
