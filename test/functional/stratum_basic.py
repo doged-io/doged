@@ -9,7 +9,6 @@ receive jobs, and disconnect.
 
 import json
 import socket
-import time
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
@@ -101,8 +100,13 @@ class StratumBasicTest(BitcoinTestFramework):
         # Generate some blocks so the chain is active
         self.generatetoaddress(node, 110, node.get_deterministic_priv_key().address)
 
-        # Give stratum server time to start
-        time.sleep(1)
+        # Wait for stratum server to be ready
+        self.wait_until(
+            lambda: node.debug_log_path.read_text(
+                encoding="utf-8", errors="replace"
+            ).find("Stratum: server started") != -1,
+            timeout=10,
+        )
 
         self.log.info("Test: TCP connection to Stratum server")
         sock = self.stratum_connect()

@@ -1569,13 +1569,6 @@ static bool AppInitServers(Config &config,
 
     StartHTTPServer();
 
-    // Initialize Stratum mining server if enabled
-    auto stratumConfig = stratum::ParseStratumConfig(args);
-    if (stratumConfig && stratumConfig->enabled) {
-        LogPrintf("Stratum server configured on %s:%d\n",
-                  stratumConfig->bind, stratumConfig->port);
-    }
-
     return true;
 }
 
@@ -3073,6 +3066,8 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     {
         auto stratumConfig = stratum::ParseStratumConfig(args);
         if (stratumConfig && stratumConfig->enabled) {
+            LogPrintf("Stratum server configured on %s:%d\n",
+                      stratumConfig->bind, stratumConfig->port);
             if (!stratum::InitStratumServer(
                     *stratumConfig,
                     chainman.ActiveChainstate(),

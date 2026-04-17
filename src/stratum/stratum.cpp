@@ -21,9 +21,7 @@
 #include <event2/listener.h>
 #include <event2/thread.h>
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
+#include <compat.h>
 
 namespace stratum {
 
@@ -81,7 +79,11 @@ bool StratumServer::Start() {
 
     // Thread-safety: BroadcastJob/BroadcastRawNotify are called from the
     // validation thread while the event loop runs on m_eventThread.
+#ifdef WIN32
+    evthread_use_windows_threads();
+#else
     evthread_use_pthreads();
+#endif
 
     m_eventBase = event_base_new();
     if (!m_eventBase) {
@@ -403,6 +405,7 @@ void StratumServer::HandleAuthorize(ClientSession &session,
 
 void StratumServer::HandleSubmit(ClientSession &session,
                                   const StratumRequest &req) {
+    AssertLockHeld(m_cs);
     if (session.worker->GetState() != StratumWorker::State::AUTHORIZED) {
         UniValue err(UniValue::VARR);
         err.push_back(StratumError::UNAUTHORIZED);
