@@ -42,6 +42,49 @@ export function createBip21Uri(address: string, amountSats?: number): string {
 }
 
 /**
+ * Parse an amount (decimal) string in base unit and return the corresponding
+ * number of atoms (aka sats for XEC). Returns null if the amount is invalid.
+ *
+ * The specification for amount in BIP21 is very relaxed:
+ *  "amount=" *digit [ "." *digit ]
+ * This means that any number of leading/trailing zeros are allowed, and numbers
+ * can even be missing before and/or after the decimal point. Note that we treat
+ * the empty string (which would be valid per spec) as invalid.
+ */
+export function parseAmountAsAtoms(
+    amountString: string,
+    maxDecimals: number,
+): number | null {
+    // Bail early if the amount string is empty.
+    if (amountString.length < 1) {
+        return null;
+    }
+
+    // Amount can only contain numbers and '.'. Note it can't contain + or -
+    // signs so the amount can't be negative.
+    const re = /^[0-9]*([.][0-9]*)?$/;
+    if (!re.test(amountString)) {
+        return null;
+    }
+
+    let [intPart, decPart] = amountString.split('.');
+    intPart = intPart || '0';
+    decPart = decPart || '';
+
+    if (decPart.length > maxDecimals) {
+        return null;
+    }
+
+    try {
+        return unitToAtoms(parseFloat(`${intPart}.${decPart}`), maxDecimals);
+    } catch {
+        // Note this might throw if the atoms amount is too large to fit into a
+        // number.
+        return null;
+    }
+}
+
+/**
  * Parse a BIP21 URI string
  *
  * Supports simplified BIP21 format for eCash:
@@ -82,12 +125,9 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
         // Amount in BIP21 is specified in XEC, we convert to satoshis (1 XEC = 100 sats)
         const amountParam = url.searchParams.get('amount');
         if (amountParam) {
-            // Parse as floating point number (XEC)
-            const amountXec = parseFloat(amountParam);
-
-            // Validate that it's a valid number and positive
-            if (!isNaN(amountXec) && amountXec > 0) {
-                result.sats = unitToAtoms(amountXec, XEC_ASSET.decimals);
+            const atoms = parseAmountAsAtoms(amountParam, XEC_ASSET.decimals);
+            if (atoms !== null) {
+                result.sats = atoms;
             }
         }
 

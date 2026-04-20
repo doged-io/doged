@@ -3,11 +3,102 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import * as chai from 'chai';
-import { createBip21Uri, parseBip21Uri } from '../src/bip21';
+import {
+    createBip21Uri,
+    parseAmountAsAtoms,
+    parseBip21Uri,
+} from '../src/bip21';
 
 const expect = chai.expect;
 
 describe('bip21.ts', function () {
+    describe('parseAmountAsAtoms', function () {
+        const xecDecimals = 2;
+
+        it('Should parse integer base units to atoms (XEC-style decimals)', function () {
+            expect(parseAmountAsAtoms('100', xecDecimals)).to.equal(10000);
+            expect(parseAmountAsAtoms('0', xecDecimals)).to.equal(0);
+            expect(parseAmountAsAtoms('1', xecDecimals)).to.equal(100);
+            expect(parseAmountAsAtoms('0100', xecDecimals)).to.equal(10000);
+            expect(parseAmountAsAtoms('000', xecDecimals)).to.equal(0);
+            expect(parseAmountAsAtoms('00001', xecDecimals)).to.equal(100);
+        });
+
+        it('Should parse fractional amounts with exact decimal places', function () {
+            expect(parseAmountAsAtoms('100.42', xecDecimals)).to.equal(10042);
+            expect(parseAmountAsAtoms('0.01', xecDecimals)).to.equal(1);
+            expect(parseAmountAsAtoms('.5', xecDecimals)).to.equal(50);
+            expect(parseAmountAsAtoms('5.', xecDecimals)).to.equal(500);
+            expect(parseAmountAsAtoms('0100.42', xecDecimals)).to.equal(10042);
+            expect(parseAmountAsAtoms('00.01', xecDecimals)).to.equal(1);
+            expect(parseAmountAsAtoms('000.5', xecDecimals)).to.equal(50);
+            expect(parseAmountAsAtoms('00005.', xecDecimals)).to.equal(500);
+            expect(parseAmountAsAtoms('5.0', xecDecimals)).to.equal(500);
+            expect(parseAmountAsAtoms('5.00', xecDecimals)).to.equal(500);
+            expect(parseAmountAsAtoms('05.0', xecDecimals)).to.equal(500);
+            // Weird but allowed by the spec, equivalent to 0.0
+            expect(parseAmountAsAtoms('.', xecDecimals)).to.equal(0);
+        });
+
+        it('Should respect maxDecimals for token-style amounts', function () {
+            expect(parseAmountAsAtoms('1.2345', 4)).to.equal(12345);
+            expect(parseAmountAsAtoms('100.1200', 4)).to.equal(1001200);
+            expect(parseAmountAsAtoms('123.456', 4)).to.equal(1234560);
+        });
+
+        it('Should reject more fractional digits than maxDecimals', function () {
+            expect(parseAmountAsAtoms('100.0', 0)).to.be.equal(null);
+            expect(parseAmountAsAtoms('100.', 0)).to.be.equal(100);
+            expect(parseAmountAsAtoms('1.000', 2)).to.be.equal(null);
+
+            expect(parseAmountAsAtoms('100.421', xecDecimals)).to.be.equal(
+                null,
+            );
+            expect(parseAmountAsAtoms('1.23456', 4)).to.be.equal(null);
+        });
+
+        it('Should reject strings with invalid characters', function () {
+            expect(parseAmountAsAtoms('0x00', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('10ab', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('1e2', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('-5', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('+5', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms(' 5', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('5 ', xecDecimals)).to.be.equal(null);
+        });
+
+        it('Should reject ambiguous or non-normalized decimal forms', function () {
+            expect(parseAmountAsAtoms('1.2.3', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('..', xecDecimals)).to.be.equal(null);
+            expect(parseAmountAsAtoms('', xecDecimals)).to.be.equal(null);
+        });
+
+        it('Should return null when atoms overflow safe integer', function () {
+            expect(parseAmountAsAtoms('9007199254740991', 0)).to.be.equal(
+                9007199254740991,
+            );
+            expect(parseAmountAsAtoms('90071992547409.91', 2)).to.be.equal(
+                9007199254740991,
+            );
+            expect(parseAmountAsAtoms('900719925474.0991', 4)).to.be.equal(
+                9007199254740991,
+            );
+            expect(parseAmountAsAtoms('9007199.254740991', 9)).to.be.equal(
+                9007199254740991,
+            );
+            expect(parseAmountAsAtoms('9007199254740992', 0)).to.be.equal(null);
+            expect(parseAmountAsAtoms('90071992547409.92', 2)).to.be.equal(
+                null,
+            );
+            expect(parseAmountAsAtoms('900719925474.0992', 4)).to.be.equal(
+                null,
+            );
+            expect(parseAmountAsAtoms('9007199.254740992', 9)).to.be.equal(
+                null,
+            );
+        });
+    });
+
     describe('createBip21Uri', function () {
         it('Should create BIP21 URI with address only', function () {
             const address = 'ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07';
