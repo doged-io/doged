@@ -14,10 +14,14 @@ import {
     activeCryptoTicker,
     activeQuoteCurrency,
     allowFiatForActiveAsset,
-    setActiveAsset,
+    setActiveAsset as commitActiveAsset,
 } from '../active-asset';
 import { coinIconUrlForAssetKey } from '../coin-icon-url';
-import { SUPPORTED_ASSETS } from '../supported-assets';
+import {
+    SUPPORTED_ASSETS,
+    XEC_ASSET,
+    type AssetDefinition,
+} from '../supported-assets';
 import { atomsToUnit } from '../amount';
 import { copyAddress, isValidECashAddress } from '../address';
 import { getAddress } from '../wallet';
@@ -39,9 +43,7 @@ export interface MainScreenParams {
     primaryBalanceTicker: CryptoTicker;
     /** Decimal places when showing the primary crypto amount */
     primaryBalanceDecimals: number;
-    onQRScanResult: (
-        result?: Bip21ParseResult | { address: string },
-    ) => Promise<void>;
+    onQRScanResult: (result?: Bip21ParseResult) => Promise<void>;
     /** Sync wallet state after the user picks a different asset (e.g. TransactionManager + UTXOs). */
     onAssetSwitched: () => Promise<void>;
     /** Updates shared ticker labels (main + send) when the active asset changes. */
@@ -168,9 +170,8 @@ export class MainScreen {
                 // Should never happen
                 return;
             }
-            setActiveAsset({ def });
             try {
-                await this.applyAssetSwitch();
+                await this.setActiveAsset(def);
             } catch (error) {
                 webViewError('Failed to switch asset:', error);
             }
@@ -185,6 +186,15 @@ export class MainScreen {
         this.params.refreshStaticTickerLabels();
         this.setAssetPickerButtonContent();
         await this.params.onAssetSwitched();
+    }
+
+    /**
+     * Set the active asset and refresh main UI plus dependent services
+     * (balances, picker, send labels).
+     */
+    async setActiveAsset(def: AssetDefinition): Promise<void> {
+        commitActiveAsset({ def });
+        await this.applyAssetSwitch();
     }
 
     // Update wallet reference and display (called when wallet is reloaded)
@@ -417,6 +427,7 @@ export class MainScreen {
             stopQRScanner();
             await this.params.onQRScanResult({
                 address: result,
+                tokenAssetKey: XEC_ASSET.key,
             });
         }
     }

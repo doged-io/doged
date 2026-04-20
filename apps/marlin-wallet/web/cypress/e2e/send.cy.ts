@@ -48,6 +48,21 @@ const DUST_AMOUNT_XEC = atomsToUnit(
 const MIN_FIRMA_SLIDER_PRIMARY = 1 / Math.pow(10, FIRMA_TOKEN.decimals);
 
 /**
+ * BIP21 token URI for a built-in Marlin asset (`token_id` + optional
+ * `token_decimalized_qty`).
+ */
+function firmaTokenBip21Uri(
+    ecashAddress: string,
+    tokenDecimalizedQty?: string,
+): string {
+    const base = `${ecashAddress}?token_id=${FIRMA_TOKEN.tokenId}`;
+    if (tokenDecimalizedQty === undefined) {
+        return base;
+    }
+    return `${base}&token_decimalized_qty=${tokenDecimalizedQty}`;
+}
+
+/**
  * Parse the leading number from a primary `formatPrice(..., XEC)` cell (e.g. `1,234.56 XEC`).
  */
 function parsePrimaryXecDisplay(text: string): number {
@@ -187,6 +202,128 @@ describe('Send', () => {
                     'none',
                 );
                 cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('switches to XEC when a XEC BIP21 URI is pasted while Firma is active', () => {
+            const uri = createBip21Uri(WALLET_ADDRESS, 10_000);
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                selectFirmaAsset();
+                openManualSendScreen();
+
+                cy.get('#ticker-label').should('contain', 'FIRMA');
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#ticker-label').should('contain', 'XEC');
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#recipient-address').should('have.class', 'valid');
+                cy.get('#send-amount')
+                    .should('have.value', '100.00')
+                    .and('have.attr', 'readonly');
+                cy.get('#amount-slider').should('be.disabled');
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('switches to Firma and fills amount when a Firma token BIP21 URI is pasted', () => {
+            const tokenQty = '0.5000';
+            const uri = firmaTokenBip21Uri(WALLET_ADDRESS, tokenQty);
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+
+                cy.get('#ticker-label').should('contain', 'XEC');
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#recipient-address').should('have.class', 'valid');
+                cy.get('#ticker-label').should('contain', 'FIRMA');
+                cy.get('#send-amount')
+                    .should('have.value', tokenQty)
+                    .and('have.attr', 'readonly');
+                cy.get('#amount-slider').should('be.disabled');
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('switches to Firma without locking amount when token_decimalized_qty is omitted', () => {
+            const uri = firmaTokenBip21Uri(WALLET_ADDRESS);
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+
+                cy.get('#ticker-label').should('contain', 'XEC');
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#recipient-address').should('have.class', 'valid');
+                cy.get('#ticker-label').should('contain', 'FIRMA');
+                cy.get('#send-amount').should(
+                    'have.value',
+                    MIN_FIRMA_SLIDER_PRIMARY.toFixed(FIRMA_TOKEN.decimals),
+                );
+                cy.get('#send-amount').should('not.have.attr', 'readonly');
+                cy.get('#amount-slider').should('not.be.disabled');
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('switches to Firma without locking amount when token_decimalized_qty has too many decimals', () => {
+            const uri = firmaTokenBip21Uri(WALLET_ADDRESS, '1.23456');
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+
+                cy.get('#ticker-label').should('contain', 'XEC');
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', WALLET_ADDRESS)
+                    .and('have.attr', 'readonly');
+                cy.get('#ticker-label').should('contain', 'FIRMA');
+                cy.get('#send-amount').should(
+                    'have.value',
+                    MIN_FIRMA_SLIDER_PRIMARY.toFixed(FIRMA_TOKEN.decimals),
+                );
+                cy.get('#send-amount').should('not.have.attr', 'readonly');
+                cy.get('#amount-slider').should('not.be.disabled');
+            });
+        });
+
+        it('shows validation error for BIP21 with unsupported token_id', () => {
+            const uri = `${WALLET_ADDRESS}?token_id=1111111111111111111111111111111111111111111111111111111111111111`;
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+
+                cy.get('#ticker-label').should('contain', 'XEC');
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', uri)
+                    .and('have.class', 'invalid');
+                cy.get('#recipient-address').should(
+                    'not.have.attr',
+                    'readonly',
+                );
+                cy.get('#ticker-label').should('contain', 'XEC');
             });
         });
     });

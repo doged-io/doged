@@ -167,6 +167,18 @@ window.openSettings = () => navigation.showScreen(Screen.Settings);
 // WALLET MANAGEMENT FUNCTIONS
 // ============================================================================
 
+/**
+ * Switch to the token asset for a BIP21 prefill (`Bip21ParseResult.tokenAssetKey`)
+ * before the send form syncs (QR / payment link / paste on send).
+ */
+async function applyBip21TokenAsset(assetKey: string): Promise<void> {
+    const def = SUPPORTED_ASSETS.find(a => a.key === assetKey);
+    if (!def || !mainScreen) {
+        return;
+    }
+    await mainScreen.setActiveAsset(def);
+}
+
 // Load existing wallet from stored mnemonic
 async function loadWalletFromMnemonic(mnemonic: string) {
     // Create wallet using ecash-wallet library
@@ -215,6 +227,7 @@ async function loadWalletFromMnemonic(mnemonic: string) {
             appSettings,
             priceFetcher,
             syncWallet,
+            applyBip21TokenAsset,
         });
     }
 
@@ -851,6 +864,7 @@ async function initializeApp() {
         appSettings,
         priceFetcher,
         syncWallet,
+        applyBip21TokenAsset,
     });
 
     // Update main screen display if wallet is already loaded

@@ -46,6 +46,12 @@ export interface SendScreenParams {
     appSettings: AppSettings;
     priceFetcher: MarlinPriceFetcher | null;
     syncWallet: () => Promise<void>;
+    /**
+     * Switches the header asset + wallet view for BIP21 token URIs. Used when
+     * opening send with a token prefill (QR / payment deep link) and when the
+     * user pastes a token URI on the send screen.
+     */
+    applyBip21TokenAsset: (assetKey: string) => Promise<void>;
 }
 
 export class SendScreen {
@@ -82,18 +88,9 @@ export class SendScreen {
         this.params.ecashWallet = newWallet;
     }
 
-    // Show the send screen
-    async show(
+    private async configureSendFormFromPrefill(
         prefillOptions?: Bip21ParseResult,
-        returnToBrowser: boolean = false,
     ): Promise<void> {
-        webViewLog('Showing send screen');
-
-        this.returnToBrowser = returnToBrowser;
-
-        // Always refresh the available utxos before showing the send screen
-        await this.params.syncWallet();
-
         const decimals = activeAssetDecimals();
         const tokenId = activeTokenId();
 
@@ -182,14 +179,14 @@ export class SendScreen {
             this.ui.recipientInput.removeAttribute('readonly'); // Allow editing for manual entry
         }
 
-        if (
-            !tokenId &&
-            prefillOptions?.sats !== undefined &&
-            prefillOptions.sats > 0
-        ) {
-            const amountPrimary = this.xecToPrimary(
-                atomsToUnit(prefillOptions.sats, XEC_ASSET.decimals),
+        let amountPrimary: number | null = null;
+        if (prefillOptions?.atoms !== undefined && prefillOptions.atoms > 0) {
+            amountPrimary = this.xecToPrimary(
+                atomsToUnit(prefillOptions.atoms, activeAssetDecimals()),
             );
+        }
+
+        if (amountPrimary !== null) {
             this.ui.sendAmountInput.value = amountPrimary.toFixed(
                 this.amountDigits,
             );
@@ -217,6 +214,24 @@ export class SendScreen {
                     ? prefillOptions.opReturnRaw
                     : undefined;
         }
+    }
+
+    // Show the send screen
+    async show(
+        prefillOptions?: Bip21ParseResult,
+        returnToBrowser: boolean = false,
+    ): Promise<void> {
+        webViewLog('Showing send screen');
+
+        this.returnToBrowser = returnToBrowser;
+
+        if (prefillOptions) {
+            await this.params.applyBip21TokenAsset(
+                prefillOptions.tokenAssetKey,
+            );
+        }
+        await this.params.syncWallet();
+        await this.configureSendFormFromPrefill(prefillOptions);
 
         // Setup with current behavior
         this.setupHoldToSend();
@@ -343,7 +358,16 @@ export class SendScreen {
             }
 
             // User pasted a BIP21 URI - populate all fields
-            this.handleBip21Paste(bip21Result);
+            this.ui.recipientInput.classList.add('valid');
+            void (async () => {
+                try {
+                    await this.handleBip21Paste(bip21Result);
+                } catch (error) {
+                    webViewError('Failed to apply BIP21 paste:', error);
+                    this.ui.recipientInput.classList.remove('valid');
+                    this.ui.recipientInput.classList.add('invalid');
+                }
+            })();
             return;
         }
 
@@ -358,47 +382,28 @@ export class SendScreen {
         this.ui.recipientInput.classList.add('invalid');
     }
 
-    private handleBip21Paste(
+    private async handleBip21Paste(
         bip21Result: ReturnType<typeof parseBip21Uri>,
-    ): void {
+    ): Promise<void> {
         if (!bip21Result) {
             return;
         }
 
-        // Set the address (plain address, not the full URI)
-        this.ui.recipientInput.value = bip21Result.address;
-        this.ui.recipientInput.setAttribute('readonly', 'readonly');
-        this.ui.recipientInput.classList.add('valid');
-
-        // Store opReturnRaw for use when sending transaction, only for paybutton transactions
-        this.sendOpReturnRaw =
-            bip21Result.opReturnRaw &&
-            isPayButtonTransaction(bip21Result.opReturnRaw)
-                ? bip21Result.opReturnRaw
-                : undefined;
-        this.updatePayButtonLogoVisibility();
-
-        // Set amount if provided
+        // Do this first to ensure the asset is set before the form is
+        // configured! Only do if there is some amount to prefill, or if the
+        // selected token is not XEC so we know it's a bip21 request and NOT
+        // only an address. An address is actually a valid BIP21 URI...
         if (
-            bip21Result.sats !== undefined &&
-            bip21Result.sats >= DEFAULT_DUST_SATS
+            bip21Result.tokenAssetKey !== XEC_ASSET.key ||
+            (bip21Result.atoms !== undefined && bip21Result.atoms > 0)
         ) {
-            const amountXec = atomsToUnit(bip21Result.sats, XEC_ASSET.decimals);
-            const amountPrimary = this.xecToPrimary(amountXec);
-
-            this.ui.sendAmountInput.value = amountPrimary.toFixed(
-                this.amountDigits,
-            );
-            this.ui.sendAmountInput.setAttribute('readonly', 'readonly');
-            this.validateAmountField();
-
-            this.ui.amountSlider.value = amountPrimary.toFixed(
-                this.amountDigits,
-            );
-            this.ui.amountSlider.disabled = true;
+            await this.params.applyBip21TokenAsset(bip21Result.tokenAssetKey);
         }
 
-        // Trigger fee calculation
+        await this.params.syncWallet();
+        await this.configureSendFormFromPrefill(bip21Result);
+        this.updatePayButtonLogoVisibility();
+        this.validateAmountField();
         this.updateFeeDisplay();
     }
 
