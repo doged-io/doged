@@ -9,6 +9,11 @@
         "save": "Servāre",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "Hic nexus solutionis aperiri non potest",
+        "malformed": "Nexus vitiosus est.",
+        "unsupportedToken": "Tessera non sustinetur."
+    },
     "camera": {
         "manualEntry": "Manus Īnscrīptiō",
         "noCameraAvailable": "Camera Nōn Praestō",

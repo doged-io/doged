@@ -413,8 +413,7 @@ export class MainScreen {
     private async handleQRScanResult(result: string): Promise<void> {
         // First, try to parse as BIP21 URI
         const bip21Result = parseBip21Uri(result);
-
-        if (bip21Result) {
+        if (!bip21Result.error) {
             webViewLog('BIP21 URI scanned:', result);
             stopQRScanner();
             await this.params.onQRScanResult(bip21Result);

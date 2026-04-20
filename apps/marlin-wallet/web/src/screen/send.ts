@@ -347,7 +347,7 @@ export class SendScreen {
 
         // Try to parse as BIP21 URI first (this also handles plain addresses)
         const bip21Result = parseBip21Uri(input);
-        if (bip21Result) {
+        if (!bip21Result.error) {
             // Valid BIP21 URI or plain address
             // If field is readonly (set programmatically from QR/NFC), only validate the address
             // If field is editable (user paste), populate all fields from the URI
@@ -385,7 +385,7 @@ export class SendScreen {
     private async handleBip21Paste(
         bip21Result: ReturnType<typeof parseBip21Uri>,
     ): Promise<void> {
-        if (!bip21Result) {
+        if (bip21Result.error) {
             return;
         }
 

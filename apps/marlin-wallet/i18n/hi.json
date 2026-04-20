@@ -9,6 +9,11 @@
         "save": "सेव करें",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "यह भुगतान लिंक नहीं खोला जा सकता",
+        "malformed": "लिंक अमान्य है।",
+        "unsupportedToken": "टोकन समर्थित नहीं है।"
+    },
     "camera": {
         "manualEntry": "खुद डालें",
         "noCameraAvailable": "कैमरा नहीं है",

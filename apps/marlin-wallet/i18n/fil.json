@@ -9,6 +9,11 @@
         "save": "I-save",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "Hindi mabuksan ang payment link na ito",
+        "malformed": "Mali ang link.",
+        "unsupportedToken": "Hindi suportado ang token."
+    },
     "camera": {
         "manualEntry": "Manwal na Pagpasok",
         "noCameraAvailable": "Walang Available na Camera",

@@ -9,6 +9,11 @@
         "save": "Speichern",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "Dieser Zahlungslink kann nicht geöffnet werden",
+        "malformed": "Der Link ist fehlerhaft.",
+        "unsupportedToken": "Das Token wird nicht unterstützt."
+    },
     "camera": {
         "manualEntry": "Manuelle Eingabe",
         "noCameraAvailable": "Keine Kamera verfügbar",

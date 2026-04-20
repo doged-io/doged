@@ -9,6 +9,11 @@
         "save": "Kaydet",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "Bu ödeme bağlantısı açılamıyor",
+        "malformed": "Bağlantı hatalı.",
+        "unsupportedToken": "Jeton desteklenmiyor."
+    },
     "camera": {
         "manualEntry": "Manuel Giriş",
         "noCameraAvailable": "Kamera Mevcut Değil",

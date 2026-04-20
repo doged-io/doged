@@ -126,6 +126,10 @@ function showErrorModal(title: string, message: string) {
     errorModalOverlay.style.display = 'flex';
 }
 
+function showBip21ParseErrorOverlay(message: string) {
+    showErrorModal(t('bip21.unavailableTitle'), message);
+}
+
 function showLoadingScreen(message: string) {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) {
@@ -704,6 +708,12 @@ async function initializeApp() {
         primaryBalanceTicker: activeCryptoTicker(),
         primaryBalanceDecimals: activeAssetDecimals(),
         onQRScanResult: async result => {
+            // Defensive programming: if the result is an error the scanner
+            // keeps retrying and the callback is not called.
+            if (result?.error) {
+                showBip21ParseErrorOverlay(result.error);
+                return;
+            }
             if (sendScreen) {
                 await sendScreen.show(result);
             }
@@ -903,11 +913,14 @@ async function handlePaymentRequest(event: any) {
 
             // Parse the BIP21 URI
             const parsed = parseBip21Uri(bip21Uri);
-            if (parsed && sendScreen) {
+            if (parsed?.error) {
+                webViewError('Invalid BIP21 URI:', bip21Uri);
+                showBip21ParseErrorOverlay(parsed.error);
+                return;
+            }
+            if (sendScreen) {
                 // Open send screen with prefilled address and amount
                 await sendScreen.show(parsed, returnToBrowser);
-            } else {
-                webViewError('Invalid BIP21 URI:', bip21Uri);
             }
         } else if (message.type === 'SYNC_WALLET') {
             // Sync wallet and reconnect WebSocket

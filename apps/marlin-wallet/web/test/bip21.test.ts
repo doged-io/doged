@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import * as chai from 'chai';
+import { initI18n } from '../src/i18n';
 import {
     createBip21Uri,
     parseAmountAsAtoms,
@@ -14,6 +15,10 @@ import { FIRMA_TOKEN, XEC_ASSET } from '../src/supported-assets';
 const expect = chai.expect;
 
 describe('bip21.ts', function () {
+    beforeEach(async function () {
+        await initI18n('en');
+    });
+
     describe('parseUint256Hex', function () {
         const validLower = FIRMA_TOKEN.tokenId!;
 
@@ -212,12 +217,20 @@ describe('bip21.ts', function () {
 
         it('Should reject invalid protocol', function () {
             const uri = 'bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
-            expect(parseBip21Uri(uri)).to.equal(null);
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
         });
 
         it('Should reject invalid address format', function () {
             const uri = 'ecash:invalid-address';
-            expect(parseBip21Uri(uri)).to.equal(null);
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
         });
 
         it('Should reject invalid amount', function () {
@@ -272,7 +285,11 @@ describe('bip21.ts', function () {
 
         it('Should handle malformed URI gracefully', function () {
             const uri = 'not-a-valid-uri';
-            expect(parseBip21Uri(uri)).to.equal(null);
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
         });
 
         it('Should parse single-recipient token BIP21 for a supported token', function () {
@@ -320,7 +337,11 @@ describe('bip21.ts', function () {
                 `${sampleAddress}?token_id=` +
                 '1111111111111111111111111111111111111111111111111111111111111111' +
                 '&token_decimalized_qty=1';
-            expect(parseBip21Uri(uri)).to.equal(null);
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The token is not supported.',
+            });
         });
 
         it('Should reject token_decimalized_qty with too many decimals', function () {
@@ -335,7 +356,11 @@ describe('bip21.ts', function () {
 
         it('Should reject empty token_id', function () {
             const uri = `${sampleAddress}?token_id=&token_decimalized_qty=1`;
-            expect(parseBip21Uri(uri)).to.equal(null);
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
         });
 
         it('Should reject non-positive token_decimalized_qty when present', function () {

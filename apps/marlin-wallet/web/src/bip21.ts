@@ -6,6 +6,13 @@ import { config } from './config';
 import { isValidECashAddress } from './address';
 import { atomsToUnit, unitToAtoms } from './amount';
 import { SUPPORTED_ASSETS, XEC_ASSET } from './supported-assets';
+import { t } from './i18n';
+
+/** User-visible parse failure reasons (string values for display / i18n mapping). */
+export enum Bip21Error {
+    UriMalformed = 'bip21.malformed',
+    TokenNotSupported = 'bip21.unsupportedToken',
+}
 
 /**
  * Result of parsing a BIP21 URI
@@ -21,6 +28,18 @@ export interface Bip21ParseResult {
     opReturnRaw?: string;
     /** Marlin asset key (`xec` or a built-in token from `token_id`). */
     tokenAssetKey: string;
+    /**
+     * When set, parsing failed; ignore the other fields. Localized user message.
+     */
+    error?: string;
+}
+
+function bip21ParseError(kind: Bip21Error): Bip21ParseResult {
+    return {
+        address: '',
+        tokenAssetKey: XEC_ASSET.key,
+        error: t(kind),
+    };
 }
 
 /**
@@ -111,16 +130,17 @@ export function parseUint256Hex(raw: string): string | null {
  * - Other query parameters are ignored
  *
  * @param uri - The URI string to parse (e.g., "ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=100.42")
- * @returns Parsed result, or null if invalid/unsupported
+ * @returns Parsed result, or a result with {@link Bip21ParseResult.error} when
+ * the URI is malformed or the token is unsupported.
  */
-export function parseBip21Uri(uri: string): Bip21ParseResult | null {
+export function parseBip21Uri(uri: string): Bip21ParseResult {
     try {
         // Parse the URI using URL API
         const url = new URL(uri);
 
         // Validate that the protocol matches the expected BIP21 prefix
         if (url.protocol !== config.bip21Prefix) {
-            return null;
+            return bip21ParseError(Bip21Error.UriMalformed);
         }
 
         // Check if the pathname already has the expected prefix (e.g., "ectest:address")
@@ -132,7 +152,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
 
         // Validate the address (this will catch invalid formats like ecash://address with leading slash)
         if (!isValidECashAddress(addressPart)) {
-            return null;
+            return bip21ParseError(Bip21Error.UriMalformed);
         }
 
         const result: Bip21ParseResult = {
@@ -168,7 +188,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
                 url.searchParams.get('token_id') ?? '',
             );
             if (!tokenId) {
-                return null;
+                return bip21ParseError(Bip21Error.UriMalformed);
             }
 
             // Only supported tokens are allowed.
@@ -176,7 +196,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
                 a => a.tokenId?.toLowerCase() === tokenId,
             );
             if (!matched?.key) {
-                return null;
+                return bip21ParseError(Bip21Error.TokenNotSupported);
             }
             result.tokenAssetKey = matched.key;
 
@@ -193,6 +213,6 @@ export function parseBip21Uri(uri: string): Bip21ParseResult | null {
 
         return result;
     } catch {
-        return null;
+        return bip21ParseError(Bip21Error.UriMalformed);
     }
 }

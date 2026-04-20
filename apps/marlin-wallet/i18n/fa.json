@@ -9,6 +9,11 @@
         "save": "ذخیره",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "این پیوند پرداخت باز نمی‌شود",
+        "malformed": "پیوند نامعتبر است.",
+        "unsupportedToken": "این توکن پشتیبانی نمی‌شود."
+    },
     "camera": {
         "manualEntry": "ورود دستی",
         "noCameraAvailable": "دوربین در دسترس نیست",

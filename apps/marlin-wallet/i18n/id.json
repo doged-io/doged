@@ -9,6 +9,11 @@
         "save": "Simpan",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "Tautan pembayaran ini tidak dapat dibuka",
+        "malformed": "Tautan tidak valid.",
+        "unsupportedToken": "Token tidak didukung."
+    },
     "camera": {
         "manualEntry": "Entri Manual",
         "noCameraAvailable": "Kamera Tidak Tersedia",

@@ -9,6 +9,11 @@
         "save": "حفظ",
         "title": "Marlin Wallet"
     },
+    "bip21": {
+        "unavailableTitle": "تعذّر فتح رابط الدفع هذا",
+        "malformed": "الرابط غير صالح.",
+        "unsupportedToken": "رمز العملة غير مدعوم."
+    },
     "camera": {
         "manualEntry": "إدخال يدوي",
         "noCameraAvailable": "الكاميرا غير متاحة",

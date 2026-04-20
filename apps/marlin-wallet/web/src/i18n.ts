@@ -38,6 +38,10 @@ export function t(key: string) {
 }
 
 function updateTranslations() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
     // Lookup and update all html elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(element => {
         if (!(element instanceof HTMLElement)) {

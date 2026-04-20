@@ -14,7 +14,8 @@ declare global {
 // Check if we are running in a React Native WebView. This makes it possible to
 // use a degraded but functional web version of the app.
 export function isReactNativeWebView(): boolean {
-    return !!window.ReactNativeWebView;
+    // window is undefined in tests
+    return typeof window !== 'undefined' && !!window.ReactNativeWebView;
 }
 
 // Send a message to the backend app if we are running in a React Native
