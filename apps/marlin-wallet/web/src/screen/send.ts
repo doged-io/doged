@@ -88,6 +88,21 @@ export class SendScreen {
         this.params.ecashWallet = newWallet;
     }
 
+    /**
+     * Plain eCash addresses parse as BIP21 with `tokenAssetKey === xec` and no
+     * amount; switching assets in that case would incorrectly leave Firma (or
+     * any token) mode. Only switch when the URI names a token or includes an
+     * explicit amount.
+     */
+    private bip21PrefillRequestsAssetSwitch(
+        bip21Result: Bip21ParseResult,
+    ): boolean {
+        return (
+            bip21Result.tokenAssetKey !== XEC_ASSET.key ||
+            (bip21Result.atoms !== undefined && bip21Result.atoms > 0)
+        );
+    }
+
     private async configureSendFormFromPrefill(
         prefillOptions?: Bip21ParseResult,
     ): Promise<void> {
@@ -225,7 +240,10 @@ export class SendScreen {
 
         this.returnToBrowser = returnToBrowser;
 
-        if (prefillOptions) {
+        if (
+            prefillOptions &&
+            this.bip21PrefillRequestsAssetSwitch(prefillOptions)
+        ) {
             await this.params.applyBip21TokenAsset(
                 prefillOptions.tokenAssetKey,
             );
@@ -393,10 +411,7 @@ export class SendScreen {
         // configured! Only do if there is some amount to prefill, or if the
         // selected token is not XEC so we know it's a bip21 request and NOT
         // only an address. An address is actually a valid BIP21 URI...
-        if (
-            bip21Result.tokenAssetKey !== XEC_ASSET.key ||
-            (bip21Result.atoms !== undefined && bip21Result.atoms > 0)
-        ) {
+        if (this.bip21PrefillRequestsAssetSwitch(bip21Result)) {
             await this.params.applyBip21TokenAsset(bip21Result.tokenAssetKey);
         }
 
