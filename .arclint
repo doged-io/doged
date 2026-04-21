@@ -244,6 +244,7 @@
             ],
             "exclude": [
                 "(^web/chronik.e.cash/)",
+                "(^web/docs.e.cash/)",
                 "(^doc/standards/)"
             ]
         },

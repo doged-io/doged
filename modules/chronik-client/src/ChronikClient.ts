@@ -134,7 +134,7 @@ export class ChronikClient {
      * Create a new client. This just creates an object, without any connections.
      *
      * @param {string[]} urls Array of valid urls. A valid url comes with schema and without a trailing slash.
-     * e.g. '['https://chronik.be.cash/xec2', 'https://chronik-native.fabien.cash']
+     * e.g. `['https://chronik.e.cash', 'https://someotherchronikinstance.e.cash']`
      * The approach of accepting an array of urls as input is to ensure redundancy if the
      * first url encounters downtime.
      * @throws {error} throws error on invalid constructor inputs

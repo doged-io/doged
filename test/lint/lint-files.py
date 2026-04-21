@@ -41,6 +41,7 @@ ALLOWED_EXECUTABLE_SHEBANG = {
 # use mixedCase in their names.
 ALLOWED_FILENAME_EXCEPTION_REGEXPS = (
     "^web/e.cash/app/blog/\[slug\]/page.tsx$",
+    "^web/docs.e.cash/src/app/\[\[\.\.\.slug\]\]/page.tsx$",
     "^apps/marlin-wallet/ios/",
 )
 ALLOWED_SOURCE_FILENAME_EXCEPTION_REGEXPS = (

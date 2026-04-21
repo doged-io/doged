@@ -1,0 +1,66 @@
+/* Copyright (c) 2026 The Bitcoin developers */
+/* Distributed under the MIT software license, see the accompanying */
+/* file COPYING or http://www.opensource.org/licenses/mit-license.php. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Aligned with web/e.cash/app/globals.css */
+:root {
+    --background: #090916;
+    --accentLight: #01a0e0;
+    --accentMedium: #0671c0;
+    --accentDark: #224da8;
+    --primaryText: #f4f4f8;
+    --secondaryText: #e2e4eb;
+    --borderLight: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    @apply antialiased;
+    background: var(--background);
+    color: var(--primaryText);
+}
+
+@layer components {
+    .docs-gradient-text {
+        background: linear-gradient(
+            to right,
+            var(--accentLight) 0%,
+            var(--accentMedium) 80%,
+            var(--accentDark) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /**
+     * Full-bleed live playgrounds from a centered prose column (viewport width,
+     * accounting for the lg sidebar at w-64).
+     */
+    .docs-live-breakout {
+        position: relative;
+        width: 100vw;
+        max-width: 100vw;
+        margin-left: calc(50% - 50vw);
+    }
+
+    @media (min-width: 1024px) {
+        .docs-live-breakout {
+            width: calc(100vw - 16rem);
+            max-width: calc(100vw - 16rem);
+            margin-left: calc(50% - 50vw + 8rem);
+        }
+    }
+
+    /* react-live editor (textarea or prism `pre`): wrap long lines */
+    .docs-live-editor-wrap textarea,
+    .docs-live-editor-wrap pre {
+        white-space: pre-wrap !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}

@@ -1112,6 +1112,13 @@ builds:
             build_args:
                 - 'NGINX_CONF=nginx-preview.conf'
 
+    preview-docs.e.cash:
+        docker:
+            dockerfile: docs.e.cash.Dockerfile
+            port: 3000
+            build_args:
+                - 'PREVIEW_BUILD=next.preview.ts'
+
     preview-explorer:
         docker:
             dockerfile: explorer.Dockerfile

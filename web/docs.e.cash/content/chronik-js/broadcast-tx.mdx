@@ -1,0 +1,19 @@
+---
+title: Broadcast transactions
+---
+
+# Broadcast transactions
+
+## <code>broadcastTx(rawTx, skipTokenChecks?)</code>
+
+Broadcast a raw transaction. The default token checks help avoid accidental burns; only disable them if you understand the risk. See [broadcastTx](/reference/chronik-client/classes/ChronikClient#broadcasttx).
+
+The sample below is **expected to fail** with a validation error (it exercises burn protection).
+
+<ChronikLivePlayground id="broadcast-tx" />
+
+## <code>broadcastTxs(rawTxs, skipTokenChecks?)</code>
+
+Broadcast multiple raw transactions with the same semantics as `broadcastTx`. See [broadcastTxs](/reference/chronik-client/classes/ChronikClient#broadcasttxs).
+
+<ChronikLivePlayground id="broadcast-txs" />

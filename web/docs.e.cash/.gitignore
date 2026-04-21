@@ -1,0 +1,15 @@
+# Copyright (c) 2026 The Bitcoin developers
+# Distributed under the MIT software license, see the accompanying file COPYING
+# or http://www.opensource.org/licenses/mit-license.php.
+
+/.next/
+/out/
+/node_modules/
+
+# Generated at build by scripts/sync-abc-version.mjs (GitHub Releases API or CMake; see sample).
+/src/data/bitcoin-abc-version.json
+.next/
+*.tsbuildinfo
+next-env.d.ts.bak
+.env*.local
+.DS_Store

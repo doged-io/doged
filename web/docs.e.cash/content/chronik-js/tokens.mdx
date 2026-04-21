@@ -1,0 +1,45 @@
+---
+title: Tokens
+---
+
+# Tokens
+
+> **Note**
+>
+> This page focuses on token-focused endpoints. Other APIs (transactions, history, UTXOs, and so on) also surface token data where applicable.
+
+## <code>token(tokenId)</code>
+
+Token metadata. See [token](/reference/chronik-client/classes/ChronikClient#token).
+
+<ChronikLivePlayground id="tokens-token" />
+
+## <code>tokenId(tokenId)</code>
+
+Fluent API scoped to a token ID. See [tokenId](/reference/chronik-client/classes/ChronikClient#tokenid).
+
+<ChronikLivePlayground id="tokens-tokenId" />
+
+## <code>history(pageOffset, pageSize)</code>
+
+History for the token ID. See [TokenIdEndpoint.history](/reference/chronik-client/classes/TokenIdEndpoint#history).
+
+<ChronikLivePlayground id="tokens-history" />
+
+## <code>confirmedTxs(pageOffset, pageSize)</code>
+
+Confirmed transactions for the token. See [confirmedTxs](/reference/chronik-client/classes/TokenIdEndpoint#confirmedtxs).
+
+<ChronikLivePlayground id="tokens-confirmedTxs" />
+
+## <code>unconfirmedTxs()</code>
+
+Mempool transactions for the token. See [unconfirmedTxs](/reference/chronik-client/classes/TokenIdEndpoint#unconfirmedtxs).
+
+<ChronikLivePlayground id="tokens-unconfirmedTxs" />
+
+## <code>utxos()</code>
+
+UTXOs carrying the token. See [utxos](/reference/chronik-client/classes/TokenIdEndpoint#utxos).
+
+<ChronikLivePlayground id="tokens-utxos" />
