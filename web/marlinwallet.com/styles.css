@@ -175,6 +175,35 @@ body {
     border-color: var(--accent-medium);
 }
 
+.feature-card:has(.feature-card-new-badge) {
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card-new-badge {
+    position: absolute;
+    top: 22px;
+    left: -46px;
+    z-index: 1;
+    width: 168px;
+    padding: 9px 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--primary-text);
+    background: linear-gradient(
+        135deg,
+        var(--accent-light) 0%,
+        var(--accent-medium) 100%
+    );
+    line-height: 1.2;
+    box-shadow: 0 3px 14px rgba(1, 160, 224, 0.4);
+    transform: rotate(-45deg);
+    transform-origin: center;
+}
+
 .feature-icon {
     width: 96px;
     height: 96px;
@@ -204,6 +233,16 @@ body {
     color: var(--secondary-text);
     line-height: 1.6;
     font-weight: 300;
+}
+
+.feature-description a {
+    color: var(--accent-light);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.feature-description a:hover {
+    text-decoration: underline;
 }
 
 .footer {
