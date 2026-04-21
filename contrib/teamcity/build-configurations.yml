@@ -1128,6 +1128,11 @@ builds:
             dockerfile: marlin-wallet.Dockerfile
             port: 3000
 
+    preview-marlinwallet.com:
+        docker:
+            context: web/marlinwallet.com
+            port: 80
+
     cashtab-connect-tests:
         runOnDiffRegex:
             - modules/cashtab-connect/
