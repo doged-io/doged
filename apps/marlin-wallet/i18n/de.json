@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Transaktion konnte nicht gesendet werden",
         "insufficientFunds": "Unzureichende Mittel",
         "invalidAddress": "Ungültige Adresse",
+        "shareImageScanFailed": "Aus dem Bild konnte kein gültiger QR-Code gelesen werden",
+        "shareImageScanFailedTitle": "Kein gültiger QR-Code",
         "transactionFailed": "Transaktion fehlgeschlagen"
     },
     "history": {

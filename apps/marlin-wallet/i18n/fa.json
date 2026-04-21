@@ -30,6 +30,8 @@
         "failedToSendTransaction": "ارسال تراکنش ناموفق بود",
         "insufficientFunds": "موجودی ناکافی",
         "invalidAddress": "آدرس نامعتبر",
+        "shareImageScanFailed": "رمزینهٔ QR معتبر از تصویر خوانده نشد",
+        "shareImageScanFailedTitle": "بدون QR معتبر",
         "transactionFailed": "تراکنش ناموفق بود"
     },
     "history": {

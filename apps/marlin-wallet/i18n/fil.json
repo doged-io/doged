@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Nabigo na magpadala ng transaction",
         "insufficientFunds": "Kulang ang pondo",
         "invalidAddress": "Hindi wasto na address",
+        "shareImageScanFailed": "Hindi makuha ang wastong QR code mula sa larawan",
+        "shareImageScanFailedTitle": "Walang wastong QR code",
         "transactionFailed": "Nabigo ang transaction"
     },
     "history": {

@@ -5,11 +5,16 @@
 package com.marlinwallet.app
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.nfc.NfcAdapter
 import android.nfc.NdefMessage
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Base64
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import com.facebook.react.ReactActivity
@@ -18,12 +23,18 @@ import com.facebook.react.ReactHost
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executors
 
 class MainActivity : ReactActivity() {
 
   private val TAG = "MainActivity"
   private var pendingPaymentUri: String? = null
+  private var pendingSharedImageDataUrl: String? = null
+  private var pendingSharedImageReadFailed = false
   private var reactActivityDelegate: ReactActivityDelegate? = null
+  private val shareImageExecutor = Executors.newSingleThreadExecutor()
+  private val mainHandler = Handler(Looper.getMainLooper())
   
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
@@ -58,12 +69,19 @@ class MainActivity : ReactActivity() {
 
     // Reset listener state on app launch
     PaymentRequestModule.reset()
-    
+    pendingSharedImageDataUrl = null
+    pendingSharedImageReadFailed = false
+
     // Set up callback to be notified when listener is ready
     PaymentRequestModule.setReadyCallback {
-      // Listener is now ready, try to send pending payment request
       if (pendingPaymentUri != null) {
         tryToSendPendingPaymentRequest()
+      }
+      if (pendingSharedImageDataUrl != null) {
+        tryToSendPendingSharedImage()
+      }
+      if (pendingSharedImageReadFailed) {
+        tryToSendPendingSharedImageReadFailed()
       }
     }
     
@@ -77,11 +95,18 @@ class MainActivity : ReactActivity() {
     if (pendingPaymentUri != null) {
       tryToSendPendingPaymentRequest()
     }
+    if (pendingSharedImageDataUrl != null) {
+      tryToSendPendingSharedImage()
+    }
+    if (pendingSharedImageReadFailed) {
+      tryToSendPendingSharedImageReadFailed()
+    }
   }
-  
+
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    
+    setIntent(intent)
+
     // Handle NFC and deep link intents when app is already running (foreground)
     handleIntent(intent)
   }
@@ -170,9 +195,190 @@ class MainActivity : ReactActivity() {
           sendPaymentRequest(uri)
         }
       }
+
+      Intent.ACTION_SEND -> {
+        if (intent.type?.startsWith("image/") == true) {
+          handleSharedImageIntent(intent)
+        }
+      }
     }
   }
-  
+
+  private fun getSendStreamUri(intent: Intent): Uri? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+    } else {
+      @Suppress("DEPRECATION")
+      intent.getParcelableExtra(Intent.EXTRA_STREAM)
+    }
+  }
+
+  /**
+   * Downscale shared image to JPEG and forward as a data URL for the WebView (qr-scanner).
+   */
+  private fun encodeUriAsDownscaledJpegDataUrl(uri: Uri): String? {
+    return try {
+      val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+      contentResolver.openInputStream(uri)?.use {
+        BitmapFactory.decodeStream(it, null, bounds)
+      }
+      if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+        return null
+      }
+      var sampleSize = 1
+      val maxDim = 1600
+      while (bounds.outWidth / sampleSize > maxDim ||
+          bounds.outHeight / sampleSize > maxDim) {
+        sampleSize *= 2
+      }
+      val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+      val bitmap =
+          contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, opts)
+          }
+              ?: return null
+      val out = ByteArrayOutputStream()
+      if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)) {
+        bitmap.recycle()
+        return null
+      }
+      bitmap.recycle()
+      val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+      "data:image/jpeg;base64,$b64"
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to encode shared image", e)
+      null
+    }
+  }
+
+  private fun handleSharedImageIntent(intent: Intent) {
+    val uri = getSendStreamUri(intent)
+    if (uri == null) {
+      mainHandler.post { sendSharedImageReadFailed() }
+      return
+    }
+    shareImageExecutor.execute {
+      val dataUrl = encodeUriAsDownscaledJpegDataUrl(uri)
+      mainHandler.post {
+        if (dataUrl != null) {
+          sendSharedImageDataUrl(dataUrl)
+        } else {
+          sendSharedImageReadFailed()
+        }
+      }
+    }
+  }
+
+  private fun setPendingSharedImageReadFailed() {
+    pendingSharedImageReadFailed = true
+    tryToSendPendingSharedImageReadFailed()
+  }
+
+  private fun sendSharedImageReadFailed() {
+    val reactContext = getReactContext()
+    val listenerReady = PaymentRequestModule.isListenerReady()
+
+    if (reactContext != null && listenerReady) {
+      try {
+        reactContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("SHARED_IMAGE_READ_FAILED", null)
+      } catch (e: Exception) {
+        Log.e(TAG, "Error sending shared image read failure", e)
+        setPendingSharedImageReadFailed()
+      }
+    } else {
+      setPendingSharedImageReadFailed()
+    }
+  }
+
+  private fun retryPendingSharedImageReadFailed(attempt: Int) {
+    if (attempt < 30) {
+      Handler(Looper.getMainLooper()).postDelayed({
+        tryToSendPendingSharedImageReadFailed(attempt + 1)
+      }, 200)
+    }
+  }
+
+  private fun tryToSendPendingSharedImageReadFailed(attempt: Int = 0) {
+    if (!pendingSharedImageReadFailed) {
+      return
+    }
+    if (!PaymentRequestModule.isListenerReady()) {
+      retryPendingSharedImageReadFailed(attempt)
+      return
+    }
+    val reactContext = getReactContext()
+    if (reactContext == null) {
+      retryPendingSharedImageReadFailed(attempt)
+      return
+    }
+    try {
+      reactContext
+          .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+          .emit("SHARED_IMAGE_READ_FAILED", null)
+      pendingSharedImageReadFailed = false
+    } catch (e: Exception) {
+      Log.e(TAG, "Error sending shared image read failure", e)
+      retryPendingSharedImageReadFailed(attempt)
+    }
+  }
+
+  private fun setPendingSharedImageDataUrl(dataUrl: String) {
+    pendingSharedImageDataUrl = dataUrl
+    tryToSendPendingSharedImage()
+  }
+
+  private fun sendSharedImageDataUrl(dataUrl: String) {
+    val reactContext = getReactContext()
+    val listenerReady = PaymentRequestModule.isListenerReady()
+
+    if (reactContext != null && listenerReady) {
+      try {
+        reactContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("SHARED_IMAGE_DATA_URL", dataUrl)
+      } catch (e: Exception) {
+        Log.e(TAG, "Error sending shared image payload", e)
+        setPendingSharedImageDataUrl(dataUrl)
+      }
+    } else {
+      setPendingSharedImageDataUrl(dataUrl)
+    }
+  }
+
+  private fun retryPendingSharedImage(attempt: Int) {
+    if (attempt < 30) {
+      Handler(Looper.getMainLooper()).postDelayed({
+        tryToSendPendingSharedImage(attempt + 1)
+      }, 200)
+    }
+  }
+
+  private fun tryToSendPendingSharedImage(attempt: Int = 0) {
+    if (pendingSharedImageDataUrl == null) {
+      return
+    }
+    if (!PaymentRequestModule.isListenerReady()) {
+      retryPendingSharedImage(attempt)
+      return
+    }
+    val reactContext = getReactContext()
+    if (reactContext == null) {
+      retryPendingSharedImage(attempt)
+      return
+    }
+    try {
+      reactContext
+          .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+          .emit("SHARED_IMAGE_DATA_URL", pendingSharedImageDataUrl)
+      pendingSharedImageDataUrl = null
+    } catch (e: Exception) {
+      Log.e(TAG, "Error sending shared image payload", e)
+      retryPendingSharedImage(attempt)
+    }
+  }
+
   /**
    * Store a payment request URI and schedule sending to React Native (for app launch)
    */

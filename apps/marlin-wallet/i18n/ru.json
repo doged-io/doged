@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Не удалось отправить транзакцию",
         "insufficientFunds": "Недостаточно средств",
         "invalidAddress": "Неверный адрес",
+        "shareImageScanFailed": "Не удалось распознать действительный QR-код на изображении",
+        "shareImageScanFailedTitle": "Нет действительного QR-кода",
         "transactionFailed": "Транзакция не удалась"
     },
     "history": {

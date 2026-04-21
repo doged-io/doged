@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Failed to send transaction",
         "insufficientFunds": "Insufficient funds",
         "invalidAddress": "Invalid address",
+        "shareImageScanFailed": "Failed to decode a valid QR code from the image",
+        "shareImageScanFailedTitle": "No valid QR code",
         "transactionFailed": "Transaction failed"
     },
     "history": {

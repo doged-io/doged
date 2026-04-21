@@ -30,6 +30,8 @@
         "failedToSendTransaction": "发送交易失败",
         "insufficientFunds": "资金不足",
         "invalidAddress": "无效地址",
+        "shareImageScanFailed": "无法从该图片中识别有效的二维码",
+        "shareImageScanFailedTitle": "无有效二维码",
         "transactionFailed": "交易失败"
     },
     "history": {

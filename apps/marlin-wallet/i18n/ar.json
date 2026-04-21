@@ -30,6 +30,8 @@
         "failedToSendTransaction": "فشل إرسال المعاملة",
         "insufficientFunds": "رصيد غير كافٍ",
         "invalidAddress": "عنوان غير صالح",
+        "shareImageScanFailed": "تعذّر قراءة رمز QR صالح من الصورة",
+        "shareImageScanFailedTitle": "لا يوجد رمز QR صالح",
         "transactionFailed": "فشلت المعاملة"
     },
     "history": {

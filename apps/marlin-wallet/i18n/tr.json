@@ -30,6 +30,8 @@
         "failedToSendTransaction": "İşlem gönderilemedi",
         "insufficientFunds": "Yetersiz bakiye",
         "invalidAddress": "Geçersiz adres",
+        "shareImageScanFailed": "Görüntüden geçerli bir QR kodu okunamadı",
+        "shareImageScanFailedTitle": "Geçerli QR kodu yok",
         "transactionFailed": "İşlem başarısız oldu"
     },
     "history": {

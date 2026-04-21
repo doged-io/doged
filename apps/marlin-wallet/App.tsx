@@ -48,6 +48,8 @@ function AppContent(): React.JSX.Element {
     const webViewRef = useRef<WebView>(null);
     const [webViewSource, setWebViewSource] = useState<any>(null);
     const pendingPaymentRequestRef = useRef<string | null>(null);
+    const pendingSharedImageDataUrlRef = useRef<string | null>(null);
+    const pendingSharedImageReadFailedRef = useRef<boolean>(false);
     const walletReadyRef = useRef<boolean>(false);
     const [showPaymentSuccessModal, setShowPaymentSuccessModal] =
         useState<boolean>(false);
@@ -96,11 +98,48 @@ function AppContent(): React.JSX.Element {
             }
         };
 
+        const handleSharedImageDataUrl = (dataUrl: string) => {
+            pendingSharedImageReadFailedRef.current = false;
+            pendingSharedImageDataUrlRef.current = dataUrl;
+            if (walletReadyRef.current && webViewRef.current) {
+                webViewRef.current.postMessage(
+                    JSON.stringify({
+                        type: 'DECODE_QR_FROM_SHARED_IMAGE',
+                        data: dataUrl,
+                    }),
+                );
+                pendingSharedImageDataUrlRef.current = null;
+            }
+        };
+
+        const handleSharedImageReadFailed = () => {
+            if (walletReadyRef.current && webViewRef.current) {
+                webViewRef.current.postMessage(
+                    JSON.stringify({
+                        type: 'SHARED_IMAGE_READ_FAILED',
+                    }),
+                );
+            } else {
+                pendingSharedImageReadFailedRef.current = true;
+            }
+        };
+
         // Listen for payment requests
         const subscription = DeviceEventEmitter.addListener(
             'PAYMENT_REQUEST',
             handlePaymentRequest,
         );
+
+        const sharedImageSubscription = DeviceEventEmitter.addListener(
+            'SHARED_IMAGE_DATA_URL',
+            handleSharedImageDataUrl,
+        );
+
+        const sharedImageReadFailedSubscription =
+            DeviceEventEmitter.addListener(
+                'SHARED_IMAGE_READ_FAILED',
+                handleSharedImageReadFailed,
+            );
 
         // Signal to native that the listener is ready
         const PaymentRequestModule = NativeModules.PaymentRequestModule;
@@ -110,6 +149,8 @@ function AppContent(): React.JSX.Element {
 
         return () => {
             subscription.remove();
+            sharedImageSubscription.remove();
+            sharedImageReadFailedSubscription.remove();
         };
     }, []);
 
@@ -381,6 +422,31 @@ function AppContent(): React.JSX.Element {
                         );
                         pendingPaymentRequestRef.current = null;
                     }
+
+                    if (
+                        pendingSharedImageDataUrlRef.current &&
+                        webViewRef.current
+                    ) {
+                        webViewRef.current.postMessage(
+                            JSON.stringify({
+                                type: 'DECODE_QR_FROM_SHARED_IMAGE',
+                                data: pendingSharedImageDataUrlRef.current,
+                            }),
+                        );
+                        pendingSharedImageDataUrlRef.current = null;
+                    }
+
+                    if (
+                        pendingSharedImageReadFailedRef.current &&
+                        webViewRef.current
+                    ) {
+                        webViewRef.current.postMessage(
+                            JSON.stringify({
+                                type: 'SHARED_IMAGE_READ_FAILED',
+                            }),
+                        );
+                        pendingSharedImageReadFailedRef.current = false;
+                    }
                     break;
 
                 case 'SYNC_COMPLETE':
@@ -451,6 +517,8 @@ function AppContent(): React.JSX.Element {
                     );
                     // Clear pending payment request synchronously (ref updates are immediate)
                     pendingPaymentRequestRef.current = null;
+                    pendingSharedImageDataUrlRef.current = null;
+                    pendingSharedImageReadFailedRef.current = false;
                     // Show success modal for 2 seconds
                     setShowPaymentSuccessModal(true);
                     setTimeout(() => {

@@ -46,6 +46,7 @@ import { SendScreen } from './screen/send';
 import { MainScreen } from './screen/main';
 import { ErrorModal } from './screen/error-modal';
 import { paybuttonDeepLinkToBip21Uri } from './paybutton';
+import { decodeQrFromDataUrl } from './qrcode';
 import { changeLocale, initI18n, t } from './i18n';
 import { MarlinPriceFetcher } from './price';
 import { SUPPORTED_ASSETS } from './supported-assets';
@@ -886,30 +887,54 @@ async function initializeApp() {
     hideLoadingScreen();
 }
 
+/**
+ * Open the send flow from a raw payment payload (BIP21, PayButton URL, etc.).
+ */
+async function openSendScreenFromIncomingPayload(raw: string) {
+    const { bip21Uri, returnToBrowser } = paybuttonDeepLinkToBip21Uri(raw);
+
+    const parsed = parseBip21Uri(bip21Uri);
+    if (parsed?.error) {
+        webViewError('Invalid BIP21 URI:', bip21Uri);
+        errorModal!.showBip21ParseError(parsed.error, raw || undefined);
+        return;
+    }
+    if (sendScreen) {
+        await sendScreen.show(parsed, returnToBrowser);
+    }
+}
+
+function showSharedImageQrScanFailed() {
+    if (!errorModal) {
+        return;
+    }
+    errorModal.show(
+        t('errors.shareImageScanFailedTitle'),
+        t('errors.shareImageScanFailed'),
+    );
+}
+
 // Listen for payment requests from React Native
 async function handlePaymentRequest(event: any) {
     try {
         const message = JSON.parse(event.data);
 
         if (message.type === 'PAYMENT_REQUEST') {
-            const { bip21Uri, returnToBrowser } = paybuttonDeepLinkToBip21Uri(
-                message.data,
-            );
-
-            // Parse the BIP21 URI
-            const parsed = parseBip21Uri(bip21Uri);
-            if (parsed?.error) {
-                webViewError('Invalid BIP21 URI:', bip21Uri);
-                errorModal!.showBip21ParseError(
-                    parsed.error,
-                    message.data || undefined,
-                );
-                return;
+            await openSendScreenFromIncomingPayload(message.data);
+        } else if (message.type === 'DECODE_QR_FROM_SHARED_IMAGE') {
+            try {
+                const decoded = await decodeQrFromDataUrl(message.data);
+                if (decoded) {
+                    await openSendScreenFromIncomingPayload(decoded);
+                    return;
+                }
+            } catch {
+                // Fallthrough
             }
-            if (sendScreen) {
-                // Open send screen with prefilled address and amount
-                await sendScreen.show(parsed, returnToBrowser);
-            }
+            webViewError('Failed to decode QR from shared image');
+            showSharedImageQrScanFailed();
+        } else if (message.type === 'SHARED_IMAGE_READ_FAILED') {
+            showSharedImageQrScanFailed();
         } else if (message.type === 'SYNC_WALLET') {
             // Sync wallet and reconnect WebSocket
             try {

@@ -30,6 +30,8 @@
         "failedToSendTransaction": "लेनदेन नहीं हुआ",
         "insufficientFunds": "बैलेंस कम है",
         "invalidAddress": "गलत पता",
+        "shareImageScanFailed": "छवि से मान्य QR कोड डिकोड करने में विफल",
+        "shareImageScanFailedTitle": "कोई मान्य QR कोड नहीं",
         "transactionFailed": "लेनदेन फेल"
     },
     "history": {

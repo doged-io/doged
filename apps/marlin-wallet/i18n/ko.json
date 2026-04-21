@@ -30,6 +30,8 @@
         "failedToSendTransaction": "거래 전송에 실패했습니다",
         "insufficientFunds": "잔액 부족",
         "invalidAddress": "유효하지 않은 주소",
+        "shareImageScanFailed": "이미지에서 유효한 QR 코드를 읽을 수 없습니다",
+        "shareImageScanFailedTitle": "유효한 QR 코드 없음",
         "transactionFailed": "거래 실패"
     },
     "history": {

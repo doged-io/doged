@@ -30,6 +30,8 @@
         "failedToSendTransaction": "E no gree send transaction",
         "insufficientFunds": "Ur money no reach",
         "invalidAddress": "Address no correct",
+        "shareImageScanFailed": "No fit read valid QR code from di picture",
+        "shareImageScanFailedTitle": "No valid QR code",
         "transactionFailed": "Transaction fail"
     },
     "history": {

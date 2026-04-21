@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Gagal mengirim transaksi",
         "insufficientFunds": "Dana tidak mencukupi",
         "invalidAddress": "Alamat tidak valid",
+        "shareImageScanFailed": "Gagal mendeteksi kode QR yang valid dari gambar",
+        "shareImageScanFailedTitle": "Tidak ada kode QR yang valid",
         "transactionFailed": "Transaksi gagal"
     },
     "history": {

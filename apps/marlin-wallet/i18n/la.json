@@ -30,6 +30,8 @@
         "failedToSendTransaction": "Trānsāctiōnem mittere nōn potuit",
         "insufficientFunds": "Pecūnia nōn sufficit",
         "invalidAddress": "Īnscrīptiō invalida",
+        "shareImageScanFailed": "Codicem QR validum ex imāgine dēcōdāre nōn potuit",
+        "shareImageScanFailedTitle": "Nullus codex QR validus",
         "transactionFailed": "Trānsāctiō dēfēcit"
     },
     "history": {

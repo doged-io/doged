@@ -8,6 +8,27 @@ import QRCode from 'qrcode';
 
 let qrScanner: QrScanner | null = null;
 
+/**
+ * Decode a QR code from a data URL image.
+ *
+ * @param dataUrl `data:image/jpeg;base64,...` or other image data URL
+ * @returns payload string (e.g. ecash: URI), or null if no QR was found
+ */
+export async function decodeQrFromDataUrl(
+    dataUrl: string,
+): Promise<string | null> {
+    try {
+        const result = await QrScanner.scanImage(dataUrl, {
+            returnDetailedScanResult: true,
+        });
+        return result.data;
+    } catch (e) {
+        webViewError('Failed to decode QR code from data URL:', e);
+    }
+
+    return null;
+}
+
 // Start the QR Scanner
 export async function startQRScanner(
     scanResultHandler: (result: string) => void,

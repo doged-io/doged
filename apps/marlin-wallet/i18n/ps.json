@@ -30,6 +30,8 @@
         "failedToSendTransaction": "د پیسو لیږدول بریالی نشول",
         "insufficientFunds": "په کافی اندازه پیسی شتون نلری",
         "invalidAddress": "د بټوی ناسمه پته",
+        "shareImageScanFailed": "د انځور څخه معتبر QR کوډ نه شو لوستل شو",
+        "shareImageScanFailedTitle": "معتبر QR کوډ نشته",
         "transactionFailed": "د پیسو لیږد ناکام شو"
     },
     "history": {

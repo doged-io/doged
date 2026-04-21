@@ -30,6 +30,8 @@
         "failedToSendTransaction": "トランザクションの送信が失敗しました",
         "insufficientFunds": "残高不足",
         "invalidAddress": "無効なアドレス",
+        "shareImageScanFailed": "画像から有効なQRコードを読み取れませんでした",
+        "shareImageScanFailedTitle": "有効なQRコードがありません",
         "transactionFailed": "トランザクションが失敗しました"
     },
     "history": {
