@@ -28,13 +28,41 @@ file COPYING or http://www.opensource.org/licenses/mit-license.php.
             style="display: none"
         >
             <div class="error-modal-content">
-                <h3 class="error-modal-title" data-i18n="app.error">Error</h3>
+                <h3
+                    id="error-modal-title"
+                    class="error-modal-title"
+                    data-i18n="app.error"
+                >
+                    Error
+                </h3>
                 <p
+                    id="error-modal-message"
                     class="error-modal-message"
                     data-i18n="errors.anErrorOccurred"
                 >
                     An error occurred
                 </p>
+                <div
+                    id="error-modal-details-section"
+                    class="error-modal-details-section hidden"
+                >
+                    <button
+                        type="button"
+                        id="error-modal-details-toggle"
+                        class="error-modal-details-toggle"
+                        aria-expanded="false"
+                        aria-controls="error-modal-details-quote"
+                    ></button>
+                    <blockquote
+                        id="error-modal-details-quote"
+                        class="error-modal-details-quote hidden"
+                    >
+                        <pre
+                            id="error-modal-details-text"
+                            class="error-modal-details-pre"
+                        ></pre>
+                    </blockquote>
+                </div>
                 <button
                     id="error-modal-close"
                     class="btn btn-primary"

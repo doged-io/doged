@@ -7,7 +7,9 @@
         "error": "गड़बड़",
         "loading": "लोड हो रहा है…",
         "save": "सेव करें",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "विवरण दिखाएँ",
+        "hideDetails": "विवरण छिपाएँ"
     },
     "bip21": {
         "unavailableTitle": "यह भुगतान लिंक नहीं खोला जा सकता",

@@ -7,7 +7,9 @@
         "error": "تېروتنه",
         "loading": "چمتو کېږي...",
         "save": "خوندي کړئ",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "تفصیلات وښایاست",
+        "hideDetails": "تفصیلات پټ کړئ"
     },
     "bip21": {
         "unavailableTitle": "ددې تادیاتو تړنه پرانیستل نشي",

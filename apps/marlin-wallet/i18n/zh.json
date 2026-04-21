@@ -7,7 +7,9 @@
         "error": "错误",
         "loading": "加载中...",
         "save": "保存",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "显示详情",
+        "hideDetails": "隐藏详情"
     },
     "bip21": {
         "unavailableTitle": "无法打开此付款链接",

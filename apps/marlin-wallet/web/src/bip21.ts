@@ -18,6 +18,8 @@ export enum Bip21Error {
  * Result of parsing a BIP21 URI
  */
 export interface Bip21ParseResult {
+    /** The URI string that was parsed */
+    uri: string;
     address: string;
     /**
      * Amount in base units when an amount was parsed: satoshis for XEC
@@ -29,13 +31,15 @@ export interface Bip21ParseResult {
     /** Marlin asset key (`xec` or a built-in token from `token_id`). */
     tokenAssetKey: string;
     /**
-     * When set, parsing failed; ignore the other fields. Localized user message.
+     * When set, parsing failed; ignore the other fields (except `uri`).
+     * Localized user message.
      */
     error?: string;
 }
 
-function bip21ParseError(kind: Bip21Error): Bip21ParseResult {
+function bip21ParseError(kind: Bip21Error, uri: string): Bip21ParseResult {
     return {
+        uri,
         address: '',
         tokenAssetKey: XEC_ASSET.key,
         error: t(kind),
@@ -140,7 +144,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
 
         // Validate that the protocol matches the expected BIP21 prefix
         if (url.protocol !== config.bip21Prefix) {
-            return bip21ParseError(Bip21Error.UriMalformed);
+            return bip21ParseError(Bip21Error.UriMalformed, uri);
         }
 
         // Check if the pathname already has the expected prefix (e.g., "ectest:address")
@@ -152,10 +156,11 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
 
         // Validate the address (this will catch invalid formats like ecash://address with leading slash)
         if (!isValidECashAddress(addressPart)) {
-            return bip21ParseError(Bip21Error.UriMalformed);
+            return bip21ParseError(Bip21Error.UriMalformed, uri);
         }
 
         const result: Bip21ParseResult = {
+            uri,
             address: addressPart,
             // This can be overridden if token parameters are present.
             tokenAssetKey: XEC_ASSET.key,
@@ -188,7 +193,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
                 url.searchParams.get('token_id') ?? '',
             );
             if (!tokenId) {
-                return bip21ParseError(Bip21Error.UriMalformed);
+                return bip21ParseError(Bip21Error.UriMalformed, uri);
             }
 
             // Only supported tokens are allowed.
@@ -196,7 +201,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
                 a => a.tokenId?.toLowerCase() === tokenId,
             );
             if (!matched?.key) {
-                return bip21ParseError(Bip21Error.TokenNotSupported);
+                return bip21ParseError(Bip21Error.TokenNotSupported, uri);
             }
             result.tokenAssetKey = matched.key;
 
@@ -213,6 +218,6 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
 
         return result;
     } catch {
-        return bip21ParseError(Bip21Error.UriMalformed);
+        return bip21ParseError(Bip21Error.UriMalformed, uri);
     }
 }

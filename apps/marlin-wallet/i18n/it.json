@@ -7,7 +7,9 @@
         "error": "Errore",
         "loading": "Caricamento...",
         "save": "Salva",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Mostra dettagli",
+        "hideDetails": "Nascondi dettagli"
     },
     "bip21": {
         "unavailableTitle": "Impossibile aprire questo link di pagamento",

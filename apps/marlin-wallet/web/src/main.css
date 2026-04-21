@@ -1452,3 +1452,74 @@ body.standalone-web {
     opacity: 0.9;
     line-height: 1.5;
 }
+
+.error-modal-details-section {
+    margin: 0 0 16px 0;
+    width: 100%;
+}
+
+.error-modal-details-toggle {
+    margin: 0 auto 10px;
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    background: none;
+    border: none;
+    padding: 2px 0;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.92);
+    cursor: pointer;
+    appearance: none;
+}
+
+.error-modal-details-toggle:hover {
+    color: #fff;
+}
+
+.error-modal-details-toggle:focus {
+    outline: none;
+}
+
+.error-modal-details-toggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.35);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Fold indicator: points right when collapsed, down when expanded */
+.error-modal-details-toggle::after {
+    content: '\25B8';
+    display: inline-block;
+    margin-inline-start: 0.45em;
+    font-size: 1.35em;
+    line-height: 1;
+    transition: transform 0.15s ease;
+    transform: rotate(0deg);
+}
+
+.error-modal-details-toggle[aria-expanded='true']::after {
+    transform: rotate(90deg);
+}
+
+.error-modal-details-quote {
+    margin: 0;
+    padding: 10px 12px;
+    border-left: 3px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 0 8px 8px 0;
+    text-align: start;
+}
+
+.error-modal-details-pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: ui-monospace, monospace;
+    max-height: 200px;
+    overflow-y: auto;
+}

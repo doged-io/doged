@@ -58,6 +58,16 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
                 'contain',
                 'The token is not supported',
             );
+            cy.get('#error-modal-details-section').should('be.visible');
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-text').should('contain', uri);
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-quote').should('have.class', 'hidden');
+            cy.get('#error-modal-details-toggle').should(
+                'have.attr',
+                'aria-expanded',
+                'false',
+            );
             cy.get('#error-modal-close').click();
             cy.get('#error-modal-overlay').should('not.be.visible');
         });
@@ -76,6 +86,11 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
             cy.get('.error-modal-message').should(
                 'contain',
                 'The link is malformed',
+            );
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-text').should(
+                'contain',
+                'ecash:invalid-address',
             );
             cy.get('#error-modal-close').click();
             cy.get('#error-modal-overlay').should('not.be.visible');
@@ -103,6 +118,8 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
                 'contain',
                 'The token is not supported',
             );
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-text').should('contain', deepLink);
             cy.get('#error-modal-close').click();
             cy.get('#error-modal-overlay').should('not.be.visible');
         });
@@ -127,6 +144,8 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
                 'contain',
                 'The link is malformed',
             );
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-text').should('contain', deepLink);
             cy.get('#error-modal-close').click();
             cy.get('#error-modal-overlay').should('not.be.visible');
         });

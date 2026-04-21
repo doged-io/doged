@@ -7,7 +7,9 @@
         "error": "خطأ",
         "loading": "جاري التحميل...",
         "save": "حفظ",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "عرض التفاصيل",
+        "hideDetails": "إخفاء التفاصيل"
     },
     "bip21": {
         "unavailableTitle": "تعذّر فتح رابط الدفع هذا",

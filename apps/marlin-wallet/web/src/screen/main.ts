@@ -425,9 +425,11 @@ export class MainScreen {
             webViewLog('eCash address scanned:', result);
             stopQRScanner();
             await this.params.onQRScanResult({
+                uri: result,
                 address: result,
                 tokenAssetKey: XEC_ASSET.key,
             });
+            return;
         }
     }
 

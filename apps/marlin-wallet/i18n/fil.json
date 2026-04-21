@@ -7,7 +7,9 @@
         "error": "Error",
         "loading": "Naglo-load...",
         "save": "I-save",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Ipakita ang mga detalye",
+        "hideDetails": "Itago ang mga detalye"
     },
     "bip21": {
         "unavailableTitle": "Hindi mabuksan ang payment link na ito",

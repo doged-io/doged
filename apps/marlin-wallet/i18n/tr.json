@@ -7,7 +7,9 @@
         "error": "Hata",
         "loading": "Yükleniyor...",
         "save": "Kaydet",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Ayrıntıları göster",
+        "hideDetails": "Ayrıntıları gizle"
     },
     "bip21": {
         "unavailableTitle": "Bu ödeme bağlantısı açılamıyor",

@@ -7,7 +7,9 @@
         "error": "خطا",
         "loading": "در حال بارگذاری...",
         "save": "ذخیره",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "نمایش جزئیات",
+        "hideDetails": "پنهان کردن جزئیات"
     },
     "bip21": {
         "unavailableTitle": "این پیوند پرداخت باز نمی‌شود",

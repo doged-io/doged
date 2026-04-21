@@ -44,6 +44,7 @@ import { SettingsScreen } from './screen/settings';
 import { HistoryScreen } from './screen/history';
 import { SendScreen } from './screen/send';
 import { MainScreen } from './screen/main';
+import { ErrorModal } from './screen/error-modal';
 import { paybuttonDeepLinkToBip21Uri } from './paybutton';
 import { changeLocale, initI18n, t } from './i18n';
 import { MarlinPriceFetcher } from './price';
@@ -97,6 +98,9 @@ let sendScreen: SendScreen | null = null;
 // Create global instance of MainScreen
 let mainScreen: MainScreen | null = null;
 
+// Create global instance of ErrorModal
+let errorModal: ErrorModal | null = null;
+
 // Settings state
 let appSettings: AppSettings = {
     requireHoldToSend: true,
@@ -108,27 +112,6 @@ let appSettings: AppSettings = {
 // ============================================================================
 // GENERAL UTILITY FUNCTIONS
 // ============================================================================
-
-// Show error modal with proper title
-function showErrorModal(title: string, message: string) {
-    const errorModalOverlay = document.getElementById('error-modal-overlay');
-    const errorModalTitle = document.querySelector('.error-modal-title');
-    const errorModalMessage = document.querySelector('.error-modal-message');
-    const errorModalClose = document.getElementById('error-modal-close');
-
-    errorModalTitle.textContent = title;
-    errorModalMessage.textContent = message;
-
-    errorModalClose.addEventListener('click', () => {
-        errorModalOverlay.style.display = 'none';
-    });
-
-    errorModalOverlay.style.display = 'flex';
-}
-
-function showBip21ParseErrorOverlay(message: string) {
-    showErrorModal(t('bip21.unavailableTitle'), message);
-}
 
 function showLoadingScreen(message: string) {
     const loadingEl = document.getElementById('loading');
@@ -549,7 +532,7 @@ async function syncWallet() {
             webViewError(
                 'No internet connection - please check your network and try again',
             );
-            showErrorModal(
+            errorModal!.show(
                 'Network Error',
                 'No internet connection - please check your network and try again',
             );
@@ -558,13 +541,13 @@ async function syncWallet() {
             error.message.includes('network')
         ) {
             webViewError('Network error - unable to connect to eCash network');
-            showErrorModal(
+            errorModal!.show(
                 'Connection Error',
                 'Network error - unable to connect to eCash network',
             );
         } else {
             webViewError('Failed to sync wallet - please try again');
-            showErrorModal(
+            errorModal!.show(
                 'Sync Error',
                 'Failed to sync wallet - please try again',
             );
@@ -601,6 +584,8 @@ async function initializeApp() {
 
     // Initialize i18n with locale from settings
     await initI18n(appSettings.locale);
+
+    errorModal = new ErrorModal();
 
     // Detect if running in standalone web browser (not in mobile WebView)
     // In mobile app, the WebView has transparent background and shows React Native gradient
@@ -711,7 +696,7 @@ async function initializeApp() {
             // Defensive programming: if the result is an error the scanner
             // keeps retrying and the callback is not called.
             if (result?.error) {
-                showBip21ParseErrorOverlay(result.error);
+                errorModal!.showBip21ParseError(result.error, result.uri);
                 return;
             }
             if (sendScreen) {
@@ -915,7 +900,10 @@ async function handlePaymentRequest(event: any) {
             const parsed = parseBip21Uri(bip21Uri);
             if (parsed?.error) {
                 webViewError('Invalid BIP21 URI:', bip21Uri);
-                showBip21ParseErrorOverlay(parsed.error);
+                errorModal!.showBip21ParseError(
+                    parsed.error,
+                    message.data || undefined,
+                );
                 return;
             }
             if (sendScreen) {

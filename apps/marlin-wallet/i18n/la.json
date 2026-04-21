@@ -7,7 +7,9 @@
         "error": "Error",
         "loading": "Onerāns...",
         "save": "Servāre",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Ostende singula",
+        "hideDetails": "Occulta singula"
     },
     "bip21": {
         "unavailableTitle": "Hic nexus solutionis aperiri non potest",

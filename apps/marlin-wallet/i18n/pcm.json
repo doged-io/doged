@@ -7,7 +7,9 @@
         "error": "Error",
         "loading": "E dey load...",
         "save": "Save",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Show wetin happen",
+        "hideDetails": "Hide wetin happen"
     },
     "bip21": {
         "unavailableTitle": "No fit open dis payment link",

@@ -7,7 +7,9 @@
         "error": "Ошибка",
         "loading": "Загрузка...",
         "save": "Сохранить",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Показать подробности",
+        "hideDetails": "Скрыть подробности"
     },
     "bip21": {
         "unavailableTitle": "Не удалось открыть эту платёжную ссылку",

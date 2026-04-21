@@ -7,7 +7,9 @@
         "error": "Eror",
         "loading": "Memuat...",
         "save": "Simpan",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "Tampilkan detail",
+        "hideDetails": "Sembunyikan detail"
     },
     "bip21": {
         "unavailableTitle": "Tautan pembayaran ini tidak dapat dibuka",

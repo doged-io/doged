@@ -182,6 +182,7 @@ describe('bip21.ts', function () {
         it('Should parse BIP21 URI with address only', function () {
             const uri = sampleAddress;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
             });
@@ -190,6 +191,7 @@ describe('bip21.ts', function () {
         it('Should parse BIP21 URI with amount', function () {
             const uri = `${sampleAddress}?amount=100.42`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 atoms: 10042,
                 tokenAssetKey: XEC_ASSET.key,
@@ -199,6 +201,7 @@ describe('bip21.ts', function () {
         it('Should parse BIP21 URI with OP_RETURN data', function () {
             const uri = `${sampleAddress}?op_return_raw=0450415900`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
                 opReturnRaw: '0450415900',
@@ -208,6 +211,7 @@ describe('bip21.ts', function () {
         it('Should parse BIP21 URI with both amount and OP_RETURN', function () {
             const uri = `${sampleAddress}?amount=50.00&op_return_raw=045041590A`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 atoms: 5000,
                 tokenAssetKey: XEC_ASSET.key,
@@ -218,6 +222,7 @@ describe('bip21.ts', function () {
         it('Should reject invalid protocol', function () {
             const uri = 'bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: '',
                 tokenAssetKey: XEC_ASSET.key,
                 error: 'The link is malformed.',
@@ -227,6 +232,7 @@ describe('bip21.ts', function () {
         it('Should reject invalid address format', function () {
             const uri = 'ecash:invalid-address';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: '',
                 tokenAssetKey: XEC_ASSET.key,
                 error: 'The link is malformed.',
@@ -236,6 +242,7 @@ describe('bip21.ts', function () {
         it('Should reject invalid amount', function () {
             const uri = `${sampleAddress}?amount=invalid`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
             });
@@ -244,6 +251,7 @@ describe('bip21.ts', function () {
         it('Should reject negative amount', function () {
             const uri = `${sampleAddress}?amount=-10.00`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
             });
@@ -252,6 +260,7 @@ describe('bip21.ts', function () {
         it('Should reject invalid OP_RETURN hex', function () {
             const uri = `${sampleAddress}?op_return_raw=invalid`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
             });
@@ -260,6 +269,7 @@ describe('bip21.ts', function () {
         it('Should reject OP_RETURN with odd number of hex characters', function () {
             const uri = `${sampleAddress}?op_return_raw=045041590`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
             });
@@ -268,6 +278,7 @@ describe('bip21.ts', function () {
         it('Should handle lowercase hex in OP_RETURN', function () {
             const uri = `${sampleAddress}?op_return_raw=045041590a`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: XEC_ASSET.key,
                 opReturnRaw: '045041590A',
@@ -277,6 +288,7 @@ describe('bip21.ts', function () {
         it('Should ignore unknown query parameters', function () {
             const uri = `${sampleAddress}?amount=100.00&unknown=param`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 atoms: 10000,
                 tokenAssetKey: XEC_ASSET.key,
@@ -286,6 +298,7 @@ describe('bip21.ts', function () {
         it('Should handle malformed URI gracefully', function () {
             const uri = 'not-a-valid-uri';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: '',
                 tokenAssetKey: XEC_ASSET.key,
                 error: 'The link is malformed.',
@@ -297,6 +310,7 @@ describe('bip21.ts', function () {
                 `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
                 '&token_decimalized_qty=100.12';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: FIRMA_TOKEN.key,
                 atoms: 1001200,
@@ -307,6 +321,7 @@ describe('bip21.ts', function () {
             const upperId = FIRMA_TOKEN.tokenId!.toUpperCase();
             const uri = `${sampleAddress}?token_id=${upperId}&token_decimalized_qty=1`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: FIRMA_TOKEN.key,
                 atoms: 10000,
@@ -316,6 +331,7 @@ describe('bip21.ts', function () {
         it('Should parse supported token BIP21 without token_decimalized_qty', function () {
             const uri = `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: FIRMA_TOKEN.key,
             });
@@ -326,6 +342,7 @@ describe('bip21.ts', function () {
                 `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
                 '&token_decimalized_qty=2&amount=50';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 atoms: 5000,
                 tokenAssetKey: XEC_ASSET.key,
@@ -338,6 +355,7 @@ describe('bip21.ts', function () {
                 '1111111111111111111111111111111111111111111111111111111111111111' +
                 '&token_decimalized_qty=1';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: '',
                 tokenAssetKey: XEC_ASSET.key,
                 error: 'The token is not supported.',
@@ -349,6 +367,7 @@ describe('bip21.ts', function () {
                 `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
                 '&token_decimalized_qty=1.23456';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: FIRMA_TOKEN.key,
             });
@@ -357,6 +376,7 @@ describe('bip21.ts', function () {
         it('Should reject empty token_id', function () {
             const uri = `${sampleAddress}?token_id=&token_decimalized_qty=1`;
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: '',
                 tokenAssetKey: XEC_ASSET.key,
                 error: 'The link is malformed.',
@@ -368,6 +388,7 @@ describe('bip21.ts', function () {
                 `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
                 '&token_decimalized_qty=-1';
             expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
                 address: sampleAddress,
                 tokenAssetKey: FIRMA_TOKEN.key,
             });

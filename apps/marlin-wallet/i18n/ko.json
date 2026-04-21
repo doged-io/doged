@@ -7,7 +7,9 @@
         "error": "오류",
         "loading": "로딩",
         "save": "저장",
-        "title": "Marlin Wallet"
+        "title": "Marlin Wallet",
+        "showDetails": "자세히 보기",
+        "hideDetails": "자세히 숨기기"
     },
     "bip21": {
         "unavailableTitle": "이 결제 링크를 열 수 없습니다",
