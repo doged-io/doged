@@ -3,7 +3,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #
 # Next.js documentation hub at web/docs.e.cash (same pattern as e.cash.Dockerfile).
-# The legacy chronik.e.cash.Dockerfile builds Docusaurus + nginx for preview-chronik.e.cash.
 
 FROM node:22-trixie-slim AS builder
 WORKDIR /app

@@ -1106,12 +1106,6 @@ builds:
             build_args:
                 - 'PREVIEW_BUILD=next.preview.ts'
 
-    preview-chronik.e.cash:
-        docker:
-            dockerfile: chronik.e.cash.Dockerfile
-            build_args:
-                - 'NGINX_CONF=nginx-preview.conf'
-
     preview-docs.e.cash:
         docker:
             dockerfile: docs.e.cash.Dockerfile

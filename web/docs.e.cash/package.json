@@ -2,7 +2,7 @@
     "name": "docs.e.cash",
     "version": "0.1.0",
     "private": true,
-    "description": "Bitcoin ABC documentation hub (Next.js; supersedes Docusaurus web/chronik.e.cash)",
+    "description": "Bitcoin ABC documentation hub (Next.js; Chronik and related API docs)",
     "scripts": {
         "sync-version": "node scripts/sync-abc-version.mjs",
         "predev": "node scripts/sync-abc-version.mjs",

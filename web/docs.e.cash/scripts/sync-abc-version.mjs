@@ -10,8 +10,7 @@
  * 2. Fallback: monorepo root CMakeLists.txt `project(bitcoin-abc VERSION …)`.
  * 3. Fallback: copy bitcoin-abc-version.sample.json if no version yet and no existing file.
  *
- * Legacy chronik.e.cash used web/chronik.e.cash/.abclatestversion (gitignored).
- * The generated JSON remains gitignored; the sample seeds offline installs.
+ * The generated JSON is gitignored; the sample seeds offline installs.
  */
 
 import fs from 'fs';

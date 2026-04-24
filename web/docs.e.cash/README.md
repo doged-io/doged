@@ -1,6 +1,6 @@
 # docs.e.cash
 
-Next.js documentation hub for the **Bitcoin ABC** monorepo (starting with Chronik and related JS APIs). The app lives under `bitcoin-abc/web/docs.e.cash`. The legacy Docusaurus site remains at `web/chronik.e.cash` until fully retired.
+Next.js documentation hub for the **Bitcoin ABC** monorepo (starting with Chronik and related JS APIs). The app lives under `bitcoin-abc/web/docs.e.cash`.
 
 ## Development
 

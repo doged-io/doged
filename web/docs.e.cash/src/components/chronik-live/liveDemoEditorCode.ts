@@ -4,7 +4,7 @@
 
 /**
  * Default editor source for each demo (react-live `noInline` + `render(...)`).
- * Derived from web/chronik.e.cash Docusaurus `jsx live` blocks.
+ * Default demos for react-live (ported from the former Docusaurus `jsx live` examples).
  */
 export const liveDemoEditorCode = {
     'connect-blockchainInfo': `function DemoConnect() {
