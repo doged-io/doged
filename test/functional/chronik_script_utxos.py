@@ -83,27 +83,28 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
 
         # Test Genesis pubkey UTXO
         coinvalue = 5000000000
+        genesis_utxos = pb.ScriptUtxos(
+            script=bytes.fromhex(f"41{GENESIS_CB_PK}ac"),
+            utxos=[
+                pb.ScriptUtxo(
+                    outpoint=pb.OutPoint(
+                        txid=bytes.fromhex(GENESIS_CB_TXID)[::-1],
+                        out_idx=0,
+                    ),
+                    block_height=0,
+                    is_coinbase=True,
+                    sats=8800000000,
+                    is_final=False,
+                )
+            ],
+        )
         assert_equal(
             chronik.script("p2pk", GENESIS_CB_PK).utxos().ok(),
-            pb.ScriptUtxos(
-                script=bytes.fromhex(f"41{GENESIS_CB_PK}ac"),
-                utxos=[
-                    pb.ScriptUtxo(
-                        outpoint=pb.OutPoint(
-                            txid=bytes.fromhex(GENESIS_CB_TXID)[::-1],
-                            out_idx=0,
-                        ),
-                        block_height=0,
-                        is_coinbase=True,
-                        sats=8800000000,
-                        is_final=False,
-                    )
-                ],
-            ),
+            genesis_utxos,
         )
 
         script_type = "p2sh"
-        payload_hex = P2SH_OP_TRUE[2:-1].hex()
+        p2sh_op_true_payload_hex = P2SH_OP_TRUE[2:-1].hex()
 
         # Generate us a coin, creates a UTXO
         coinblockhash = self.generatetoaddress(node, 1, ADDRESS_ECREG_P2SH_OP_TRUE)[0]
@@ -111,7 +112,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
         cointx = coinblock["tx"][0]
 
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(
                 script=bytes(P2SH_OP_TRUE),
                 utxos=[
@@ -155,7 +156,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
         ]
 
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos),
         )
 
@@ -164,7 +165,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
         for expected_utxo in expected_utxos:
             expected_utxo.block_height = 102
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos),
         )
 
@@ -193,7 +194,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
         )
 
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos),
         )
 
@@ -212,7 +213,7 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
         node.sendrawtransaction(tx3.serialize().hex())
 
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos[:2]),
         )
 
@@ -236,14 +237,14 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
 
         del expected_utxos[2]
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos),
         )
 
         # Invalidating the last block doesn't change UTXOs
         node.invalidateblock(block.hash_hex)
         assert_equal(
-            chronik.script(script_type, payload_hex).utxos().ok(),
+            chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok(),
             pb.ScriptUtxos(script=bytes(P2SH_OP_TRUE), utxos=expected_utxos),
         )
 
@@ -253,9 +254,96 @@ class ChronikScriptUtxosTest(BitcoinTestFramework):
             expected_utxo.block_height = -1
 
         # Mempool UTXOs are sorted by txid:out_idx. Note: `sorted` is stable.
+        sorted_expected_utxos = sorted(
+            expected_utxos, key=lambda utxo: utxo.outpoint.txid[::-1]
+        )
         assert_equal(
-            list(chronik.script(script_type, payload_hex).utxos().ok().utxos),
-            sorted(expected_utxos, key=lambda utxo: utxo.outpoint.txid[::-1]),
+            list(
+                chronik.script(script_type, p2sh_op_true_payload_hex).utxos().ok().utxos
+            ),
+            sorted_expected_utxos,
+        )
+
+        p2sh_op_true_utxos = pb.ScriptUtxos(
+            script=bytes(P2SH_OP_TRUE),
+            utxos=sorted_expected_utxos,
+        )
+
+        self.log.info("Testing script/batch/utxos")
+
+        assert_equal(
+            chronik.script_batch_utxos(
+                [
+                    ("p2pkh", "dead"),
+                ]
+            )
+            .err(400)
+            .msg,
+            "400: Invalid payload for P2PKH: Invalid length, expected 20 bytes"
+            " but got 2 bytes",
+        )
+
+        assert_equal(
+            chronik.script_batch_utxos(
+                [
+                    ("p2pk", GENESIS_CB_PK),
+                    ("p2pk", GENESIS_CB_PK),
+                ]
+            )
+            .err(400)
+            .msg,
+            "400: Duplicate script entries in batch request",
+        )
+
+        empty_batch = chronik.script_batch_utxos([]).err(400)
+        assert_equal(
+            empty_batch.msg,
+            "400: Batch script request must include at least one script",
+        )
+
+        too_many = [("p2pkh", "00" * 20)] * 501
+        too_large = chronik.script_batch_utxos(too_many).err(400)
+        assert_equal(
+            too_large.msg,
+            "400: Too many scripts in batch: max is 500, got 501",
+        )
+
+        assert_equal(
+            chronik.script_batch_utxos(
+                [
+                    ("p2pk", GENESIS_CB_PK),
+                    ("p2pkh", "11" * 20),
+                    ("p2sh", p2sh_op_true_payload_hex),
+                ]
+            ).ok(),
+            pb.ScriptBatchUtxosResponse(
+                rows=[
+                    pb.ScriptBatchUtxosRow(
+                        script=pb.ScriptRef(
+                            script_type="p2pk",
+                            payload=bytes.fromhex(GENESIS_CB_PK),
+                        ),
+                        utxos=genesis_utxos,
+                    ),
+                    pb.ScriptBatchUtxosRow(
+                        script=pb.ScriptRef(
+                            script_type="p2pkh",
+                            payload=bytes.fromhex("11" * 20),
+                        ),
+                        utxos=pb.ScriptUtxos(
+                            script=bytes.fromhex("76a914" + "11" * 20 + "88ac"),
+                            utxos=[],
+                        ),
+                    ),
+                    pb.ScriptBatchUtxosRow(
+                        script=pb.ScriptRef(
+                            script_type="p2sh",
+                            payload=bytes.fromhex(p2sh_op_true_payload_hex),
+                        ),
+                        utxos=p2sh_op_true_utxos,
+                    ),
+                ],
+            ),
         )
 
 

@@ -189,6 +189,11 @@ impl ChronikServer {
             )
             .route("/raw-tx/:txid", routing::get(handle_raw_tx))
             .route(
+                "/script/batch/utxos",
+                routing::post(handle_script_batch_utxos)
+                    .on(MethodFilter::OPTIONS, handle_post_options),
+            )
+            .route(
                 "/script/:type/:payload/confirmed-txs",
                 routing::get(handle_script_confirmed_txs),
             )
@@ -550,6 +555,38 @@ async fn handle_script_utxos(
         handlers::handle_script_utxos(&script_type, &payload, &indexer, &node)
             .await?,
     ))
+}
+
+/// Request the utxos for a batch of scripts in a single request.
+///
+/// Batch script UTXOs allow the caller to get UTXOs for multiple
+/// scripts in a single request, which is more efficient than calling
+/// the single script UTXOs endpoint multiple times.
+/// Benchmarks show that this can be up to ~10x faster when getting
+/// UTXOs for 500 scripts (max allowed) versus parallel calls to
+/// the single script UTXOs endpoint. This benchmark was run against
+/// a local Chronik regtest instance which makes it a best case
+/// scenario for the parallel calls since there is no network
+/// latency. Each one of the unique 500 scripts had a single UTXO and
+/// all of them were confirmed in the same block.
+/// The measurement was done 100 times for each method, the high and
+/// low 10% outliers dropped and the min/max/avg calculated on the
+/// remaining measurements.
+///
+/// Parallel single script UTXOs:
+///     min=31.27ms / max=42.69ms / avg=35.68ms
+/// Batch script UTXOs:
+///     min=2.96ms / max=4.05ms / avg=3.34ms
+async fn handle_script_batch_utxos(
+    Extension(indexer): Extension<ChronikIndexerRef>,
+    Extension(node): Extension<NodeRef>,
+    Protobuf(request): Protobuf<proto::ScriptBatchUtxosRequest>,
+) -> Result<Protobuf<proto::ScriptBatchUtxosResponse>, ReportError> {
+    let scripts = request.params.map(|p| p.scripts).unwrap_or_default();
+    let indexer = indexer.read().await;
+    Ok(Protobuf(handlers::handle_script_utxos_batch(
+        scripts, &indexer, &node,
+    )?))
 }
 
 async fn handle_token_id_confirmed_txs(

@@ -169,7 +169,10 @@ class ChronikClient_Block_Setup(SetupFramework):
         assert node.isfinaltransaction(cb_txid, blockhash)
         yield True
 
-        self.log.info("Step 4: Broadcast a tx with mixed outputs")
+        self.log.info("Step 5: Test batch UTXOs (nothing to do)")
+        yield True
+
+        self.log.info("Step 6: Broadcast a tx with mixed outputs")
         mixed_output_tx = CTransaction()
         mixed_output_tx.vout.append(CTxOut(1000000, p2pkh_output_script))
         mixed_output_tx.vout.append(CTxOut(1000000, p2sh_output_script))

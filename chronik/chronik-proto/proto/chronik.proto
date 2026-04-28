@@ -407,6 +407,43 @@ message ScriptUtxos {
     repeated ScriptUtxo utxos = 2;
 }
 
+// Script identity by type and payload. Same field layout as `WsSubScript`.
+message ScriptRef {
+    // Script type to subscribe to ("p2pkh", "p2sh", "p2pk", "other").
+    string script_type = 1;
+    // Payload for the given script type:
+    // - 20-byte hash for "p2pkh" and "p2sh"
+    // - 33-byte or 65-byte pubkey for "p2pk"
+    // - Serialized script for "other"
+    bytes payload = 2;
+}
+
+// Parameters for requesting the utxos for a batch of scripts.
+message ScriptBatchUtxosParams {
+    // Scripts to query.
+    repeated ScriptRef scripts = 1;
+}
+
+// Request the utxos for a batch of scripts.
+message ScriptBatchUtxosRequest {
+    // Batch inputs (scripts to resolve UTXOs for).
+    ScriptBatchUtxosParams params = 1;
+}
+
+// One row in the batch response (echoes the request script from the same index).
+message ScriptBatchUtxosRow {
+    // The requested script.
+    ScriptRef script = 1;
+    // UTXO set for this script.
+    ScriptUtxos utxos = 2;
+}
+
+// The utxos from a batch of scripts.
+message ScriptBatchUtxosResponse {
+    // One row per requested script, same order as `ScriptBatchUtxosParams.scripts`.
+    repeated ScriptBatchUtxosRow rows = 1;
+}
+
 // List of UTXOs
 message Utxos {
     // UTXOs

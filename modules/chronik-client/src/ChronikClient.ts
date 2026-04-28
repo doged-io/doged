@@ -292,6 +292,35 @@ export class ChronikClient {
         return convertToTx(validateResponse);
     }
 
+    /**
+     * Fetch UTXOs for a batch of scripts.
+     * Similar to utxos() but for multiple scripts in a single request.
+     */
+    public async batchUtxos(scripts: ScriptRef[]): Promise<BatchUtxosRow[]> {
+        const request = proto.ScriptBatchUtxosRequest.encode({
+            params: {
+                scripts: scripts.map(s => ({
+                    scriptType: s.scriptType,
+                    payload: fromHex(s.payload),
+                })),
+            },
+        }).finish();
+        const data = await this._proxyInterface.post(
+            '/script/batch/utxos',
+            request,
+        );
+        const response = proto.ScriptBatchUtxosResponse.decode(data);
+        return response.rows.map(row => {
+            if (row.utxos === undefined || row.script === undefined) {
+                throw new Error('Invalid script batch utxos response');
+            }
+            return {
+                script: scriptRefFromProto(row.script),
+                utxos: decodeScriptUtxosFromProto(row.utxos),
+            };
+        });
+    }
+
     /** Fetch current info of the blockchain, such as tip hash and height. */
     public async blockchainInfo(): Promise<BlockchainInfo> {
         const data = await this._proxyInterface.get(`/blockchain-info`);
@@ -499,10 +528,7 @@ export class ScriptEndpoint {
             `/script/${this._scriptType}/${this._scriptPayload}/utxos`,
         );
         const scriptUtxos = proto.ScriptUtxos.decode(data);
-        return {
-            outputScript: toHex(scriptUtxos.script),
-            utxos: scriptUtxos.utxos.map(convertToScriptUtxo),
-        };
+        return decodeScriptUtxosFromProto(scriptUtxos);
     }
 }
 
@@ -1494,6 +1520,22 @@ function convertToRawTx(rawTx: proto.RawTx): RawTx {
     };
 }
 
+function decodeScriptUtxosFromProto(
+    scriptUtxos: proto.ScriptUtxos,
+): ScriptUtxos {
+    return {
+        outputScript: toHex(scriptUtxos.script),
+        utxos: scriptUtxos.utxos.map(convertToScriptUtxo),
+    };
+}
+
+function scriptRefFromProto(ref: proto.ScriptRef): ScriptRef {
+    return {
+        scriptType: ref.scriptType as ScriptType,
+        payload: toHex(ref.payload),
+    };
+}
+
 function convertToScriptUtxo(utxo: proto.ScriptUtxo): ScriptUtxo {
     if (utxo.outpoint === undefined) {
         throw new Error('UTXO outpoint is undefined');
@@ -2151,6 +2193,31 @@ export interface ScriptUtxos {
     outputScript: string;
     /** UTXOs of the output script. */
     utxos: ScriptUtxo[];
+}
+
+/**
+ * Script identity for HTTP script endpoints: `scriptType` plus hex `payload`.
+ */
+export interface ScriptRef {
+    /** Script type to query ("p2pkh", "p2sh", "p2pk", "other"). */
+    scriptType: ScriptType;
+    /**
+     * Payload for the given script type:
+     * - 20-byte hash for "p2pkh" and "p2sh"
+     * - 33-byte or 65-byte pubkey for "p2pk"
+     * - Serialized script for "other"
+     */
+    payload: string;
+}
+
+/**
+ * One successful row from {@link ChronikClient.batchUtxos}, aligned with the
+ * request.
+ */
+export interface BatchUtxosRow {
+    /** Echoed script from the batch request. */
+    script: ScriptRef;
+    utxos: ScriptUtxos;
 }
 
 /** An unspent transaction output (aka. UTXO, aka. "Coin") of a script. */

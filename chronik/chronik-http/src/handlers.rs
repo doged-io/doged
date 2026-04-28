@@ -20,6 +20,9 @@ use crate::{
     parse::{parse_hex, parse_lokad_id_hex, parse_script_variant_hex},
 };
 
+/// Max scripts per batch request.
+pub const MAX_NUM_BATCH_SCRIPTS: usize = 500;
+
 /// Errors for HTTP handlers.
 #[derive(Debug, Error, PartialEq)]
 pub enum ChronikHandlerError {
@@ -45,6 +48,23 @@ pub enum ChronikHandlerError {
     /// Could not parse script hash.
     #[error("400: Unable to parse script hash {0:?}")]
     InvalidScriptHash(String),
+
+    /// Batch script request exceeds the server limit.
+    #[error("400: Too many scripts in batch: max is {max}, got {got}")]
+    ScriptBatchTooLarge {
+        /// Maximum scripts allowed in one batch request.
+        max: usize,
+        /// Number of scripts in the client request.
+        got: usize,
+    },
+
+    /// Batch script request contained no scripts.
+    #[error("400: Batch script request must include at least one script")]
+    ScriptBatchEmpty,
+
+    /// Batch script request contains the same script more than once.
+    #[error("400: Duplicate script entries in batch request")]
+    ScriptBatchDuplicateScripts,
 }
 
 use self::ChronikHandlerError::*;
@@ -187,6 +207,77 @@ pub async fn handle_script_utxos(
         script: script.bytecode().to_vec(),
         utxos,
     })
+}
+
+/// Verifies `scripts` is non-empty, within [`MAX_NUM_BATCH_SCRIPTS`], and has
+/// no duplicate `script_type` / `payload` pairs
+fn check_batch_script_validity(scripts: &[proto::ScriptRef]) -> Result<()> {
+    let n = scripts.len();
+
+    if n == 0 {
+        return Err(Report::from(ScriptBatchEmpty));
+    }
+
+    // Check against the number of scripts allowed
+    if n > MAX_NUM_BATCH_SCRIPTS {
+        return Err(Report::from(ScriptBatchTooLarge {
+            max: MAX_NUM_BATCH_SCRIPTS,
+            got: n,
+        }));
+    }
+
+    // Check for duplicates.
+    // Since we enforce a limit in the number of scripts, and the limit is small
+    // enough, it's worth using a sort + adjacent scan which is O(n*log(n))
+    // instead of a hash set which is O(n) to save on lookups and hash
+    // computations.
+    // Running benchmarks did show some gain if there is no duplicate which is
+    // the nominal case.
+    let mut keys: Vec<(&str, &[u8])> = scripts
+        .iter()
+        .map(|s| (s.script_type.as_str(), s.payload.as_slice()))
+        .collect();
+    keys.sort_unstable();
+    keys.dedup();
+    if keys.len() != n {
+        return Err(Report::from(ScriptBatchDuplicateScripts));
+    }
+
+    Ok(())
+}
+
+/// Return UTXOs for a batch of scripts in a single request.
+/// Fails the entire batch if any script is invalid or UTXO lookup fails for any
+/// row. Each successful row echoes the request `ScriptRef` for the same index.
+///
+/// Runs `check_batch_script_validity` before resolving UTXOs.
+pub fn handle_script_utxos_batch(
+    scripts: Vec<proto::ScriptRef>,
+    indexer: &ChronikIndexer,
+    node: &Node,
+) -> Result<proto::ScriptBatchUtxosResponse> {
+    check_batch_script_validity(&scripts)?;
+    let batch_size = scripts.len();
+    let script_utxos = indexer.script_utxos(node)?;
+    let mut rows = Vec::with_capacity(batch_size);
+    for script_req in scripts {
+        let payload_hex = hex::encode(&script_req.payload);
+        let member = get_group_member(&script_req.script_type, &payload_hex)?;
+        let script =
+            script_utxos.script(member, indexer.decompress_script_fn)?;
+        let utxos = script_utxos.utxos(&script)?;
+        rows.push(proto::ScriptBatchUtxosRow {
+            script: Some(proto::ScriptRef {
+                script_type: script_req.script_type,
+                payload: script_req.payload,
+            }),
+            utxos: Some(proto::ScriptUtxos {
+                script: script.bytecode().to_vec(),
+                utxos,
+            }),
+        });
+    }
+    Ok(proto::ScriptBatchUtxosResponse { rows })
 }
 
 /// Return a page of the confirmed txs of the given token ID.

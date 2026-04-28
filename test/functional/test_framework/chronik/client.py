@@ -5,7 +5,7 @@
 import http.client
 import threading
 import time
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import chronik_pb2 as pb
 import websocket
@@ -450,6 +450,20 @@ class ChronikClient:
                 finalization_timeout_secs=finalization_timeout_secs,
             ).SerializeToString(),
             pb.BroadcastTxsResponse,
+        )
+
+    def script_batch_utxos(self, scripts: List[Tuple[str, str]]) -> ChronikResponse:
+        pb_scripts = [
+            pb.ScriptRef(script_type=script_type, payload=bytes.fromhex(payload))
+            for script_type, payload in scripts
+        ]
+        return self._request(
+            "POST",
+            "/script/batch/utxos",
+            pb.ScriptBatchUtxosRequest(
+                params=pb.ScriptBatchUtxosParams(scripts=pb_scripts)
+            ).SerializeToString(),
+            pb.ScriptBatchUtxosResponse,
         )
 
     def script(self, script_type: str, script_payload: str) -> ChronikScriptClient:

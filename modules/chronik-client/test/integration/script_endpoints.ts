@@ -8,7 +8,7 @@ import { decodeCashAddress, getOutputScriptFromAddress } from 'ecashaddrjs';
 import { ChildProcess } from 'node:child_process';
 import { EventEmitter, once } from 'node:events';
 import path from 'path';
-import { ChronikClient, ScriptType, Tx } from '../../index';
+import { ChronikClient, ScriptRef, ScriptType, Tx } from '../../index';
 import initializeTestRunner, {
     cleanupMochaRegtest,
     setMochaTimeout,
@@ -805,6 +805,59 @@ describe('Get script().history and script().utxos()', () => {
             otherScript,
             otherScript,
             otherTxids,
+        );
+    });
+    it('batchUtxos matches script().utxos() for each script type', async () => {
+        const chronik = new ChronikClient(chronikUrl);
+
+        const scripts: ScriptRef[] = [
+            { scriptType: 'p2pkh', payload: p2pkhAddressHash },
+            { scriptType: 'p2sh', payload: p2shAddressHash },
+            { scriptType: 'p2pk', payload: p2pkScript },
+            { scriptType: 'other', payload: otherScript },
+        ];
+
+        const rows = await chronik.batchUtxos(scripts);
+        expect(rows.length).to.eql(scripts.length);
+
+        for (let i = 0; i < scripts.length; i += 1) {
+            expect(rows[i].script).to.deep.equal(scripts[i]);
+            const direct = await chronik
+                .script(scripts[i].scriptType, scripts[i].payload)
+                .utxos();
+            expect(rows[i].utxos).to.deep.equal(direct);
+        }
+
+        await expect(
+            chronik.batchUtxos([scripts[0], scripts[0]]),
+        ).to.be.rejectedWith(
+            Error,
+            'Failed getting /script/batch/utxos: 400: Duplicate script entries in batch request',
+        );
+
+        await expect(
+            chronik.batchUtxos([
+                { scriptType: 'p2pk', payload: p2pkScript },
+                { scriptType: 'p2pkh', payload: '01' },
+            ]),
+        ).to.be.rejectedWith(
+            Error,
+            'Failed getting /script/batch/utxos: 400: Invalid payload for P2PKH: Invalid length, expected 20 bytes but got 1 bytes',
+        );
+
+        const emptyP2pkhPayload = '00'.repeat(20);
+        const tooManyScripts: ScriptRef[] = Array.from({ length: 501 }, () => ({
+            scriptType: 'p2pkh',
+            payload: emptyP2pkhPayload,
+        }));
+        await expect(chronik.batchUtxos(tooManyScripts)).to.be.rejectedWith(
+            Error,
+            'Failed getting /script/batch/utxos: 400: Too many scripts in batch: max is 500, got 501',
+        );
+
+        await expect(chronik.batchUtxos([])).to.be.rejectedWith(
+            Error,
+            'Failed getting /script/batch/utxos: 400: Batch script request must include at least one script',
         );
     });
     it('After a tx is broadcast with outputs of each type', async () => {
