@@ -1134,6 +1134,11 @@ builds:
             context: web/marlinwallet.com
             port: 80
 
+    preview-pay.e.cash:
+        docker:
+            context: web/pay.e.cash
+            port: 80
+
     cashtab-connect-tests:
         runOnDiffRegex:
             - modules/cashtab-connect/

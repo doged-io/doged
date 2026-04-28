@@ -1,0 +1,177 @@
+<!-- Copyright (c) 2026 The Bitcoin developers -->
+<!-- Distributed under the MIT software license, see the accompanying -->
+<!-- file COPYING or http://www.opensource.org/licenses/mit-license.php. -->
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Universal eCash Payments</title>
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <main class="page">
+            <section id="home-view" class="card">
+                <h1>Universal eCash Payments</h1>
+                <h2>How it works</h2>
+                <p>
+                    Generate
+                    <a
+                        href="https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/doc/standards/bip21-ecash-additions.md"
+                        target="_blank"
+                        rel="noreferrer"
+                        >bip21</a
+                    >
+                    query strings and use
+                    <code>https://pay.e.cash/?bip21=&lt;bip21-query&gt;</code>
+                    to automatically open transactions in supported apps.
+                </p>
+
+                <h2>Supported Wallets</h2>
+                <div class="wallet-grid">
+                    <a
+                        class="wallet-tile"
+                        href="https://play.google.com/store/apps/details?id=com.cashtab.app"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <img
+                            class="wallet-logo"
+                            src="./cashtab.png"
+                            alt="Cashtab logo"
+                        />
+                        <div class="wallet-name">Cashtab</div>
+                        <div class="wallet-meta">Android</div>
+                    </a>
+                    <a
+                        class="wallet-tile"
+                        href="https://cashtab.com"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <img
+                            class="wallet-logo"
+                            src="./cashtab.png"
+                            alt="Cashtab logo"
+                        />
+                        <div class="wallet-name">Cashtab Web</div>
+                        <div class="wallet-meta">Web</div>
+                    </a>
+                </div>
+
+                <h2>Examples</h2>
+                <p>
+                    For more scenarios, see the
+                    <a href="./test.html">router test page</a>.
+                </p>
+                <ul class="test-links">
+                    <li class="test-link-row">
+                        <div class="test-link-text">
+                            <strong>Simple XEC send</strong>
+                            <div>Prepared XEC send with amount</div>
+                        </div>
+                        <div class="test-link-actions">
+                            <a
+                                class="open-url-link"
+                                href="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=12.34"
+                                >Open</a
+                            >
+                            <button
+                                type="button"
+                                class="copy-url-btn"
+                                data-url="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=12.34"
+                                aria-label="Copy URL for Simple XEC send"
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </li>
+                    <li class="test-link-row">
+                        <div class="test-link-text">
+                            <strong>XEC send with op_return_raw</strong>
+                            <div>Prepared XEC send with OP_RETURN payload</div>
+                        </div>
+                        <div class="test-link-actions">
+                            <a
+                                class="open-url-link"
+                                href="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=17&amp;op_return_raw=0400746162"
+                                >Open</a
+                            >
+                            <button
+                                type="button"
+                                class="copy-url-btn"
+                                data-url="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=17&op_return_raw=0400746162"
+                                aria-label="Copy URL for XEC send with op_return_raw"
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </li>
+                    <li class="test-link-row">
+                        <div class="test-link-text">
+                            <strong>Token send</strong>
+                            <div>
+                                Prepared token send with token_id and token qty
+                            </div>
+                        </div>
+                        <div class="test-link-actions">
+                            <a
+                                class="open-url-link"
+                                href="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?token_id=0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0&amp;token_decimalized_qty=1"
+                                >Open</a
+                            >
+                            <button
+                                type="button"
+                                class="copy-url-btn"
+                                data-url="/?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?token_id=0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0&token_decimalized_qty=1"
+                                aria-label="Copy URL for Token send"
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="fallback-view" class="card hidden">
+                <h1>Open this payment in Cashtab</h1>
+                <p id="payment-summary">Preparing payment link...</p>
+                <button
+                    id="full-bip21-box"
+                    class="bip21-box"
+                    type="button"
+                    aria-label="Copy full BIP21 query"
+                >
+                    Waiting for BIP21 query...
+                </button>
+                <div class="actions">
+                    <a
+                        id="download-link"
+                        class="button secondary"
+                        href="https://play.google.com/store/apps/details?id=com.cashtab.app"
+                        target="_blank"
+                        rel="noreferrer"
+                        >Download Cashtab</a
+                    >
+                    <a id="open-web-link" class="button" href="#"
+                        >Open in Cashtab Web</a
+                    >
+                    <button
+                        id="copy-bip21-btn"
+                        class="button secondary"
+                        type="button"
+                    >
+                        Copy BIP21 Query
+                    </button>
+                </div>
+                <p class="subtle">
+                    If the app is installed and App Links are verified, this URL
+                    opens Cashtab automatically instead of this page.
+                </p>
+            </section>
+        </main>
+        <script src="./clipboard.js"></script>
+        <script src="./script.js"></script>
+    </body>
+</html>

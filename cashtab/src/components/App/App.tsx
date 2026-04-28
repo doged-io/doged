@@ -144,16 +144,42 @@ const App = () => {
         }
 
         const handleBip21Uri = (url: string) => {
-            const normalizedBip21Uri = url.trim().toLowerCase();
-            // PayButton deep links: https://paybutton.org/app?address=...&b=1
-            const { bip21Uri, returnToBrowser } =
-                paybuttonDeepLinkToBip21Uri(normalizedBip21Uri);
+            const trimmedUrl = url.trim();
+            let bip21Candidate = trimmedUrl;
+            let returnToBrowser = false;
+
+            try {
+                const parsedUrl = new URL(trimmedUrl);
+                const supportedPayHosts = ['pay.e.cash'];
+                if (
+                    parsedUrl.protocol === 'https:' &&
+                    supportedPayHosts.includes(parsedUrl.hostname) &&
+                    parsedUrl.searchParams.get('bip21') !== null
+                ) {
+                    // Decoded canonical BIP21 (ecash:...?...) — same string Cashtab Web uses in
+                    // #/send?bip21=ecash:...?... (readable, not percent-encoded in the send hash).
+                    const bip21Param = parsedUrl.searchParams.get('bip21');
+                    bip21Candidate = bip21Param ? bip21Param : '';
+                } else {
+                    // PayButton deep links: https://paybutton.org/app?address=...&b=1
+                    const converted = paybuttonDeepLinkToBip21Uri(trimmedUrl);
+                    bip21Candidate = converted.bip21Uri;
+                    returnToBrowser = converted.returnToBrowser;
+                }
+            } catch {
+                // Not a URL object (e.g. plain ecash: uri)
+                const converted = paybuttonDeepLinkToBip21Uri(trimmedUrl);
+                bip21Candidate = converted.bip21Uri;
+                returnToBrowser = converted.returnToBrowser;
+            }
+
             // Only do a limited check here that this is a valid BIP21 URI.
             // The amount is not validated at this point, this will be handled
             // after we jumped to the send screen.
-            const parsed = parseAddressInput(bip21Uri, 0);
+            const parsed = parseAddressInput(bip21Candidate, 0);
             if (parsed.address.error === false && parsed.address.value) {
-                let sendParams = `bip21=${bip21Uri}`;
+                // Send screen reads hash query with bip21 first; value is full readable URI.
+                let sendParams = `bip21=${bip21Candidate}`;
                 if (returnToBrowser) {
                     sendParams += '&returnToBrowser=1';
                 }
