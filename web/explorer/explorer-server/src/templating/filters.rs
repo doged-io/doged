@@ -137,6 +137,7 @@ pub fn render_miner(coinbase_data: &[u8]) -> askama::Result<String> {
         "OneClickMiner.com",
         "koinium.com",
         "btccore.tech",
+        "Himpool",
         // Jackpool is not identifiable by a substring in the coinbase data
     ];
 
@@ -517,6 +518,12 @@ mod tests {
             b"\x03PG\x0e\x04D\x98\x8bi\x00\xa0\x00\x03\xcc\x91\x00\x00\x00\x0cb\
             tccore.tech";
         assert_eq!(render_miner(btccore_coinbase_hex).unwrap(), "btccore.tech");
+
+        // Himpool 942203
+        let himpool_coinbase_hex =
+            b"\x03\x7b\x60\x0e\x04\x07\xcf\xc6\x69\x00\x20\x00\x0b\x41\x58\
+            \x45\x00\x00\x00\x00\x00\x00\x07Himpool";
+        assert_eq!(render_miner(himpool_coinbase_hex).unwrap(), "Himpool");
 
         // Unknown miner
         // genesis block 0
