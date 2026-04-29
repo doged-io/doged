@@ -22,6 +22,11 @@ static void secp256k1_ecmult_gen_compute_table(secp256k1_ge_storage* table, cons
     secp256k1_gej nums_gej;
     int i, j;
 
+    if (n < 1) {
+        /* This is unreachable (bits <= 8), but suppresses a -Wmaybe-uninitialized compiler warning */
+        return;
+    }
+
     /* get the generator */
     secp256k1_gej_set_ge(&gj, gen);
 
