@@ -124,6 +124,37 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
         });
     });
 
+    it('opens send from pay.e.cash deep link with amount and op_return_raw', () => {
+        const deepLink =
+            'https://pay.e.cash?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=17&op_return_raw=0400746162';
+        const recipient = 'ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07';
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+
+            postPaymentRequest(deepLink);
+
+            cy.get('#error-modal-overlay').should('not.be.visible');
+            cy.get('#send-screen').should('not.have.class', 'hidden');
+            cy.get('#recipient-address')
+                .should('have.value', recipient)
+                .and('have.attr', 'readonly');
+            cy.get('#send-amount')
+                .should('have.value', '17.00')
+                .and('have.attr', 'readonly');
+            cy.get('#paybutton-logo-container').should(
+                'have.css',
+                'display',
+                'none',
+            );
+            cy.get('#send-op-return-notice')
+                .should('have.css', 'display', 'flex')
+                .and('contain', '+OP_RETURN');
+        });
+    });
+
     it('shows error modal for PayButton deep link with unsupported token_id', () => {
         const deepLink =
             `https://paybutton.org/app?address=${encodeURIComponent(WALLET_ADDRESS)}` +

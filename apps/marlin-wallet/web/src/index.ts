@@ -45,7 +45,10 @@ import { HistoryScreen } from './screen/history';
 import { SendScreen } from './screen/send';
 import { MainScreen } from './screen/main';
 import { ErrorModal } from './screen/error-modal';
-import { paybuttonDeepLinkToBip21Uri } from './paybutton';
+import {
+    paybuttonDeepLinkToBip21Uri,
+    payecashDeepLinkToBip21Uri,
+} from './deeplink';
 import { decodeQrFromDataUrl } from './qrcode';
 import { changeLocale, initI18n, t } from './i18n';
 import { MarlinPriceFetcher } from './price';
@@ -891,9 +894,17 @@ async function initializeApp() {
  * Open the send flow from a raw payment payload (BIP21, PayButton URL, etc.).
  */
 async function openSendScreenFromIncomingPayload(raw: string) {
-    const { bip21Uri, returnToBrowser } = paybuttonDeepLinkToBip21Uri(raw);
+    // First try to parse as PayButton deep link
+    let { bip21Uri, returnToBrowser } = paybuttonDeepLinkToBip21Uri(raw);
 
-    const parsed = parseBip21Uri(bip21Uri);
+    // If not parsed as PayButton, try to parse as pay.e.cash deep link
+    if (bip21Uri === null) {
+        ({ bip21Uri, returnToBrowser } = payecashDeepLinkToBip21Uri(raw));
+    }
+
+    // If none of the above parsing succeeded, bip21Uri is the original raw
+    // string. If parsing succeeded, it's been extracted from the deep link.
+    const parsed = parseBip21Uri(bip21Uri || raw);
     if (parsed?.error) {
         webViewError('Invalid BIP21 URI:', bip21Uri);
         errorModal!.showBip21ParseError(parsed.error, raw || undefined);

@@ -64,6 +64,14 @@
             <data android:scheme="https" android:host="paybutton.org" android:pathPrefix="/app"/>
             <data android:scheme="https" android:host="api.paybutton.org" android:pathPrefix="/app"/>
         </intent-filter>
+
+        <!-- Deep link for pay.e.cash transactions -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.DEFAULT"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="https" android:host="pay.e.cash" />
+        </intent-filter>
         
         <!-- Intent filter for watch to open phone app -->
         <intent-filter>

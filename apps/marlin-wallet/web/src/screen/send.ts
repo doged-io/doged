@@ -29,7 +29,7 @@ import {
 } from '../active-asset';
 import { isValidECashAddress } from '../address';
 import { parseBip21Uri, Bip21ParseResult } from '../bip21';
-import { isPayButtonTransaction } from '../paybutton';
+import { isPayButtonTransaction } from '../deeplink';
 import { config } from '../config';
 import { XEC_ASSET } from '../supported-assets';
 import { sendMessageToBackend, webViewLog, webViewError } from '../common';

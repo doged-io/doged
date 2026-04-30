@@ -6,7 +6,7 @@ import * as chai from 'chai';
 import {
     isPayButtonTransaction,
     paybuttonDeepLinkToBip21Uri,
-} from '../src/paybutton';
+} from '../src/deeplink';
 
 const expect = chai.expect;
 
@@ -82,28 +82,28 @@ describe('paybutton.ts', function () {
             });
         });
 
-        it('Should pass through when address param is missing', function () {
+        it('Should return null when address param is missing', function () {
             const deepLink = 'https://paybutton.org/app?amount=1';
             expect(paybuttonDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-                bip21Uri: deepLink,
+                bip21Uri: null,
                 returnToBrowser: false,
             });
         });
 
-        it('Should pass through for wrong host', function () {
+        it('Should return null for wrong host', function () {
             const deepLink =
                 'https://example.com/app?address=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5';
             expect(paybuttonDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-                bip21Uri: deepLink,
+                bip21Uri: null,
                 returnToBrowser: false,
             });
         });
 
-        it('Should pass through when path is not /app', function () {
+        it('Should return null when path is not /app', function () {
             const deepLink =
                 'https://paybutton.org/other?address=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5';
             expect(paybuttonDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-                bip21Uri: deepLink,
+                bip21Uri: null,
                 returnToBrowser: false,
             });
         });
@@ -112,15 +112,15 @@ describe('paybutton.ts', function () {
             const deepLink =
                 'http://paybutton.org/app?address=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5';
             expect(paybuttonDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-                bip21Uri: deepLink,
+                bip21Uri: null,
                 returnToBrowser: false,
             });
         });
 
-        it('Should pass through for malformed URL string', function () {
+        it('Should return null for malformed URL string', function () {
             const deepLink = 'not-a-url';
             expect(paybuttonDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-                bip21Uri: deepLink,
+                bip21Uri: null,
                 returnToBrowser: false,
             });
         });

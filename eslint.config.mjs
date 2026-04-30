@@ -19,7 +19,7 @@ export const abcHeaderRule = {
         [
             {
                 pattern:
-                    '^ Copyright \\(c\\) [2][0-9]{3}([-][2][0-9]{3})? The Bitcoin developers$',
+                    '^ Copyright \\(c\\) [2][0-9]{3}([-]([2][0-9]{3}|present))? The Bitcoin developers$',
                 template: ` Copyright (c) ${new Date().getFullYear()} The Bitcoin developers`,
             },
             ' Distributed under the MIT software license, see the accompanying',

@@ -12,21 +12,21 @@ Use query-parameter BIP21 links:
 
 With verified Android App Links in place:
 
-1. App installed -> URL opens Cashtab app directly
+1. App installed -> URL opens a linked wallet app (Cashtab or Marlin Wallet) directly
 2. App not installed -> URL opens fallback web page on `pay.e.cash`
 
 ## Current behavior
 
 - `https://pay.e.cash/` renders a human-viewable landing page.
 - `https://pay.e.cash/?bip21=<bip21-uri>` renders a fallback page with:
-    - Download Cashtab link (Play Store)
+    - Download links for Cashtab and Marlin Wallet (Play Store)
     - "Open in Cashtab Web" link pointing to `https://cashtab.com/#/send?bip21=<readable-bip21>` (same decoded `ecash:...?...` string Cashtab expects in the hash, not a single percent-encoded blob)
 
-**Mobile (Cashtab Android):** App Links open the same `https://pay.e.cash/?bip21=...` URL. The app reads the decoded `bip21` query value and navigates to the send screen with that full readable BIP21 string—aligned with Cashtab Web, not a different encoding.
+**Mobile (Cashtab / Marlin Wallet Android):** App Links open the same `https://pay.e.cash/?bip21=...` URL. The app reads the decoded `bip21` query value and navigates to the send screen with that full readable BIP21 string—aligned with Cashtab Web, not a different encoding.
 
 - Verified App Links are configured with:
-    - `web/pay.e.cash/.well-known/assetlinks.json` template
-    - Android manifest intent-filters for `pay.e.cash` (Cashtab dev flavor uses the same host as prod)
+    - `web/pay.e.cash/.well-known/assetlinks.json` (Cashtab, Cashtab dev, Marlin Wallet)
+    - Android manifest intent-filters for `pay.e.cash` on each app (Cashtab dev flavor uses the same host as prod)
 
 ## Local testing
 
