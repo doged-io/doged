@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "यह भुगतान लिंक नहीं खोला जा सकता",
         "malformed": "लिंक अमान्य है।",
-        "unsupportedToken": "टोकन समर्थित नहीं है।"
+        "unsupportedToken": "टोकन समर्थित नहीं है।",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "खुद डालें",

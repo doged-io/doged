@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "تعذّر فتح رابط الدفع هذا",
         "malformed": "الرابط غير صالح.",
-        "unsupportedToken": "رمز العملة غير مدعوم."
+        "unsupportedToken": "رمز العملة غير مدعوم.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "إدخال يدوي",

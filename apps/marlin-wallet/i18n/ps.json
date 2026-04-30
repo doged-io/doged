@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "ددې تادیاتو تړنه پرانیستل نشي",
         "malformed": "تړنه سمونږیره ده.",
-        "unsupportedToken": "توکن ملاتړ نه کیږي."
+        "unsupportedToken": "توکن ملاتړ نه کیږي.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "لاسي ننوتل",

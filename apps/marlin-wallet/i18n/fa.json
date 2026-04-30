@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "این پیوند پرداخت باز نمی‌شود",
         "malformed": "پیوند نامعتبر است.",
-        "unsupportedToken": "این توکن پشتیبانی نمی‌شود."
+        "unsupportedToken": "این توکن پشتیبانی نمی‌شود.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "ورود دستی",

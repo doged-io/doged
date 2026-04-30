@@ -8,10 +8,19 @@ import { atomsToUnit, unitToAtoms } from './amount';
 import { SUPPORTED_ASSETS, XEC_ASSET } from './supported-assets';
 import { t } from './i18n';
 
+/** Query parameter names Marlin accepts on BIP21 URIs. */
+const SUPPORTED_BIP21_QUERY_KEYS = new Set([
+    'amount',
+    'op_return_raw',
+    'token_id',
+    'token_decimalized_qty',
+]);
+
 /** User-visible parse failure reasons (string values for display / i18n mapping). */
 export enum Bip21Error {
     UriMalformed = 'bip21.malformed',
     TokenNotSupported = 'bip21.unsupportedToken',
+    UnsupportedFields = 'bip21.unsupportedFields',
 }
 
 /**
@@ -131,11 +140,15 @@ export function parseUint256Hex(raw: string): string | null {
  * - Optional single-recipient token send: `token_id` must match a Marlin
  *   built-in asset; `token_decimalized_qty` is optional and parsed with
  *   {@link parseAmountAsAtoms}.
- * - Other query parameters are ignored
+ * - Any other query parameter yields {@link Bip21Error.UnsupportedFields}.
+ * - Incompatible combinations of known parameters (e.g. `amount` with
+ *   `token_id`, or `token_decimalized_qty` without `token_id`) yield
+ *   {@link Bip21Error.UriMalformed}.
  *
  * @param uri - The URI string to parse (e.g., "ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=100.42")
  * @returns Parsed result, or a result with {@link Bip21ParseResult.error} when
- * the URI is malformed or the token is unsupported.
+ * the URI is malformed, the token is unsupported, or the query is not
+ * supported.
  */
 export function parseBip21Uri(uri: string): Bip21ParseResult {
     try {
@@ -159,6 +172,13 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
             return bip21ParseError(Bip21Error.UriMalformed, uri);
         }
 
+        // Check for unsupported query parameters
+        for (const key of url.searchParams.keys()) {
+            if (!SUPPORTED_BIP21_QUERY_KEYS.has(key)) {
+                return bip21ParseError(Bip21Error.UnsupportedFields, uri);
+            }
+        }
+
         const result: Bip21ParseResult = {
             uri,
             address: addressPart,
@@ -170,6 +190,7 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
         // Amount in BIP21 is specified in XEC, we convert to satoshis (1 XEC = 100 sats)
         const amountParam = url.searchParams.get('amount');
         if (amountParam) {
+            // Parse the amount parameter as atoms
             const atoms = parseAmountAsAtoms(amountParam, XEC_ASSET.decimals);
             if (atoms !== null) {
                 result.atoms = atoms;
@@ -186,9 +207,20 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
             }
         }
 
-        // If amount is present, don't attempt to parse token parameters. Using
-        // both is undefined behavior and unsupported by Marlin.
-        if (result.atoms === undefined && url.searchParams.has('token_id')) {
+        // If either amount or op_return_raw is present, we can't have token
+        // related parameters
+        if (result.atoms !== undefined || result.opReturnRaw !== undefined) {
+            if (
+                url.searchParams.has('token_id') ||
+                url.searchParams.has('token_decimalized_qty')
+            ) {
+                return bip21ParseError(Bip21Error.UriMalformed, uri);
+            }
+        }
+
+        // Token parsing. At this stage we know that there is either no amount
+        // nor no token parameter, so no conflict.
+        if (url.searchParams.has('token_id')) {
             const tokenId = parseUint256Hex(
                 url.searchParams.get('token_id') ?? '',
             );
@@ -214,6 +246,11 @@ export function parseBip21Uri(uri: string): Bip21ParseResult {
             }
 
             return result;
+        } else {
+            // No token_id, so we can't have token_decimalized_qty
+            if (url.searchParams.has('token_decimalized_qty')) {
+                return bip21ParseError(Bip21Error.UriMalformed, uri);
+            }
         }
 
         return result;

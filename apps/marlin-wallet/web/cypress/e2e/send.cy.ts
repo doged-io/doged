@@ -326,6 +326,26 @@ describe('Send', () => {
                 cy.get('#ticker-label').should('contain', 'XEC');
             });
         });
+
+        it('shows validation error unknown BIP21 query parameter', () => {
+            const uri = `${WALLET_ADDRESS}?amount=1&label=shop`;
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should('have.value', uri)
+                    .and('have.class', 'invalid');
+                cy.get('#recipient-address').should(
+                    'not.have.attr',
+                    'readonly',
+                );
+            });
+        });
     });
 
     it('slider samples update amount input and fee rows in proportion', () => {

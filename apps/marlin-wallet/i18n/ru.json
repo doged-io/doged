@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "Не удалось открыть эту платёжную ссылку",
         "malformed": "Ссылка повреждена или недействительна.",
-        "unsupportedToken": "Токен не поддерживается."
+        "unsupportedToken": "Токен не поддерживается.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Ручной ввод",

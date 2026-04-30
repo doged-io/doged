@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "Hic nexus solutionis aperiri non potest",
         "malformed": "Nexus vitiosus est.",
-        "unsupportedToken": "Tessera non sustinetur."
+        "unsupportedToken": "Tessera non sustinetur.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Manus Īnscrīptiō",

@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "Can't open this payment link",
         "malformed": "The link is malformed.",
-        "unsupportedToken": "The token is not supported."
+        "unsupportedToken": "The token is not supported.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Manual Entry",

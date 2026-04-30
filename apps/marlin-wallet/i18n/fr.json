@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "Impossible d'ouvrir ce lien de paiement",
         "malformed": "Le lien est incorrect.",
-        "unsupportedToken": "Ce jeton n'est pas pris en charge."
+        "unsupportedToken": "Ce jeton n'est pas pris en charge.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Saisie manuelle",

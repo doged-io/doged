@@ -97,6 +97,33 @@ describe('BIP21 PAYMENT_REQUEST (native bridge)', () => {
         });
     });
 
+    it('shows error modal for unknown BIP21 query parameter', () => {
+        const uri = `${WALLET_ADDRESS}?amount=1&label=merchant`;
+        runWithChronik(CHRONIK_STUB, () => {
+            visitWithWalletMnemonic(TEST_MNEMONIC, {
+                requireHoldToSend: false,
+            });
+            waitForMainLoaded();
+
+            postPaymentRequest(uri);
+
+            cy.get('#error-modal-overlay').should('be.visible');
+            cy.get('.error-modal-title').should(
+                'contain',
+                "Can't open this payment link",
+            );
+            cy.get('.error-modal-message').should(
+                'contain',
+                'This payment request contains unsupported fields',
+            );
+            cy.get('#error-modal-details-section').should('be.visible');
+            cy.get('#error-modal-details-toggle').click();
+            cy.get('#error-modal-details-text').should('contain', uri);
+            cy.get('#error-modal-close').click();
+            cy.get('#error-modal-overlay').should('not.be.visible');
+        });
+    });
+
     it('shows error modal for PayButton deep link with unsupported token_id', () => {
         const deepLink =
             `https://paybutton.org/app?address=${encodeURIComponent(WALLET_ADDRESS)}` +

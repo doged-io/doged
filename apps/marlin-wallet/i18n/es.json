@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "No se puede abrir este enlace de pago",
         "malformed": "El enlace no es válido.",
-        "unsupportedToken": "El token no es compatible."
+        "unsupportedToken": "El token no es compatible.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Entrada Manual",

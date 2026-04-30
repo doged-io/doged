@@ -285,13 +285,13 @@ describe('bip21.ts', function () {
             });
         });
 
-        it('Should ignore unknown query parameters', function () {
+        it('Should reject unknown query parameters', function () {
             const uri = `${sampleAddress}?amount=100.00&unknown=param`;
             expect(parseBip21Uri(uri)).to.deep.equal({
                 uri,
-                address: sampleAddress,
-                atoms: 10000,
+                address: '',
                 tokenAssetKey: XEC_ASSET.key,
+                error: 'This payment request contains unsupported fields',
             });
         });
 
@@ -337,15 +337,37 @@ describe('bip21.ts', function () {
             });
         });
 
-        it('Should ignore token params when XEC amount is present', function () {
+        it('Should reject token params when XEC amount is present', function () {
             const uri =
                 `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
                 '&token_decimalized_qty=2&amount=50';
             expect(parseBip21Uri(uri)).to.deep.equal({
                 uri,
-                address: sampleAddress,
-                atoms: 5000,
+                address: '',
                 tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
+        });
+
+        it('Should reject token_id combined with op_return_raw', function () {
+            const uri =
+                `${sampleAddress}?token_id=${FIRMA_TOKEN.tokenId}` +
+                '&op_return_raw=deadbeef';
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
+            });
+        });
+
+        it('Should reject token_decimalized_qty without token_id', function () {
+            const uri = `${sampleAddress}?token_decimalized_qty=1`;
+            expect(parseBip21Uri(uri)).to.deep.equal({
+                uri,
+                address: '',
+                tokenAssetKey: XEC_ASSET.key,
+                error: 'The link is malformed.',
             });
         });
 

@@ -14,7 +14,8 @@
     "bip21": {
         "unavailableTitle": "Tautan pembayaran ini tidak dapat dibuka",
         "malformed": "Tautan tidak valid.",
-        "unsupportedToken": "Token tidak didukung."
+        "unsupportedToken": "Token tidak didukung.",
+        "unsupportedFields": "This payment request contains unsupported fields"
     },
     "camera": {
         "manualEntry": "Entri Manual",
