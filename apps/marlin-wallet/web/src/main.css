@@ -404,6 +404,22 @@ body.standalone-web {
     height: auto;
 }
 
+.send-op-return-notice {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 15px 12px;
+    padding: 10px 14px;
+    font-size: 0.9em;
+    line-height: 1.35;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 193, 7, 0.12);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .card {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);

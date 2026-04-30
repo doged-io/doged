@@ -151,6 +151,11 @@ describe('Send', () => {
                     'display',
                     'none',
                 );
+                cy.get('#send-op-return-notice').should(
+                    'have.css',
+                    'display',
+                    'none',
+                );
                 cy.get('#fee-display').should('be.visible');
             });
         });
@@ -175,6 +180,11 @@ describe('Send', () => {
                     'have.css',
                     'display',
                     'flex',
+                );
+                cy.get('#send-op-return-notice').should(
+                    'have.css',
+                    'display',
+                    'none',
                 );
                 cy.get('#fee-display').should('be.visible');
             });
@@ -201,6 +211,41 @@ describe('Send', () => {
                     'display',
                     'none',
                 );
+                cy.get('#send-op-return-notice')
+                    .should('have.css', 'display', 'flex')
+                    .and('contain', '+OP_RETURN');
+                cy.get('#fee-display').should('be.visible');
+            });
+        });
+
+        it('shows +OP_RETURN for XEC BIP21 with amount and non-PayButton op_return_raw', () => {
+            const uri =
+                'ecash:qqkczljwm2wnyld7lm9x5hjkev2z65mqdcz6544y9c?amount=10.00&op_return_raw=0444494345010004010000000480f0fa02';
+            runWithChronik(CHRONIK_STUB, () => {
+                visitWithWalletMnemonic(TEST_MNEMONIC, {
+                    requireHoldToSend: false,
+                });
+                waitForMainLoaded();
+                openManualSendScreen();
+                pasteBip21UriIntoRecipient(uri);
+                cy.get('#recipient-address')
+                    .should(
+                        'have.value',
+                        'ecash:qqkczljwm2wnyld7lm9x5hjkev2z65mqdcz6544y9c',
+                    )
+                    .and('have.attr', 'readonly');
+                cy.get('#recipient-address').should('have.class', 'valid');
+                cy.get('#send-amount')
+                    .should('have.value', '10.00')
+                    .and('have.attr', 'readonly');
+                cy.get('#paybutton-logo-container').should(
+                    'have.css',
+                    'display',
+                    'none',
+                );
+                cy.get('#send-op-return-notice')
+                    .should('have.css', 'display', 'flex')
+                    .and('contain', '+OP_RETURN');
                 cy.get('#fee-display').should('be.visible');
             });
         });

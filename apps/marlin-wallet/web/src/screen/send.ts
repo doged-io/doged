@@ -74,6 +74,7 @@ export class SendScreen {
         sliderMinLabel: HTMLElement;
         sliderMaxLabel: HTMLElement;
         logoContainer: HTMLElement;
+        opReturnNotice: HTMLElement;
         tickerLabel: HTMLElement;
         buttonSpan: HTMLElement;
     };
@@ -221,13 +222,12 @@ export class SendScreen {
             this.ui.amountSlider.disabled = false;
         }
 
+        // Defensive programming: if tokenId is set, we don't support
+        // opReturnRaw. This is already asserted during parsing, so should be a
+        // no-op here.
         if (!tokenId) {
-            // Store opReturnRaw for use when sending transaction, only for paybutton transactions
-            this.sendOpReturnRaw =
-                prefillOptions?.opReturnRaw &&
-                isPayButtonTransaction(prefillOptions.opReturnRaw)
-                    ? prefillOptions.opReturnRaw
-                    : undefined;
+            // Store opReturnRaw for use when sending transaction
+            this.sendOpReturnRaw = prefillOptions?.opReturnRaw;
         }
     }
 
@@ -255,7 +255,7 @@ export class SendScreen {
         this.setupHoldToSend();
 
         // Update the UI elements
-        this.updatePayButtonLogoVisibility();
+        this.updateSendScreenOpReturnIndicators();
         this.validateAmountField();
         this.updateFeeDisplay();
 
@@ -286,6 +286,7 @@ export class SendScreen {
             sliderMinLabel: document.getElementById('slider-min-label'),
             sliderMaxLabel: document.getElementById('slider-max-label'),
             logoContainer: document.getElementById('paybutton-logo-container'),
+            opReturnNotice: document.getElementById('send-op-return-notice'),
             tickerLabel: document.getElementById('ticker-label'),
             buttonSpan: document
                 .getElementById('confirm-send')
@@ -302,6 +303,7 @@ export class SendScreen {
             !this.ui.sliderMinLabel ||
             !this.ui.sliderMaxLabel ||
             !this.ui.logoContainer ||
+            !this.ui.opReturnNotice ||
             !this.ui.tickerLabel ||
             !this.ui.buttonSpan
         ) {
@@ -417,7 +419,7 @@ export class SendScreen {
 
         await this.params.syncWallet();
         await this.configureSendFormFromPrefill(bip21Result);
-        this.updatePayButtonLogoVisibility();
+        this.updateSendScreenOpReturnIndicators();
         this.validateAmountField();
         this.updateFeeDisplay();
     }
@@ -502,16 +504,21 @@ export class SendScreen {
         );
     }
 
-    // Update fee display
-    private updatePayButtonLogoVisibility(): void {
-        if (
-            this.sendOpReturnRaw &&
-            isPayButtonTransaction(this.sendOpReturnRaw)
-        ) {
-            this.ui.logoContainer.style.display = 'flex';
-        } else {
-            this.ui.logoContainer.style.display = 'none';
-        }
+    /**
+     * PayButton payments show the PayButton logo. Other BIP21 payments with
+     * `op_return_raw` show a fixed "+OP_RETURN" label (not translated).
+     */
+    private updateSendScreenOpReturnIndicators(): void {
+        const raw = this.sendOpReturnRaw;
+        const showPayButtonLogo = !!raw && isPayButtonTransaction(raw);
+        this.ui.logoContainer.style.display = showPayButtonLogo
+            ? 'flex'
+            : 'none';
+
+        const showGenericNotice = !!raw && !isPayButtonTransaction(raw);
+        this.ui.opReturnNotice.style.display = showGenericNotice
+            ? 'flex'
+            : 'none';
     }
 
     private updateFeeDisplay(): void {
