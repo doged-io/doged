@@ -494,6 +494,7 @@ describe('<App />', () => {
                 hideMessagesFromUnknownSenders: false,
                 balanceVisible: true,
                 satsPerKb: FEE_SATS_PER_KB_XEC_MINIMUM,
+                biometricLockEnabled: false,
             }),
         );
     });

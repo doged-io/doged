@@ -41,6 +41,7 @@ import { TokenNotificationIcon } from 'components/Common/CustomIcons';
 import { explorer } from 'config/explorer';
 import { undecimalizeTokenAmount, SlpDecimals } from 'wallet';
 import { toast } from 'react-toastify';
+import { confirmBiometricBroadcast } from 'services/biometricLockService';
 import Switch from 'components/Common/Switch';
 import { useNavigate, useLocation } from 'react-router';
 import {
@@ -694,6 +695,14 @@ const CreateTokenForm: React.FC<CreateTokenFormProps> = ({ groupTokenId }) => {
 
                 // Build and broadcast using ecash-wallet
                 // ecash-wallet will automatically create a fan-out tx if needed
+                if (
+                    !(await confirmBiometricBroadcast(
+                        settings,
+                        'Authorize token genesis',
+                    ))
+                ) {
+                    return;
+                }
 
                 const broadcastResult = await ecashWallet
                     .action(nftChildGenesisAction)
@@ -784,6 +793,14 @@ const CreateTokenForm: React.FC<CreateTokenFormProps> = ({ groupTokenId }) => {
 
                 // Build and broadcast using ecash-wallet
                 const builtAction = ecashWallet.action(genesisAction).build();
+                if (
+                    !(await confirmBiometricBroadcast(
+                        settings,
+                        'Authorize token genesis',
+                    ))
+                ) {
+                    return;
+                }
                 const broadcastResult = await builtAction.broadcast();
 
                 if (!broadcastResult.success) {

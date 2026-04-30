@@ -92,6 +92,7 @@ import {
     SuccessButton,
     SUCCESS_MODAL_DURATION_MS,
 } from './styled';
+import { confirmBiometricBroadcast } from 'services/biometricLockService';
 import {
     FIRMA,
     FIRMA_REDEEM_ADDRESS,
@@ -1462,6 +1463,15 @@ const SendXec: React.FC = () => {
 
             // Build and broadcast using ecash-wallet
             const builtAction = ecashWallet.action(action).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize transaction',
+                ))
+            ) {
+                setIsSending(false);
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {
@@ -1986,6 +1996,15 @@ const SendXec: React.FC = () => {
             // Build and broadcast using ecash-wallet
             // Split steps so we can get rawtx if we need to rebroadcast for paybutton
             const builtAction = ecashWallet.action(action).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize transaction',
+                ))
+            ) {
+                setIsSending(false);
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {

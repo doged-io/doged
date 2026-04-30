@@ -41,6 +41,7 @@ import { toXec, DUMMY_KEYPAIR } from 'wallet';
 import { Wallet } from 'ecash-wallet';
 import { ChronikClient } from 'chronik-client';
 import { explorer } from 'config/explorer';
+import { confirmBiometricBroadcast } from 'services/biometricLockService';
 import { getTokenGenesisInfo } from 'chronik';
 // Swiper styles
 import 'swiper/css';
@@ -152,6 +153,14 @@ export const OneshotSwiper: React.FC<OneshotSwiperProps> = ({
         }
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora trade',
+                ))
+            ) {
+                return;
+            }
             // Use ecash-agora's take() method which handles fuel inputs and broadcasting via ecash-wallet
             // ecashWallet is guaranteed to be non-null after the check above
             const broadcastResult = await agoraOneshot.take({
@@ -208,6 +217,14 @@ export const OneshotSwiper: React.FC<OneshotSwiperProps> = ({
         }
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora cancel',
+                ))
+            ) {
+                return;
+            }
             // Use ecash-agora's cancel() method which handles fuel inputs and broadcasting via ecash-wallet
             // ecashWallet is guaranteed to be non-null after the check above
             const broadcastResult = await agoraOneshot.cancel({

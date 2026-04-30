@@ -286,6 +286,7 @@ export const migrateLegacyCashtabSettings = (
         settings.hideMessagesFromUnknownSenders,
         settings.balanceVisible,
         settings.satsPerKb,
+        settings.biometricLockEnabled,
     );
 };
 

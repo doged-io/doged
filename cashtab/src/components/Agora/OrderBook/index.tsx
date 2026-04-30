@@ -91,6 +91,7 @@ import { Alert, Info, CopyTokenId } from 'components/Common/Atoms';
 import { AgoraOffer, AgoraPartial } from 'ecash-agora';
 import { IsMintAddressIcon } from 'components/Common/CustomIcons';
 import { FIRMA, FIRMA_MINTER_PK_HEX } from 'constants/tokens';
+import { confirmBiometricBroadcast } from 'services/biometricLockService';
 
 /**
  * Allow users to buy above spot (within reason)
@@ -232,6 +233,14 @@ const OrderBook: React.FC<OrderBookProps> = ({
         const satsPerKb: bigint = BigInt(settings.satsPerKb);
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora cancel',
+                ))
+            ) {
+                return;
+            }
             // Use ecash-agora's cancel() method which handles fuel inputs and broadcasting via ecash-wallet
             const broadcastResult = await agoraPartial.cancel({
                 wallet: ecashWallet,
@@ -278,6 +287,14 @@ const OrderBook: React.FC<OrderBookProps> = ({
         const satsPerKb: bigint = BigInt(settings.satsPerKb);
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora trade',
+                ))
+            ) {
+                return;
+            }
             // Use ecash-agora's take() method which handles fuel inputs and broadcasting via ecash-wallet
             const broadcastResult = await agoraPartial.take({
                 wallet: ecashWallet,

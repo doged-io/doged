@@ -52,6 +52,7 @@ import {
 } from 'wallet';
 import Modal from 'components/Common/Modal';
 import { toast } from 'react-toastify';
+import { confirmBiometricBroadcast } from 'services/biometricLockService';
 import {
     InputWithScanner,
     SendTokenInput,
@@ -1002,6 +1003,14 @@ const Token: React.FC = () => {
 
             // Build and broadcast using ecash-wallet
             const builtAction = ecashWallet.action(action).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize transaction',
+                ))
+            ) {
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {
@@ -1300,6 +1309,17 @@ const Token: React.FC = () => {
             // Build and broadcast using ecash-wallet
             // Note: ecash-wallet automatically infers SEND action for ALP burns when exact atoms aren't available
             const builtAction = ecashWallet.action(action).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize token burn',
+                ))
+            ) {
+                setIsBurning(false);
+                setShowConfirmBurnEtoken(false);
+                setConfirmationOfEtokenToBeBurnt('');
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {
@@ -1399,6 +1419,14 @@ const Token: React.FC = () => {
 
             // Build and broadcast using ecash-wallet
             const builtAction = ecashWallet.action(action).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize token mint',
+                ))
+            ) {
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {
@@ -1537,6 +1565,14 @@ const Token: React.FC = () => {
         });
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora listing',
+                ))
+            ) {
+                return;
+            }
             // Use the list method from AgoraOneshot
             const broadcastResult = await agoraOneshot.list({
                 wallet: ecashWallet,
@@ -1865,6 +1901,14 @@ const Token: React.FC = () => {
             // Build and broadcast using ecash-wallet
             // ecash-wallet automatically handles token UTXO selection and change
             const builtAction = ecashWallet.action(agoraListAction).build();
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora listing',
+                ))
+            ) {
+                return;
+            }
             const broadcastResult = await builtAction.broadcast();
 
             if (!broadcastResult.success) {
@@ -1940,6 +1984,14 @@ const Token: React.FC = () => {
         );
 
         try {
+            if (
+                !(await confirmBiometricBroadcast(
+                    settings,
+                    'Authorize Agora listing',
+                ))
+            ) {
+                return;
+            }
             // Use the list method from AgoraPartial
             const broadcastResult = await agoraPartial.list({
                 wallet: ecashWallet,

@@ -1366,6 +1366,7 @@ export default {
                     hideMessagesFromUnknownSenders: false,
                     balanceVisible: true,
                     satsPerKb: FEE_SATS_PER_KB_XEC_MINIMUM,
+                    biometricLockEnabled: false,
                 },
             },
             {
@@ -1380,6 +1381,7 @@ export default {
                     hideMessagesFromUnknownSenders: false,
                     balanceVisible: true,
                     satsPerKb: FEE_SATS_PER_KB_XEC_MINIMUM,
+                    biometricLockEnabled: false,
                 },
             },
             {
@@ -1405,6 +1407,7 @@ export default {
                     hideMessagesFromUnknownSenders: false,
                     balanceVisible: true,
                     satsPerKb: FEE_SATS_PER_KB_XEC_MINIMUM,
+                    biometricLockEnabled: false,
                 },
             },
         ],
@@ -1431,6 +1434,7 @@ export default {
                     hideMessagesFromUnknownSenders: false,
                     balanceVisible: true,
                     satsPerKb: FEE_SATS_PER_KB_XEC_MINIMUM,
+                    biometricLockEnabled: false,
                 },
                 isValid: true,
             },

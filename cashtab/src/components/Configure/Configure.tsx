@@ -5,6 +5,7 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router';
+import { Capacitor } from '@capacitor/core';
 import { WalletContext, isWalletContextLoaded } from 'wallet/context';
 import {
     ThemedXIcon,
@@ -20,6 +21,8 @@ import { CurrencySelect } from 'components/Common/Inputs';
 import SegmentedControl from 'components/Common/SegmentedControl';
 import { ReactComponent as BackIconSvg } from 'assets/back.svg';
 import { ReactComponent as RightIconSvg } from 'assets/right.svg';
+import { toast } from 'react-toastify';
+import { authenticateToEnableBiometricLock } from 'services/biometricLockService';
 
 const VersionContainer = styled.div`
     color: ${props => props.theme.primaryText};
@@ -151,6 +154,9 @@ const Configure: React.FC = () => {
     }
     const { updateCashtabState, cashtabState } = ContextValue;
     const { settings, tokens } = cashtabState;
+    const isNativeMobile =
+        Capacitor.isNativePlatform() &&
+        ['android', 'ios'].includes(Capacitor.getPlatform());
 
     return (
         <StyledConfigure title="Settings">
@@ -210,6 +216,48 @@ const Configure: React.FC = () => {
                         />
                     </SettingsRowControl>
                 </SettingsRow>
+                {isNativeMobile && (
+                    <SettingsRow>
+                        <SettingsRowLabel>Biometric Unlock</SettingsRowLabel>
+                        <SettingsRowControl>
+                            <SegmentedControl
+                                name="Biometric Unlock"
+                                options={[
+                                    { value: 'on', label: 'On' },
+                                    { value: 'off', label: 'Off' },
+                                ]}
+                                value={
+                                    settings.biometricLockEnabled ? 'on' : 'off'
+                                }
+                                onChange={async v => {
+                                    const enabling = v === 'on';
+                                    if (
+                                        enabling &&
+                                        !settings.biometricLockEnabled
+                                    ) {
+                                        const result =
+                                            await authenticateToEnableBiometricLock();
+                                        if (!result.ok) {
+                                            if (
+                                                !result.cancelled &&
+                                                result.message
+                                            ) {
+                                                toast.error(result.message);
+                                            }
+                                            return;
+                                        }
+                                    }
+                                    updateCashtabState({
+                                        settings: {
+                                            ...settings,
+                                            biometricLockEnabled: enabling,
+                                        },
+                                    });
+                                }}
+                            />
+                        </SettingsRowControl>
+                    </SettingsRow>
+                )}
             </SettingsList>
 
             {(hasEnoughToken(

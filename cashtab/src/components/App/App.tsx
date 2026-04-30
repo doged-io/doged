@@ -49,6 +49,7 @@ import Extension from 'components/AppModes/Extension';
 import Header from 'components/Header';
 import { Bounce, ToastContainer } from 'react-toastify';
 import PullToRefresh from 'components/Common/PullToRefresh';
+import BiometricStartupGate from 'components/App/BiometricStartupGate';
 import {
     ExtensionFrame,
     GlobalStyle,
@@ -261,216 +262,234 @@ const App = () => {
                     transition={Bounce}
                     aria-label="Notifications"
                 />
-                <WalletBody>
-                    <WalletCtn showFooter={hasWallet}>
-                        {!cashtabLoaded ? (
-                            <LoadingCtn title="Cashtab Loading" />
-                        ) : (
-                            <>
-                                {!hasWallet && !apiError ? (
-                                    <OnBoarding />
-                                ) : (
-                                    <PullToRefresh
-                                        onRefresh={async () => {
-                                            // Sync wallet data instead of reloading the page
-                                            // This refreshes UTXOs, token balances, and transaction history
-                                            await update();
-                                            await refreshTransactionHistory();
-                                        }}
-                                        disabled={loading || !hasWallet}
-                                    >
-                                        <Header
-                                            path={location.pathname}
-                                        ></Header>
-                                        <ScreenWrapper>
-                                            {import.meta.env.VITE_BUILD_ENV !==
-                                                'extension' && (
-                                                <>
-                                                    {hasTab && (
-                                                        <EasterEgg
-                                                            src={TabCash}
-                                                            alt="tabcash"
-                                                        />
-                                                    )}
-                                                </>
-                                            )}
-                                            <Routes>
-                                                <Route
-                                                    path="/wallet"
-                                                    element={<Home />}
-                                                />
-                                                <Route
-                                                    path="/receive"
-                                                    element={<Receive />}
-                                                />
-
-                                                <Route
-                                                    path="/create-token"
-                                                    element={<CreateToken />}
-                                                />
-
-                                                <Route
-                                                    path="/create-nft-collection"
-                                                    element={<CreateToken />}
-                                                />
-
-                                                <Route
-                                                    path="/send"
-                                                    element={<SendXec />}
-                                                />
-                                                <Route path="/send-token">
+                <BiometricStartupGate
+                    isCashtabLoaded={cashtabLoaded}
+                    biometricLockEnabled={
+                        cashtabState.settings.biometricLockEnabled
+                    }
+                >
+                    <WalletBody>
+                        <WalletCtn showFooter={hasWallet}>
+                            {!cashtabLoaded ? (
+                                <LoadingCtn title="Cashtab Loading" />
+                            ) : (
+                                <>
+                                    {!hasWallet && !apiError ? (
+                                        <OnBoarding />
+                                    ) : (
+                                        <PullToRefresh
+                                            onRefresh={async () => {
+                                                // Sync wallet data instead of reloading the page
+                                                // This refreshes UTXOs, token balances, and transaction history
+                                                await update();
+                                                await refreshTransactionHistory();
+                                            }}
+                                            disabled={loading || !hasWallet}
+                                        >
+                                            <Header
+                                                path={location.pathname}
+                                            ></Header>
+                                            <ScreenWrapper>
+                                                {import.meta.env
+                                                    .VITE_BUILD_ENV !==
+                                                    'extension' && (
+                                                    <>
+                                                        {hasTab && (
+                                                            <EasterEgg
+                                                                src={TabCash}
+                                                                alt="tabcash"
+                                                            />
+                                                        )}
+                                                    </>
+                                                )}
+                                                <Routes>
                                                     <Route
-                                                        path=":tokenId"
-                                                        element={<Token />}
+                                                        path="/wallet"
+                                                        element={<Home />}
                                                     />
-                                                </Route>
-                                                <Route path="/token">
                                                     <Route
-                                                        index
+                                                        path="/receive"
+                                                        element={<Receive />}
+                                                    />
+
+                                                    <Route
+                                                        path="/create-token"
+                                                        element={
+                                                            <CreateToken />
+                                                        }
+                                                    />
+
+                                                    <Route
+                                                        path="/create-nft-collection"
+                                                        element={
+                                                            <CreateToken />
+                                                        }
+                                                    />
+
+                                                    <Route
+                                                        path="/send"
+                                                        element={<SendXec />}
+                                                    />
+                                                    <Route path="/send-token">
+                                                        <Route
+                                                            path=":tokenId"
+                                                            element={<Token />}
+                                                        />
+                                                    </Route>
+                                                    <Route path="/token">
+                                                        <Route
+                                                            index
+                                                            element={
+                                                                <Etokens />
+                                                            }
+                                                        />
+                                                        <Route
+                                                            path=":tokenId"
+                                                            element={<Token />}
+                                                        />
+                                                    </Route>
+                                                    <Route
+                                                        path="/airdrop"
+                                                        element={<Airdrop />}
+                                                    />
+                                                    <Route
+                                                        path="/backup"
+                                                        element={
+                                                            <BackupWallet />
+                                                        }
+                                                    />
+                                                    <Route
+                                                        path="/wallets"
+                                                        element={<Wallets />}
+                                                    />
+                                                    <Route
+                                                        path="/nfts"
+                                                        element={<Nfts />}
+                                                    />
+                                                    <Route
+                                                        path="/agora"
+                                                        element={<Agora />}
+                                                    />
+                                                    <Route
+                                                        path="/contacts"
+                                                        element={<Contacts />}
+                                                    />
+
+                                                    <Route
+                                                        path="/etokens"
                                                         element={<Etokens />}
                                                     />
                                                     <Route
-                                                        path=":tokenId"
-                                                        element={<Token />}
+                                                        path="/signverifymsg"
+                                                        element={
+                                                            <SignVerifyMsg />
+                                                        }
                                                     />
-                                                </Route>
-                                                <Route
-                                                    path="/airdrop"
-                                                    element={<Airdrop />}
-                                                />
-                                                <Route
-                                                    path="/backup"
-                                                    element={<BackupWallet />}
-                                                />
-                                                <Route
-                                                    path="/wallets"
-                                                    element={<Wallets />}
-                                                />
-                                                <Route
-                                                    path="/nfts"
-                                                    element={<Nfts />}
-                                                />
-                                                <Route
-                                                    path="/agora"
-                                                    element={<Agora />}
-                                                />
-                                                <Route
-                                                    path="/contacts"
-                                                    element={<Contacts />}
-                                                />
+                                                    <Route
+                                                        path="/configure"
+                                                        element={<Configure />}
+                                                    />
+                                                    {import.meta.env
+                                                        .VITE_BUILD_ENV !==
+                                                        'extension' &&
+                                                        import.meta.env
+                                                            .VITE_TESTNET !==
+                                                            'true' && (
+                                                            <>
+                                                                <Route
+                                                                    path="/rewards"
+                                                                    element={
+                                                                        <Rewards />
+                                                                    }
+                                                                />
+                                                            </>
+                                                        )}
+                                                    <Route
+                                                        path="/"
+                                                        element={<Home />}
+                                                    />
+                                                    <Route
+                                                        path="*"
+                                                        element={<NotFound />}
+                                                    />
+                                                </Routes>
+                                            </ScreenWrapper>
+                                        </PullToRefresh>
+                                    )}
+                                </>
+                            )}
+                        </WalletCtn>
+                        {hasWallet && (
+                            <Footer>
+                                <DesktopLogo>
+                                    <CashtabLogo src={Cashtab} alt="cashtab" />
+                                </DesktopLogo>
+                                <NavButton
+                                    active={
+                                        location.pathname === '/' ||
+                                        location.pathname === '/wallet'
+                                    }
+                                    onClick={() => navigate('/')}
+                                >
+                                    <span>Transactions</span>
+                                    <HomeIcon />
+                                </NavButton>
 
-                                                <Route
-                                                    path="/etokens"
-                                                    element={<Etokens />}
-                                                />
-                                                <Route
-                                                    path="/signverifymsg"
-                                                    element={<SignVerifyMsg />}
-                                                />
-                                                <Route
-                                                    path="/configure"
-                                                    element={<Configure />}
-                                                />
-                                                {import.meta.env
-                                                    .VITE_BUILD_ENV !==
-                                                    'extension' &&
-                                                    import.meta.env
-                                                        .VITE_TESTNET !==
-                                                        'true' && (
-                                                        <>
-                                                            <Route
-                                                                path="/rewards"
-                                                                element={
-                                                                    <Rewards />
-                                                                }
-                                                            />
-                                                        </>
-                                                    )}
-                                                <Route
-                                                    path="/"
-                                                    element={<Home />}
-                                                />
-                                                <Route
-                                                    path="*"
-                                                    element={<NotFound />}
-                                                />
-                                            </Routes>
-                                        </ScreenWrapper>
-                                    </PullToRefresh>
-                                )}
-                            </>
-                        )}
-                    </WalletCtn>
-                    {hasWallet && (
-                        <Footer>
-                            <DesktopLogo>
-                                <CashtabLogo src={Cashtab} alt="cashtab" />
-                            </DesktopLogo>
-                            <NavButton
-                                active={
-                                    location.pathname === '/' ||
-                                    location.pathname === '/wallet'
-                                }
-                                onClick={() => navigate('/')}
-                            >
-                                <span>Transactions</span>
-                                <HomeIcon />
-                            </NavButton>
-
-                            <NavButton
-                                aria-label="Send Screen"
-                                active={
-                                    location.pathname === '/send' ||
-                                    location.pathname === '/receive'
-                                }
-                                onClick={() => navigate('/send')}
-                            >
-                                <span>Send / Receive</span>
-                                <SendReceiveIcon />
-                            </NavButton>
-                            <NavButton
-                                aria-label="Tokens"
-                                active={
-                                    location.pathname === '/etokens' ||
-                                    location.pathname === '/create-token' ||
-                                    location.pathname ===
-                                        '/create-nft-collection'
-                                }
-                                onClick={() => navigate('/etokens')}
-                            >
-                                <span>Tokens</span>
-                                <TokensIcon />
-                            </NavButton>
-                            <NavButton
-                                aria-label="Agora"
-                                active={location.pathname === '/agora'}
-                                onClick={() => navigate('/agora')}
-                            >
-                                <span>Agora</span>
-                                <DogeIcon />
-                            </NavButton>
-                            <NavButton
-                                aria-label="Tools"
-                                active={
-                                    location.pathname === '/contacts' ||
-                                    location.pathname === '/signverifymsg' ||
-                                    location.pathname === '/airdrop' ||
-                                    location.pathname === '/rewards'
-                                }
-                                onClick={() => navigate('/contacts')}
-                            >
-                                <span>Tools</span>
-                                <ToolsIcon />
-                            </NavButton>
-                            <NavButton
-                                aria-label="Settings"
-                                active={location.pathname === '/configure'}
-                                onClick={() => navigate('/configure')}
-                            >
-                                <span>Settings</span>
-                                <SettingsIcon />
-                            </NavButton>
-                            {/* <NavWrapper
+                                <NavButton
+                                    aria-label="Send Screen"
+                                    active={
+                                        location.pathname === '/send' ||
+                                        location.pathname === '/receive'
+                                    }
+                                    onClick={() => navigate('/send')}
+                                >
+                                    <span>Send / Receive</span>
+                                    <SendReceiveIcon />
+                                </NavButton>
+                                <NavButton
+                                    aria-label="Tokens"
+                                    active={
+                                        location.pathname === '/etokens' ||
+                                        location.pathname === '/create-token' ||
+                                        location.pathname ===
+                                            '/create-nft-collection'
+                                    }
+                                    onClick={() => navigate('/etokens')}
+                                >
+                                    <span>Tokens</span>
+                                    <TokensIcon />
+                                </NavButton>
+                                <NavButton
+                                    aria-label="Agora"
+                                    active={location.pathname === '/agora'}
+                                    onClick={() => navigate('/agora')}
+                                >
+                                    <span>Agora</span>
+                                    <DogeIcon />
+                                </NavButton>
+                                <NavButton
+                                    aria-label="Tools"
+                                    active={
+                                        location.pathname === '/contacts' ||
+                                        location.pathname ===
+                                            '/signverifymsg' ||
+                                        location.pathname === '/airdrop' ||
+                                        location.pathname === '/rewards'
+                                    }
+                                    onClick={() => navigate('/contacts')}
+                                >
+                                    <span>Tools</span>
+                                    <ToolsIcon />
+                                </NavButton>
+                                <NavButton
+                                    aria-label="Settings"
+                                    active={location.pathname === '/configure'}
+                                    onClick={() => navigate('/configure')}
+                                >
+                                    <span>Settings</span>
+                                    <SettingsIcon />
+                                </NavButton>
+                                {/* <NavWrapper
                                 className="nav-menu-container"
                                 title="Show Other Screens"
                                 onClick={() => {
@@ -579,9 +598,10 @@ const App = () => {
                                     </NavItem>
                                 </NavMenu>
                             </NavWrapper> */}
-                        </Footer>
-                    )}
-                </WalletBody>
+                            </Footer>
+                        )}
+                    </WalletBody>
+                </BiometricStartupGate>
                 <Tooltip
                     id="cashtab-tooltip"
                     place="bottom-end"
