@@ -6,7 +6,7 @@
  * Copy text: prefer Clipboard API; fall back to execCommand copy for insecure HTTP
  * (e.g. local dev without TLS) where `navigator.clipboard` is unavailable.
  *
- * Exposed on `window` for plain-script pages (`index.html`, `test.html`).
+ * Exposed on `window` for plain-script pages (`index.html`).
  *
  * @param {string} text
  * @returns {Promise<void>}

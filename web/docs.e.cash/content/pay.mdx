@@ -1,0 +1,41 @@
+---
+title: pay.e.cash
+---
+
+# pay.e.cash
+
+Universal eCash payment URLs use a BIP21 payload in the `bip21` query parameter:
+
+`https://pay.e.cash?bip21=<bip21-uri>`
+
+See the [BIP · eCash additions](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/doc/standards/bip21-ecash-additions.md) spec for supported parameters.
+
+## How to use pay.e.cash deep links in your App
+
+You can programmatically generate intended txs for your users and encode them in a link. A user clicking the link will open the tx for their review and approval in Cashtab.
+
+## Example payment links
+
+All examples use the same demo address; adjust `bip21` for your integration.
+
+<PaySampleUrlRow
+    title="Simple XEC send"
+    description="Prepared XEC send with amount"
+    url="https://pay.e.cash?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=12.34"
+/>
+
+<PaySampleUrlRow
+    title="XEC send with op_return_raw"
+    description="Prepared XEC send with OP_RETURN payload"
+    url="https://pay.e.cash?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?amount=17&op_return_raw=0400746162"
+/>
+
+<PaySampleUrlRow
+    title="Token send"
+    description="Prepared token send with token_id and token qty"
+    url="https://pay.e.cash?bip21=ecash:prfhcnyqnl5cgrnmlfmms675w93ld7mvvqd0y8lz07?token_id=0387947fd575db4fb19a3e322f635dec37fd192b5941625b66bc4b2c3008cbf0&token_decimalized_qty=1"
+/>
+
+## Landing page
+
+Technical overview and supported wallets are on **[pay.e.cash](https://pay.e.cash/)**.

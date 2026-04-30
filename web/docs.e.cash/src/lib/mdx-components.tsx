@@ -6,11 +6,13 @@ import type { MDXComponents } from 'mdx/types';
 import Link from 'next/link';
 import { CongratsTryUrl } from '@/components/CongratsTryUrl';
 import { ChronikLivePlayground } from '@/components/chronik-live/ChronikLivePlayground';
+import { PaySampleUrlRow } from '@/components/PaySampleUrlRow';
 
 export function getMdxComponents(): MDXComponents {
     return {
         CongratsTryUrl,
         ChronikLivePlayground,
+        PaySampleUrlRow,
         a: ({ href, children, ...props }) => {
             const h = href ?? '';
             if (

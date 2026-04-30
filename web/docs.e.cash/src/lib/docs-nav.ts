@@ -12,6 +12,10 @@ export const docsNav: {
         links: [{ label: 'Overview', href: '/' }],
     },
     {
+        title: 'Payments',
+        links: [{ label: 'pay.e.cash', href: '/pay/' }],
+    },
+    {
         title: 'Run Chronik',
         links: [
             { label: 'Download & install', href: '/chronik-setup/download/' },

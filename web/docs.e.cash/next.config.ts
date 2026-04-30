@@ -17,6 +17,18 @@ const nextConfig: NextConfig = {
                 permanent: false,
                 basePath: false,
             },
+            {
+                source: '/pay',
+                destination: '/chronik/pay/',
+                permanent: false,
+                basePath: false,
+            },
+            {
+                source: '/pay/',
+                destination: '/chronik/pay/',
+                permanent: false,
+                basePath: false,
+            },
         ];
     },
 };

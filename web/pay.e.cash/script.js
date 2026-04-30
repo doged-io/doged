@@ -9,12 +9,10 @@ const paymentSummaryEl = document.getElementById('payment-summary');
 const fullBip21BoxEl = document.getElementById('full-bip21-box');
 const openWebLinkEl = document.getElementById('open-web-link');
 const copyBip21ButtonEl = document.getElementById('copy-bip21-btn');
-const copyUrlButtons = document.querySelectorAll('.copy-url-btn');
 
 let currentBip21 = null;
 let copyBip21TooltipTimeoutId = null;
 let fullBip21CopiedTimeoutId = null;
-const copyUrlTooltipTimeoutIds = new WeakMap();
 
 const parseBip21FromQuery = () => {
     const params = new URLSearchParams(window.location.search);
@@ -119,28 +117,4 @@ fullBip21BoxEl?.addEventListener('click', async () => {
     } catch {
         // Ignore box tooltip on copy failure; primary copy button still indicates errors.
     }
-});
-
-copyUrlButtons.forEach(button => {
-    button.addEventListener('click', async () => {
-        const url = button.getAttribute('data-url');
-        if (!url) {
-            return;
-        }
-        try {
-            await window.copyTextToClipboard(`${window.location.origin}${url}`);
-            button.classList.add('copied');
-            const existingTimeoutId = copyUrlTooltipTimeoutIds.get(button);
-            if (existingTimeoutId) {
-                clearTimeout(existingTimeoutId);
-            }
-            const timeoutId = setTimeout(() => {
-                button.classList.remove('copied');
-                copyUrlTooltipTimeoutIds.delete(button);
-            }, 1000);
-            copyUrlTooltipTimeoutIds.set(button, timeoutId);
-        } catch {
-            // No visual change on failure.
-        }
-    });
 });
