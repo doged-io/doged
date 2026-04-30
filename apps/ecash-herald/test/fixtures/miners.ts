@@ -523,6 +523,23 @@ const minerTestFixtures = [
         payoutOutputScript: 'not the one so it is parsed from hex',
         parsed: 'Himpool',
     },
+    // hitablock.com - parsed from payout script
+    {
+        height: '942044',
+        coinbaseHex:
+            '03f2710e04b3efef690881000018230000000e68697461626c6f636b2e636f6d00',
+        payoutOutputScript:
+            '76a914bec72f3da4164c9bdf964916f7e78cad5b279a2a88ac',
+        parsed: 'hitablock.com',
+    },
+    // hitablock.com - parsed from coinbase hex fragment
+    {
+        height: '942044',
+        coinbaseHex:
+            '03f2710e04b3efef690881000018230000000e68697461626c6f636b2e636f6d00',
+        payoutOutputScript: 'not the one so it is parsed from hex',
+        parsed: 'hitablock.com',
+    },
 ];
 
 export default minerTestFixtures;

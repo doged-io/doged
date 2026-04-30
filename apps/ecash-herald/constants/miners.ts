@@ -224,6 +224,13 @@ const miners: Miners = {
                 coinbaseHexFragment: '48696d706f6f6c', // "Himpool" ASCII
             },
         ],
+        [
+            '76a914bec72f3da4164c9bdf964916f7e78cad5b279a2a88ac',
+            {
+                miner: 'hitablock.com',
+                coinbaseHexFragment: '68697461626c6f636b2e636f6d', // "hitablock.com" ASCII
+            },
+        ],
     ],
 };
 
