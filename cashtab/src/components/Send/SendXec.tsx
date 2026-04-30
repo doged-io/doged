@@ -506,6 +506,102 @@ interface CashtabTxInfo {
     parseAllAsBip21?: boolean;
     returnToBrowser?: boolean;
 }
+
+/**
+ * Parses `#/send?...` for URL-driven tx state. Applies two concerns:
+ * (1) `flagUrlBasedTransaction` — mirrors legacy behavior for any hash query segment
+ *     except “token picker only” (`mode=token` without address/BIP21).
+ * (2) `txApply` — only when legacy / BIP21 params are usable for `txInfoFromUrl`.
+ */
+const parseCashtabTxInfoFromSendHash = (
+    hashRoute: string | undefined,
+): {
+    /** True when hash has `?` and callers should inspect the rest */
+    hasQuerySegment: boolean;
+    flagUrlBasedTransaction: boolean;
+    txApply: null | {
+        txInfo: CashtabTxInfo;
+        extensionTabId: string | null;
+    };
+} => {
+    if (
+        typeof hashRoute === 'undefined' ||
+        !hashRoute ||
+        hashRoute === '#/send' ||
+        hashRoute.indexOf('?') === -1
+    ) {
+        return {
+            hasQuerySegment: false,
+            flagUrlBasedTransaction: false,
+            txApply: null,
+        };
+    }
+
+    const txInfoStr = hashRoute.slice(hashRoute.indexOf('?') + 1);
+
+    const urlParamsForFlag = new URLSearchParams(txInfoStr);
+    const isSendTokenViewOnly =
+        urlParamsForFlag.get('mode') === 'token' &&
+        !urlParamsForFlag.has('address') &&
+        !txInfoStr.startsWith('bip21');
+
+    const txInfo: CashtabTxInfo = {};
+    const parseAllAsBip21 = txInfoStr.startsWith('bip21');
+
+    if (parseAllAsBip21) {
+        txInfo.bip21 = txInfoStr.slice('bip21='.length);
+        if (txInfo.bip21.includes('&returnToBrowser=1')) {
+            txInfo.bip21 = txInfo.bip21.replace('&returnToBrowser=1', '');
+            txInfo.returnToBrowser = true;
+        }
+    } else {
+        const legacyParams = new URLSearchParams(txInfoStr);
+        const duplicatedParams =
+            new Set(legacyParams.keys()).size !==
+            Array.from(legacyParams.keys()).length;
+        if (!duplicatedParams) {
+            const supportedLegacyParams = ['address', 'value'];
+            for (const paramKeyValue of legacyParams) {
+                const paramKey = paramKeyValue[0];
+                const paramValue = paramKeyValue[1];
+                if (!supportedLegacyParams.includes(paramKey)) {
+                    continue;
+                }
+                if (paramKey === 'address') {
+                    txInfo.address = paramValue;
+                } else if (paramKey === 'value') {
+                    txInfo.value = paramValue;
+                }
+            }
+        }
+    }
+
+    const validUrlParams =
+        (parseAllAsBip21 && 'bip21' in txInfo) ||
+        ('address' in txInfo && 'value' in txInfo) ||
+        ('address' in txInfo && !('value' in txInfo));
+
+    if (!validUrlParams) {
+        return {
+            hasQuerySegment: true,
+            flagUrlBasedTransaction: !isSendTokenViewOnly,
+            txApply: null,
+        };
+    }
+
+    txInfo.parseAllAsBip21 = parseAllAsBip21;
+    const tabParams = new URLSearchParams(txInfoStr);
+
+    return {
+        hasQuerySegment: true,
+        flagUrlBasedTransaction: !isSendTokenViewOnly,
+        txApply: {
+            txInfo,
+            extensionTabId: tabParams.get('tabId'),
+        },
+    };
+};
+
 const SendXec: React.FC = () => {
     const ContextValue = useContext(WalletContext);
     if (!isWalletContextLoaded(ContextValue)) {
@@ -1571,7 +1667,7 @@ const SendXec: React.FC = () => {
     };
 
     useEffect(() => {
-        // Manually parse for txInfo object on page load when Send.js is loaded with a query string
+        // One-shot navigation state (reply / contacts / airdrop). Hash URL parsing runs in `location.search` effect below.
 
         // if this was routed from Wallet screen's Reply to message link then prepopulate the address and value field
         if (location && location.state && location.state.replyAddress) {
@@ -1621,94 +1717,29 @@ const SendXec: React.FC = () => {
 
             setAirdropFlag(true);
         }
+    }, []);
 
-        // Do not set txInfo in state if query strings are not present
-        if (
-            !window.location ||
-            !window.location.hash ||
-            window.location.hash === '#/send'
-        ) {
+    // Hash-route tx params (BIP21 / legacy) and re-parse when the route query changes
+    // (e.g. a new deep link while the Send screen instance stays mounted).
+    useEffect(() => {
+        const { hasQuerySegment, flagUrlBasedTransaction, txApply } =
+            parseCashtabTxInfoFromSendHash(window.location.hash);
+        if (!hasQuerySegment) {
             return;
         }
-
-        // Get everything after the first ? mark
-        const hashRoute = window.location.hash;
-        // The "+1" is because we want to also omit the first question mark
-        // So we need to slice at 1 character past it
-        const txInfoStr = hashRoute.slice(hashRoute.indexOf('?') + 1);
-        const txInfo: CashtabTxInfo = {};
-
-        // Set URL-based transaction flag as soon as we detect URL parameters
-        // (but not when the only param is mode=token, e.g. navigating to Send Token view)
-        const urlParamsForFlag = new URLSearchParams(txInfoStr);
-        const isSendTokenViewOnly =
-            urlParamsForFlag.get('mode') === 'token' &&
-            !urlParamsForFlag.has('address') &&
-            !txInfoStr.startsWith('bip21');
-        if (!isSendTokenViewOnly) {
+        if (flagUrlBasedTransaction) {
             setIsUrlBasedTransaction(true);
         }
-
-        // If bip21 is the first param, parse the whole string as a bip21 param string
-        const parseAllAsBip21 = txInfoStr.startsWith('bip21');
-
-        if (parseAllAsBip21) {
-            // Cashtab requires param string to start with bip21 if this is requesting bip21 validation
-            txInfo.bip21 = txInfoStr.slice('bip21='.length);
-            // If bip21 param string contains &returnToBrowser=1, remove it and set returnToBrowser flag
-            if (txInfo.bip21.includes('&returnToBrowser=1')) {
-                txInfo.bip21 = txInfo.bip21.replace('&returnToBrowser=1', '');
-                txInfo.returnToBrowser = true;
-            }
-        } else {
-            // Parse for legacy amount and value params
-            const legacyParams = new URLSearchParams(txInfoStr);
-            // Check for duplicated params
-            const duplicatedParams =
-                new Set(legacyParams.keys()).size !==
-                Array.from(legacyParams.keys()).length;
-            if (!duplicatedParams) {
-                const supportedLegacyParams = ['address', 'value'];
-                // Iterate over
-                for (const paramKeyValue of legacyParams) {
-                    const paramKey = paramKeyValue[0];
-                    if (!supportedLegacyParams.includes(paramKey)) {
-                        // ignore unsupported params
-                        continue;
-                    }
-                    txInfo[
-                        paramKey as keyof Omit<CashtabTxInfo, 'parseAllAsBip21'>
-                    ] = paramKeyValue[1];
-                }
-            }
+        if (!txApply) {
+            return;
         }
-        // Only set txInfoFromUrl if you have valid legacy params or bip21
-        const validUrlParams =
-            (parseAllAsBip21 && 'bip21' in txInfo) ||
-            // Good if we have both address and value
-            ('address' in txInfo && 'value' in txInfo) ||
-            // Good if we have address and no value
-            ('address' in txInfo && !('value' in txInfo));
-        // If we 'value' key with no address, no good
-        // Note: because only the address and value keys are handled below,
-        // it's not an issue if we get all kinds of other garbage params
-
-        if (validUrlParams) {
-            // This is a tx request from the URL
-
-            // Save this flag in state var so it can be parsed in useEffect
-            txInfo.parseAllAsBip21 = parseAllAsBip21;
-            setTxInfoFromUrl(txInfo);
-
-            // Check if this is an extension transaction by looking for tabId in URL parameters
-            const urlParams = new URLSearchParams(txInfoStr);
-            const tabId = urlParams.get('tabId');
-            if (tabId) {
-                setIsExtensionTransaction(true);
-                setExtensionTabId(parseInt(tabId));
-            }
+        setTxInfoFromUrl(txApply.txInfo);
+        const tabId = txApply.extensionTabId;
+        if (tabId) {
+            setIsExtensionTransaction(true);
+            setExtensionTabId(parseInt(tabId));
         }
-    }, []);
+    }, [location.search]);
 
     useEffect(() => {
         if (txInfoFromUrl === false) {
