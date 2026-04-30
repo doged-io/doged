@@ -60,8 +60,13 @@ export function paybuttonDeepLinkToBip21Uri(
             url.searchParams.delete('b');
         }
 
+        let bip21Params = url.searchParams.toString();
+        if (bip21Params.length > 0) {
+            bip21Params = '?' + bip21Params;
+        }
+
         return {
-            bip21Uri: address + '?' + url.searchParams.toString(),
+            bip21Uri: address + bip21Params,
             returnToBrowser: b === '1',
         };
     } catch {
