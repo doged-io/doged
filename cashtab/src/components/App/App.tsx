@@ -158,8 +158,7 @@ const App = () => {
                 ) {
                     // Decoded canonical BIP21 (ecash:...?...) — same string Cashtab Web uses in
                     // #/send?bip21=ecash:...?... (readable, not percent-encoded in the send hash).
-                    const bip21Param = parsedUrl.searchParams.get('bip21');
-                    bip21Candidate = bip21Param ? bip21Param : '';
+                    bip21Candidate = parsedUrl.search.split('bip21=', 2)[1];
                 } else {
                     // PayButton deep links: https://paybutton.org/app?address=...&b=1
                     const converted = paybuttonDeepLinkToBip21Uri(trimmedUrl);
