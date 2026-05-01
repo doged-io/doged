@@ -8,12 +8,25 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Universal eCash Payments</title>
+        <link rel="icon" type="image/png" href="./pay.e.cash.logo.png" />
+        <link rel="apple-touch-icon" href="./pay.e.cash.logo.png" />
         <link rel="stylesheet" href="./styles.css" />
     </head>
     <body>
         <main class="page">
             <section id="home-view" class="card">
-                <h1>Universal eCash Payments</h1>
+                <header class="site-page-title">
+                    <p class="site-logo-wrap">
+                        <img
+                            class="site-logo"
+                            src="./pay.e.cash.logo.png"
+                            alt=""
+                            width="50"
+                            height="45"
+                        />
+                    </p>
+                    <h1>Universal eCash Payments</h1>
+                </header>
                 <h2>How it works</h2>
                 <p>
                     Generate
@@ -87,7 +100,18 @@
             </section>
 
             <section id="fallback-view" class="card hidden">
-                <h1>Open this payment in a supported eCash wallet</h1>
+                <header class="site-page-title site-page-title--compact">
+                    <p class="site-logo-wrap site-logo-wrap--compact">
+                        <img
+                            class="site-logo site-logo--compact"
+                            src="./pay.e.cash.logo.png"
+                            alt=""
+                            width="50"
+                            height="45"
+                        />
+                    </p>
+                    <h1>Open this payment in a supported eCash wallet</h1>
+                </header>
                 <p id="payment-summary">Preparing payment link...</p>
                 <button
                     id="full-bip21-box"

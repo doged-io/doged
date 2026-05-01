@@ -40,6 +40,53 @@ body {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
 }
 
+.site-page-title {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(14px, 3vw, 24px);
+    margin: 0 0 12px;
+}
+
+.site-page-title--compact {
+    gap: clamp(10px, 2vw, 18px);
+    margin-bottom: 10px;
+}
+
+.site-page-title .site-logo-wrap {
+    margin: 0;
+    text-align: left;
+    flex: 0 0 auto;
+}
+
+.site-page-title h1 {
+    margin: 0;
+    flex: 1 1 12rem;
+    min-width: 0;
+    text-align: left;
+}
+
+.site-logo-wrap {
+    margin: 0;
+    text-align: left;
+}
+
+.site-logo-wrap--compact {
+    margin: 0;
+}
+
+.site-logo {
+    display: block;
+    max-width: min(120px, 28vw);
+    height: auto;
+    margin: 0;
+}
+
+.site-logo--compact {
+    max-width: min(72px, 22vw);
+}
+
 .hidden {
     display: none;
 }
