@@ -39,7 +39,10 @@ import { Capacitor } from '@capacitor/core';
 import TabCash from 'assets/tabcash.png';
 import { hasEnoughToken } from 'wallet';
 import { parseAddressInput } from 'validation';
-import { paybuttonDeepLinkToBip21Uri } from 'paybutton';
+import {
+    paybuttonDeepLinkToBip21Uri,
+    payecashDeepLinkToBip21Uri,
+} from 'deeplinks';
 import ServiceWorkerWrapper from 'components/Common/ServiceWorkerWrapper';
 import WebApp from 'components/AppModes/WebApp';
 import Extension from 'components/AppModes/Extension';
@@ -145,32 +148,27 @@ const App = () => {
 
         const handleBip21Uri = (url: string) => {
             const trimmedUrl = url.trim();
-            let bip21Candidate = trimmedUrl;
+            let bip21Candidate = null;
             let returnToBrowser = false;
 
             try {
-                const parsedUrl = new URL(trimmedUrl);
-                const supportedPayHosts = ['pay.e.cash'];
-                if (
-                    parsedUrl.protocol === 'https:' &&
-                    supportedPayHosts.includes(parsedUrl.hostname) &&
-                    parsedUrl.searchParams.get('bip21') !== null
-                ) {
-                    // Decoded canonical BIP21 (ecash:...?...) — same string Cashtab Web uses in
-                    // #/send?bip21=ecash:...?... (readable, not percent-encoded in the send hash).
-                    bip21Candidate = parsedUrl.search.split('bip21=', 2)[1];
-                } else {
+                const payECashResult = payecashDeepLinkToBip21Uri(trimmedUrl);
+                bip21Candidate = payECashResult.bip21Uri || bip21Candidate;
+                returnToBrowser = payECashResult.returnToBrowser;
+
+                if (bip21Candidate === null) {
                     // PayButton deep links: https://paybutton.org/app?address=...&b=1
-                    const converted = paybuttonDeepLinkToBip21Uri(trimmedUrl);
-                    bip21Candidate = converted.bip21Uri;
-                    returnToBrowser = converted.returnToBrowser;
+                    const payButtonResult =
+                        paybuttonDeepLinkToBip21Uri(trimmedUrl);
+                    bip21Candidate = payButtonResult.bip21Uri || bip21Candidate;
+                    returnToBrowser = payButtonResult.returnToBrowser;
                 }
             } catch {
-                // Not a URL object (e.g. plain ecash: uri)
-                const converted = paybuttonDeepLinkToBip21Uri(trimmedUrl);
-                bip21Candidate = converted.bip21Uri;
-                returnToBrowser = converted.returnToBrowser;
+                // Continue parsing as a standalone BIP21 URI
             }
+
+            // If no bip21Candidate was found, use the original URL as the bip21Candidate
+            bip21Candidate ??= trimmedUrl;
 
             // Only do a limited check here that this is a valid BIP21 URI.
             // The amount is not validated at this point, this will be handled

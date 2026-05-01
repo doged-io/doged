@@ -1,43 +1,35 @@
-// Copyright (c) 2025-present The Bitcoin developers
+// Copyright (c) 2026 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 /**
- * Deep link protocols detection and decoding
+ * PayButton deep link detection and conversion to BIP21 URI
  *
  * PayButton spec: https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/doc/standards/paybutton.md
  *
- * The PayButton protocol identifier is: 0450415900
- * - 04: Pushdata opcode for 4 bytes
- * - 50415900: "PAY" + null byte (0x00) in ASCII
+ * PayButton deep links: https://paybutton.org/app?address=...&amount=...&b=1
+ * - address: BIP21 address (ecash:...)
+ * - Other params (amount, op_return_raw, etc.) become BIP21 query params
  *
- * pay.e.cash: a simple BIP21 wrapper
- */
-
-/**
- * PayButton protocol identifier in hex (without OP_RETURN opcode)
- * This is what appears in the op_return_raw field of a BIP21 URI
- */
-const PAYBUTTON_PROTOCOL_ID = '0450415900';
-
-/**
- * Check if an op_return_raw hex string is a PayButton transaction
+ * pay.e.cash deep links: https://docs.e.cash/pay
+ * - bip21=<bip21-uri> wraps the BIP21 URI in a query string
  *
- * @param opReturnRaw - Hex string of the OP_RETURN data (without 6a OP_RETURN opcode)
- * @returns true if it's a PayButton transaction
+ * For both:
+ * - b=1: return to browser after send/reject
  */
-export function isPayButtonTransaction(opReturnRaw: string): boolean {
-    return opReturnRaw.startsWith(PAYBUTTON_PROTOCOL_ID);
-}
 
-export interface DeepLinkToBip21UriResult {
+export interface DeepLinkResult {
     bip21Uri: string | null;
     returnToBrowser: boolean;
 }
 
-export function paybuttonDeepLinkToBip21Uri(
-    deepLink: string,
-): DeepLinkToBip21UriResult {
+/**
+ * Convert a PayButton deep link URL to a BIP21 URI
+ *
+ * @param deepLink - URL like https://paybutton.org/app?address=ecash:...&amount=1&b=1
+ * @returns BIP21 URI and returnToBrowser flag, or bip21Uri=null if not a paybutton URL
+ */
+export function paybuttonDeepLinkToBip21Uri(deepLink: string): DeepLinkResult {
     try {
         const url = new URL(deepLink);
 
@@ -62,13 +54,11 @@ export function paybuttonDeepLinkToBip21Uri(
             url.searchParams.delete('b');
         }
 
-        let bip21Params = url.searchParams.toString();
-        if (bip21Params.length > 0) {
-            bip21Params = '?' + bip21Params;
-        }
+        const queryString = url.searchParams.toString();
+        const bip21Uri = queryString ? `${address}?${queryString}` : address;
 
         return {
-            bip21Uri: address + bip21Params,
+            bip21Uri,
             returnToBrowser: b === '1',
         };
     } catch {
@@ -76,10 +66,7 @@ export function paybuttonDeepLinkToBip21Uri(
     }
 }
 
-export function payecashDeepLinkToBip21Uri(
-    deepLink: string,
-): DeepLinkToBip21UriResult {
-    const bip21QueryParam = '?bip21=';
+export function payecashDeepLinkToBip21Uri(deepLink: string): DeepLinkResult {
     try {
         const url = new URL(deepLink);
 
@@ -93,26 +80,25 @@ export function payecashDeepLinkToBip21Uri(
             url.protocol !== 'https:' ||
             url.hostname !== 'pay.e.cash' ||
             (url.pathname !== '' && url.pathname !== '/') ||
-            !url.search.startsWith(bip21QueryParam)
+            url.searchParams.get('bip21') === null
         ) {
             return { bip21Uri: null, returnToBrowser: false };
         }
 
-        const bip21Uri = new URL(url.search.slice(bip21QueryParam.length));
+        const rawBip21Uri = new URL(url.search.split('bip21=', 2)[1]);
 
         // b=1 means return to browser
-        const b = bip21Uri.searchParams.get('b');
+        const b = rawBip21Uri.searchParams.get('b');
         if (b !== null) {
-            bip21Uri.searchParams.delete('b');
+            rawBip21Uri.searchParams.delete('b');
         }
 
-        let bip21Params = bip21Uri.searchParams.toString();
-        if (bip21Params.length > 0) {
-            bip21Params = '?' + bip21Params;
-        }
+        const address = rawBip21Uri.protocol + rawBip21Uri.pathname;
+        const queryString = rawBip21Uri.searchParams.toString();
+        const bip21Uri = queryString ? `${address}?${queryString}` : address;
 
         return {
-            bip21Uri: bip21Uri.protocol + bip21Uri.pathname + bip21Params,
+            bip21Uri,
             returnToBrowser: b === '1',
         };
     } catch {

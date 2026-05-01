@@ -46,34 +46,33 @@ describe('deeplink.ts', function () {
             });
         });
 
-        // FIXME: add support for return to browser to pay.e.cash deep links
-        // it('Should set returnToBrowser when inner URI has b=1 and strip b', function () {
-        //     const deepLink =
-        //         'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?b=1';
-        //     expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-        //         bip21Uri: 'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5',
-        //         returnToBrowser: true,
-        //     });
-        // });
+        it('Should set returnToBrowser when inner URI has b=1 and strip b', function () {
+            const deepLink =
+                'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?b=1';
+            expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
+                bip21Uri: 'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5',
+                returnToBrowser: true,
+            });
+        });
 
-        // it('Should not set returnToBrowser for b other than 1 but still strip b', function () {
-        //     const deepLink =
-        //         'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?b=0';
-        //     expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-        //         bip21Uri: 'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5',
-        //         returnToBrowser: false,
-        //     });
-        // });
+        it('Should not set returnToBrowser for b other than 1 but still strip b', function () {
+            const deepLink =
+                'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?b=0';
+            expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
+                bip21Uri: 'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5',
+                returnToBrowser: false,
+            });
+        });
 
-        // it('Should leave amount and strip only b when both present', function () {
-        //     const deepLink =
-        //         'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?amount=2&b=1';
-        //     expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
-        //         bip21Uri:
-        //             'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?amount=2',
-        //         returnToBrowser: true,
-        //     });
-        // });
+        it('Should leave amount and strip only b when both present', function () {
+            const deepLink =
+                'https://pay.e.cash/?bip21=ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?amount=2&b=1';
+            expect(payecashDeepLinkToBip21Uri(deepLink)).to.deep.equal({
+                bip21Uri:
+                    'ecash:qp7g5uyxvun4r5afffs6pfy27eyhcqtj9cev06d8s5?amount=2',
+                returnToBrowser: true,
+            });
+        });
 
         it('Should not parse wrong host', function () {
             const deepLink =
