@@ -221,6 +221,20 @@ body {
     height: 64px;
 }
 
+.feature-icon.feature-icon-text {
+    width: 96px;
+    height: 96px;
+    padding: 8px;
+    margin: 0 auto 40px;
+    color: #e3e3e3;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: break-word;
+}
+
 .feature-title {
     font-size: 24px;
     font-weight: 600;
