@@ -57,24 +57,3 @@ export async function renderMdxSlug(slugParts: string[]) {
         slug,
     };
 }
-
-export async function renderIntro() {
-    const filePath = path.join(process.cwd(), 'content', 'intro.mdx');
-    const source = await fs.readFile(filePath, 'utf8');
-    const { content, frontmatter } = await compileMDX<
-        DocFrontmatter | Record<string, unknown>
-    >({
-        source,
-        components: getMdxComponents(),
-        options: {
-            parseFrontmatter: true,
-            mdxOptions: {
-                remarkPlugins: [remarkGfm],
-            },
-        },
-    });
-    return {
-        content,
-        frontmatter: frontmatter as DocFrontmatter,
-    };
-}

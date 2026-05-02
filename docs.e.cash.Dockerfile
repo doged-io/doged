@@ -48,7 +48,7 @@ COPY pnpm-lock.yaml .
 COPY package.json .
 
 COPY --from=builder /app/web/docs.e.cash/.next ./web/docs.e.cash/.next
-# next start still loads next.config (basePath, redirects); without it routes 404 under /chronik.
+# next start loads next.config (e.g. trailingSlash).
 COPY --from=builder /app/web/docs.e.cash/next.config.ts ./web/docs.e.cash/next.config.ts
 COPY --from=builder /app/web/docs.e.cash/package.json ./web/docs.e.cash/package.json
 # RSC / request-time rendering reads Markdown from disk (see src/lib/render-doc.tsx).

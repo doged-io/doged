@@ -19,13 +19,41 @@ const firaCode = Fira_Code({
     weight: ['400', '500', '600'],
 });
 
+const siteTitle = 'eCash Developer Documentation';
+
+const siteDescription =
+    'The official eCash Developer Documentation hub. Documentation for libraries and services published by BitcoinABC, the developer team behind eCash (XEC).';
+
+const socialCardPath = '/social.jpg';
+
 export const metadata: Metadata = {
+    metadataBase: new URL('https://docs.e.cash'),
     title: {
-        default: 'Bitcoin ABC Documentation',
-        template: '%s · Bitcoin ABC Documentation',
+        default: siteTitle,
+        template: '%s · eCash docs',
     },
-    description:
-        'Documentation for Bitcoin ABC: Chronik, APIs, and the broader monorepo.',
+    description: siteDescription,
+    openGraph: {
+        title: siteTitle,
+        description: siteDescription,
+        siteName: siteTitle,
+        locale: 'en_US',
+        type: 'website',
+        images: [
+            {
+                url: socialCardPath,
+                width: 1200,
+                height: 630,
+                alt: siteTitle,
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: siteTitle,
+        description: siteDescription,
+        images: [socialCardPath],
+    },
 };
 
 export default function RootLayout({

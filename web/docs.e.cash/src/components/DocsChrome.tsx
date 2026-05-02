@@ -115,10 +115,8 @@ export function DocsChrome({ children }: { children: React.ReactNode }) {
                         className="inline-block text-lg font-semibold tracking-tight text-primaryText"
                         onClick={() => setMobileNavOpen(false)}
                     >
-                        <span className="docs-gradient-text">Bitcoin ABC</span>{' '}
-                        <span className="text-secondaryText">
-                            documentation
-                        </span>
+                        <span className="docs-gradient-text">eCash</span>{' '}
+                        <span className="text-secondaryText">docs</span>
                     </Link>
                 </header>
                 <main className="w-full min-w-0 overflow-x-hidden px-4 py-10 sm:px-6 lg:px-10">

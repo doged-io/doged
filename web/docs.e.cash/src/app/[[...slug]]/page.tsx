@@ -2,8 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+import { DocsHome } from '@/components/DocsHome';
 import { getAllDocRelPaths } from '@/lib/paths';
-import { renderIntro, renderMdxSlug } from '@/lib/render-doc';
+import { renderMdxSlug } from '@/lib/render-doc';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const slugParts = slug ?? [];
     if (slugParts.length === 0) {
-        return { title: 'Home' };
+        return { title: 'Documentation hub' };
     }
     const doc = await renderMdxSlug(slugParts);
     if (!doc?.frontmatter.title) {
@@ -37,8 +38,7 @@ export default async function DocPage({ params }: Props) {
     const slugParts = slug ?? [];
 
     if (slugParts.length === 0) {
-        const { content } = await renderIntro();
-        return <article className="prose mx-auto max-w-3xl">{content}</article>;
+        return <DocsHome />;
     }
 
     const doc = await renderMdxSlug(slugParts);

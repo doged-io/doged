@@ -48,7 +48,7 @@ export function DownloadLinks() {
                 enabled. That needs a capable machine and can take days to sync.
                 For app development you can use the public indexer — see{' '}
                 <Link
-                    href="/chronik-js/install/"
+                    href="/chronik/chronik-client/install/"
                     className="font-medium text-accentMedium underline decoration-transparent transition-colors hover:text-accentLight hover:decoration-accentLight"
                 >
                     chronik-client

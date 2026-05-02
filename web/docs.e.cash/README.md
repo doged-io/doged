@@ -11,9 +11,9 @@ npm run dev
 
 `predev` and `prebuild` run `scripts/sync-abc-version.mjs`, which at **build time** fetches the latest non-draft release from the **[GitHub Releases API](https://api.github.com/repos/Bitcoin-ABC/bitcoin-abc/releases)** and writes **`src/data/bitcoin-abc-version.json`** (gitignored) for download links—aligned with assets on `download.bitcoinabc.org`. If the API is unreachable, it falls back to the monorepo **`CMakeLists.txt`** (`project(bitcoin-abc VERSION …)`), then to copying **`bitcoin-abc-version.sample.json`**. Set optional **`GITHUB_TOKEN`** in CI for a higher API rate limit. There is no `postinstall` hook (Docker installs dependencies before `scripts/` are copied); run **`pnpm run sync-version`** once after install if you need the JSON before the first `dev`/`build` (for example `tsc --noEmit`).
 
-Interactive API examples on the chronik-js pages use **[react-live](https://github.com/FormidableLabs/react-live)** (`ChronikLivePlayground`): a **Live editor** and **Result** split, with default source in `src/components/chronik-live/liveDemoEditorCode.ts` (ported from the old Docusaurus `jsx live` blocks).
+Interactive API examples on the **`/chronik/chronik-client/`** pages use **[react-live](https://github.com/FormidableLabs/react-live)** (`ChronikLivePlayground`): a **Live editor** and **Result** split, with default source in `src/components/chronik-live/liveDemoEditorCode.ts` (ported from the old Docusaurus `jsx live` blocks).
 
-Open Chronik docs at **`http://localhost:3000/chronik/`** (Next [`basePath`](https://nextjs.org/docs/app/api-reference/config/next-config-js/basePath) `/chronik`). Production will be **`https://docs.e.cash/chronik/`** once this app serves that host.
+Open the site at **`http://localhost:3000/`** (hub). Chronik docs live under **`/chronik/`** (e.g. **`/chronik/chronik-client/install/`**); pay docs at **`/pay/`**. Production is **`https://docs.e.cash/`**.
 
 ## Generate chronik-client API (TypeDoc)
 
@@ -44,7 +44,7 @@ Optionally set:
 - `NEXT_PUBLIC_BITCOIN_ABC_VERSION` — overrides the download page version string at **runtime** (still generate `bitcoin-abc-version.json` at build when possible). If GitHub and CMake are both unavailable, sync may leave or copy the sample file; use this env or ensure `prebuild` can reach the API / monorepo.
 - `GITHUB_TOKEN` — optional; passed to the Releases API request during **`sync-version`** / **`prebuild`** for rate limits (no special scopes required for public repo metadata).
 
-If you attach a custom domain, preserve the `/chronik` path prefix (or adjust `basePath` and redeploy).
+If you attach a custom domain, serve this app at the host root (no path prefix required).
 
 ## License
 

@@ -42,7 +42,5 @@ function toUrlSlug(rel: string): string {
 
 export async function getAllDocRelPaths(): Promise<string[]> {
     const all = await walkMarkdownFiles(CONTENT);
-    return all
-        .map(toUrlSlug)
-        .filter(slug => slug !== 'intro' && slug.length > 0);
+    return all.map(toUrlSlug).filter(slug => slug.length > 0);
 }
