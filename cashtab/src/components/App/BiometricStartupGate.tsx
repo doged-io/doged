@@ -137,7 +137,13 @@ const BiometricStartupGate: React.FC<BiometricStartupGateProps> = ({
 
     useEffect(() => {
         if (!gateEnabled) {
-            setSessionUnlocked(true);
+            // While Cashtab is still loading, `gateEnabled` is false even if biometric
+            // lock will apply once loaded. Do not set sessionUnlocked here — that would
+            // skip the cold-start prompt after load (unbackgrounding still worked because
+            // we reset sessionUnlocked on background).
+            if (isCashtabLoaded) {
+                setSessionUnlocked(true);
+            }
             return;
         }
         if (!isAppActive) {
@@ -149,6 +155,7 @@ const BiometricStartupGate: React.FC<BiometricStartupGateProps> = ({
         void runUnlock();
     }, [
         gateEnabled,
+        isCashtabLoaded,
         sessionUnlocked,
         isAuthenticating,
         isAppActive,
