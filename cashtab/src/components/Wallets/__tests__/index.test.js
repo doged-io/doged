@@ -509,4 +509,85 @@ describe('<Wallets />', () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it('Deleting the active wallet while other wallets exist activates the next wallet in the list and does not show onboarding', async () => {
+        const mockedChronik = await initializeCashtabStateForTests(
+            walletWithXecAndTokensActive,
+            localforage,
+        );
+
+        await localforage.setItem('wallets', [
+            walletWithXecAndTokensActive,
+            ...validSavedWallets,
+        ]);
+
+        const alphaWalletForChronik = validActiveWallets.find(
+            wallet => wallet.name === 'alpha',
+        );
+        prepareMockedChronikCallsForWallet(
+            mockedChronik,
+            alphaWalletForChronik,
+        );
+
+        render(
+            <CashtabTestWrapper
+                ecc={ecc}
+                chronik={mockedChronik}
+                route="/wallets"
+            />,
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByTitle('Cashtab Loading'),
+            ).not.toBeInTheDocument(),
+        );
+
+        expect(
+            screen.queryByText(/Welcome to Cashtab/),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: /Delete Transaction Fixtures/i,
+            }),
+        );
+
+        expect(
+            await screen.findByText(`Delete "Transaction Fixtures"?`),
+        ).toBeInTheDocument();
+
+        await user.type(
+            screen.getByPlaceholderText(
+                `Type "delete Transaction Fixtures" to confirm`,
+            ),
+            'delete Transaction Fixtures',
+        );
+
+        await user.click(screen.getByRole('button', { name: 'OK' }));
+
+        expect(
+            await screen.findByText('"Transaction Fixtures" deleted'),
+        ).toBeInTheDocument();
+
+        const expectedNextActive = validSavedWallets[0];
+        await waitFor(async () => {
+            expect(await localforage.getItem('activeWalletAddress')).toBe(
+                expectedNextActive.address,
+            );
+        });
+
+        const walletsAfter = await localforage.getItem('wallets');
+        expect(walletsAfter).toHaveLength(validSavedWallets.length);
+        expect(walletsAfter.some(w => w.name === 'Transaction Fixtures')).toBe(
+            false,
+        );
+
+        expect(
+            screen.queryByText(/Welcome to Cashtab/),
+        ).not.toBeInTheDocument();
+
+        const alphaActiveLabels = await screen.findAllByText('alpha');
+        expect(alphaActiveLabels.length).toBeGreaterThanOrEqual(1);
+    });
 });

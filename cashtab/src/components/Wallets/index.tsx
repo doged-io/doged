@@ -260,13 +260,34 @@ const Wallets = () => {
             return;
         }
 
+        const isDeletingActive =
+            walletToBeDeleted.address === activeStoredWallet.address;
+
         // filter wallet from wallets
         const updatedWallets = wallets.filter(
             wallet => wallet.mnemonic !== walletToBeDeleted.mnemonic,
         );
 
+        const updates: Parameters<typeof updateCashtabState>[0] = {
+            wallets: updatedWallets,
+        };
+
+        if (isDeletingActive) {
+            if (updatedWallets.length === 0) {
+                updates.activeWalletAddress = null;
+            } else {
+                // Match wallet list order: active first, then alphabetical — activate the next row
+                const displayOrder = sortWalletsForDisplay(
+                    activeStoredWallet,
+                    wallets,
+                );
+                const nextWallet = displayOrder[1];
+                updates.activeWalletAddress = nextWallet.address;
+            }
+        }
+
         // Update localforage and state
-        await updateCashtabState({ wallets: updatedWallets });
+        await updateCashtabState(updates);
         toast.success(`"${walletToBeDeleted.name}" deleted`);
 
         // Reset walletToBeDeleted to hide the modal
