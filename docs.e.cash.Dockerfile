@@ -51,6 +51,8 @@ COPY --from=builder /app/web/docs.e.cash/.next ./web/docs.e.cash/.next
 # next start loads next.config (e.g. trailingSlash).
 COPY --from=builder /app/web/docs.e.cash/next.config.ts ./web/docs.e.cash/next.config.ts
 COPY --from=builder /app/web/docs.e.cash/package.json ./web/docs.e.cash/package.json
+# Static assets (og:image, favicons, etc.); not included inside .next for next start.
+COPY --from=builder /app/web/docs.e.cash/public ./web/docs.e.cash/public
 # RSC / request-time rendering reads Markdown from disk (see src/lib/render-doc.tsx).
 COPY --from=builder /app/web/docs.e.cash/content ./web/docs.e.cash/content
 COPY --from=builder /app/node_modules ./node_modules
