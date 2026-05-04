@@ -341,3 +341,7 @@ Exactly **one** cosigner entry must include a secret key per instance (this part
 # 5.3.0
 
 - Automatically consolidate utxos if a tx fails due to a maxSerSize error not related to too many outputs [D19800](https://reviews.bitcoinabc.org/D19800)
+
+# 5.4.0
+
+- Use batch requests to sync the utxos of HD wallets [D19943](https://reviews.bitcoinabc.org/D19943)

@@ -8,6 +8,7 @@ import {
     decodeCashAddress,
 } from 'ecashaddrjs';
 import {
+    BatchUtxosRow,
     Block,
     TxHistoryPage,
     Tx,
@@ -15,6 +16,7 @@ import {
     BlockchainInfo,
     Utxo,
     TokenIdUtxos,
+    ScriptRef,
     ScriptUtxo,
     ScriptUtxos,
     WsConfig,
@@ -464,6 +466,22 @@ export class MockChronikClient {
         return this._throwOrReturnValue(this.mockedResponses.chronikInfo);
     };
 
+    /**
+     * Batch UTXOs: resolves each script from data set by {@link setUtxosByScript}
+     * or {@link setUtxosByAddress} (p2pkh / p2sh only). Unknown scripts get empty
+     * `utxos`. Row order matches the request.
+     */
+    batchUtxos = async (scripts: ScriptRef[]): Promise<BatchUtxosRow[]> => {
+        const rows: BatchUtxosRow[] = [];
+        for (const script of scripts) {
+            rows.push({
+                script,
+                utxos: this._batchUtxosRowForScript(script),
+            });
+        }
+        return rows;
+    };
+
     setBroadcastTx = (rawTx: string, txidOrError: string | Error) => {
         this.mockedResponses.broadcastTx[rawTx] =
             typeof txidOrError === 'string'
@@ -711,6 +729,41 @@ export class MockChronikClient {
     }
     private _getTokenIdUtxos(tokenId: string, utxos: Utxo[]): TokenIdUtxos {
         return { tokenId, utxos };
+    }
+
+    private _batchUtxosRowForScript(script: ScriptRef): ScriptUtxos {
+        const { scriptType, payload } = script;
+        if (scriptType === 'p2pkh' || scriptType === 'p2sh') {
+            const scriptEntry =
+                this.mockedResponses.script[scriptType][payload];
+            if (scriptEntry !== undefined) {
+                const raw = scriptEntry.utxos;
+                if (raw instanceof Error) {
+                    throw raw;
+                }
+                return this._getScriptUtxos(scriptType, payload, raw);
+            }
+            for (const address of Object.keys(this.mockedResponses.address)) {
+                let decoded;
+                try {
+                    decoded = decodeCashAddress(address);
+                } catch {
+                    continue;
+                }
+                if (decoded.type === scriptType && decoded.hash === payload) {
+                    const addrEntry = this.mockedResponses.address[address];
+                    const raw = addrEntry.utxos;
+                    if (raw instanceof Error) {
+                        throw raw;
+                    }
+                    return this._getAddressUtxos(address, raw as ScriptUtxo[]);
+                }
+            }
+            return this._getScriptUtxos(scriptType, payload, []);
+        }
+        throw new Error(
+            `MockChronikClient.batchUtxos does not support scriptType ${script.scriptType}`,
+        );
     }
 
     // Method to get paginated tx history with same variables as chronik

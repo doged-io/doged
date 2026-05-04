@@ -363,6 +363,49 @@ describe('MockChronikClient', () => {
             chronikError,
         );
     });
+    it('batchUtxos returns rows from setUtxosByScript and setUtxosByAddress', async () => {
+        const { utxo } = mocks;
+        const type = 'p2pkh';
+        const hash = '00'.repeat(20);
+        const otherHash = '11'.repeat(20);
+        const addrForOther = encodeCashAddress('ecash', type, otherHash);
+        mockChronik.setUtxosByScript(type, hash, [utxo]);
+        mockChronik.setUtxosByAddress(addrForOther, [utxo]);
+
+        const byScript = await mockChronik.batchUtxos([
+            { scriptType: 'p2pkh', payload: hash },
+        ]);
+        expect(byScript).to.deep.equal([
+            {
+                script: { scriptType: 'p2pkh', payload: hash },
+                utxos: {
+                    outputScript: `76a914${hash}88ac`,
+                    utxos: [utxo],
+                },
+            },
+        ]);
+
+        const byAddress = await mockChronik.batchUtxos([
+            { scriptType: 'p2pkh', payload: otherHash },
+        ]);
+        expect(byAddress[0].utxos).to.deep.equal({
+            outputScript: `76a914${otherHash}88ac`,
+            utxos: [utxo],
+        });
+
+        const unknown = await mockChronik.batchUtxos([
+            { scriptType: 'p2pkh', payload: '22'.repeat(20) },
+        ]);
+        expect(unknown[0].utxos.utxos).to.deep.equal([]);
+    });
+    it('batchUtxos propagates Error set via setUtxosByScript', async () => {
+        const type = 'p2pkh';
+        const hash = '33'.repeat(20);
+        mockChronik.setUtxosByScript(type, hash, chronikError);
+        await expect(
+            mockChronik.batchUtxos([{ scriptType: 'p2pkh', payload: hash }]),
+        ).to.be.rejectedWith(chronikError);
+    });
     it('We can set and get tx history by tokenId', async () => {
         const { tx } = mocks;
         const tokenId = '00'.repeat(32);

@@ -8,10 +8,20 @@ import {
     HdNode,
     Ecc,
     fromHex,
+    toHex,
     COINBASE_MATURITY,
 } from 'ecash-lib';
-import { ChronikClient, ScriptUtxo, Tx as ChronikTx } from 'chronik-client';
+import {
+    ChronikClient,
+    ScriptRef,
+    ScriptUtxo,
+    ScriptUtxos,
+    Tx as ChronikTx,
+} from 'chronik-client';
 import { WalletUtxo } from './wallet';
+
+/** Chronik HTTP batch limit for `/script/batch/utxos`. */
+const CHRONIK_BATCH_UTXOS_MAX_SCRIPTS = 500;
 
 /**
  * Subset of coinbase outputs that are allowed as transaction inputs: `isCoinbase` and buried
@@ -286,6 +296,25 @@ export abstract class WalletBase<
     }
 
     /**
+     * Get all scripts (as ChronikClient ScriptRef values) currently cached in
+     * the keypairs map.
+     *
+     * @returns Array of ScriptRef values
+     */
+    public getAllScripts(): ScriptRef[] {
+        if (this.isHD) {
+            return Array.from(this.keypairs.values()).map(kp => ({
+                scriptType: 'p2pkh',
+                payload: toHex(kp.pkh),
+            }));
+        }
+        if (this.address) {
+            return [{ scriptType: 'p2pkh', payload: toHex(this.pkh) }];
+        }
+        return [];
+    }
+
+    /**
      * Convert an array of ScriptUtxos to WalletUtxos by deriving the address from outputScript once
      *
      * @param utxos - Array of ScriptUtxos to convert
@@ -335,16 +364,44 @@ export abstract class WalletBase<
             }
         }
 
-        // Get all addresses to sync (now guaranteed to be cached)
-        const allAddresses = this.getAllAddresses();
+        // Get all scripts to sync (now guaranteed to be cached)
+        const allScripts = this.getAllScripts();
 
-        // Query UTXOs for all addresses in parallel
-        // TODO chronik and chronik-client should be optimized to support a single query for utxos
-        // at multiple addresses
-        const utxoPromises = allAddresses.map(address =>
-            this.chronik.address(address).utxos(),
-        );
-        const utxoResults = await Promise.all(utxoPromises);
+        if (allScripts.length === 0) {
+            // No script no utxo.
+            this.utxos = [];
+            this.updateBalance();
+            return;
+        }
+
+        // Prefer batch UTXOs; fall back to per-address requests if unsupported
+        // or on error.
+        let utxoResults: ScriptUtxos[];
+        try {
+            const batchUtxosPromises = [];
+            while (allScripts.length > 0) {
+                batchUtxosPromises.push(
+                    this.chronik.batchUtxos(
+                        allScripts.splice(0, CHRONIK_BATCH_UTXOS_MAX_SCRIPTS),
+                    ),
+                );
+            }
+
+            const batchRowsChunks = await Promise.all(batchUtxosPromises);
+            utxoResults = batchRowsChunks.flat().map(row => row.utxos);
+        } catch {
+            // Fallback to a non-batch request if the batch request failed (aka
+            // is not available from the connected Chronik instance). For
+            // improved resilience, we rebuild the list of scripts: the batch
+            // loop is consuming the list so we could be missing some scripts.
+            utxoResults = await Promise.all(
+                this.getAllScripts().map(script =>
+                    this.chronik
+                        .script(script.scriptType, script.payload)
+                        .utxos(),
+                ),
+            );
+        }
 
         // Merge all UTXOs and convert to WalletUtxo (derive address once per address)
         const allUtxos: WalletUtxo[] = [];
