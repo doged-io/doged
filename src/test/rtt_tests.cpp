@@ -335,6 +335,10 @@ void check_GeNextRTTWorkRequired(bool expectedShibusawa) {
         // The difficulty decreases, i.e. the target increaes
         BOOST_CHECK(target_lt(lastWork, *nextWork));
     }
+
+    // now == 0 returns nullopt even if ancestors have non-zero receive times
+    BOOST_CHECK(
+        !GetNextRTTWorkRequired(&blocks[0], 0, consensusParams).has_value());
 }
 
 BOOST_FIXTURE_TEST_CASE(check_rtt_next_work_required, BasicTestingSetup) {
