@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2025 Tobias Ruck and Alexandre Guillioud
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -63,6 +64,8 @@
 #include <rpc/server.h>
 #include <rpc/util.h>
 #include <scheduler.h>
+#include <stratum/stratum.h>
+#include <stratum/stratumconfig.h>
 #include <script/scriptcache.h>
 #include <script/sigcache.h>
 #include <script/standard.h>
@@ -204,6 +207,7 @@ void Interrupt(NodeContext &node) {
     InterruptHTTPRPC();
     InterruptRPC();
     InterruptREST();
+    stratum::InterruptStratumServer();
     InterruptTorControl();
     InterruptMapPort();
     if (node.avalanche) {
@@ -244,6 +248,7 @@ void Shutdown(NodeContext &node) {
     StopHTTPRPC();
     StopREST();
     StopRPC();
+    stratum::StopStratumServer();
     StopHTTPServer();
     for (const auto &client : node.chain_clients) {
         client->flush();
@@ -1316,6 +1321,8 @@ void SetupServerArgs(NodeContext &node) {
                    ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
                    OptionsCategory::BLOCK_CREATION);
 
+    stratum::RegisterStratumArgs(argsman);
+
     argsman.AddArg("-server", "Accept command line and JSON-RPC commands",
                    ArgsManager::ALLOW_ANY, OptionsCategory::RPC);
     argsman.AddArg("-rest",
@@ -1609,6 +1616,7 @@ static bool AppInitServers(Config &config,
     }
 
     StartHTTPServer();
+
     return true;
 }
 
@@ -3096,6 +3104,24 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     SetRPCWarmupFinished();
 
     uiInterface.InitMessage(_("Done loading").translated);
+
+    // Start Stratum server now that chainstate is fully loaded
+    {
+        auto stratumConfig = stratum::ParseStratumConfig(args);
+        if (stratumConfig && stratumConfig->enabled) {
+            LogPrintf("Stratum server configured on %s:%d\n",
+                      stratumConfig->bind, stratumConfig->port);
+            if (!stratum::InitStratumServer(
+                    *stratumConfig,
+                    chainman.ActiveChainstate(),
+                    node.mempool.get(),
+                    chainparams,
+                    chainman)) {
+                return InitError(_("Failed to initialize Stratum server."));
+            }
+            stratum::StartStratumServer();
+        }
+    }
 
     for (const auto &client : node.chain_clients) {
         client->start(*node.scheduler);
