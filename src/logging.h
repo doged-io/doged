@@ -1,6 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2025 Tobias Ruck and Alexandre Guillioud
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -71,6 +72,8 @@ enum LogFlags : uint32_t {
     BLOCKSTORE = (1 << 26),
     NETDEBUG = (1 << 27),
     TXPACKAGES = (1 << 28),
+    STRATUM = (1 << 29),
+    MERGEMINE = (1 << 30),
     ALL = ~uint32_t(0),
 };
 
