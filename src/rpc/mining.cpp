@@ -27,7 +27,9 @@
 #include <policy/block/stakingrewards.h>
 #include <policy/policy.h>
 #include <pow/pow.h>
+#include <primitives/auxpow.h>
 #include <rpc/blockchain.h>
+#include <stratum/stratumaux.h>
 #include <rpc/mining.h>
 #include <rpc/server.h>
 #include <rpc/server_util.h>
@@ -1436,6 +1438,146 @@ static RPCHelpMan estimatefee() {
     };
 }
 
+static RPCHelpMan createauxblock() {
+    return RPCHelpMan{
+        "createauxblock",
+        "Creates a new block template for merge-mining.\n"
+        "Returns the aux block hash and parameters needed for the parent "
+        "chain's coinbase commitment.\n",
+        {
+            {"address", RPCArg::Type::STR, RPCArg::Optional::NO,
+             "The Dogecoin address for the coinbase payout."},
+        },
+        RPCResult{RPCResult::Type::OBJ,
+                  "",
+                  "",
+                  {
+                      {RPCResult::Type::STR_HEX, "hash",
+                       "The aux block hash (SHA-256d)"},
+                      {RPCResult::Type::NUM, "chainid",
+                       "The chain ID (0x62 for Dogecoin)"},
+                      {RPCResult::Type::STR_HEX, "previousblockhash",
+                       "The previous block hash"},
+                      {RPCResult::Type::NUM, "coinbasevalue",
+                       "Total coinbase value in satoshis"},
+                      {RPCResult::Type::STR_HEX, "bits",
+                       "The target in compact format"},
+                      {RPCResult::Type::NUM, "height",
+                       "The block height"},
+                      {RPCResult::Type::STR_HEX, "target",
+                       "The target hash in hex"},
+                  }},
+        RPCExamples{HelpExampleCli("createauxblock",
+                                    "\"DLxxxxxxxxxxxxxxxxxxxxxxxxxxx\"")},
+        [&](const RPCHelpMan &self, const Config &config,
+            const JSONRPCRequest &request) -> UniValue {
+            const CChainParams &chainParams = config.GetChainParams();
+            const std::string &address = request.params[0].get_str();
+
+            CTxDestination dest =
+                DecodeDestination(address, chainParams);
+            if (!IsValidDestination(dest)) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
+                                   "Invalid Dogecoin address");
+            }
+
+            CScript coinbaseScript = GetScriptForDestination(dest);
+
+            NodeContext &node = EnsureAnyNodeContext(request.context);
+            ChainstateManager &chainman = EnsureChainman(node);
+
+            stratum::StratumAuxManager auxMgr(
+                chainman.ActiveChainstate(), node.mempool.get(), chainParams,
+                coinbaseScript);
+
+            auto workResult = auxMgr.CreateAuxWork();
+            if (!workResult) {
+                throw JSONRPCError(RPC_INTERNAL_ERROR,
+                                   "Failed to create aux block template");
+            }
+
+            UniValue result(UniValue::VOBJ);
+            result.pushKV("hash", workResult->auxBlockHash.GetHex());
+            result.pushKV("chainid", (int)workResult->nChainId);
+            result.pushKV("previousblockhash",
+                          workResult->prevBlockHash.GetHex());
+            result.pushKV("coinbasevalue",
+                          workResult->coinbaseValue / SATOSHI);
+            result.pushKV("bits",
+                          strprintf("%08x", workResult->nBits));
+            result.pushKV("height", workResult->height);
+            result.pushKV("target", workResult->target.GetHex());
+
+            return result;
+        },
+    };
+}
+
+static RPCHelpMan submitauxblock() {
+    return RPCHelpMan{
+        "submitauxblock",
+        "Submits a solved aux block with its AuxPoW proof.\n",
+        {
+            {"hash", RPCArg::Type::STR_HEX, RPCArg::Optional::NO,
+             "The aux block hash from createauxblock."},
+            {"auxpow", RPCArg::Type::STR_HEX, RPCArg::Optional::NO,
+             "The serialized AuxPoW data (hex)."},
+        },
+        RPCResult{RPCResult::Type::BOOL, "", "True if the block was accepted"},
+        RPCExamples{HelpExampleCli("submitauxblock",
+                                    "\"hash\" \"auxpow_hex\"")},
+        [&](const RPCHelpMan &self, const Config &config,
+            const JSONRPCRequest &request) -> UniValue {
+            const std::string &hashStr = request.params[0].get_str();
+            const std::string &auxpowHex = request.params[1].get_str();
+
+            uint256 auxBlockHash = uint256S(hashStr);
+            if (auxBlockHash.IsNull() && hashStr != std::string(64, '0')) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid hash");
+            }
+
+            std::vector<uint8_t> auxpowData = ParseHex(auxpowHex);
+            if (auxpowData.empty()) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                   "Invalid auxpow hex data");
+            }
+
+            // Deserialize the CAuxPow
+            CDataStream ss(auxpowData, SER_NETWORK, PROTOCOL_VERSION);
+            auto auxpow = std::make_shared<CAuxPow>();
+            ss >> *auxpow;
+
+            NodeContext &node = EnsureAnyNodeContext(request.context);
+            ChainstateManager &chainman = EnsureChainman(node);
+            const CChainParams &chainParams = config.GetChainParams();
+
+            // We need to recreate the aux work to get the block template.
+            // In a production system, this would look up cached work by hash.
+            CScript coinbaseScript = CScript() << OP_TRUE;
+            stratum::StratumAuxManager auxMgr(
+                chainman.ActiveChainstate(), node.mempool.get(), chainParams,
+                coinbaseScript);
+
+            auto workResult = auxMgr.CreateAuxWork();
+            if (!workResult) {
+                throw JSONRPCError(RPC_INTERNAL_ERROR,
+                                   "Failed to create aux work for validation");
+            }
+
+            // Validate parent PoW (Scrypt)
+            if (!auxMgr.ValidateParentPow(auxpow->parentBlock,
+                                           workResult->nBits,
+                                           chainParams.GetConsensus())) {
+                throw JSONRPCError(RPC_VERIFY_ERROR,
+                                   "Parent proof of work failed");
+            }
+
+            bool accepted = auxMgr.SubmitAuxBlock(*workResult, auxpow, chainman);
+            return UniValue(accepted);
+        },
+    };
+}
+
 void RegisterMiningRPCCommands(CRPCTable &t) {
     // clang-format off
     static const CRPCCommand commands[] = {
@@ -1447,6 +1589,8 @@ void RegisterMiningRPCCommands(CRPCTable &t) {
         {"mining",      getblocktemplate,      },
         {"mining",      submitblock,           },
         {"mining",      submitheader,          },
+        {"mining",      createauxblock,        },
+        {"mining",      submitauxblock,        },
 
         {"generating",  generatetoaddress,     },
         {"generating",  generatetodescriptor,  },

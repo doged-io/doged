@@ -1,4 +1,5 @@
 # Copyright (c) 2017 The Bitcoin developers
+# Copyright (c) 2025-2026 Tobias Ruck and Alexandre Guillioud
 
 project(doged)
 
@@ -699,6 +700,14 @@ add_library(server
 	pow/auxpow.cpp
 	pow/pow.cpp
 	rest.cpp
+	stratum/stratum.cpp
+	stratum/stratumaux.cpp
+	stratum/stratumconfig.cpp
+	stratum/stratumjob.cpp
+	stratum/stratumprotocol.cpp
+	stratum/stratumstats.cpp
+	stratum/stratumsubmit.cpp
+	stratum/stratumworker.cpp
 	rpc/abc.cpp
 	rpc/avalanche.cpp
 	rpc/blockchain.cpp
@@ -769,6 +778,7 @@ endif()
 add_subdirectory(test)
 add_subdirectory(avalanche/test)
 add_subdirectory(pow/test)
+add_subdirectory(stratum/test)
 
 # Benchmark suite.
 add_subdirectory(bench)
