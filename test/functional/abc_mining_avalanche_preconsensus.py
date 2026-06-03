@@ -19,6 +19,7 @@ class AvalancheMiningPreconsensusTest(BitcoinTestFramework):
         self.noban_tx_relay = True
         self.extra_args = [
             [
+                "-avalanche",
                 "-avacooldown=0",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avaproofstakeutxodustthreshold=1000000",
@@ -30,6 +31,7 @@ class AvalancheMiningPreconsensusTest(BitcoinTestFramework):
                 "-avalanchepreconsensus=0",
             ],
             [
+                "-avalanche",
                 "-avacooldown=0",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avaproofstakeutxodustthreshold=1000000",

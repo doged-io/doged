@@ -217,7 +217,7 @@ class ChronikElectrumBlockchain(BitcoinTestFramework):
                             "scriptPubKey": {
                                 "hex": GENESIS_CB_SCRIPT_PUBKEY.hex(),
                             },
-                            "value": 50_000_000.00,
+                            "value": 88_000_000.00,
                         }
                     ],
                     "blockhash": GENESIS_BLOCK_HASH,
