@@ -54,7 +54,7 @@ pub fn get_script(signature_script: &[u8]) -> askama::Result<String> {
 pub fn check_is_token(token: &Option<Token>) -> askama::Result<bool> {
     Ok(token
         .as_ref()
-        .map(|slp| slp.amount > 0 || slp.is_mint_baton)
+        .map(|slp| slp.atoms > 0 || slp.is_mint_baton)
         .unwrap_or(false))
 }
 

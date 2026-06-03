@@ -190,7 +190,7 @@ import "components/output.html" as output %} {% import
                                         <tr>
                                             <td>Total burnt</td>
                                             <td>
-                                                {{ entry.actual_burn_amount|string_to_i128|render_token_amount(genesis_info.decimals) |safe
+                                                {{ entry.actual_burn_atoms|string_to_i128|render_token_amount(genesis_info.decimals) |safe
                                                 }} {{
                                                 genesis_info.token_ticker|string_from_lossy_utf8 }}
                                             </td>
