@@ -402,7 +402,7 @@ BOOST_FIXTURE_TEST_CASE(transaction_finalized, TestChain100Setup) {
         expectedTxIds.push_back(lastTxId);
 
         CTransactionRef tx = MakeTransactionRef(chained_mtx);
-        last_entry = entryHelper.Fee(int64_t(1000 + i) * SATOSHI).FromTx(tx);
+        last_entry = entryHelper.Fee(int64_t(100000 + i) * SATOSHI).FromTx(tx);
         {
             LOCK2(::cs_main, m_node.mempool->cs);
             m_node.mempool->addUnchecked(last_entry);
