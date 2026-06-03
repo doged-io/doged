@@ -25,6 +25,7 @@ class AvalancheTest(BitcoinTestFramework):
         self.noban_tx_relay = True
         self.extra_args = [
             [
+                "-avalanche",
                 "-avaproofstakeutxodustthreshold=1000000",
                 "-avaproofstakeutxoconfirmations=1",
                 "-avacooldown=0",
