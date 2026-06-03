@@ -166,7 +166,7 @@ class DogecoinInventoryDownloadTest(BitcoinTestFramework):
             privkeys=[self.nodes[0].get_deterministic_priv_key().key],
         )["hex"]
         ctx = FromHex(CTransaction(), tx)
-        txid = int(ctx.rehash(), 16)
+        txid = int(ctx.txid_hex, 16)
 
         self.log.info(
             f"Announce the transaction to all nodes from all {NUM_INBOUND} incoming "

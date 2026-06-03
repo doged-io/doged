@@ -222,7 +222,6 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
         tx = self.create_tx(spend, 0, 1, p2sh_script)
         tx.vout.append(CTxOut(spend.vout[0].nValue - 1, CScript([OP_TRUE])))
         self.sign_tx(tx, spend)
-        tx.rehash()
         b39 = self.update_block(39, [tx])
         b39_outputs += 1
 
@@ -237,7 +236,6 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
             tx_new.vout.append(
                 CTxOut(tx_last.vout[tx_last_n].nValue - 1, CScript([OP_TRUE]))
             )
-            tx_new.rehash()
             total_size += len(tx_new.serialize())
             if total_size >= LEGACY_MAX_BLOCK_SIZE:
                 break
@@ -264,7 +262,7 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
         numTxs = (MAX_BLOCK_SIGOPS - sigops) // b39_sigops_per_output
         assert_equal(numTxs <= b39_outputs, True)
 
-        lastOutpoint = COutPoint(b40.vtx[1].sha256, 0)
+        lastOutpoint = COutPoint(b40.vtx[1].txid_int, 0)
         lastAmount = b40.vtx[1].vout[0].nValue
         new_txs = []
         for i in range(1, numTxs + 1):
@@ -272,7 +270,7 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
             tx.vout.append(CTxOut(1, CScript([OP_TRUE])))
             tx.vin.append(CTxIn(lastOutpoint, b""))
             # second input is corresponding P2SH output from b39
-            tx.vin.append(CTxIn(COutPoint(b39.vtx[i].sha256, 0), b""))
+            tx.vin.append(CTxIn(COutPoint(b39.vtx[i].txid_int, 0), b""))
             # Note: must pass the redeem_script (not p2sh_script) to the
             # signature hash function
             sighash = SignatureHashForkId(
@@ -285,9 +283,8 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
 
             tx.vin[1].scriptSig = scriptSig
             pad_tx(tx)
-            tx.rehash()
             new_txs.append(tx)
-            lastOutpoint = COutPoint(tx.sha256, 0)
+            lastOutpoint = COutPoint(tx.txid_int, 0)
             lastAmount = tx.vout[0].nValue
 
         b40_sigops_to_fill = (
@@ -297,7 +294,6 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
         tx.vin.append(CTxIn(lastOutpoint, b""))
         tx.vout.append(CTxOut(1, CScript([OP_CHECKSIG] * b40_sigops_to_fill)))
         pad_tx(tx)
-        tx.rehash()
         new_txs.append(tx)
         self.update_block(40, new_txs)
         self.send_blocks(
@@ -421,7 +417,7 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
     ################
 
     def add_transactions_to_block(self, block, tx_list):
-        [tx.rehash() for tx in tx_list]
+        [tx.txid_hex for tx in tx_list]
         block.vtx.extend(tx_list)
 
     # this is a little handier to use than the version in blocktools.py
@@ -453,7 +449,6 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
     def create_and_sign_transaction(self, spend_tx, value, script=CScript([OP_TRUE])):
         tx = self.create_tx(spend_tx, 0, value, script)
         self.sign_tx(tx, spend_tx)
-        tx.rehash()
         return tx
 
     def next_block(
@@ -474,13 +469,11 @@ class FullBlockSigOpsTest(BitcoinTestFramework):
         height = self.block_heights[base_block_hash] + 1
         coinbase = create_coinbase(height, self.coinbase_pubkey)
         coinbase.vout[0].nValue += additional_coinbase_value
-        coinbase.rehash()
         if spend is None:
             block = create_block(base_block_hash, coinbase, block_time)
         else:
             # all but one satoshi to fees
             coinbase.vout[0].nValue += spend.vout[0].nValue - 1
-            coinbase.rehash()
             block = create_block(base_block_hash, coinbase, block_time)
             # spend 1 satoshi
             tx = self.create_tx(spend, 0, 1, script)

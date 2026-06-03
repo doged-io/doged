@@ -44,7 +44,6 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         height = 1
         coinbase_tx = create_coinbase(height)
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
-        coinbase_tx.rehash()
         block = create_block(
             int(node.getbestblockhash(), 16), coinbase_tx, mocktime + 1100
         )
@@ -78,16 +77,14 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
 
         # Coinbase tx has no inputs
         block.auxpow = CAuxPow()
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(["AuxPow coinbase transaction missing input"]):
             assert_equal(node.submitblock(block.serialize().hex()), "high-hash")
 
         # Chain merkle root not found in coinbase scriptSig
         block.auxpow = CAuxPow()
         block.auxpow.coinbaseTx.vin = [CTxIn()]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             ["AuxPow missing chain merkle root in parent coinbase"]
         ):
@@ -97,8 +94,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block.auxpow = CAuxPow()
         coinbase_script = CScript(MERGE_MINE_PREFIX + MERGE_MINE_PREFIX + block_hash)
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(["Multiple merged mining prefixes in coinbase"]):
             assert_equal(node.submitblock(block.serialize().hex()), "high-hash")
 
@@ -106,8 +102,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block.auxpow = CAuxPow()
         coinbase_script = CScript(MERGE_MINE_PREFIX + b"hola" + block_hash)
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             ["Merged mining prefix is not just before chain merkle root"]
         ):
@@ -117,8 +112,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block.auxpow = CAuxPow()
         coinbase_script = CScript(bytes(21) + block_hash)
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             [
                 "AuxPow chain merkle root can have at most 20 preceding bytes of the parent coinbase"
@@ -130,8 +124,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block.auxpow = CAuxPow()
         coinbase_script = CScript(MERGE_MINE_PREFIX + block_hash)
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             ["AuxPow missing chain merkle tree size and nonce in parent coinbase"]
         ):
@@ -141,8 +134,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         block.auxpow = CAuxPow()
         coinbase_script = CScript(block_hash)
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             ["AuxPow missing chain merkle tree size and nonce in parent coinbase"]
         ):
@@ -154,8 +146,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
             MERGE_MINE_PREFIX + block_hash + b"\xff\xff\xff\xff\xff\xff\xff\xff"
         )
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
         with node.assert_debug_log(
             ["AuxPow merkle branch size does not match parent coinbase"]
         ):
@@ -166,8 +157,7 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
             MERGE_MINE_PREFIX + block_hash + b"\x01\0\0\0\xff\xff\xff\xff"
         )
         block.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block.auxpow.coinbaseTx.rehash()
-        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.sha256
+        block.auxpow.parentBlock.hashMerkleRoot = block.auxpow.coinbaseTx.txid_int
 
         # Parent header has high hash
         target = uint256_from_compact(block.nBits)
@@ -187,7 +177,6 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
         height = 2
         coinbase_tx = create_coinbase(height)
         coinbase_tx.vout[0].scriptPubKey = P2SH_OP_TRUE
-        coinbase_tx.rehash()
         block2 = create_block(block.sha256, coinbase_tx, mocktime + 1101)
         block2.nVersion = VERSION_CHAIN_ID_BITS | VERSION_AUXPOW_BIT | 0xFF
         block2.rehash()
@@ -209,12 +198,11 @@ class DogecoinAuxpowTest(BitcoinTestFramework):
             + nMerkleNonce.to_bytes(4, "little")
         )
         block2.auxpow.coinbaseTx.vin = [CTxIn(COutPoint(), coinbase_script)]
-        block2.auxpow.coinbaseTx.rehash()
         block2.auxpow.vChainMerkleBranch = [555]
         block2.auxpow.nChainIndex = 1
         block2.auxpow.vMerkleBranch = [444]
         block2.auxpow.parentBlock.hashMerkleRoot = block2.get_merkle_root(
-            [ser_uint256(block2.auxpow.coinbaseTx.sha256), ser_uint256(444)]
+            [ser_uint256(block2.auxpow.coinbaseTx.txid_int), ser_uint256(444)]
         )
         block2.solve()
 

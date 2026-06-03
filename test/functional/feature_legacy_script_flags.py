@@ -57,7 +57,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             return CScript([OP_HASH160, hash160(CScript(opcodes)), OP_EQUAL])
 
         def make_block_with_txs(node, txs):
-            [tx.rehash() for tx in txs]
+            [tx.txid_hex for tx in txs]
             block = create_block(
                 int(node.getbestblockhash(), 16),
                 create_coinbase(node.getblockcount() + 1),
@@ -116,8 +116,7 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             CTxOut(2000, CScript([OP_TRUE])),
             CTxOut(coinvalue - 30000, p2sh([OP_TRUE])),
         ]
-        tx.rehash()
-        txid = tx.hash
+        txid = tx.txid_hex
 
         # Fork both nodes, CLEANSTACK not enforced on Dogecoin
         tx_noncleanstack = CTransaction()

@@ -67,7 +67,6 @@ class LegacyScriptRulesTest(BitcoinTestFramework):
             return CScript([OP_HASH160, hash160(CScript(opcodes)), OP_EQUAL])
 
         def make_block_with_tx(node, tx):
-            tx.rehash()
             block = create_block(
                 int(node.getbestblockhash(), 16),
                 create_coinbase(node.getblockcount() + 1),

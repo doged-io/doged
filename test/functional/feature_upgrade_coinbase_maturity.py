@@ -63,7 +63,7 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
 
         # Make sure tx got mined
         minedhash = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
-        assert_equal(node.getrawtransaction(tx.hash, 2)["blockhash"], minedhash)
+        assert_equal(node.getrawtransaction(tx.txid_hex, 2)["blockhash"], minedhash)
 
         # Generate blocks until we're 2 blocks before upgrade height
         UPGRADE_HEIGHT = 1450
@@ -131,7 +131,7 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
         # Make sure we actually mined the tx
         minedhash1 = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
         assert_equal(
-            node.getrawtransaction(spend_preupgradetx.hash, 2)["blockhash"], minedhash1
+            node.getrawtransaction(spend_preupgradetx.txid_hex, 2)["blockhash"], minedhash1
         )
 
         # Mature second coin to 238 (mempool thinks it's 239)
@@ -177,7 +177,7 @@ class UpgradeCoinbaseMaturityTest(BitcoinTestFramework):
         # Make sure we actually mined the tx
         minedhash2 = self.generatetoaddress(node, 1, ADDRESS_ECREG_UNSPENDABLE)[0]
         assert_equal(
-            node.getrawtransaction(spend_postupgradetx.hash, 2)["blockhash"], minedhash2
+            node.getrawtransaction(spend_postupgradetx.txid_hex, 2)["blockhash"], minedhash2
         )
 
 
