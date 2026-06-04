@@ -17,6 +17,8 @@ class AvalancheFinalizeTransactionTest(BitcoinTestFramework):
         self.extra_args = [
             [
                 # This is disabled by default on the test framework
+                "-avalanche",
+                "-avalanchepreconsensus=1",
                 "-avalanchepreconsensusmining=1",
                 f"-shibusawaactivationtime={THE_FUTURE}",
             ],
