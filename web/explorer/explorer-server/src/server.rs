@@ -44,6 +44,7 @@ use crate::{
         AddressTemplate, BlockTemplate, BlocksTemplate, MempoolTemplate,
         TestnetFaucetTemplate, TransactionTemplate,
     },
+    token_display::apply_token_display_overrides,
 };
 
 pub struct Server {
@@ -272,7 +273,8 @@ impl Server {
         let tx_history =
             self.chronik.token_history(&token_id, page, take).await?;
 
-        let token = self.chronik.token(&token_id).await?;
+        let token =
+            apply_token_display_overrides(self.chronik.token(&token_id).await?);
         let json_token =
             tokens_to_json(&HashMap::from([(id.to_string(), token)]))?
                 .get(&id.to_string())
@@ -915,7 +917,8 @@ impl Server {
 
     pub async fn token(&self, id: &str) -> Result<String> {
         let token_id = Sha256d::from_be_hex(id)?;
-        let token = self.chronik.token(&token_id).await?;
+        let token =
+            apply_token_display_overrides(self.chronik.token(&token_id).await?);
 
         let token_type_inner = token
             .token_type
