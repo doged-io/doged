@@ -2983,7 +2983,7 @@ static RPCHelpMan unloadwallet() {
                                    "Requested wallet already unloaded");
             }
 
-            UnloadWallet(std::move(wallet));
+            WaitForDeleteWallet(std::move(wallet));
 
             UniValue result(UniValue::VOBJ);
             result.pushKV("warning",
