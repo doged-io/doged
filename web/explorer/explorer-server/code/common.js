@@ -5,6 +5,23 @@
 const DEFAULT_ROWS_PER_PAGE = 100;
 const SATS_PER_DOGE = 100000000;
 
+/**
+ * Escape a string for safe insertion into HTML text or quoted attributes.
+ * @param {unknown} unsafe
+ * @returns {string}
+ */
+const escapeHtml = unsafe => {
+    if (unsafe == null) {
+        return '';
+    }
+    return String(unsafe)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+};
+
 var tzOffset;
 
 {

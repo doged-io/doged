@@ -47,8 +47,10 @@
                 <div style="word-break: break-all; padding-left: 20px">
                     {% let token_url = genesis_info.url|string_from_lossy_utf8 %}
                     <a href="#"
-                       onclick="checkDocumentUri('{{ token_url }}');return false;"
-                       target="_blank">{{ token_url }}</a>
+                       data-document-uri="{{ token_url }}"
+                       onclick="checkDocumentUri(this);return false;"
+                       target="_blank"
+                       rel="noopener noreferrer">{{ token_url }}</a>
                 </div>
             </div>
             <div class="tx-details-row">
@@ -68,12 +70,16 @@
             </div>
         </div>
         <script type="text/javascript">
-            const checkDocumentUri = address => {
-                if (!address.slice(0, 4).includes('http')) {
-                    window.open('http://' + address, '_blank');
-                } else {
-                    window.open(address, '_blank');
+            const checkDocumentUri = element => {
+                // data-document-uri is HTML-escaped by Askama
+                let address = element.getAttribute('data-document-uri');
+                if (!address) {
+                    return;
                 }
+                if (!/^https?:\/\//i.test(address)) {
+                    address = 'http://' + address;
+                }
+                window.open(address, '_blank', 'noopener,noreferrer');
             };
         </script>
         {% when None %}
