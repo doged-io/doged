@@ -26,8 +26,8 @@ BOOST_AUTO_TEST_CASE(proof_shared_pointer_comparator) {
 
     auto proofMinScore =
         buildRandomProof(active_chainstate, MIN_VALID_PROOF_SCORE);
-    auto proofMaxScore =
-        buildRandomProof(active_chainstate, std::numeric_limits<Score>::max());
+    auto proofMaxScore = buildRandomProof(active_chainstate,
+                                          std::numeric_limits<uint32_t>::max());
 
     const ProofComparatorByScore comparator;
 
